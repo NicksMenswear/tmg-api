@@ -2,29 +2,25 @@ service: tmg-api
 provider:
   name: aws
   runtime: python3.11
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: us-west-2
-  profile: tmg-dev
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - lambda:InvokeFunction
-      Resource: "*"
+  profile: ${self:custom.${self:provider.stage}.profile, 'tmg-dev'}
 functions:
   app:
     handler: wsgi.handler
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
-resources:
-  Resources:
-    MyLambdaFunctionProvisionedConcurrency:
-      Type: AWS::Lambda::ProvisionedConcurrencyConfig
-      Properties:
-        FunctionName:
-          Fn::GetAtt:
-            - HelloLambdaFunction
-            - Arn
-        ProvisionedConcurrentExecutions: 10  # Adjust the concurrency as needed
+  provisionedConcurrency: 1
+
 plugins:
   - serverless-python-requirements
+
+stages:
+  - dev
+  - steve
+
+# custom:
+#   # Define environment variables for different stages
+#   dev:
+#   steve:

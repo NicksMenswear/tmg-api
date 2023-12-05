@@ -6,8 +6,8 @@ info:
 servers:
   - url: 'https://api.themoderngroom.com/v1'
 tags:
-  - name: Users
-    description: Operations related to user accounts, including registration, profile management, and user-specific queries.
+  # - name: Users
+  #   description: Operations related to user accounts, including registration, profile management, and user-specific queries.
   - name: Events
     description: All event-related actions such as creating, updating, listing, and managing event details.
   - name: Orders
@@ -20,7 +20,7 @@ paths:
   /users:
     get:
       tags:
-        - Users
+        # - Users
         - Users List
       summary: Lists all users
       operationId: listUsers
@@ -35,7 +35,7 @@ paths:
                   $ref: '#/components/schemas/User'
     post:
       tags:
-        - Users
+        # - Users
         - Users Create
       summary: Create user
       operationId: createUser
@@ -52,7 +52,7 @@ paths:
   /users/{userId}:
     get:
       tags:
-        - Users
+        # - Users
         - Users Get
       summary: Get a single user by ID
       operationId: getUserById
@@ -75,7 +75,7 @@ paths:
           description: User not found
     put:
       tags:
-        - Users
+        # - Users
         - Users Update
       summary: Update a user by ID
       operationId: updateUser

@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  description: API for The Modern Groom, providing a platform to manage users, events,
+    and orders for a modern event planning experience.
+  title: The Modern Groom API
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- description: Operations related to user accounts, including registration, profile
+    management, and user-specific queries.
+  name: Users
+- description: All event-related actions such as creating, updating, listing, and
+    managing event details.
+  name: Events
+- description: Manages customer orders including order creation, retrieval, updating,
+    and tracking.
+  name: Orders
+- description: Handles catalog items, encompassing product listings, item details,
+    and catalog management operations.
+  name: Catalog
+- description: Provides access to audit logs, tracking changes made within the system
+    for compliance and monitoring.
+  name: Audit
+paths:
+  /audit:
+    get:
+      operationId: list_audit_entries
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+                type: array
+          description: An array of audit log entries
+      summary: Lists all audit entries
+      tags:
+      - Audit
+      x-openapi-router-controller: openapi_server.controllers.audit_controller
+  /catalog:
+    get:
+      operationId: list_catalog_items
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CatalogItem'
+                type: array
+          description: An array of catalog items
+      summary: Lists all catalog items
+      tags:
+      - Catalog
+      x-openapi-router-controller: openapi_server.controllers.catalog_controller
+    post:
+      operationId: create_catalog_item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogItem'
+        required: true
+      responses:
+        "201":
+          description: Catalog item created
+      summary: Create catalog item
+      tags:
+      - Catalog
+      x-openapi-router-controller: openapi_server.controllers.catalog_controller
+  /events:
+    post:
+      operationId: create_event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        required: true
+        x-body-name: event
+      responses:
+        "201":
+          description: Event created
+      summary: Create event
+      tags:
+      - Events
+      x-openapi-router-controller: openapi_server.controllers.events_controller
+  /events/{username}:
+    get:
+      operationId: list_events
+      parameters:
+      - explode: false
+        in: path
+        name: username
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Successful response
+      x-openapi-router-controller: openapi_server.controllers.events_controller
+  /orders:
+    get:
+      operationId: get_orders
+      parameters:
+      - description: Optional user ID to filter orders
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      - description: Optional event ID to filter orders
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Order'
+                type: array
+          description: An array of orders, filtered by user ID or event ID if provided
+      summary: Retrieve all orders, optionally filtered by user ID or event ID
+      tags:
+      - Orders
+      - Orders List
+      x-openapi-router-controller: openapi_server.controllers.orders_controller
+    post:
+      operationId: create_order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        "201":
+          description: Order created
+      summary: Create order
+      tags:
+      - Orders
+      - Orders Create
+      x-openapi-router-controller: openapi_server.controllers.orders_controller
+  /orders/{orderId}:
+    get:
+      operationId: get_order_by_id
+      parameters:
+      - description: Unique identifier of the order to retrieve
+        explode: false
+        in: path
+        name: orderId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: Details of the specific order
+        "404":
+          description: Order not found
+      summary: Retrieve a specific order by ID
+      tags:
+      - Orders
+      - Orders Get
+      x-openapi-router-controller: openapi_server.controllers.orders_controller
+    put:
+      operationId: update_order
+      parameters:
+      - description: Unique identifier of the order to update
+        explode: false
+        in: path
+        name: orderId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        "200":
+          description: Order updated successfully
+        "404":
+          description: Order not found
+        "400":
+          description: Invalid input
+      summary: Update an existing order by ID
+      tags:
+      - Orders
+      - Orders Update
+      x-openapi-router-controller: openapi_server.controllers.orders_controller
+  /users:
+    get:
+      operationId: list_users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/User'
+                type: array
+          description: An array of users
+      summary: Lists all users
+      tags:
+      - Users
+      - Users List
+      x-openapi-router-controller: openapi_server.controllers.users_list_controller
+    post:
+      operationId: create_user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+        x-body-name: user_data
+      responses:
+        "201":
+          description: User created
+      summary: Create user
+      tags:
+      - Users
+      - Users Create
+      x-openapi-router-controller: openapi_server.controllers.users_create_controller
+    put:
+      operationId: update_user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+        x-body-name: user_data
+        required: true
+      responses:
+        "200":
+          description: User updated
+        "404":
+          description: User not found
+      summary: Update a user by ID
+      tags:
+      - Users
+      - Users Update
+      x-openapi-router-controller: openapi_server.controllers.users_update_controller
+  /users/{email}:
+    get:
+      operationId: get_user_by_id
+      parameters:
+      - description: Unique ID of the user to retrieve
+        explode: false
+        in: path
+        name: email
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Details of the user
+        "404":
+          description: User not found
+      summary: Get a single user by ID
+      tags:
+      - Users
+      - Users Get
+      x-openapi-router-controller: openapi_server.controllers.users_get_controller
+components:
+  schemas:
+    User:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        email:
+          title: email
+          type: string
+        shopify_id:
+          title: shopify_id
+          type: string
+      required:
+        - email
+        - first_name
+        - last_name
+        - shopify_id
+      title: User
+      type: object
+    Event:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        event_name:
+          format: string
+          title: event_name
+          type: string
+        event_date:
+          format: date-time
+          title: event_date
+          type: string
+        user_id:
+          format: uuid
+          readOnly: true
+          title: user_id
+          type: string
+        attendees:
+          format: string
+          title: attendees
+          type: string
+      required:
+        - event_name
+        - event_date
+        - attendees
+      title: Event
+      type: object
+    OrderItem:
+      example:
+        catalog_item_id: 5
+        quantity: 5
+        price: 2.302136
+      properties:
+        catalog_item_id:
+          format: int64
+          title: catalog_item_id
+          type: integer
+        quantity:
+          format: int32
+          title: quantity
+          type: integer
+        price:
+          format: float
+          title: price
+          type: number
+      title: OrderItem
+      type: object
+    Order:
+      example:
+        order_date: 2000-01-23T04:56:07.000+00:00
+        event_id: 1
+        user_id: 6
+        received_date: 2000-01-23T04:56:07.000+00:00
+        shipped_date: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        items:
+        - catalog_item_id: 5
+          quantity: 5
+          price: 2.302136
+        - catalog_item_id: 5
+          quantity: 5
+          price: 2.302136
+      properties:
+        id:
+          format: int64
+          readOnly: true
+          title: id
+          type: integer
+        user_id:
+          format: int64
+          title: user_id
+          type: integer
+        event_id:
+          format: int64
+          title: event_id
+          type: integer
+        order_date:
+          format: date-time
+          title: order_date
+          type: string
+        shipped_date:
+          format: date-time
+          title: shipped_date
+          type: string
+        received_date:
+          format: date-time
+          title: received_date
+          type: string
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          title: items
+          type: array
+      required:
+      - event_id
+      - items
+      - order_date
+      - user_id
+      title: Order
+      type: object
+    CatalogItem:
+      example:
+        price: 6.0274563
+        name: name
+        description: description
+        id: 0
+      properties:
+        id:
+          format: int64
+          readOnly: true
+          title: id
+          type: integer
+        name:
+          title: name
+          type: string
+        description:
+          title: description
+          type: string
+        price:
+          format: float
+          title: price
+          type: number
+      required:
+      - name
+      - price
+      title: CatalogItem
+      type: object
+    AuditLog:
+      example:
+        id: 0
+      properties:
+        id:
+          title: id
+          type: integer
+      title: AuditLog
+      type: object

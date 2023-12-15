@@ -23,7 +23,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
         with:
-          context: ./server
+          context: .
           dockerfile: ./server/Dockerfile
           push: true
           tags: alitmg/tmg-apis:${{ github.sha }}

@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Define the database URL
-DATABASE_URL = 'postgresql://postgres:123456@localhost:5432/TMG'
+DATABASE_URL = "postgresql://postgres:postgres@testdb-instance.cfbqizbq9cdk.us-west-2.rds.amazonaws.com/testdb"
 
 # Create a function to establish a database session
 def get_database_session():

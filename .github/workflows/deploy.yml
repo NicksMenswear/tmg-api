@@ -34,6 +34,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             docker stop tmg-apis || true
             docker rm tmg-apis || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/tmg-apis:${{ github.sha }}

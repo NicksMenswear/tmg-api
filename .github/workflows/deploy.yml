@@ -2,7 +2,8 @@ name: Docker
 
 on:
   push:
-    branches: [ "dev" ]
+    branches:
+      - dev
 
 
 jobs:
@@ -27,7 +28,7 @@ jobs:
           tags: alitmg/tmg-apis:${{ github.sha }}
 
       - name: Deploy to EC2 instance
-        uses: NicksMenswear/tmg-api/ssh-action@dev
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}

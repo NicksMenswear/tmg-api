@@ -25,7 +25,9 @@ def get_user_by_id(email):  # noqa: E501
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'shopify_id': user.shopify_id
+            'shopify_id': user.shopify_id,
+            'temp' : user.temp,
+            'role' : user.role
         }
         return formatted_user
     except Exception as e:

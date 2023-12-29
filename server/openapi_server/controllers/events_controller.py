@@ -21,27 +21,39 @@ def create_event(event):
 
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
+                                            .where(Event.attendee == event["attendee"])
                                             .where(Event.user_id == user.id)).scalar()
 
         if existing_event:
             existing_event = db.query(Event).filter(Event.event_name == event["event_name"],
                                                     Event.event_date == event["event_date"],
+                                                    Event.attendee == event["attendee"],
                                                     Event.user_id == user.id).first()
 
-            existing_event.attendees = event["attendees"]
+            # existing_event.attendee = event["attendee"]
+            existing_event.style = event['style'],
+            existing_event.invite = event['invite'],
+            existing_event.pay = event['pay'],
+            existing_event.size = event['size'],
+            existing_event.ship = event['ship']
 
             db.commit()
             db.refresh(existing_event)
             return existing_event.to_dict()
         else:
             event_id = uuid.uuid4()
-            attendees_json = event["attendees"]
+            # attendee_json = event["attendee"]
             new_event = Event(
                 id=event_id,
                 event_name=event["event_name"],
                 event_date=event["event_date"],
                 user_id=user.id,
-                attendees=attendees_json
+                attendee=event["attendee"],
+                style = event['style'],
+                invite = event['invite'],
+                pay = event['pay'],
+                size = event['size'],
+                ship = event['ship']
             )
             db.add(new_event)
             db.commit()

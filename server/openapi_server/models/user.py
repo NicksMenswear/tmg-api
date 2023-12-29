@@ -11,7 +11,7 @@ class User(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, first_name=None, last_name=None, email=None, shopify_id=None):  # noqa: E501
+    def __init__(self, id=None, first_name=None, last_name=None, email=None, shopify_id=None, temp=None, role=None):  # noqa: E501
         """User - a model defined in OpenAPI
 
         :param id: The id of this User.  # noqa: E501
@@ -30,7 +30,9 @@ class User(Model):
             'first_name': str,
             'last_name': str,
             'email': str,
-            'shopify_id': str
+            'shopify_id': str,
+            'temp' : str,
+            'role' : str
         }
 
         self.attribute_map = {
@@ -38,7 +40,9 @@ class User(Model):
             'first_name': 'first_name',
             'last_name': 'last_name',
             'email': 'email',
-            'shopify_id': 'shopify_id'
+            'shopify_id': 'shopify_id',
+            'temp' : 'temp',
+            'role' : 'role'
         }
 
         self._id = id
@@ -46,6 +50,8 @@ class User(Model):
         self._last_name = last_name
         self._email = email
         self._shopify_id = shopify_id
+        self._temp = temp
+        self._role = role
 
     @classmethod
     def from_dict(cls, dikt) -> 'User':
@@ -159,3 +165,45 @@ class User(Model):
             raise ValueError("Invalid value for `shopify_id`, must not be `None`")  # noqa: E501
 
         self._shopify_id = shopify_id
+
+    @property
+    def temp(self):
+        """Gets the temporary of this User.
+
+        :return: The temporary of this User.
+        :rtype: str
+        """
+        return self._temp
+
+    @temp.setter
+    def temp(self, temp):
+        """Sets the temporary of this User.
+
+        :param temporary: The temporary of this User.
+        :type temporary: str
+        """
+        if temp is None:
+            raise ValueError("Invalid value for `temporary`, must not be `None`")  # noqa: E501
+
+        self._temp = temp
+
+    @property
+    def role(self):
+        """Gets the role of this User.
+
+        :return: The role of this User.
+        :rtype: str
+        """
+        return self._role
+
+    @role.setter
+    def role(self, role):
+        """Sets the role of this User.
+
+        :param role: The role of this User.
+        :type role: str
+        """
+        if role is None:
+            raise ValueError("Invalid value for `role`, must not be `None`")  # noqa: E501
+
+        self._role = role

@@ -24,7 +24,9 @@ def create_user(user_data):  # noqa: E501
             first_name=user_data['first_name'],
             last_name=user_data['last_name'],
             email=user_data['email'],
-            shopify_id=user_data['shopify_id']
+            shopify_id=user_data['shopify_id'],
+            temp = 'true',
+            role = user_data['role']
         )
         db.add(user)
         db.commit()

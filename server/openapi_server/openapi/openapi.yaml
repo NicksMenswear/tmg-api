@@ -312,6 +312,12 @@ components:
         shopify_id:
           title: shopify_id
           type: string
+        temp:
+          title: temp
+          type: string
+        role:
+          title: role
+          type: string
       required:
         - email
         - first_name
@@ -339,14 +345,34 @@ components:
           readOnly: true
           title: user_id
           type: string
-        attendees:
+        attendee:
           format: string
-          title: attendees
+          title: attendee
           type: string
+        style:
+          format: int64
+          title: style
+          type: integer
+        invite:
+          format: int64
+          title: invite
+          type: integer
+        pay:
+          format: int64
+          title: pay
+          type: integer
+        size:
+          format: int64
+          title: size
+          type: integer
+        ship:
+          format: int64
+          title: ship
+          type: integer
       required:
         - event_name
         - event_date
-        - attendees
+        - attendee
       title: Event
       type: object
     OrderItem:

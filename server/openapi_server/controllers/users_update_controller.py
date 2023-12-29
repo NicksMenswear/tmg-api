@@ -30,6 +30,8 @@ def update_user(user_data):  # noqa: E501
         user.first_name = user_data['first_name']
         user.last_name = user_data['last_name']
         user.shopify_id = user_data['shopify_id']
+        user.temp = user_data['temp']
+        user.role = user_data['role']
 
         db.commit()
         db.refresh(user)

@@ -14,6 +14,9 @@ class User(Base):
     last_name = Column(String, unique=False, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     shopify_id = Column(String, unique=True, index=True, nullable=False)
+    temp = Column(String, unique=False, index=True, nullable=False)
+    role = Column(String, unique=False, index=True, nullable=False)
+
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -22,7 +25,9 @@ class User(Base):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'shopify_id':self.shopify_id
+            'shopify_id':self.shopify_id,
+            'temp' : self.temp,
+            'role' : self.role
         }
         return result
 
@@ -33,7 +38,13 @@ class Event(Base, Model):
     event_name = Column(String, index=True, nullable=False)
     event_date = Column(DateTime, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    attendees = Column(String)
+    attendee = Column(String, unique=False, index=True, nullable=False)
+    style = Column(Integer, unique=False, index=True, nullable=False)
+    invite = Column(Integer, unique=False, index=True, nullable=False)
+    pay = Column(Integer, unique=False, index=True, nullable=False)
+    size = Column(Integer, unique=False, index=True, nullable=False)
+    ship = Column(Integer, unique=False, index=True, nullable=False)
+
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -42,7 +53,12 @@ class Event(Base, Model):
             'event_name': self.event_name,
             'event_date': str(self.event_date),
             'user_id': str(self.user_id),
-            'attendees': self.attendees
+            'attendee': self.attendee,
+            'style': self.style,
+            'invite': self.invite,
+            'pay': self.pay,
+            'size': self.size,
+            'ship': self.ship
         }
         return result
 

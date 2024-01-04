@@ -18,6 +18,9 @@ def create_user(user_data):  # noqa: E501
     """ # noqa: E501
     try:
         db = get_database_session()
+        existing_user = db.query(User).filter_by(email=user_data['email']).first()
+        if existing_user:
+            return 'user with the same email already exists!', 400
         user_id = uuid.uuid4()
         user = User(
             id=user_id,

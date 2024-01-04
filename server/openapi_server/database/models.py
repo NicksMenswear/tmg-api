@@ -76,9 +76,6 @@ class Order(Base):
     order_date = Column(DateTime, default=datetime.utcnow)
     shipped_date = Column(DateTime, nullable=True)
     received_date = Column(DateTime, nullable=True)
-    user = relationship("User")
-    event = relationship("Event")
-    items = relationship("OrderItem", back_populates="order")
 
 class OrderItem(Base):
     __tablename__ = 'order_items'
@@ -87,8 +84,6 @@ class OrderItem(Base):
     catalog_item_id = Column(Integer, ForeignKey('catalog_items.id'))
     quantity = Column(Integer)
     price = Column(Float)
-    order = relationship("Order", back_populates="items")
-    catalog_item = relationship("CatalogItem")
 
 class AuditLog(Base):
     __tablename__ = 'audit_log'

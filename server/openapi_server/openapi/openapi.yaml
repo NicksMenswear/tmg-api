@@ -63,6 +63,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CatalogItem'
         required: true
+        x-body-name: catalog_item
       responses:
         "201":
           description: Catalog item created
@@ -452,7 +453,6 @@ components:
       example:
         price: 6.0274563
         name: name
-        description: description
         id: 0
       properties:
         id:
@@ -462,9 +462,6 @@ components:
           type: integer
         name:
           title: name
-          type: string
-        description:
-          title: description
           type: string
         price:
           format: float

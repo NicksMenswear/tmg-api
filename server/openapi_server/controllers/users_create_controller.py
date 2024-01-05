@@ -10,10 +10,8 @@ from werkzeug.exceptions import HTTPException
 
 def create_user(user_data):  # noqa: E501
     """Create user
-
     :param user_data:
     :type user_data: dict | bytes
-
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """ # noqa: E501
     try:

@@ -228,7 +228,7 @@ paths:
       tags:
       - Users
       - Users List
-      x-openapi-router-controller: openapi_server.controllers.users_list_controller
+      x-openapi-router-controller: openapi_server.controllers.users_controller
     post:
       operationId: create_user
       requestBody:
@@ -245,7 +245,7 @@ paths:
       tags:
       - Users
       - Users Create
-      x-openapi-router-controller: openapi_server.controllers.users_create_controller
+      x-openapi-router-controller: openapi_server.controllers.users_controller
     put:
       operationId: update_user
       requestBody:
@@ -265,7 +265,7 @@ paths:
       tags:
       - Users
       - Users Update
-      x-openapi-router-controller: openapi_server.controllers.users_update_controller
+      x-openapi-router-controller: openapi_server.controllers.users_controller
   /users/{email}:
     get:
       operationId: get_user_by_id
@@ -291,7 +291,7 @@ paths:
       tags:
       - Users
       - Users Get
-      x-openapi-router-controller: openapi_server.controllers.users_get_controller
+      x-openapi-router-controller: openapi_server.controllers.users_controller
 components:
   schemas:
     User:

@@ -15,7 +15,7 @@ class CatalogItem(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, name=None, description=None, price=None):  # noqa: E501
+    def __init__(self, id=None, name=None, price=None):  # noqa: E501
         """CatalogItem - a model defined in OpenAPI
 
         :param id: The id of this CatalogItem.  # noqa: E501
@@ -30,20 +30,20 @@ class CatalogItem(Model):
         self.openapi_types = {
             'id': int,
             'name': str,
-            'description': str,
+            # 'description': str,
             'price': float
         }
 
         self.attribute_map = {
             'id': 'id',
             'name': 'name',
-            'description': 'description',
+            # 'description': 'description',
             'price': 'price'
         }
 
         self._id = id
         self._name = name
-        self._description = description
+        # self._description = description
         self._price = price
 
     @classmethod
@@ -101,26 +101,26 @@ class CatalogItem(Model):
 
         self._name = name
 
-    @property
-    def description(self):
-        """Gets the description of this CatalogItem.
+    # @property
+    # def description(self):
+    #     """Gets the description of this CatalogItem.
 
 
-        :return: The description of this CatalogItem.
-        :rtype: str
-        """
-        return self._description
+    #     :return: The description of this CatalogItem.
+    #     :rtype: str
+    #     """
+    #     return self._description
 
-    @description.setter
-    def description(self, description):
-        """Sets the description of this CatalogItem.
+    # @description.setter
+    # def description(self, description):
+    #     """Sets the description of this CatalogItem.
 
 
-        :param description: The description of this CatalogItem.
-        :type description: str
-        """
+    #     :param description: The description of this CatalogItem.
+    #     :type description: str
+    #     """
 
-        self._description = description
+    #     self._description = description
 
     @property
     def price(self):

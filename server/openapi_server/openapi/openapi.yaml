@@ -38,7 +38,7 @@ paths:
       summary: Lists all audit entries
       tags:
       - Audit
-      x-openapi-router-controller: openapi_server.controllers.audit_controller
+      x-openapi-router-controller: openapi_server.controllers.audit
   /catalog:
     get:
       operationId: list_catalog_items
@@ -54,7 +54,7 @@ paths:
       summary: Lists all catalog items
       tags:
       - Catalog
-      x-openapi-router-controller: openapi_server.controllers.catalog_controller
+      x-openapi-router-controller: openapi_server.controllers.catalog
     post:
       operationId: create_catalog_item
       requestBody:
@@ -70,7 +70,7 @@ paths:
       summary: Create catalog item
       tags:
       - Catalog
-      x-openapi-router-controller: openapi_server.controllers.catalog_controller
+      x-openapi-router-controller: openapi_server.controllers.catalog
   /events:
     post:
       operationId: create_event
@@ -87,7 +87,7 @@ paths:
       summary: Create event
       tags:
       - Events
-      x-openapi-router-controller: openapi_server.controllers.events_controller
+      x-openapi-router-controller: openapi_server.controllers.events
   /events/{username}:
     get:
       operationId: list_events
@@ -102,7 +102,7 @@ paths:
       responses:
         "200":
           description: Successful response
-      x-openapi-router-controller: openapi_server.controllers.events_controller
+      x-openapi-router-controller: openapi_server.controllers.events
   /orders:
     get:
       operationId: get_orders
@@ -138,7 +138,7 @@ paths:
       tags:
       - Orders
       - Orders List
-      x-openapi-router-controller: openapi_server.controllers.orders_controller
+      x-openapi-router-controller: openapi_server.controllers.orders
     post:
       operationId: create_order
       requestBody:
@@ -154,7 +154,7 @@ paths:
       tags:
       - Orders
       - Orders Create
-      x-openapi-router-controller: openapi_server.controllers.orders_controller
+      x-openapi-router-controller: openapi_server.controllers.orders
   /orders/{orderId}:
     get:
       operationId: get_order_by_id
@@ -181,7 +181,7 @@ paths:
       tags:
       - Orders
       - Orders Get
-      x-openapi-router-controller: openapi_server.controllers.orders_controller
+      x-openapi-router-controller: openapi_server.controllers.orders
     put:
       operationId: update_order
       parameters:
@@ -211,7 +211,7 @@ paths:
       tags:
       - Orders
       - Orders Update
-      x-openapi-router-controller: openapi_server.controllers.orders_controller
+      x-openapi-router-controller: openapi_server.controllers.orders
   /users:
     get:
       operationId: list_users
@@ -228,7 +228,7 @@ paths:
       tags:
       - Users
       - Users List
-      x-openapi-router-controller: openapi_server.controllers.users_controller
+      x-openapi-router-controller: openapi_server.controllers.users
     post:
       operationId: create_user
       requestBody:
@@ -245,7 +245,7 @@ paths:
       tags:
       - Users
       - Users Create
-      x-openapi-router-controller: openapi_server.controllers.users_controller
+      x-openapi-router-controller: openapi_server.controllers.users
     put:
       operationId: update_user
       requestBody:
@@ -265,7 +265,7 @@ paths:
       tags:
       - Users
       - Users Update
-      x-openapi-router-controller: openapi_server.controllers.users_controller
+      x-openapi-router-controller: openapi_server.controllers.users
   /users/{email}:
     get:
       operationId: get_user_by_id
@@ -291,7 +291,7 @@ paths:
       tags:
       - Users
       - Users Get
-      x-openapi-router-controller: openapi_server.controllers.users_controller
+      x-openapi-router-controller: openapi_server.controllers.users
 components:
   schemas:
     User:

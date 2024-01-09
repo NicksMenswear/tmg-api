@@ -5,6 +5,10 @@ provider:
   stage: dev
   region: us-west-2
   profile: tmg-dev
+  iam:
+    role:
+      name: tmg-api-${sls:stage}-role
+
 functions:
   api:
     handler: openapi_server.handler

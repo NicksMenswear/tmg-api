@@ -4,7 +4,6 @@ provider:
   runtime: python3.11
   stage: dev
   region: us-west-2
-  profile: tmg-dev
   iam:
     role:
       name: tmg-api-${sls:stage}-role

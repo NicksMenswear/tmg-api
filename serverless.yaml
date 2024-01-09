@@ -5,26 +5,38 @@ provider:
   stage: dev
   region: us-west-2
   profile: tmg-dev
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - lambda:InvokeFunction
-      Resource: "*"
 functions:
-  app:
-    handler: wsgi.handler
+  api:
+    handler: openapi_server.handler
     events:
       - http: ANY /
-      - http: 'ANY {proxy+}'
-resources:
-  Resources:
-    MyLambdaFunctionProvisionedConcurrency:
-      Type: AWS::Lambda::ProvisionedConcurrencyConfig
-      Properties:
-        FunctionName:
-          Fn::GetAtt:
-            - HelloLambdaFunction
-            - Arn
-        ProvisionedConcurrentExecutions: 10  # Adjust the concurrency as needed
+    provisionedConcurrency: 1
+    reservedConcurrency: 10
+    vpc:
+      securityGroupIds:
+        - sg-0649f5114f8fdde15
+      subnetIds:
+        - subnet-0558d5c84f76f6246
+        - subnet-081fa5d80ecd9a253
+    environment:
+      DB_HOST: tmg-api-db-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com
+      DB_PORT: 5432
+      DB_NAME: tmg_api
+      DB_USER: postgres
+      DB_PASSWORD: 05BC0E22CCA7
+
 plugins:
   - serverless-python-requirements
+  - serverless-domain-manager
+
+custom:
+  customDomain:
+    domainName: "api.dev.tmgcorp.net"
+    basePath: ''
+    certificateName: '*.dev.tmgcorp.net'
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    endpointType: REGIONAL
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false

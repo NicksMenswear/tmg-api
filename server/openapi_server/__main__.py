@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 
+import awsgi
 import connexion
 
 from openapi_server import encoder
-# from json import JSONEncoder
+from flask_cors import CORS
+#from json import JSONEncoder
 
+app = connexion.App(__name__, specification_dir='./openapi/')
+app.add_api('openapi.yaml',
+            arguments={'title': 'The Modern Groom API'},
+            pythonic_params=True)
+app.app.json_encoder = encoder.CustomJSONEncoder
+CORS(app.app)
 
-def main():
-    app = connexion.App(__name__, specification_dir='./openapi/')
-    # app.app.json_encoder = encoder.JSONEncoder
-    app.app.json_encoder = encoder.CustomJSONEncoder
-    app.add_api('openapi.yaml',
-                arguments={'title': 'The Modern Groom API'},
-                pythonic_params=True)
-
-    app.run(host="0.0.0.0",port=8080)
-
+def handler(event, context):
+    return awsgi.response(app, event, context)
 
 if __name__ == '__main__':
-    main()
+    app.run(host="0.0.0.0",port=8080)

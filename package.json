@@ -2,5 +2,8 @@
   "devDependencies": {
     "serverless-domain-manager": "^7.3.3",
     "serverless-python-requirements": "^6.0.1"
+  },
+  "dependencies": {
+    "punycode": "^2.3.1"
   }
 }

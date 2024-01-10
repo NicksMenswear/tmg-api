@@ -7,7 +7,7 @@ from openapi_server import encoder
 from flask_cors import CORS
 #from json import JSONEncoder
 
-app = connexion.App(__name__, specification_dir='./openapi/')
+app = connexion.FlaskApp(__name__, specification_dir='./openapi/')
 app.add_api('openapi.yaml',
             arguments={'title': 'The Modern Groom API'},
             pythonic_params=True)

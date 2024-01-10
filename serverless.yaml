@@ -8,6 +8,9 @@ provider:
     role:
       name: tmg-api-${sls:stage}-role
 
+package:
+  individually: true
+
 functions:
   api:
     handler: openapi_server.app.handler
@@ -32,8 +35,6 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-domain-manager
-
-
 
 custom:
   customDomain:

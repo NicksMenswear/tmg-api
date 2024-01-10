@@ -10,7 +10,8 @@ provider:
 
 functions:
   api:
-    handler: openapi_server.handler
+    handler: openapi_server.app.handler
+    module: server
     events:
       - http: ANY /
     provisionedConcurrency: 1
@@ -31,6 +32,8 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-domain-manager
+
+
 
 custom:
   customDomain:

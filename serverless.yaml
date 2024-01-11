@@ -1,15 +1,12 @@
 service: tmg-api
 provider:
   name: aws
-  runtime: python3.11
+  runtime: python3.10
   stage: dev
   region: us-west-2
   iam:
     role:
       name: tmg-api-${sls:stage}-role
-
-package:
-  individually: true
 
 functions:
   api:
@@ -19,6 +16,7 @@ functions:
       - http: ANY /{proxy+}
     provisionedConcurrency: 1
     reservedConcurrency: 10
+    timeout: 3
     vpc:
       securityGroupIds:
         - sg-0649f5114f8fdde15
@@ -47,3 +45,19 @@ custom:
     securityPolicy: tls_1_2
     apiType: rest
     autoDomain: false
+
+package:
+  individually: true
+  exclude:
+    - .serverless/**
+    - .tox/**
+    - ./**/.tox/**
+    - ./**/build/**
+    - .git/**
+    - '**/*.jar'
+    - node_modules/**
+    - venv/**
+    - doc/**
+    - "**/__pycache__/**"
+    - "**/__pycache__"
+    - ".#*"

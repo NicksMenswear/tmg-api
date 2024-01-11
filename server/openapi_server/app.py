@@ -5,11 +5,12 @@ import connexion
 import logging
 
 from openapi_server import encoder
-from flask_cors import CORS
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+root = logging.getLogger()
+if root.handlers:
+    for handler in root.handlers:
+        root.removeHandler(handler)
+logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 
 app = connexion.FlaskApp(__name__, specification_dir='./openapi/')
@@ -17,9 +18,8 @@ app.add_api('openapi.yaml',
             arguments={'title': 'The Modern Groom API'},
             pythonic_params=True)
 app.app.json_encoder = encoder.CustomJSONEncoder
-CORS(app.app)
 
-def handler(event, context):
+def lambda_handler(event, context):
     return awsgi.response(app, event, context)
 
 if __name__ == '__main__':

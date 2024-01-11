@@ -2,10 +2,15 @@
 
 import awsgi
 import connexion
+import logging
 
 from openapi_server import encoder
 from flask_cors import CORS
-#from json import JSONEncoder
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 app = connexion.FlaskApp(__name__, specification_dir='./openapi/')
 app.add_api('openapi.yaml',

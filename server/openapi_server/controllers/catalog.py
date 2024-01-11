@@ -1,8 +1,8 @@
 import connexion
 import six
 from openapi_server.models.catalog_item import CatalogItem
-from openapi_server.database.database_manager import get_database_session  # noqa: E501
 from openapi_server.database.models import CatalogItem
+from openapi_server.database.database_manager import get_database_session  # noqa: E501
 from openapi_server import util
 from werkzeug.exceptions import HTTPException
 # from fastapi import HTTPException

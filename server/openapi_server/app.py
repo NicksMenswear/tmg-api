@@ -10,7 +10,7 @@ root = logging.getLogger()
 if root.handlers:
     for handler in root.handlers:
         root.removeHandler(handler)
-logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(message)s',level=logging.DEBUG)
 
 
 app = connexion.FlaskApp(__name__, specification_dir='./openapi/')
@@ -20,7 +20,16 @@ app.add_api('openapi.yaml',
 app.app.json_encoder = encoder.CustomJSONEncoder
 
 def lambda_handler(event, context):
+    # init_db()
     return awsgi.response(app, event, context)
+
+def init_db():
+    # TODO replace with alembic migrations
+    from sqlalchemy import create_engine
+    from openapi_server.database.models import Base
+    from openapi_server.database.database_manager import DATABASE_URL
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(bind=engine, checkfirst=True) 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=8080)

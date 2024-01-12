@@ -4,14 +4,11 @@ import six
 from openapi_server import util
 
 
-def events_username_get(username):  # noqa: E501
-    """events_username_get
+def get_default():  # noqa: E501
+    """Get root
 
      # noqa: E501
 
-    :param username: 
-    :type username: str
-
-    :rtype: None
+    :rtype: Str
     """
-    return 'do some magic!'
+    return 'Hello!'

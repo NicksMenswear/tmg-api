@@ -23,6 +23,16 @@ tags:
     for compliance and monitoring.
   name: Audit
 paths:
+  /:
+    get:
+      operationId: get_default
+      responses:
+        "200":
+          description: Successful response
+      summary: TMG API
+      tags:
+      - Default
+      x-openapi-router-controller: openapi_server.controllers.default
   /audit:
     get:
       operationId: list_audit_entries
@@ -102,6 +112,9 @@ paths:
       responses:
         "200":
           description: Successful response
+      summary: Get event by username
+      tags:
+      - Events
       x-openapi-router-controller: openapi_server.controllers.events
   /orders:
     get:
@@ -137,7 +150,6 @@ paths:
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
       - Orders
-      - Orders List
       x-openapi-router-controller: openapi_server.controllers.orders
     post:
       operationId: create_order
@@ -153,7 +165,6 @@ paths:
       summary: Create order
       tags:
       - Orders
-      - Orders Create
       x-openapi-router-controller: openapi_server.controllers.orders
   /orders/{orderId}:
     get:
@@ -180,7 +191,6 @@ paths:
       summary: Retrieve a specific order by ID
       tags:
       - Orders
-      - Orders Get
       x-openapi-router-controller: openapi_server.controllers.orders
     put:
       operationId: update_order
@@ -210,7 +220,6 @@ paths:
       summary: Update an existing order by ID
       tags:
       - Orders
-      - Orders Update
       x-openapi-router-controller: openapi_server.controllers.orders
   /users:
     get:
@@ -227,7 +236,6 @@ paths:
       summary: Lists all users
       tags:
       - Users
-      - Users List
       x-openapi-router-controller: openapi_server.controllers.users
     post:
       operationId: create_user
@@ -244,7 +252,6 @@ paths:
       summary: Create user
       tags:
       - Users
-      - Users Create
       x-openapi-router-controller: openapi_server.controllers.users
     put:
       operationId: update_user
@@ -255,7 +262,6 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
         x-body-name: user_data
-        required: true
       responses:
         "200":
           description: User updated
@@ -264,7 +270,6 @@ paths:
       summary: Update a user by ID
       tags:
       - Users
-      - Users Update
       x-openapi-router-controller: openapi_server.controllers.users
   /users/{email}:
     get:
@@ -290,7 +295,6 @@ paths:
       summary: Get a single user by ID
       tags:
       - Users
-      - Users Get
       x-openapi-router-controller: openapi_server.controllers.users
 components:
   schemas:

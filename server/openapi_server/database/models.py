@@ -135,4 +135,3 @@ class OrderItem(Base):
 class AuditLog(Base):
     __tablename__ = 'audit_log'
     id = Column(Integer, primary_key=True)
-

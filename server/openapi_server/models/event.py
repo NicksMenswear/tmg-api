@@ -7,12 +7,6 @@ from openapi_server import util
 class Event(Model):
     __tablename__ = "events"
 
-    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    # event_name = Column(String, index=True, nullable=False)
-    # event_date = Column(DateTime, nullable=False)
-    # user_id = Column(String, ForeignKey('users.id'), nullable=False)
-    # attendee = Column(String)
-
     user = relationship('User', back_populates='events')
 
     def __init__(self, id=None, event_name=None, event_date=None, user_id=None, attendee=None, style=None, invite=None, pay=None, size=None, ship=None):

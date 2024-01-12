@@ -15,29 +15,29 @@ class OrderItem(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, catalog_item_id=None, quantity=None, price=None):  # noqa: E501
+    def __init__(self, product_item_id=None, quantity=None, price=None):  # noqa: E501
         """OrderItem - a model defined in OpenAPI
 
-        :param catalog_item_id: The catalog_item_id of this OrderItem.  # noqa: E501
-        :type catalog_item_id: int
+        :param product_item_id: The product_item_id of this OrderItem.  # noqa: E501
+        :type product_item_id: int
         :param quantity: The quantity of this OrderItem.  # noqa: E501
         :type quantity: int
         :param price: The price of this OrderItem.  # noqa: E501
         :type price: float
         """
         self.openapi_types = {
-            'catalog_item_id': int,
+            'product_item_id': int,
             'quantity': int,
             'price': float
         }
 
         self.attribute_map = {
-            'catalog_item_id': 'catalog_item_id',
+            'product_item_id': 'product_item_id',
             'quantity': 'quantity',
             'price': 'price'
         }
 
-        self._catalog_item_id = catalog_item_id
+        self._product_item_id = product_item_id
         self._quantity = quantity
         self._price = price
 
@@ -53,25 +53,25 @@ class OrderItem(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def catalog_item_id(self):
-        """Gets the catalog_item_id of this OrderItem.
+    def product_item_id(self):
+        """Gets the product_item_id of this OrderItem.
 
 
-        :return: The catalog_item_id of this OrderItem.
+        :return: The product_item_id of this OrderItem.
         :rtype: int
         """
-        return self._catalog_item_id
+        return self._product_item_id
 
-    @catalog_item_id.setter
-    def catalog_item_id(self, catalog_item_id):
-        """Sets the catalog_item_id of this OrderItem.
+    @product_item_id.setter
+    def product_item_id(self, product_item_id):
+        """Sets the product_item_id of this OrderItem.
 
 
-        :param catalog_item_id: The catalog_item_id of this OrderItem.
-        :type catalog_item_id: int
+        :param product_item_id: The product_item_id of this OrderItem.
+        :type product_item_id: int
         """
 
-        self._catalog_item_id = catalog_item_id
+        self._product_item_id = product_item_id
 
     @property
     def quantity(self):

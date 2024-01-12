@@ -79,4 +79,11 @@ def list_events(username):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-        # print("Exception: ",e)
+
+def update_event(event):
+    """Updating Event Details. (Currently working on this; will be completed in the next comment)"""
+    try:
+        event = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id'])
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")

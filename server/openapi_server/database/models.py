@@ -1,4 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, UUID
+# from sqlalchemy.types import List
+# from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from openapi_server.models.base_model_ import Model
@@ -49,7 +51,7 @@ class Event(Base, Model):
     def to_dict(self):
         """Convert the model instance to a dictionary."""
         result = {
-            'id': str(self.id),
+            'id': self.id,
             'event_name': self.event_name,
             'event_date': str(self.event_date),
             'user_id': str(self.user_id),
@@ -62,8 +64,8 @@ class Event(Base, Model):
         }
         return result
 
-class CatalogItem(Base):
-    __tablename__ = 'catalog_items'
+class ProductItem(Base):
+    __tablename__ = 'product_items'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     name = Column(String,unique=True, nullable=False)
     price = Column(Float,nullable=False)
@@ -71,22 +73,7 @@ class CatalogItem(Base):
     def to_dict(self):
         """Convert the model instance to a dictionary."""
         result = {
-            'id': str(self.id),
-            'name': self.name,
-            'price': self.price
-        }
-        return result
-
-class Product(Base):
-    __tablename__ = 'products'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    name = Column(String)
-    price = Column(Float)
-
-    def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
-            'id': str(self.id),
+            'id': self.id,
             'name': self.name,
             'price': self.price
         }
@@ -96,7 +83,7 @@ class Order(Base):
     __tablename__ = 'orders'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=True)
     order_date = Column(DateTime, default=datetime.utcnow)
     shipped_date = Column(DateTime, nullable=True)
     received_date = Column(DateTime, nullable=True)
@@ -106,10 +93,10 @@ class Order(Base):
         result = {
             'id': str(self.id),
             'user_id': str(self.user_id),
-            'event_id': str(self.event_date),
+            'event_id': str(self.event_id),
             'order_date': self.order_date,
             'shipped_date': self.shipped_date,
-            'received_date': self.received_date
+            'received_date': self.received_date, # assuming OrderItem has a to_dict method
         }
         return result
 
@@ -117,16 +104,16 @@ class OrderItem(Base):
     __tablename__ = 'order_items'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     order_id = Column(UUID(as_uuid=True), ForeignKey('orders.id'), nullable=False)
-    catalog_id = Column(UUID(as_uuid=True), ForeignKey('catalog_items.id'), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('product_items.id'), nullable=False)
     quantity = Column(Integer)
     price = Column(Float)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
         result = {
-            'id': str(self.id),
-            'order_id': str(self.order_id),
-            'catalog_id': str(self.catalog_id),
+            'id': self.id,
+            'order_id': self.order_id,
+            'product_id': self.product_id,
             'quantity': self.quantity,
             'price': self.price
         }

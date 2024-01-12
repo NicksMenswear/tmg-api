@@ -2,11 +2,12 @@ import connexion
 from typing import Dict
 from typing import Tuple
 from typing import Union
-from openapi_server.database.models import User
+from openapi_server.database.models import User, Event, Order, OrderItem
 from openapi_server.database.database_manager import get_database_session
 import uuid
 from werkzeug.exceptions import HTTPException
 
+db = get_database_session()
 
 def create_user(user_data):  # noqa: E501
     """Create user
@@ -17,7 +18,6 @@ def create_user(user_data):  # noqa: E501
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """ # noqa: E501
     try:
-        db = get_database_session()
         existing_user = db.query(User).filter_by(email=user_data['email']).first()
         if existing_user:
             return 'user with the same email already exists!', 400
@@ -52,7 +52,6 @@ def get_user_by_id(email):  # noqa: E501
     :rtype: User
     """
     try:
-        db = get_database_session()
         user = db.query(User).filter(User.email==email).first()
         if not user:
             raise HTTPException(status_code=404, detail=f"User with email '{email}' does not exist")
@@ -79,7 +78,6 @@ def list_users():  # noqa: E501
     :rtype: List[User]
     """
     try:
-        db = get_database_session()
         formatted_users = []
         users = db.query(User).all()
         for user in users:
@@ -112,7 +110,6 @@ def update_user(user_data):  # noqa: E501
     """
 
     try:
-        db = get_database_session()
         user = db.query(User).filter(User.email == user_data['email']).first()
 
         if not user:
@@ -131,4 +128,31 @@ def update_user(user_data):  # noqa: E501
         print(f"An error occurred: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+# def delete_user(email):  # Logic for deletion of user is implemented but need change in schema to work correctly
+#     """ Deleting user using email"""
+#     try:
+#         user = db.query(User).filter(User.email==email).first()
+#         if not user:
+#             raise HTTPException(status_code=404, detail="User not found")
+#         order = db.query(Order).filter(Order.user_id==user.id).first()
+#         if not order:
+#             raise HTTPException(status_code=404, detail="Order not found")
+#         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
+#         for order_item in order_items:
+#             db.delete(order_item)
+
+#         db.commit()
+#         db.delete(order)
+#         db.commit()
+
+#         user_events = db.query(Event).filter(Event.user_id==user.id)
+#         for user_event in user_events:
+#             db.delete(user_event)
+
+#         db.commit()
+#         db.delete(user)
+#         db.commit()
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
     

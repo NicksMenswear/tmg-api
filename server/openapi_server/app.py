@@ -12,8 +12,8 @@ if root.handlers:
         root.removeHandler(handler)
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.DEBUG)
 
-
-app = connexion.FlaskApp(__name__, specification_dir='./openapi/')
+options = {'swagger_ui_config': {'url': '/openapi.yaml'}}
+app = connexion.FlaskApp(__name__, specification_dir='./openapi/', options=options)
 app.add_api('openapi.yaml',
             arguments={'title': 'The Modern Groom API'},
             pythonic_params=True)

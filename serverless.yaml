@@ -13,6 +13,7 @@ functions:
     handler: openapi_server.app.lambda_handler
     module: server
     events:
+      - http: ANY /
       - http: ANY /{proxy+}
     provisionedConcurrency: 1
     reservedConcurrency: 10

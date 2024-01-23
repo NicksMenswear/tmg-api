@@ -23,6 +23,16 @@ tags:
     for compliance and monitoring.
   name: Audit
 paths:
+  /:
+    get:
+      operationId: get_default
+      responses:
+        "200":
+          description: Successful response
+      summary: TMG API
+      tags:
+      - Default
+      x-openapi-router-controller: openapi_server.controllers.default
   /audit:
     get:
       operationId: list_audit_entries
@@ -120,7 +130,7 @@ paths:
       responses:
         "200":
           description: Successful response
-      summary: Get event
+      summary: Get event by email
       tags:
       - Events
       - Event Get
@@ -249,7 +259,6 @@ paths:
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
       - Orders
-      - Orders List
       x-openapi-router-controller: openapi_server.controllers.orders
     post:
       operationId: create_order
@@ -266,7 +275,6 @@ paths:
       summary: Create order
       tags:
       - Orders
-      - Orders Create
       x-openapi-router-controller: openapi_server.controllers.orders
     put:
       operationId: update_order
@@ -327,7 +335,6 @@ paths:
       summary: Lists all users
       tags:
       - Users
-      - Users List
       x-openapi-router-controller: openapi_server.controllers.users
     post:
       operationId: create_user
@@ -344,7 +351,6 @@ paths:
       summary: Create user
       tags:
       - Users
-      - Users Create
       x-openapi-router-controller: openapi_server.controllers.users
     put:
       operationId: update_user
@@ -355,7 +361,6 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
         x-body-name: user_data
-        required: true
       responses:
         "200":
           description: User updated
@@ -364,7 +369,6 @@ paths:
       summary: Update a user by ID
       tags:
       - Users
-      - Users Update
       x-openapi-router-controller: openapi_server.controllers.users
     # delete:
     #   operationId: delete_user
@@ -410,7 +414,6 @@ paths:
       summary: Get a single user by ID
       tags:
       - Users
-      - Users Get
       x-openapi-router-controller: openapi_server.controllers.users
 components:
   schemas:

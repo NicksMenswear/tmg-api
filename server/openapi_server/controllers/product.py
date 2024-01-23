@@ -5,7 +5,6 @@ from openapi_server.database.database_manager import get_database_session  # noq
 from openapi_server.database.models import ProductItem
 from openapi_server import util
 from werkzeug.exceptions import HTTPException
-# from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 import uuid
 

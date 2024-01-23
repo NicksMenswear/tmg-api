@@ -14,9 +14,7 @@ db = get_database_session()
 
 def add_attendee(attendee_data):
     """Add Attendee"""
-    print("--------------------------------------------------------------In Attendee")
     try:
-        print("In Attendee")
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
         if not user:
             user_id = uuid.uuid4()
@@ -106,7 +104,6 @@ def get_attendees_by_eventid(event_id):
         attendees_detail = db.query(Attendee).filter(Attendee.event_id == event_id).all()
         if not attendees_detail:
                 raise HTTPException(status_code=404, detail="No Attendee For This Event Found")
-        # return [attendee.to_dict() for attendee in attendees_detail]
         formatted_data = []
         for attendee_detail in attendees_detail:
             attendee = db.query(User).filter(User.id==attendee_detail.attendee_id).first()

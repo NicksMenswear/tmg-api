@@ -9,7 +9,7 @@ class Event(Model):
 
     user = relationship('User', back_populates='events')
 
-    def __init__(self, id=None, event_name=None, event_date=None, user_id=None, attendee=None, style=None, invite=None, pay=None, size=None, ship=None):
+    def __init__(self, id=None, event_name=None, event_date=None, user_id=None):
         """Event - a model defined in OpenAPI
 
         :param event_name: The name of the event.
@@ -25,40 +25,21 @@ class Event(Model):
             'id': int,
             'event_name': str,
             'event_date': str,
-            'user_id': int,
-            'attendee': str,
-            'style': int,
-            'invite': int,
-            'pay': int,
-            'size': int,
-            'ship': int
+            'user_id': int
         }
 
         self.attribute_map = {
             'id': 'id',
             'event_name': 'event_name',
             'event_date': 'event_date',
-            'user_id': 'user_id',
-            'attendee': 'attendee',
-            'style' : 'style',
-            'invite' : 'invite',
-            'pay' : 'pay',
-            'size' : 'size',
-            'ship' : 'ship'
+            'user_id': 'user_id'
         }
 
-
         # super(Event, self).__init__()
-        self.event_name = event_name
-        self.event_date = event_date
-        self.user_id = user_id
-        self.attendee = attendee
-        self.style = style
-        self.invite = invite
-        self.pay = pay
-        self.size = size
-        self.ship = ship
-
+        self._id = id
+        self._event_name = event_name
+        self._event_date = event_date
+        self._user_id = user_id
 
     @classmethod
     def from_dict(cls, dikt) -> 'Event':
@@ -78,12 +59,6 @@ class Event(Model):
         result['event_name'] = self.event_name
         result['event_date'] = self.event_date
         result['user_id'] = self.user_id
-        result['attendee'] = self.attendee
-        result['style'] = self.style
-        result['invite'] = self.invite
-        result['pay'] = self.pay
-        result['size'] = self.size
-        result['ship'] = self.ship
         return result
     
     @to_dict.setter
@@ -97,18 +72,6 @@ class Event(Model):
             self.event_date = values['event_date']
         if 'user_id' in values:
             self.user_id = values['user_id']
-        if 'attendee' in values:
-            self.attendee = values['attendee']
-        if 'style' in values:
-            self.style = values['style']
-        if 'invite' in values:
-            self.invite = values['invite']
-        if 'pay' in values:
-            self.pay = values['pay']
-        if 'size' in values:
-            self.size = values['size']
-        if 'ship' in values:
-            self.ship = values['ship']
 
     @property
     def id(self) -> str:
@@ -191,128 +154,3 @@ class Event(Model):
 
         self._user_id = user_id
 
-    @property
-    def attendee(self) -> str:
-        """Gets the attendee of this Event.
-
-        :return: The attendee of this Event.
-        :rtype: str
-        """
-        return self._attendee
-
-    @attendee.setter
-    def attendee(self, attendee: str):
-        """Sets the attendee of this Event.
-
-        :param attendee: The attendee of this Event.
-        :type attendee: str
-        """
-        if attendee is None:
-            raise ValueError("Invalid value for `attendee`, must not be `None`")  # noqa: E501
-
-        self._attendee = attendee
-
-    @property
-    def style(self) -> int:
-        """Gets the style of this Event.
-
-        :return: The style of this Event.
-        :rtype: int
-        """
-        return self._style
-
-    @style.setter
-    def style(self, style: int):
-        """Sets the style of this Event.
-
-        :param style: The style of this Event.
-        :type style: int
-        """
-        if style is None:
-            raise ValueError("Invalid value for `style`, must not be `None`")  # noqa: E501
-
-        self._style = style
-
-    @property
-    def invite(self) -> int:
-        """Gets the invite of this Event.
-
-        :return: The invite of this Event.
-        :rtype: int
-        """
-        return self._invite
-
-    @invite.setter
-    def invite(self, invite: int):
-        """Sets the invite of this Event.
-
-        :param invite: The invite of this Event.
-        :type invite: int
-        """
-        if invite is None:
-            raise ValueError("Invalid value for `invite`, must not be `None`")  # noqa: E501
-
-        self._invite = invite
-    
-    @property
-    def pay(self) -> int:
-        """Gets the pay of this Event.
-
-        :return: The pay of this Event.
-        :rtype: int
-        """
-        return self._pay
-
-    @pay.setter
-    def pay(self, pay: int):
-        """Sets the pay of this Event.
-
-        :param pay: The pay of this Event.
-        :type pay: int
-        """
-        if pay is None:
-            raise ValueError("Invalid value for `pay`, must not be `None`")  # noqa: E501
-
-        self._pay = pay
-
-    @property
-    def size(self) -> int:
-        """Gets the size of this Event.
-
-        :return: The size of this Event.
-        :rtype: int
-        """
-        return self._size
-
-    @size.setter
-    def size(self, size: int):
-        """Sets the size of this Event.
-
-        :param size: The size of this Event.
-        :type size: int
-        """
-        if size is None:
-            raise ValueError("Invalid value for `size`, must not be `None`")  # noqa: E501
-
-        self._size = size
-
-    @property
-    def ship(self) -> int:
-        """Gets the ship of this Event.
-
-        :return: The ship of this Event.
-        :rtype: int
-        """
-        return self._ship
-
-    @ship.setter
-    def ship(self, ship: int):
-        """Sets the ship of this Event.
-
-        :param ship: The ship of this Event.
-        :type ship: int
-        """
-        if ship is None:
-            raise ValueError("Invalid value for `ship`, must not be `None`")  # noqa: E501
-
-        self._ship = ship

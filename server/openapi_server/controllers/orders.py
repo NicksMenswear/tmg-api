@@ -110,6 +110,7 @@ def update_order(order):  # noqa: E501
         orders.shipped_date = order['shipped_date']
         orders.received_date = order['received_date']
         db.commit()
+        return {"message": "Order details updated successfully"}, 200
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 

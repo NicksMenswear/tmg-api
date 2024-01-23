@@ -87,6 +87,24 @@ paths:
       summary: Create event
       tags:
       - Events
+      - Events Create
+      x-openapi-router-controller: openapi_server.controllers.events
+    put:
+      operationId: update_event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvent'
+        required: true
+        x-body-name: event
+      responses:
+        "201":
+          description: Event Updated Success
+      summary: Upadte event
+      tags:
+      - Events
+      - Event Update
       x-openapi-router-controller: openapi_server.controllers.events
   /events/{username}:
     get:
@@ -102,7 +120,87 @@ paths:
       responses:
         "200":
           description: Successful response
+      summary: Get event
+      tags:
+      - Events
+      - Event Get
       x-openapi-router-controller: openapi_server.controllers.events
+  /event_attendees:
+    post:
+      operationId: add_attendee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "201":
+          description: Attendee added
+      summary: Attendee added
+      tags:
+      - Attendees
+      - Attendee Addition
+      x-openapi-router-controller: openapi_server.controllers.attendees
+    put:
+      operationId: update_attendee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "201":
+          description: Attendee Updated Success
+      summary: Attendee Update
+      tags:
+      - Attendees
+      - Attendee Update
+      x-openapi-router-controller: openapi_server.controllers.attendees
+    get:
+      operationId: list_attendee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListAttendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "201":
+          description: Attendee Get Success
+      summary: Attendee event
+      tags:
+      - Attendee
+      - Attendee Get
+      x-openapi-router-controller: openapi_server.controllers.attendees
+  /event_attendees/{event_id}:
+    get:
+      operationId: get_attendees_by_eventid
+      parameters:
+      - description: Unique identifier of the event to retrieve attendees
+        explode: false
+        in: path
+        name: event_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Details of the specific event
+        "404":
+          description: Event not found
+      summary: Retrieve a specific Event Attendees by Event ID
+      tags:
+      - Attendee
+      - Attendee Get
+      x-openapi-router-controller: openapi_server.controllers.attendees
+
   /orders:
     delete:
       operationId: delete_order
@@ -170,7 +268,6 @@ paths:
       - Orders
       - Orders Create
       x-openapi-router-controller: openapi_server.controllers.orders
-
     put:
       operationId: update_order
       requestBody:
@@ -344,9 +441,6 @@ components:
           type: string
       required:
         - email
-        - first_name
-        - last_name
-        - shopify_id
       title: User
       type: object
     Event:
@@ -369,9 +463,77 @@ components:
           readOnly: true
           title: user_id
           type: string
-        attendee:
+      required:
+        - event_name
+        - event_date
+      title: Event
+      type: object
+    UpdateEvent:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        user_id:
+          format: uuid
+          readOnly: true
+          title: user_id
+          type: string
+        event_date:
+          format: date-time
+          title: event_date
+          type: string
+      required:
+        - user_id
+        - event_date
+      title: Event
+      type: object
+
+    Attendee:
+      properties:
+        email:
+          title: email
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        style:
+          title: style
+          type: integer
+        invite:
+          title: invite
+          type: integer
+        pay:
+          title: pay
+          type: integer
+        size:
+          title: size
+          type: integer
+        ship:
+          title: ship
+          type: integer
+      required:
+        - email
+        - event_id
+        - first_name
+      title: Attendee
+      type: object
+    UpdateAttendee:
+      properties:
+        event_id:
+          format: uuid
+          title: event_id
+          type: string
+        email:
           format: string
-          title: attendee
+          title: email
           type: string
         style:
           format: int64
@@ -394,11 +556,27 @@ components:
           title: ship
           type: integer
       required:
-        - event_name
-        - event_date
-        - attendee
-      title: Event
+        - event_id
+        - email
+      title: UpdateAttendee
       type: object
+
+    ListAttendee:
+      properties:
+        event_id:
+          format: uuid
+          title: event_id
+          type: string
+        email:
+          format: string
+          title: email
+          type: string
+      required:
+        - event_id
+        - email
+      title: ListAttendee
+      type: object
+    
     OrderItem:
       example:
         product_item_id: 5

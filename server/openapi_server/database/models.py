@@ -12,12 +12,12 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    first_name = Column(String, unique=False, index=True, nullable=False)
-    last_name = Column(String, unique=False, index=True, nullable=False)
+    first_name = Column(String, unique=False, index=True, nullable=True)
+    last_name = Column(String, unique=False, index=True, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    shopify_id = Column(String, unique=True, index=True, nullable=False)
-    temp = Column(String, unique=False, index=True, nullable=False)
-    role = Column(String, unique=False, index=True, nullable=False)
+    shopify_id = Column(String, unique=True, index=True, nullable=True)
+    temp = Column(String, unique=False, index=True, nullable=True)
+    role = Column(String, unique=False, index=True, nullable=True)
 
 
     def to_dict(self):
@@ -38,9 +38,25 @@ class Event(Base, Model):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     event_name = Column(String, index=True, nullable=False)
-    event_date = Column(DateTime, nullable=False)
+    event_date = Column(DateTime, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    attendee = Column(String, unique=False, index=True, nullable=False)
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'event_name': self.event_name,
+            'event_date': str(self.event_date),
+            'user_id': str(self.user_id)
+        }
+        return result
+
+class Attendee(Base, Model):
+    __tablename__ = "attendees"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=False)
     style = Column(Integer, unique=False, index=True, nullable=False)
     invite = Column(Integer, unique=False, index=True, nullable=False)
     pay = Column(Integer, unique=False, index=True, nullable=False)
@@ -52,10 +68,7 @@ class Event(Base, Model):
         """Convert the model instance to a dictionary."""
         result = {
             'id': self.id,
-            'event_name': self.event_name,
-            'event_date': str(self.event_date),
-            'user_id': str(self.user_id),
-            'attendee': self.attendee,
+            'event_id': str(self.event_id),
             'style': self.style,
             'invite': self.invite,
             'pay': self.pay,
@@ -63,7 +76,6 @@ class Event(Base, Model):
             'ship': self.ship
         }
         return result
-
 class ProductItem(Base):
     __tablename__ = 'product_items'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)

@@ -21,25 +21,11 @@ def create_event(event):
 
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
-                                            .where(Event.attendee == event["attendee"])
                                             .where(Event.user_id == user.id)).scalar()
 
         if existing_event:
-            existing_event = db.query(Event).filter(Event.event_name == event["event_name"],
-                                                    Event.event_date == event["event_date"],
-                                                    Event.attendee == event["attendee"],
-                                                    Event.user_id == user.id).first()
+            return 'event with the same detail already exists!', 400
 
-            # existing_event.attendee = event["attendee"]
-            existing_event.style = event['style'],
-            existing_event.invite = event['invite'],
-            existing_event.pay = event['pay'],
-            existing_event.size = event['size'],
-            existing_event.ship = event['ship']
-
-            db.commit()
-            db.refresh(existing_event)
-            return existing_event.to_dict()
         else:
             event_id = uuid.uuid4()
             # attendee_json = event["attendee"]
@@ -47,13 +33,7 @@ def create_event(event):
                 id=event_id,
                 event_name=event["event_name"],
                 event_date=event["event_date"],
-                user_id=user.id,
-                attendee=event["attendee"],
-                style = event['style'],
-                invite = event['invite'],
-                pay = event['pay'],
-                size = event['size'],
-                ship = event['ship']
+                user_id=user.id
             )
             db.add(new_event)
             db.commit()
@@ -79,4 +59,15 @@ def list_events(username):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-        # print("Exception: ",e)
+
+def update_event(event):
+    """Updating Event Details. (Currently working on this; will be completed in the next comment)"""
+    try:
+        event_detail = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id']).first()
+        if not event_detail:
+            raise HTTPException(status_code=404, detail="Event not found")
+        event_detail.event_date = event['event_date']
+        db.commit()
+        return {"message": "Event details updated successfully"}, 200
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")

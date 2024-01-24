@@ -26,11 +26,11 @@ class TestOrdersUpdateController(BaseTestCase):
   "shipped_date" : "2000-01-23T04:56:07.000+00:00",
   "id" : 0,
   "items" : [ {
-    "catalog_item_id" : 5,
+    "product_item_id" : 5,
     "quantity" : 5,
     "price" : 2.302136
   }, {
-    "catalog_item_id" : 5,
+    "product_item_id" : 5,
     "quantity" : 5,
     "price" : 2.302136
   } ]

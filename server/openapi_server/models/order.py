@@ -17,7 +17,7 @@ class Order(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, user_id=None, event_id=None, order_date=None, shipped_date=None, received_date=None, items=None):  # noqa: E501
+    def __init__(self, id=None, user_id=None, event_id=None, order_date=None, shipped_date=None, received_date=None):  # noqa: E501
         """Order - a model defined in OpenAPI
 
         :param id: The id of this Order.  # noqa: E501
@@ -41,8 +41,8 @@ class Order(Model):
             'event_id': int,
             'order_date': datetime,
             'shipped_date': datetime,
-            'received_date': datetime,
-            'items': List[OrderItem]
+            'received_date': datetime
+            # 'items': List[OrderItem]
         }
 
         self.attribute_map = {
@@ -51,8 +51,8 @@ class Order(Model):
             'event_id': 'event_id',
             'order_date': 'order_date',
             'shipped_date': 'shipped_date',
-            'received_date': 'received_date',
-            'items': 'items'
+            'received_date': 'received_date'
+            # 'items': 'items'
         }
 
         self._id = id
@@ -61,7 +61,7 @@ class Order(Model):
         self._order_date = order_date
         self._shipped_date = shipped_date
         self._received_date = received_date
-        self._items = items
+        # self._items = items
 
     @classmethod
     def from_dict(cls, dikt) -> 'Order':
@@ -73,6 +73,35 @@ class Order(Model):
         :rtype: Order
         """
         return util.deserialize_model(dikt, cls)
+    
+
+    @property
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = self.openapi_types.copy()
+        result['id'] = self.id
+        result['user_id'] = self.user_id
+        result['event_id'] = self.event_id
+        result['order_date'] = self.order_date
+        result['shipped_date'] = self.shipped_date
+        result['received_date'] = self.received_date
+        return result
+    
+    @to_dict.setter
+    def to_dict(self, values):
+        """Set attributes based on a dictionary."""
+        if 'id' in values:
+            self.id = values['id']
+        if 'user_id' in values:
+            self.user_id = values['user_id']
+        if 'event_id' in values:
+            self.event_id = values['event_id']
+        if 'order_date' in values:
+            self.order_date = values['order_date']
+        if 'shipped_date' in values:
+            self.shipped_date = values['shipped_date']
+        if 'received_date' in values:
+            self.received_date = values['received_date']
 
     @property
     def id(self):
@@ -206,25 +235,25 @@ class Order(Model):
 
         self._received_date = received_date
 
-    @property
-    def items(self):
-        """Gets the items of this Order.
+    # @property
+    # def items(self):
+    #     """Gets the items of this Order.
 
 
-        :return: The items of this Order.
-        :rtype: List[OrderItem]
-        """
-        return self._items
+    #     :return: The items of this Order.
+    #     :rtype: List[OrderItem]
+    #     """
+    #     return self._items
 
-    @items.setter
-    def items(self, items):
-        """Sets the items of this Order.
+    # @items.setter
+    # def items(self, items):
+    #     """Sets the items of this Order.
 
 
-        :param items: The items of this Order.
-        :type items: List[OrderItem]
-        """
-        if items is None:
-            raise ValueError("Invalid value for `items`, must not be `None`")  # noqa: E501
+    #     :param items: The items of this Order.
+    #     :type items: List[OrderItem]
+    #     """
+    #     if items is None:
+    #         raise ValueError("Invalid value for `items`, must not be `None`")  # noqa: E501
 
-        self._items = items
+    #     self._items = items

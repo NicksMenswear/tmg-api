@@ -50,6 +50,25 @@ class Event(Base, Model):
             'user_id': str(self.user_id)
         }
         return result
+    
+class VirtualCart(Base, Model):
+    __tablename__ = "virtual_cart"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)  # must    
+    attendee_id  # nullable 
+    event_id # nullable 
+    list_virtual_cart_positions # empty list default
+
+
+class VirtualCartPosition(Base, Model):
+    __tablename__ = "virtual_cart"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    product_id
+    quantity
+    price
+
 
 class Attendee(Base, Model):
     __tablename__ = "attendees"
@@ -108,6 +127,8 @@ class Order(Base):
             'event_id': str(self.event_id),
             'order_date': self.order_date,
             'shipped_date': self.shipped_date,
+            'outbound_tracking': self.outbound_tracking,
+            'return_tracking': self.return_tracking,
             'received_date': self.received_date, # assuming OrderItem has a to_dict method
         }
         return result

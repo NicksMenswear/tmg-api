@@ -404,85 +404,85 @@ paths:
       tags:
         - Users
       x-openapi-router-controller: openapi_server.controllers.users
-    /virtualcart/query:
-      # get by cart id, user id, or atendee id, event id
-    /virtualcart/{virtualcart_id}:
-      get:
-        operationId: get_virtualcart_by_id
-        parameters:
-        - description: Unique ID of the virtualcart to retrieve
-          explode: false
-          in: path
-          name: virtualcart_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        responses:
-          "200":
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/VirtualCart'
-            description: Details of the virtualcart
-          "404":
-            description: VirtualCart not found
-        summary: Get a single virtualcart by ID
-        tags:
-        - VirtualCart
-        x-openapi-router-controller: openapi_server.controllers.virtualcart
-    /virutalcart:
-      post:
-        operationId: create_cart
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-          required: true
-          x-body-name: cart
-        responses:
-          "201":
-            description: Cart created
-        summary: Create cart
-        tags:
-        - Cart
-        x-openapi-router-controller: openapi_server.controllers.cart
-      put:
-        operationId: update_cart
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-          required: true
-          x-body-name: cart
-        responses:
-          "200":
-            description: Cart updated
-          "404":
-            description: Cart not found
-        summary: Update a cart by ID
-        tags:
-        - Cart
-        x-openapi-router-controller: openapi_server.controllers.cart
-    /shiphero:  # add example payload
-      post:
-        operationId: shiphero_tracking
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Shipping'
-          required: true
-          x-body-name: shipping
-        responses:
-          "201":
-            description: Shipping created
-        summary: 
-        tags:
-        - Shipping
-        x-openapi-router-controller: openapi_server.controllers.shipping
+    # /virtualcart/query:
+    #   # get by cart id, user id, or atendee id, event id
+    # /virtualcart/{virtualcart_id}:
+    #   get:
+    #     operationId: get_virtualcart_by_id
+    #     parameters:
+    #     - description: Unique ID of the virtualcart to retrieve
+    #       explode: false
+    #       in: path
+    #       name: virtualcart_id
+    #       required: true
+    #       schema:
+    #         type: string
+    #       style: simple
+    #     responses:
+    #       "200":
+    #         content:
+    #           application/json:
+    #             schema:
+    #               $ref: '#/components/schemas/VirtualCart'
+    #         description: Details of the virtualcart
+    #       "404":
+    #         description: VirtualCart not found
+    #     summary: Get a single virtualcart by ID
+    #     tags:
+    #     - VirtualCart
+    #     x-openapi-router-controller: openapi_server.controllers.virtualcart
+    # /virutalcart:
+    #   post:
+    #     operationId: create_cart
+    #     requestBody:
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Cart'
+    #       required: true
+    #       x-body-name: cart
+    #     responses:
+    #       "201":
+    #         description: Cart created
+    #     summary: Create cart
+    #     tags:
+    #     - Cart
+    #     x-openapi-router-controller: openapi_server.controllers.cart
+    #   put:
+    #     operationId: update_cart
+    #     requestBody:
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Cart'
+    #       required: true
+    #       x-body-name: cart
+    #     responses:
+    #       "200":
+    #         description: Cart updated
+    #       "404":
+    #         description: Cart not found
+    #     summary: Update a cart by ID
+    #     tags:
+    #     - Cart
+    #     x-openapi-router-controller: openapi_server.controllers.cart
+  /shiphero:  # add example payload
+    post:
+      operationId: shiphero_tracking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shiphero'
+        required: true
+        x-body-name: shipping
+      responses:
+        "201":
+          description: Shipping saved
+      summary: Save tracking information
+      tags:
+      - Shipping
+      x-openapi-router-controller: openapi_server.controllers.shipping
 components:
   schemas:
     User:

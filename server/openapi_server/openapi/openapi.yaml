@@ -1,27 +1,33 @@
 openapi: 3.0.3
 info:
-  description: API for The Modern Groom, providing a platform to manage users, events,
+  description:
+    API for The Modern Groom, providing a platform to manage users, events,
     and orders for a modern event planning experience.
   title: The Modern Groom API
   version: 1.0.0
 servers:
-- url: /
+  - url: /
 tags:
-- description: Operations related to user accounts, including registration, profile
-    management, and user-specific queries.
-  name: Users
-- description: All event-related actions such as creating, updating, listing, and
-    managing event details.
-  name: Events
-- description: Manages customer orders including order creation, retrieval, updating,
-    and tracking.
-  name: Orders
-- description: Handles product items, encompassing product listings, item details,
-    and product management operations.
-  name: Product
-- description: Provides access to audit logs, tracking changes made within the system
-    for compliance and monitoring.
-  name: Audit
+  - description:
+      Operations related to user accounts, including registration, profile
+      management, and user-specific queries.
+    name: Users
+  - description:
+      All event-related actions such as creating, updating, listing, and
+      managing event details.
+    name: Events
+  - description:
+      Manages customer orders including order creation, retrieval, updating,
+      and tracking.
+    name: Orders
+  - description:
+      Handles product items, encompassing product listings, item details,
+      and product management operations.
+    name: Product
+  - description:
+      Provides access to audit logs, tracking changes made within the system
+      for compliance and monitoring.
+    name: Audit
 paths:
   /:
     get:
@@ -31,7 +37,7 @@ paths:
           description: Successful response
       summary: TMG API
       tags:
-      - Default
+        - Default
       x-openapi-router-controller: openapi_server.controllers.default
   /audit:
     get:
@@ -42,12 +48,12 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/AuditLog'
+                  $ref: "#/components/schemas/AuditLog"
                 type: array
           description: An array of audit log entries
       summary: Lists all audit entries
       tags:
-      - Audit
+        - Audit
       x-openapi-router-controller: openapi_server.controllers.audit
   /products:
     get:
@@ -58,12 +64,12 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ProductItem'
+                  $ref: "#/components/schemas/ProductItem"
                 type: array
           description: An array of product items
       summary: Lists all product items
       tags:
-      - Product
+        - Product
       x-openapi-router-controller: openapi_server.controllers.product
     post:
       operationId: create_product_item
@@ -71,7 +77,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductItem'
+              $ref: "#/components/schemas/ProductItem"
         required: true
         x-body-name: product_item
       responses:
@@ -79,7 +85,7 @@ paths:
           description: Product item created
       summary: Create product item
       tags:
-      - Product
+        - Product
       x-openapi-router-controller: openapi_server.controllers.product
   /events:
     post:
@@ -88,7 +94,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Event'
+              $ref: "#/components/schemas/Event"
         required: true
         x-body-name: event
       responses:
@@ -96,7 +102,7 @@ paths:
           description: Event created
       summary: Create event
       tags:
-      - Events
+        - Events
       x-openapi-router-controller: openapi_server.controllers.events
     put:
       operationId: update_event
@@ -104,7 +110,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateEvent'
+              $ref: "#/components/schemas/UpdateEvent"
         required: true
         x-body-name: event
       responses:
@@ -112,25 +118,25 @@ paths:
           description: Event Updated Success
       summary: Upadte event
       tags:
-      - Events
+        - Events
       x-openapi-router-controller: openapi_server.controllers.events
   /events/{username}:
     get:
       operationId: list_events
       parameters:
-      - explode: false
-        in: path
-        name: username
-        required: true
-        schema:
-          type: string
-        style: simple
+        - explode: false
+          in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: Successful response
       summary: Get event by email
       tags:
-      - Events
+        - Events
       x-openapi-router-controller: openapi_server.controllers.events
   /event_attendees:
     post:
@@ -139,7 +145,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Attendee'
+              $ref: "#/components/schemas/Attendee"
         required: true
         x-body-name: attendee_data
       responses:
@@ -147,7 +153,7 @@ paths:
           description: Attendee added
       summary: Attendee added
       tags:
-      - Attendees
+        - Attendees
       x-openapi-router-controller: openapi_server.controllers.attendees
     put:
       operationId: update_attendee
@@ -155,7 +161,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateAttendee'
+              $ref: "#/components/schemas/UpdateAttendee"
         required: true
         x-body-name: attendee_data
       responses:
@@ -163,7 +169,7 @@ paths:
           description: Attendee Updated Success
       summary: Attendee Update
       tags:
-      - Attendees
+        - Attendees
       x-openapi-router-controller: openapi_server.controllers.attendees
     get:
       operationId: list_attendee
@@ -171,7 +177,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ListAttendee'
+              $ref: "#/components/schemas/ListAttendee"
         required: true
         x-body-name: attendee_data
       responses:
@@ -179,21 +185,21 @@ paths:
           description: Attendee Get Success
       summary: Attendee event
       tags:
-      - Attendee
+        - Attendee
       x-openapi-router-controller: openapi_server.controllers.attendees
   /event_attendees/{event_id}:
     get:
       operationId: get_attendees_by_eventid
       parameters:
-      - description: Unique identifier of the event to retrieve attendees
-        explode: false
-        in: path
-        name: event_id
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
+        - description: Unique identifier of the event to retrieve attendees
+          explode: false
+          in: path
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
       responses:
         "200":
           description: Details of the specific event
@@ -201,20 +207,20 @@ paths:
           description: Event not found
       summary: Retrieve a specific Event Attendees by Event ID
       tags:
-      - Attendee
+        - Attendee
       x-openapi-router-controller: openapi_server.controllers.attendees
 
   /orders:
     delete:
       operationId: delete_order
       parameters:
-      - name: order_id
-        in: query
-        description: Unique identifier of the order to delete
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: order_id
+          in: query
+          description: Unique identifier of the order to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         "204":
           description: Order deleted successfully
@@ -222,35 +228,35 @@ paths:
           description: Order not found
       summary: Delete order by ID
       tags:
-      - Orders
+        - Orders
       x-openapi-router-controller: openapi_server.controllers.orders
     get:
       operationId: get_orders
       parameters:
-      - description: Optional user ID to filter orders
-        explode: true
-        in: query
-        name: user_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
-      - description: Optional event ID to filter orders
-        explode: true
-        in: query
-        name: event_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
+        - description: Optional user ID to filter orders
+          explode: true
+          in: query
+          name: user_id
+          required: false
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - description: Optional event ID to filter orders
+          explode: true
+          in: query
+          name: event_id
+          required: false
+          schema:
+            format: uuid
+            type: string
+          style: form
       responses:
         "200":
           description: Retrieve all orders by user ID or event ID
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
-      - Orders
+        - Orders
       x-openapi-router-controller: openapi_server.controllers.orders
     post:
       operationId: create_order
@@ -258,7 +264,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Order'
+              $ref: "#/components/schemas/Order"
         required: true
         x-body-name: order
       responses:
@@ -266,7 +272,7 @@ paths:
           description: Order created
       summary: Create order
       tags:
-      - Orders
+        - Orders
       x-openapi-router-controller: openapi_server.controllers.orders
     put:
       operationId: update_order
@@ -274,7 +280,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateOrder'
+              $ref: "#/components/schemas/UpdateOrder"
         required: true
         x-body-name: order
       responses:
@@ -292,15 +298,15 @@ paths:
     get:
       operationId: get_order_by_id
       parameters:
-      - description: Unique identifier of the order to retrieve
-        explode: false
-        in: path
-        name: order_id
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
+        - description: Unique identifier of the order to retrieve
+          explode: false
+          in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
       responses:
         "200":
           description: Details of the specific order
@@ -308,7 +314,7 @@ paths:
           description: Order not found
       summary: Retrieve a specific order by ID
       tags:
-      - Orders
+        - Orders
       x-openapi-router-controller: openapi_server.controllers.orders
   /users:
     get:
@@ -319,12 +325,12 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: "#/components/schemas/User"
                 type: array
           description: An array of users
       summary: Lists all users
       tags:
-      - Users
+        - Users
       x-openapi-router-controller: openapi_server.controllers.users
     post:
       operationId: create_user
@@ -332,7 +338,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
         required: true
         x-body-name: user_data
       responses:
@@ -340,7 +346,7 @@ paths:
           description: User created
       summary: Create user
       tags:
-      - Users
+        - Users
       x-openapi-router-controller: openapi_server.controllers.users
     put:
       operationId: update_user
@@ -348,7 +354,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
         required: true
         x-body-name: user_data
       responses:
@@ -358,7 +364,7 @@ paths:
           description: User not found
       summary: Update a user by ID
       tags:
-      - Users
+        - Users
       x-openapi-router-controller: openapi_server.controllers.users
     # delete:
     #   operationId: delete_user
@@ -384,26 +390,26 @@ paths:
     get:
       operationId: get_user_by_id
       parameters:
-      - description: Unique ID of the user to retrieve
-        explode: false
-        in: path
-        name: email
-        required: true
-        schema:
-          type: string
-        style: simple
+        - description: Unique ID of the user to retrieve
+          explode: false
+          in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
           description: Details of the user
         "404":
           description: User not found
       summary: Get a single user by ID
       tags:
-      - Users
+        - Users
       x-openapi-router-controller: openapi_server.controllers.users
 components:
   schemas:
@@ -569,7 +575,7 @@ components:
         - email
       title: ListAttendee
       type: object
-    
+
     OrderItem:
       example:
         product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
@@ -599,12 +605,12 @@ components:
         shipped_date: 2000-01-23T04:56:07.000+00:00
         id: 0
         items:
-        - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-          quantity: 5
-          price: 2.302136
-        - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-          quantity: 5
-          price: 2.302136
+          - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
+            quantity: 5
+            price: 2.302136
+          - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
+            quantity: 5
+            price: 2.302136
       properties:
         id:
           format: uuid
@@ -633,11 +639,11 @@ components:
           type: string
         items:
           items:
-            $ref: '#/components/schemas/OrderItem'
+            $ref: "#/components/schemas/OrderItem"
           title: items
           type: array
       required:
-      - items
+        - items
       title: Order
       type: object
     UpdateOrder:
@@ -679,8 +685,8 @@ components:
           title: price
           type: number
       required:
-      - name
-      - price
+        - name
+        - price
       title: ProductItem
       type: object
     AuditLog:

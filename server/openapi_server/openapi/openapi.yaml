@@ -97,7 +97,6 @@ paths:
       summary: Create event
       tags:
       - Events
-      - Events Create
       x-openapi-router-controller: openapi_server.controllers.events
     put:
       operationId: update_event
@@ -114,7 +113,6 @@ paths:
       summary: Upadte event
       tags:
       - Events
-      - Event Update
       x-openapi-router-controller: openapi_server.controllers.events
   /events/{username}:
     get:
@@ -151,7 +149,6 @@ paths:
       summary: Attendee added
       tags:
       - Attendees
-      - Attendee Addition
       x-openapi-router-controller: openapi_server.controllers.attendees
     put:
       operationId: update_attendee
@@ -168,7 +165,6 @@ paths:
       summary: Attendee Update
       tags:
       - Attendees
-      - Attendee Update
       x-openapi-router-controller: openapi_server.controllers.attendees
     get:
       operationId: list_attendee
@@ -185,7 +181,6 @@ paths:
       summary: Attendee event
       tags:
       - Attendee
-      - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
   /event_attendees/{event_id}:
     get:
@@ -208,7 +203,6 @@ paths:
       summary: Retrieve a specific Event Attendees by Event ID
       tags:
       - Attendee
-      - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
 
   /orders:
@@ -230,7 +224,6 @@ paths:
       summary: Delete order by ID
       tags:
       - Orders
-      - Orders Delete
       x-openapi-router-controller: openapi_server.controllers.orders
     get:
       operationId: get_orders
@@ -295,7 +288,6 @@ paths:
       summary: Update an existing order by ID
       tags:
         - Orders
-        - Orders Update
       x-openapi-router-controller: openapi_server.controllers.orders
   /orders/{order_id}:
     get:
@@ -318,7 +310,6 @@ paths:
       summary: Retrieve a specific order by ID
       tags:
       - Orders
-      - Orders Get
       x-openapi-router-controller: openapi_server.controllers.orders
   /users:
     get:
@@ -388,7 +379,6 @@ paths:
     #   summary: Delete order by ID
     #   tags:
     #   - Users
-    #   - Users Delete
     #   x-openapi-router-controller: openapi_server.controllers.users
   /users/{email}:
     get:

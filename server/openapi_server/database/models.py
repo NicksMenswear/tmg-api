@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, UUID
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, UUID, Boolean
 # from sqlalchemy.types import List
 # from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
@@ -16,7 +16,7 @@ class User(Base):
     last_name = Column(String, unique=False, index=True, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
     shopify_id = Column(String, unique=True, index=True, nullable=True)
-    temp = Column(String, unique=False, index=True, nullable=True)
+    account_status = Column(Boolean, unique=False, index=True, nullable=True)
     role = Column(String, unique=False, index=True, nullable=True)
 
 
@@ -27,8 +27,8 @@ class User(Base):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'shopify_id':self.shopify_id,
-            'temp' : self.temp,
+            'shopify_id':str(self.shopify_id),
+            'account_status' : self.account_status,
             'role' : self.role
         }
         return result

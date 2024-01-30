@@ -4,6 +4,7 @@ from typing import Tuple
 from typing import Union
 from openapi_server.database.models import User, Event, Order, OrderItem
 from openapi_server.database.database_manager import get_database_session
+from .shopify import create_customer
 import uuid
 from werkzeug.exceptions import HTTPException
 
@@ -21,6 +22,7 @@ def create_user(user_data):  # noqa: E501
         existing_user = db.query(User).filter_by(email=user_data['email']).first()
         if existing_user:
             return 'user with the same email already exists!', 400
+        
         user_id = uuid.uuid4()
         user = User(
             id=user_id,
@@ -28,12 +30,21 @@ def create_user(user_data):  # noqa: E501
             last_name=user_data['last_name'],
             email=user_data['email'],
             shopify_id=user_data['shopify_id'],
-            temp = 'true',
+            account_status = user_data['account_status'],
             role = user_data['role']
         )
         db.add(user)
         db.commit()
         db.refresh(user)
+
+        print('----------------------------- Calling Shopify function')
+        create_customer({
+            'first_name' : user_data['first_name'],
+            'last_name' : user_data['last_name'],
+            'email' : user_data['email'],
+        })
+        print(('---------------------------  Back from shopify function'))
+        
         return 'User created successfully!', 201
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -61,7 +72,7 @@ def get_user_by_id(email):  # noqa: E501
             'last_name': user.last_name,
             'email': user.email,
             'shopify_id': user.shopify_id,
-            'temp' : user.temp,
+            'account_status' : user.account_status,
             'role' : user.role
         }
         return formatted_user
@@ -87,7 +98,7 @@ def list_users():  # noqa: E501
                 'last_name': user.last_name,
                 'email': user.email,
                 'shopify_id': user.shopify_id,
-                'temp' : user.temp,
+                'account_status' : user.account_status,
                 'role' : user.role
             }
             formatted_users.append(formatted_user)
@@ -118,7 +129,7 @@ def update_user(user_data):  # noqa: E501
         user.first_name = user_data['first_name']
         user.last_name = user_data['last_name']
         user.shopify_id = user_data['shopify_id']
-        user.temp = user_data['temp']
+        user.account_status = user_data['account_status']
         user.role = user_data['role']
 
         db.commit()

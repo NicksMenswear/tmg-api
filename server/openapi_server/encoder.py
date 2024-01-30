@@ -1,7 +1,8 @@
-import six
-from json.encoder import JSONEncoder
+from json import JSONEncoder
 from openapi_server.models.base_model_ import Model
-
+import six
+from datetime import datetime
+from uuid import UUID
 
 class CustomJSONEncoder(JSONEncoder):
     include_nulls = False
@@ -16,5 +17,8 @@ class CustomJSONEncoder(JSONEncoder):
                 attr = o.attribute_map[attr]
                 dikt[attr] = value
             return dikt
+        elif isinstance(o, UUID):
+            return str(o)  # Convert UUID to string for serialization
+        elif isinstance(o, datetime):
+            return o.isoformat()  # Convert datetime to ISO 8601 format
         return super(CustomJSONEncoder, self).default(o)
-

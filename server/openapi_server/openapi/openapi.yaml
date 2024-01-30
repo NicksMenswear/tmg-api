@@ -142,7 +142,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Attendee'
+              items:
+                $ref: '#/components/schemas/Attendee'
         required: true
         x-body-name: attendee_data
       responses:
@@ -159,7 +160,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateAttendee'
+              items:
+                $ref: '#/components/schemas/UpdateAttendee'
         required: true
         x-body-name: attendee_data
       responses:
@@ -172,20 +174,24 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.attendees
     get:
       operationId: list_attendee
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ListAttendee'
-        required: true
-        x-body-name: attendee_data
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: event_id
+          schema:
+            type: string
+          required: true
       responses:
-        "201":
+        "200":
           description: Attendee Get Success
-      summary: Attendee event
+      summary: Attendee Get
       tags:
-      - Attendee
-      - Attendee Get
+        - Attendees
+        - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
   /event_attendees/{event_id}:
     get:
@@ -370,6 +376,18 @@ paths:
       tags:
       - Users
       x-openapi-router-controller: openapi_server.controllers.users
+  /shopify_customer:
+    get:
+      operationId: list_customer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+      summary: List Shopify customer
+      tags:
+        - Shopify
+      x-openapi-router-controller: openapi_server.controllers.shopify
     # delete:
     #   operationId: delete_user
     #   parameters:
@@ -436,9 +454,9 @@ components:
         shopify_id:
           title: shopify_id
           type: string
-        temp:
-          title: temp
-          type: string
+        account_status:
+          title: account_status
+          type: boolean
         role:
           title: role
           type: string

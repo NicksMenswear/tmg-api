@@ -405,85 +405,6 @@ paths:
       tags:
       - Users
       x-openapi-router-controller: openapi_server.controllers.users
-    /virtualcart/query:
-      # get by cart id, user id, or atendee id, event id
-    /virtualcart/{virtualcart_id}:
-      get:
-        operationId: get_virtualcart_by_id
-        parameters:
-        - description: Unique ID of the virtualcart to retrieve
-          explode: false
-          in: path
-          name: virtualcart_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        responses:
-          "200":
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/VirtualCart'
-            description: Details of the virtualcart
-          "404":
-            description: VirtualCart not found
-        summary: Get a single virtualcart by ID
-        tags:
-        - VirtualCart
-        x-openapi-router-controller: openapi_server.controllers.virtualcart
-    /virutalcart:
-      post:
-        operationId: create_cart
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-          required: true
-          x-body-name: cart
-        responses:
-          "201":
-            description: Cart created
-        summary: Create cart
-        tags:
-        - Cart
-        x-openapi-router-controller: openapi_server.controllers.cart
-      put:
-        operationId: update_cart
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-          required: true
-          x-body-name: cart
-        responses:
-          "200":
-            description: Cart updated
-          "404":
-            description: Cart not found
-        summary: Update a cart by ID
-        tags:
-        - Cart
-        x-openapi-router-controller: openapi_server.controllers.cart
-    /shiphero:  # add example payload
-      post:
-        operationId: shiphero_tracking
-        requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Shipping'
-          required: true
-          x-body-name: shipping
-        responses:
-          "201":
-            description: Shipping created
-        summary: 
-        tags:
-        - Shipping
-        x-openapi-router-controller: openapi_server.controllers.shipping
 components:
   schemas:
     User:
@@ -672,8 +593,8 @@ components:
     Order:
       example:
         order_date: 2000-01-23T04:56:07.000+00:00
-        event_id: 1
-        user_id: 6
+        event_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
+        user_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
         received_date: 2000-01-23T04:56:07.000+00:00
         shipped_date: 2000-01-23T04:56:07.000+00:00
         id: 0

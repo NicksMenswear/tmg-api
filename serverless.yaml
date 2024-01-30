@@ -8,7 +8,9 @@ provider:
     role:
       name: tmg-api-${sls:stage}-role
   logs:
-    restApi: true
+    restApi:
+      accessLogging: true
+      format: '$context.requestTime "$context.httpMethod $context.path $context.protocol" $context.status $context.identity.sourceIp $context.requestId'
 
 functions:
   api:

@@ -173,13 +173,6 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.attendees
     get:
       operationId: list_attendee
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ListAttendee"
-        required: true
-        x-body-name: attendee_data
       responses:
         "201":
           description: Attendee Get Success

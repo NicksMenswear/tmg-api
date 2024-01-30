@@ -596,7 +596,7 @@ components:
         user_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
         received_date: 2000-01-23T04:56:07.000+00:00
         shipped_date: 2000-01-23T04:56:07.000+00:00
-        id: 0
+        id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
         items:
           - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
             quantity: 5
@@ -641,7 +641,7 @@ components:
       type: object
     UpdateOrder:
       example:
-        id: 0
+        id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
         shipped_date: "2000-01-23T04:56:07.000+00:00"
         received_date: "2000-01-23T04:56:07.000+00:00"
       properties:
@@ -663,7 +663,7 @@ components:
       example:
         price: 6.0274563
         name: name
-        id: 0
+        id: 1
       properties:
         id:
           format: int64
@@ -684,7 +684,7 @@ components:
       type: object
     AuditLog:
       example:
-        id: 0
+        id: 1
       properties:
         id:
           title: id

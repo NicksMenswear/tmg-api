@@ -1,6 +1,5 @@
-import six
 from json.encoder import JSONEncoder
-from openapi_server.models.base_model_ import Model
+from models.base_model_ import Model
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -9,7 +8,7 @@ class CustomJSONEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, Model):
             dikt = {}
-            for attr, _ in six.iteritems(o.openapi_types):
+            for attr, _ in o.openapi_types.items():
                 value = getattr(o, attr)
                 if value is None and not self.include_nulls:
                     continue

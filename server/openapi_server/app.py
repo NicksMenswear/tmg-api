@@ -4,7 +4,7 @@ import awsgi
 import connexion
 import logging
 
-from openapi_server import encoder
+import encoder
 
 root = logging.getLogger()
 if root.handlers:
@@ -26,8 +26,8 @@ def lambda_handler(event, context):
 def init_db():
     # TODO replace with alembic migrations
     from sqlalchemy import create_engine
-    from openapi_server.database.models import Base
-    from openapi_server.database.database_manager import DATABASE_URL
+    from database.models import Base
+    from database.database_manager import DATABASE_URL
     engine = create_engine(DATABASE_URL, echo=True)
     Base.metadata.create_all(bind=engine, checkfirst=True) 
 

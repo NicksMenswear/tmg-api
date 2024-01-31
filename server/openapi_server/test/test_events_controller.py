@@ -6,8 +6,8 @@ import unittest
 from flask import json
 from six import BytesIO
 
-from openapi_server.models.event import Event  # noqa: E501
-from openapi_server.test import BaseTestCase
+from models.event import Event  # noqa: E501
+from test import BaseTestCase
 
 
 class TestEventsController(BaseTestCase):

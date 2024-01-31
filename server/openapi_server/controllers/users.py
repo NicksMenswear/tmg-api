@@ -2,8 +2,8 @@ import connexion
 from typing import Dict
 from typing import Tuple
 from typing import Union
-from openapi_server.database.models import User, Event, Order, OrderItem
-from openapi_server.database.database_manager import get_database_session
+from database.models import User, Event, Order, OrderItem
+from database.database_manager import get_database_session
 import uuid
 from werkzeug.exceptions import HTTPException
 

@@ -1,8 +1,8 @@
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey,UUID 
 from sqlalchemy.orm import relationship
-from openapi_server.models.base_model_ import Model
-from openapi_server import util
+from models.base_model_ import Model
+import util
 
 class Attendee(Model):
     __tablename__ = "attendees"

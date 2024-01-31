@@ -1,7 +1,6 @@
 import connexion
-import six
 
-from openapi_server import util
+import util
 
 
 def get_default():  # noqa: E501

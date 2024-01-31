@@ -1,9 +1,8 @@
 import connexion
-import six
-from openapi_server.models.product_item import ProductItem
-from openapi_server.database.database_manager import get_database_session  # noqa: E501
-from openapi_server.database.models import ProductItem
-from openapi_server import util
+from models.product_item import ProductItem
+from database.database_manager import get_database_session  # noqa: E501
+from database.models import ProductItem
+import util
 from werkzeug.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 import uuid

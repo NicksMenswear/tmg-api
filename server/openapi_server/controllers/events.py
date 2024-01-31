@@ -2,8 +2,8 @@ import connexion
 from typing import Dict
 from typing import Tuple
 from typing import Union
-from openapi_server.database.models import Event, User
-from openapi_server.database.database_manager import get_database_session
+from database.models import Event, User
+from database.database_manager import get_database_session
 from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException

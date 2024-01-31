@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Tab
 # from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from openapi_server.models.base_model_ import Model
+from models.base_model_ import Model
 from datetime import datetime
 import uuid
 
@@ -51,23 +51,23 @@ class Event(Base, Model):
         }
         return result
     
-class VirtualCart(Base, Model):
-    __tablename__ = "virtual_cart"
+# class VirtualCart(Base, Model):
+#     __tablename__ = "virtual_cart"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)  # must    
-    attendee_id  # nullable 
-    event_id # nullable 
-    list_virtual_cart_positions # empty list default
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)  # must    
+#     attendee_id  # nullable 
+#     event_id # nullable 
+#     list_virtual_cart_positions # empty list default
 
 
-class VirtualCartPosition(Base, Model):
-    __tablename__ = "virtual_cart"
+# class VirtualCartPosition(Base, Model):
+#     __tablename__ = "virtual_cart"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    product_id
-    quantity
-    price
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+#     product_id
+#     quantity
+#     price
 
 
 class Attendee(Base, Model):

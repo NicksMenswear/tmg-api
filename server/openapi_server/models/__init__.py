@@ -1,11 +1,8 @@
 # coding: utf-8
 
-# flake8: noqa
-from __future__ import absolute_import
-# import models into model package
-from openapi_server.models.audit_log import AuditLog
-from openapi_server.models.product_item import ProductItem
-from openapi_server.models.event import Event
-from openapi_server.models.order import Order
-from openapi_server.models.order_item import OrderItem
-from openapi_server.models.user import User
+from models.audit_log import AuditLog
+from models.product_item import ProductItem
+from models.event import Event
+from models.order import Order
+from models.order_item import OrderItem
+from models.user import User

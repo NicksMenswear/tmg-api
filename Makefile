@@ -3,8 +3,8 @@
 #
 # Local Stack
 #
-run:
-	docker-compose up --build --remove-orphans
+run: clean
+	docker-compose up --build
 
 db:
 	docker-compose up -d db

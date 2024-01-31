@@ -12,7 +12,15 @@ services:
 
   migrate:
     build: server
-    command: sh -c "cd openapi_server && alembic upgrade head"
+    command: >
+      sh -c "
+      while ! nc -z db 5432; do
+        echo 'Waiting for Postgres Database Startup';
+        sleep 1;
+      done;
+      cd openapi_server;
+      alembic upgrade head
+      "
     env_file: local.env
     depends_on:
       - db

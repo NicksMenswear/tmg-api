@@ -1,6 +1,8 @@
 .PHONY: help run db api api-py down deploy tail
 
+#
 # Local Stack
+#
 run:
 	docker-compose up --build
 
@@ -10,13 +12,15 @@ db:
 api:
 	docker-compose up --build api
 
-api-py:
+py:
 	cd server && python openapi_server/app.py
 
-down:
-	docker-compose down
+clean:
+	docker-compose down -v
 
+#
 # AWS Stack
+#
 deploy:
 	sls deploy
 

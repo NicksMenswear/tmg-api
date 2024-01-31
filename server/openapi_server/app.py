@@ -32,4 +32,4 @@ def init_db():
     Base.metadata.create_all(bind=engine, checkfirst=True) 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=8080)
+    app.run(host="0.0.0.0", port=8080)

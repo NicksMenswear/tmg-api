@@ -6,7 +6,7 @@ from database.models import Event, User
 from database.database_manager import get_database_session
 from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import HTTPException
+from flask import abort
 import uuid
 
 
@@ -17,7 +17,7 @@ def create_event(event):
     try:
         user = db.query(User).filter(User.email == event["email"]).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise abort(404, description="User not found")
 
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
@@ -42,7 +42,7 @@ def create_event(event):
     except SQLAlchemyError as e:
         print(f"An SQLAlchemy error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 
 def list_events(username):
@@ -50,7 +50,7 @@ def list_events(username):
     try:
         user = db.query(User).filter(User.email == username).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise abort(404, description="User not found")
 
         events = db.query(Event).filter(Event.user_id == user.id).all()
 
@@ -58,16 +58,16 @@ def list_events(username):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 def update_event(event):
     """Updating Event Details. (Currently working on this; will be completed in the next comment)"""
     try:
         event_detail = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id']).first()
         if not event_detail:
-            raise HTTPException(status_code=404, detail="Event not found")
+            raise abort(404, description="Event not found")
         event_detail.event_date = event['event_date']
         db.commit()
         return {"message": "Event details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")

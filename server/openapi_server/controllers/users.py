@@ -5,7 +5,7 @@ from typing import Union
 from database.models import User, Event, Order, OrderItem
 from database.database_manager import get_database_session
 import uuid
-from werkzeug.exceptions import HTTPException
+from flask import abort
 
 db = get_database_session()
 
@@ -38,7 +38,7 @@ def create_user(user_data):  # noqa: E501
     except Exception as e:
         print(f"An error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 
 def get_user_by_id(email):  # noqa: E501
@@ -54,7 +54,7 @@ def get_user_by_id(email):  # noqa: E501
     try:
         user = db.query(User).filter(User.email==email).first()
         if not user:
-            raise HTTPException(status_code=404, detail=f"User with email '{email}' does not exist")
+            raise abort(404, detail=f"User with email '{email}' does not exist")
         formatted_user = {
             'id': user.id,
             'first_name': user.first_name,
@@ -67,7 +67,7 @@ def get_user_by_id(email):  # noqa: E501
         return formatted_user
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
     
 def list_users():  # noqa: E501
     """Lists all users
@@ -94,7 +94,7 @@ def list_users():  # noqa: E501
         return formatted_users
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
     
 def update_user(user_data):  # noqa: E501
     """Update a user by ID
@@ -113,7 +113,7 @@ def update_user(user_data):  # noqa: E501
         user = db.query(User).filter(User.email == user_data['email']).first()
 
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise abort(404, description="User not found")
         
         user.first_name = user_data['first_name']
         user.last_name = user_data['last_name']
@@ -127,17 +127,17 @@ def update_user(user_data):  # noqa: E501
     except Exception as e:
         print(f"An error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
     
 # def delete_user(email):  # Logic for deletion of user is implemented but need change in schema to work correctly
 #     """ Deleting user using email"""
 #     try:
 #         user = db.query(User).filter(User.email==email).first()
 #         if not user:
-#             raise HTTPException(status_code=404, detail="User not found")
+#             raise abort(404, description="User not found")
 #         order = db.query(Order).filter(Order.user_id==user.id).first()
 #         if not order:
-#             raise HTTPException(status_code=404, detail="Order not found")
+#             raise abort(404, description="Order not found")
 #         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
 #         for order_item in order_items:
 #             db.delete(order_item)
@@ -154,5 +154,5 @@ def update_user(user_data):  # noqa: E501
 #         db.delete(user)
 #         db.commit()
 #     except Exception as e:
-#         raise HTTPException(status_code=500, detail="Internal Server Error")
+#         raise abort(500, description="Internal Server Error")
     

@@ -3,7 +3,7 @@ from models.product_item import ProductItem
 from database.database_manager import get_database_session  # noqa: E501
 from database.models import ProductItem
 import util
-from werkzeug.exceptions import HTTPException
+from flask import abort
 from sqlalchemy.exc import IntegrityError
 import uuid
 
@@ -34,7 +34,7 @@ def create_product_item(product_item):  # noqa: E501
         return 'Product created successfully!', 201
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error") from e
+        raise abort(500, description="Internal Server Error") from e
     finally:
         db.close()
 
@@ -59,6 +59,6 @@ def list_product_items():  # noqa: E501
             }) 
         return formatted_products
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
     finally:
         db.close()

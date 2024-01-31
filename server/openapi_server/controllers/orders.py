@@ -6,7 +6,7 @@ from database.models import Order, OrderItem, Event, User, ProductItem
 from database.database_manager import get_database_session
 from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import HTTPException
+from flask import abort
 import uuid
 
 
@@ -51,7 +51,7 @@ def create_order(order):  # noqa: E501
             db.refresh(new_orderitem)
         return 'Order created successfully!', 201
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 
 def get_order_by_id(order_id):  # noqa: E501
@@ -67,10 +67,10 @@ def get_order_by_id(order_id):  # noqa: E501
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise abort(404, description="Order not found")
         return order.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 
 def get_orders(user_id=None, event_id=None):  # noqa: E501
@@ -88,10 +88,10 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
     try:
         orders = db.query(Order).filter(Order.user_id==user_id, Order.event_id==event_id)
         if not orders:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise abort(404, description="Order not found")
         return [order.to_dict() for order in orders]
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 
 def update_order(order):  # noqa: E501
@@ -112,14 +112,14 @@ def update_order(order):  # noqa: E501
         db.commit()
         return {"message": "Order details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")
 
 def delete_order(order_id):
     """ Deleting Order using id"""
     try:
         order = db.query(Order).filter(Order.id==order_id).first()
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise abort(404, description="Order not found")
         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
         for order_item in order_items:
             db.delete(order_item)
@@ -128,4 +128,4 @@ def delete_order(order_id):
         db.delete(order)
         db.commit()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise abort(500, description="Internal Server Error")

@@ -37,13 +37,8 @@ paths:
           description: Successful response
       summary: TMG API
       tags:
-<<<<<<< HEAD
         - Default
-      x-openapi-router-controller: openapi_server.controllers.default
-=======
-      - Default
       x-openapi-router-controller: controllers.default
->>>>>>> 4a586c2 (Overhaul)
   /audit:
     get:
       operationId: list_audit_entries
@@ -58,13 +53,8 @@ paths:
           description: An array of audit log entries
       summary: Lists all audit entries
       tags:
-<<<<<<< HEAD
         - Audit
-      x-openapi-router-controller: openapi_server.controllers.audit
-=======
-      - Audit
       x-openapi-router-controller: controllers.audit
->>>>>>> 4a586c2 (Overhaul)
   /products:
     get:
       operationId: list_product_items
@@ -79,13 +69,8 @@ paths:
           description: An array of product items
       summary: Lists all product items
       tags:
-<<<<<<< HEAD
         - Product
-      x-openapi-router-controller: openapi_server.controllers.product
-=======
-      - Product
       x-openapi-router-controller: controllers.product
->>>>>>> 4a586c2 (Overhaul)
     post:
       operationId: create_product_item
       requestBody:
@@ -100,13 +85,8 @@ paths:
           description: Product item created
       summary: Create product item
       tags:
-<<<<<<< HEAD
         - Product
-      x-openapi-router-controller: openapi_server.controllers.product
-=======
-      - Product
       x-openapi-router-controller: controllers.product
->>>>>>> 4a586c2 (Overhaul)
   /events:
     post:
       operationId: create_event
@@ -122,13 +102,8 @@ paths:
           description: Event created
       summary: Create event
       tags:
-<<<<<<< HEAD
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
-=======
-      - Events
       x-openapi-router-controller: controllers.events
->>>>>>> 4a586c2 (Overhaul)
     put:
       operationId: update_event
       requestBody:
@@ -143,13 +118,8 @@ paths:
           description: Event Updated Success
       summary: Upadte event
       tags:
-<<<<<<< HEAD
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
-=======
-      - Events
       x-openapi-router-controller: controllers.events
->>>>>>> 4a586c2 (Overhaul)
   /events/{username}:
     get:
       operationId: list_events
@@ -166,13 +136,8 @@ paths:
           description: Successful response
       summary: Get event by email
       tags:
-<<<<<<< HEAD
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
-=======
-      - Events
       x-openapi-router-controller: controllers.events
->>>>>>> 4a586c2 (Overhaul)
   /event_attendees:
     post:
       operationId: add_attendee
@@ -188,13 +153,8 @@ paths:
           description: Attendee added
       summary: Attendee added
       tags:
-<<<<<<< HEAD
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
-=======
-      - Attendees
       x-openapi-router-controller: controllers.attendees
->>>>>>> 4a586c2 (Overhaul)
     put:
       operationId: update_attendee
       requestBody:
@@ -209,13 +169,8 @@ paths:
           description: Attendee Updated Success
       summary: Attendee Update
       tags:
-<<<<<<< HEAD
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
-=======
-      - Attendees
       x-openapi-router-controller: controllers.attendees
->>>>>>> 4a586c2 (Overhaul)
     get:
       operationId: list_attendee
       responses:
@@ -223,13 +178,8 @@ paths:
           description: Attendee Get Success
       summary: Attendee event
       tags:
-<<<<<<< HEAD
         - Attendee
-      x-openapi-router-controller: openapi_server.controllers.attendees
-=======
-      - Attendee
       x-openapi-router-controller: controllers.attendees
->>>>>>> 4a586c2 (Overhaul)
   /event_attendees/{event_id}:
     get:
       operationId: get_attendees_by_eventid
@@ -250,13 +200,8 @@ paths:
           description: Event not found
       summary: Retrieve a specific Event Attendees by Event ID
       tags:
-<<<<<<< HEAD
         - Attendee
-      x-openapi-router-controller: openapi_server.controllers.attendees
-=======
-      - Attendee
       x-openapi-router-controller: controllers.attendees
->>>>>>> 4a586c2 (Overhaul)
 
   /orders:
     delete:
@@ -276,13 +221,8 @@ paths:
           description: Order not found
       summary: Delete order by ID
       tags:
-<<<<<<< HEAD
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
-=======
-      - Orders
       x-openapi-router-controller: controllers.orders
->>>>>>> 4a586c2 (Overhaul)
     get:
       operationId: get_orders
       parameters:
@@ -309,13 +249,8 @@ paths:
           description: Retrieve all orders by user ID or event ID
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
-<<<<<<< HEAD
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
-=======
-      - Orders
       x-openapi-router-controller: controllers.orders
->>>>>>> 4a586c2 (Overhaul)
     post:
       operationId: create_order
       requestBody:
@@ -330,13 +265,8 @@ paths:
           description: Order created
       summary: Create order
       tags:
-<<<<<<< HEAD
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
-=======
-      - Orders
       x-openapi-router-controller: controllers.orders
->>>>>>> 4a586c2 (Overhaul)
     put:
       operationId: update_order
       requestBody:
@@ -377,13 +307,8 @@ paths:
           description: Order not found
       summary: Retrieve a specific order by ID
       tags:
-<<<<<<< HEAD
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
-=======
-      - Orders
       x-openapi-router-controller: controllers.orders
->>>>>>> 4a586c2 (Overhaul)
   /users:
     get:
       operationId: list_users
@@ -398,13 +323,8 @@ paths:
           description: An array of users
       summary: Lists all users
       tags:
-<<<<<<< HEAD
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
-=======
-      - Users
       x-openapi-router-controller: controllers.users
->>>>>>> 4a586c2 (Overhaul)
     post:
       operationId: create_user
       requestBody:
@@ -419,13 +339,8 @@ paths:
           description: User created
       summary: Create user
       tags:
-<<<<<<< HEAD
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
-=======
-      - Users
       x-openapi-router-controller: controllers.users
->>>>>>> 4a586c2 (Overhaul)
     put:
       operationId: update_user
       requestBody:
@@ -442,13 +357,8 @@ paths:
           description: User not found
       summary: Update a user by ID
       tags:
-<<<<<<< HEAD
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
-=======
-      - Users
       x-openapi-router-controller: controllers.users
->>>>>>> 4a586c2 (Overhaul)
     # delete:
     #   operationId: delete_user
     #   parameters:
@@ -492,13 +402,8 @@ paths:
           description: User not found
       summary: Get a single user by ID
       tags:
-<<<<<<< HEAD
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
-=======
-      - Users
       x-openapi-router-controller: controllers.users
->>>>>>> 4a586c2 (Overhaul)
     # /virtualcart/query:
     #   # get by cart id, user id, or atendee id, event id
     # /virtualcart/{virtualcart_id}:

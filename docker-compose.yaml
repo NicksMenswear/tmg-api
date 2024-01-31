@@ -8,6 +8,14 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - migrate
+
+  migrate:
+    build: server
+    command: sh -c "cd openapi_server && alembic upgrade head"
+    env_file: local.env
+    depends_on:
+      - db
 
   db:
     image: postgres:16.1-alpine3.18

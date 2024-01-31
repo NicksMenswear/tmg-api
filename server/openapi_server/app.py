@@ -20,7 +20,7 @@ app.add_api('openapi.yaml',
 app.app.json_encoder = encoder.CustomJSONEncoder
 
 def lambda_handler(event, context):
-    # init_db()
+    #init_db()
     return awsgi.response(app, event, context)
 
 def init_db():

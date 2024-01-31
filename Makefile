@@ -4,13 +4,16 @@
 # Local Stack
 #
 run:
-	docker-compose up --build
+	docker-compose up --build --remove-orphans
 
 db:
 	docker-compose up -d db
 
 api:
 	docker-compose up --build api
+
+migrate:
+	docker-compose up --build migrate
 
 py:
 	cd server && python openapi_server/app.py

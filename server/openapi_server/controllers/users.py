@@ -4,7 +4,7 @@ from typing import Tuple
 from typing import Union
 from openapi_server.database.models import User, Event, Order, OrderItem
 from openapi_server.database.database_manager import get_database_session
-from .shopify import create_customer
+from .shopify import create_customer, get_customer
 import uuid
 from werkzeug.exceptions import HTTPException
 
@@ -20,30 +20,30 @@ def create_user(user_data):  # noqa: E501
     """ # noqa: E501
     try:
         existing_user = db.query(User).filter_by(email=user_data['email']).first()
-        if existing_user:
+        shopify_user = get_customer(user_data['email'])
+        if (existing_user and shopify_user):
             return 'user with the same email already exists!', 400
         
+        shopify_id = create_customer({
+            'first_name' : user_data['first_name'],
+            'last_name' : user_data['last_name'],
+            'email' : user_data['email'],
+        })
+
         user_id = uuid.uuid4()
         user = User(
             id=user_id,
             first_name=user_data['first_name'],
             last_name=user_data['last_name'],
             email=user_data['email'],
-            shopify_id=user_data['shopify_id'],
+            shopify_id=shopify_id,
             account_status = user_data['account_status'],
             role = user_data['role']
         )
         db.add(user)
         db.commit()
         db.refresh(user)
-
-        print('----------------------------- Calling Shopify function')
-        create_customer({
-            'first_name' : user_data['first_name'],
-            'last_name' : user_data['last_name'],
-            'email' : user_data['email'],
-        })
-        print(('---------------------------  Back from shopify function'))
+    
         
         return 'User created successfully!', 201
     except Exception as e:

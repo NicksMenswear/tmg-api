@@ -1,11 +1,5 @@
-import connexion
-from typing import Dict
-from typing import Tuple
-from typing import Union
 from openapi_server.database.models import Order, OrderItem, Event, User, ProductItem
 from openapi_server.database.database_manager import get_database_session
-from sqlalchemy import exists, text
-from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
 

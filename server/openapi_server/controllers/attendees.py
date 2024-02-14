@@ -1,14 +1,9 @@
-import connexion
-from typing import Dict
-from typing import Tuple
-from typing import Union
 from openapi_server.database.models import Event, User, Attendee
 from openapi_server.database.database_manager import get_database_session
-from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError 
 from werkzeug.exceptions import HTTPException
 import uuid
-from .shopify import create_customer
+from .shopify import create_customer, get_customer
 
 
 db = get_database_session()
@@ -17,26 +12,26 @@ def add_attendee(attendee_data):
     """Add Attendee"""
     try:
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
-        if not user:
+        shopify_user = get_customer(attendee_data['email'])
+        if ((not user) and (not shopify_user)):
+            shopify_id = create_customer({
+                'first_name' : attendee_data['first_name'],
+                'last_name' : attendee_data['last_name'],
+                'email' : attendee_data['email'],
+            })
             user_id = uuid.uuid4()
             user = User(
                 id=user_id,
                 first_name=attendee_data['first_name'],
                 last_name=attendee_data['last_name'],
                 email=attendee_data['email'],
-                shopify_id=None,
+                shopify_id=shopify_id,
                 account_status = True,
                 role = None
             )
             db.add(user)
             db.commit()
             db.refresh(user)
-
-            create_customer({
-                'first_name' : attendee_data['first_name'],
-                'last_name' : attendee_data['last_name'],
-                'email' : attendee_data['email'],
-            })
         
         attendee = db.query(User).filter(User.email == attendee_data["email"]).first()
         existing_attendee = db.query(exists().where(Event.id == attendee_data["event_id"])

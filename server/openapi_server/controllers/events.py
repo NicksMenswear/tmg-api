@@ -61,7 +61,7 @@ def list_events(username):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 def update_event(event):
-    """Updating Event Details. (Currently working on this; will be completed in the next comment)"""
+    """Updating Event Details."""
     try:
         event_detail = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id']).first()
         if not event_detail:

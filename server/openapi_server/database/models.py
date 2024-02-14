@@ -1,7 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, UUID, Boolean
-# from sqlalchemy.types import List
-# from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from openapi_server.models.base_model_ import Model
 from datetime import datetime
@@ -108,7 +105,7 @@ class Order(Base):
             'event_id': str(self.event_id),
             'order_date': self.order_date,
             'shipped_date': self.shipped_date,
-            'received_date': self.received_date, # assuming OrderItem has a to_dict method
+            'received_date': self.received_date,
         }
         return result
 
@@ -134,3 +131,40 @@ class OrderItem(Base):
 class AuditLog(Base):
     __tablename__ = 'audit_log'
     id = Column(Integer, primary_key=True)
+
+class Look(Base, Model):
+    __tablename__ = "looks"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    look_name = Column(String, index=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    product_specs = Column(String, index=True, nullable=True)
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'look_name': self.look_name,
+            'user_id': self.user_id,
+            'product_specs': self.product_specs
+        }
+        return result
+    
+class Role(Base, Model):
+    __tablename__ = "roles"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    role_name = Column(String, index=True, nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=False)
+    look_id = Column(UUID(as_uuid=True), ForeignKey('looks.id'), nullable=False)
+
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'role_name': self.role_name,
+            'event_id': self.event_id,
+            'look_id': self.look_id
+        }
+        return result

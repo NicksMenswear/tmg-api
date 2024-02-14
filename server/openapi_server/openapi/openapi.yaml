@@ -376,18 +376,6 @@ paths:
       tags:
       - Users
       x-openapi-router-controller: openapi_server.controllers.users
-  /shopify_customer:
-    get:
-      operationId: list_customer
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json: {}
-      summary: List Shopify customer
-      tags:
-        - Shopify
-      x-openapi-router-controller: openapi_server.controllers.shopify
     # delete:
     #   operationId: delete_user
     #   parameters:
@@ -433,6 +421,180 @@ paths:
       tags:
       - Users
       x-openapi-router-controller: openapi_server.controllers.users
+
+  /shopify_customer:
+    get:
+      operationId: list_customer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+      summary: List Shopify customer
+      tags:
+        - Shopify
+      x-openapi-router-controller: openapi_server.controllers.shopify
+
+
+  /invite:
+    post:
+      operationId: send_invite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+        x-body-name: invite_data
+      responses:
+        "201":
+          description: Invite created
+      summary: Create Invite
+      tags:
+      - Invites
+      x-openapi-router-controller: openapi_server.controllers.invites
+
+
+  /looks:
+    get:
+      operationId: list_looks
+      responses:
+        "200":
+          description: An array of looks
+      summary: Lists all looks
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+    post:
+      operationId: create_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Look'
+        required: true
+        x-body-name: look_data
+      responses:
+        "201":
+          description: Look created
+      summary: Create look
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+    put:
+      operationId: update_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLook'
+        required: true
+        x-body-name: look_data
+      responses:
+        "200":
+          description: Look updated
+        "404":
+          description: Look not found
+      summary: Update a Look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+  /looks/{look_data}/{user_id}:
+    get:
+      operationId: get_look
+      parameters:
+      - description: Unique name of the look to retrieve
+        explode: false
+        in: path
+        name: look_data
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Email of user having this look
+        explode: false
+        in: path
+        name: email
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+
+  /roles:
+    get:
+      operationId: list_roles
+      responses:
+        "200":
+          description: An array of roles
+      summary: Lists all roles
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+    post:
+      operationId: create_role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+        x-body-name: role_data
+      responses:
+        "201":
+          description: role created
+      summary: Create role
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+    put:
+      operationId: update_role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRole'
+        required: true
+        x-body-name: role_data
+      responses:
+        "200":
+          description: Role updated
+        "404":
+          description: Role not found
+      summary: Update a Role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+  /roles/{role_data}:
+    get:
+      operationId: get_role
+      parameters:
+      - description: Unique name of the role to retrieve
+        explode: false
+        in: path
+        name: role_data
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+
 components:
   schemas:
     User:
@@ -719,4 +881,104 @@ components:
           title: id
           type: integer
       title: AuditLog
+      type: object
+    Look:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        look_name:
+          title: look_name
+          type: string
+        email:
+          title: email
+          type: string
+        product_specs:
+          title: product_specs
+          type: string
+      required:
+        - look_name
+        - email
+      title: Look
+      type: object
+    UpdateLook:
+      properties:
+        look_name:
+          title: look_name
+          type: string
+        user_id:
+          title: user_id
+          type: string
+        flag:
+          title: flag
+          type: boolean
+        product_specs:
+          title: product_specs
+          type: string
+      required:
+        - look_name
+        - flag
+      title: Look
+      type: object
+    Role:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        role_name:
+          title: look_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        event_id:
+          title: event_id
+          type: string
+      required:
+        - role_name
+      title: Role
+      type: object
+    UpdateRole:
+      properties:
+        role_name:
+          title: role_name
+          type: string
+        new_role_name:
+          title: new_role_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        look_id:
+          title: look_id
+          type: string
+      required:
+        - role_name
+        - new_role_name
+      title: Role
+      type: object
+    Invite:
+      properties:
+        email:
+          title: email
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        event_name:
+          title: event_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+      required:
+        - email
+      title: Invite
       type: object

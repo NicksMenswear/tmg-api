@@ -50,7 +50,7 @@ def list_events(username):
     try:
         user = db.query(User).filter(User.email == username).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=204, detail="User not found")
 
         events = db.query(Event).filter(Event.user_id == user.id).all()
 

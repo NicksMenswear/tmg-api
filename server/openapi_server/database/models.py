@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from openapi_server.models.base_model_ import Model
 from datetime import datetime
 import uuid
@@ -166,5 +167,44 @@ class Role(Base, Model):
             'role_name': self.role_name,
             'event_id': self.event_id,
             'look_id': self.look_id
+        }
+        return result
+class Cart(Base, Model):
+    __tablename__ = "carts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=True)
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey('attendees.id'), nullable=True)
+
+    cart_products = relationship("CartProduct", backref="cart")
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'event_id': self.event_id,
+            'attendee_id': self.attendee_id
+        }
+        return result
+
+class CartProduct(Base, Model):
+    __tablename__ = 'cartproducts'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    cart_id = Column(Integer, ForeignKey('carts.id'),nullable=False)
+    product_id = Column(BigInteger, index=True, nullable=True)
+    category = Column(String, index=True, nullable=True)
+    quantity = Column(Integer, index=True, nullable=True)
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'cart_id': self.cart_id,
+            'product_id': self.product_id,
+            'category': self.category,
+            'quantity': self.quantity
         }
         return result

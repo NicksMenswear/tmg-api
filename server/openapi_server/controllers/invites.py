@@ -22,57 +22,64 @@ def send_invite(invite_data):  # noqa: E501
     :rtype: None
     """
     try:
-        existing_user = db.query(User).filter_by(email=invite_data['email']).first()
-        if existing_user:
-            if existing_user.account_status==False:
-                activation_url = ""
-            else:
-                activation_url = get_activation_url(existing_user.shopify_id)
-                print('act url: ',activation_url)
+        if 'data' in invite_data:
+            responses = []
+            for attendee in invite_data['data']:
+                existing_user = db.query(User).filter_by(email=attendee['email']).first()
+                if existing_user:
+                    if not existing_user.account_status:
+                        activation_url = ""
+                    else:
+                        activation_url = get_activation_url(existing_user.shopify_id)
+                        print('act url: ', activation_url)
 
-            data = {
-                'email': invite_data['email'],
-                'first_name': invite_data['first_name'],
-                'last_name': invite_data['last_name'],
-                'event_name': invite_data['event_name'],
-                'event_id': invite_data['event_id'],
-                'activation_url': activation_url
-            }
-            create_contact(data)
-            return "Invitation sent successfully"       
+                    data = {
+                        'email': attendee['email'],
+                        'first_name': attendee['first_name'],
+                        'last_name': attendee['last_name'],
+                        'event_name': invite_data['event_name'],
+                        'event_id': invite_data['event_id'],
+                        'activation_url': activation_url
+                    }
+                    response = create_contact(data)
+                    responses.append(response)
+                else:
+                    shopify_id = create_customer({
+                        'first_name': attendee['first_name'],
+                        'last_name': attendee['last_name'],
+                        'email': attendee['email'],
+                    })
+
+                    user_id = uuid.uuid4()
+                    user = User(
+                        id=user_id,
+                        first_name=attendee['first_name'],
+                        last_name=attendee['last_name'],
+                        email=attendee['email'],
+                        shopify_id=shopify_id,
+                        account_status=True,
+                        role=None
+                    )
+                    db.add(user)
+                    db.commit()
+                    db.refresh(user)
+                    activation_url = get_activation_url(shopify_id)
+                    print('act url: ', activation_url)
+
+                    data = {
+                        'email': attendee['email'],
+                        'first_name': attendee['first_name'],
+                        'last_name': attendee['last_name'],
+                        'event_name': invite_data['event_name'],
+                        'event_id': invite_data['event_id'],
+                        'activation_url': activation_url
+                    }
+                    response = create_contact(data)
+                    responses.append(response)
+
+            return responses
         else:
-            shopify_id = create_customer({
-                'first_name' : invite_data['first_name'],
-                'last_name' : invite_data['last_name'],
-                'email' : invite_data['email'],
-            })
-
-            user_id = uuid.uuid4()
-            user = User(
-                id=user_id,
-                first_name=invite_data['first_name'],
-                last_name=invite_data['last_name'],
-                email=invite_data['email'],
-                shopify_id=shopify_id,
-                account_status = True,
-                role = None
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            activation_url = get_activation_url(shopify_id)
-            print('act url: ',activation_url)
-
-            data = {
-                'email': invite_data['email'],
-                'first_name': invite_data['first_name'],
-                'last_name': invite_data['last_name'],
-                'event_name': invite_data['event_name'],
-                'event_id': invite_data['event_id'],
-                'activation_url': activation_url
-            }
-            create_contact(data)
-            return "Invitation sent successfully"
+            raise ValueError("Data is missing or not in the correct format")
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error") from e

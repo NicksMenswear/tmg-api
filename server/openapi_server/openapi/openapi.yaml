@@ -135,6 +135,7 @@ paths:
       - Events
       - Event Get
       x-openapi-router-controller: openapi_server.controllers.events
+
   /event_attendees:
     post:
       operationId: add_attendee
@@ -193,19 +194,19 @@ paths:
         - Attendees
         - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
-  /event_attendees/{event_id}:
+  /event_attendees_by_eventid:
     get:
       operationId: get_attendees_by_eventid
       parameters:
       - description: Unique identifier of the event to retrieve attendees
-        explode: false
-        in: path
+        explode: true
+        in: query
         name: event_id
-        required: true
+        required: false
         schema:
           format: uuid
           type: string
-        style: simple
+        style: form
       responses:
         "200":
           description: Details of the specific event
@@ -499,26 +500,50 @@ paths:
       tags:
       - Looks
       x-openapi-router-controller: openapi_server.controllers.looks
-  /looks/{look_data}/{user_id}:
+  /looks_with_lookid_userid:
     get:
       operationId: get_look
       parameters:
       - description: Unique name of the look to retrieve
-        explode: false
-        in: path
-        name: look_data
-        required: true
+        explode: true
+        in: query
+        name: look_id
+        required: false
         schema:
+          format: uuid
           type: string
-        style: simple
-      - description: Email of user having this look
-        explode: false
-        in: path
-        name: email
-        required: true
+        style: form
+      - description: User ID of user having this look
+        explode: true
+        in: query
+        name: user_id
+        required: false
         schema:
+          format: uuid
           type: string
-        style: simple
+        style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+  /looks_with_userid:
+    get:
+      operationId: get_user_looks
+      parameters:
+      - description: Retrieve look by user_id
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
       responses:
         "200":
           description: Details of the Look
@@ -573,18 +598,28 @@ paths:
       tags:
       - Roles
       x-openapi-router-controller: openapi_server.controllers.roles
-  /roles/{role_data}:
+  /roles_with_roleid_eventid:
     get:
       operationId: get_role
       parameters:
-      - description: Unique name of the role to retrieve
-        explode: false
-        in: path
-        name: role_data
-        required: true
+      - description: Unique role_id to retrieve
+        explode: true
+        in: query
+        name: role_id
+        required: false
         schema:
+          format: uuid
           type: string
-        style: simple
+        style: form
+      - description: Unique event_id for role to retrieve
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
       responses:
         "200":
           description: Details of the Role
@@ -594,6 +629,88 @@ paths:
       tags:
       - Roles
       x-openapi-router-controller: openapi_server.controllers.roles
+  /roles_with_eventid:
+    get:
+      operationId: get_event_roles
+      parameters:
+      - description: Retrieve roles of event
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+
+  /carts:
+    post:
+      operationId: create_cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+        x-body-name: cart
+      responses:
+        "201":
+          description: Cart created
+      summary: Create cart
+      tags:
+      - Carts
+      - Carts Create
+      x-openapi-router-controller: openapi_server.controllers.carts
+    put:
+      operationId: update_cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+        x-body-name: cart
+      responses:
+        "201":
+          description: Cart Updated Success
+      summary: Upadte cart
+      tags:
+      - Carts
+      - Cart Update
+      x-openapi-router-controller: openapi_server.controllers.carts
+  /cart_by_id:
+    get:
+      operationId: get_cart_by_id
+      parameters:
+      - description: Retrieve products of cart
+        explode: true
+        in: query
+        name: cart_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Cart
+        "404":
+          description: Cart not found
+      summary: Get a single cart by id
+      tags:
+      - Carts
+      - Carts Get
+      x-openapi-router-controller: openapi_server.controllers.carts
+
 
 components:
   schemas:
@@ -979,6 +1096,31 @@ components:
           title: event_id
           type: string
       required:
-        - email
+        - event_id
       title: Invite
+      type: object
+    Cart:
+      properties:
+        id:
+          title: id
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        user_id:
+          title: user_id
+          type: string
+        attendee_id:
+          title: attendee_id
+          type: string
+        product_id:
+          title: product_id
+          type: integer
+        category:
+          title: category
+          type: string
+        quantity:
+          title: quantity
+          type: integer
+      title: Cart
       type: object

@@ -1,8 +1,12 @@
 from openapi_server.models.base_model_ import Model
+from sqlalchemy.orm import relationship
 from openapi_server import util
 
 class Look(Model):
     __tablename__ = "looks"
+
+    user = relationship('User', back_populates='looks')
+
 
 
     def __init__(self, id=None, look_name=None, user_id=None, product_specs=None):
@@ -47,7 +51,7 @@ class Look(Model):
         result = self.openapi_types.copy()
         result['id'] = self.id
         result['look_name'] = self.look_name
-        result['useer_id'] = self.user_id
+        result['user_id'] = self.user_id
         result['product_specs'] = self.product_specs
         return result
     

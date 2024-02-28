@@ -138,6 +138,7 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: openapi_server.controllers.events
+
   /event_attendees:
     post:
       operationId: add_attendee
@@ -145,7 +146,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Attendee"
+              items:
+                $ref: '#/components/schemas/Attendee'
         required: true
         x-body-name: attendee_data
       responses:
@@ -161,7 +163,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateAttendee"
+              items:
+                $ref: '#/components/schemas/UpdateAttendee'
         required: true
         x-body-name: attendee_data
       responses:
@@ -173,26 +176,37 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.attendees
     get:
       operationId: list_attendee
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: event_id
+          schema:
+            type: string
+          required: true
       responses:
-        "201":
+        "200":
           description: Attendee Get Success
-      summary: Attendee event
-      tags:
-        - Attendee
+      summary:
+        - Attendees
+        - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
-  /event_attendees/{event_id}:
+  /event_attendees_by_eventid:
     get:
       operationId: get_attendees_by_eventid
       parameters:
-        - description: Unique identifier of the event to retrieve attendees
-          explode: false
-          in: path
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: simple
+      - description: Unique identifier of the event to retrieve attendees
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
       responses:
         "200":
           description: Details of the specific event
@@ -404,6 +418,296 @@ paths:
       tags:
         - Users
       x-openapi-router-controller: openapi_server.controllers.users
+
+  /shopify_customer:
+    get:
+      operationId: list_customer
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+      summary: List Shopify customer
+      tags:
+        - Shopify
+      x-openapi-router-controller: openapi_server.controllers.shopify
+
+
+  /invite:
+    post:
+      operationId: send_invite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+        x-body-name: invite_data
+      responses:
+        "201":
+          description: Invite created
+      summary: Create Invite
+      tags:
+      - Invites
+      x-openapi-router-controller: openapi_server.controllers.invites
+
+
+  /looks:
+    get:
+      operationId: list_looks
+      responses:
+        "200":
+          description: An array of looks
+      summary: Lists all looks
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+    post:
+      operationId: create_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Look'
+        required: true
+        x-body-name: look_data
+      responses:
+        "201":
+          description: Look created
+      summary: Create look
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+    put:
+      operationId: update_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLook'
+        required: true
+        x-body-name: look_data
+      responses:
+        "200":
+          description: Look updated
+        "404":
+          description: Look not found
+      summary: Update a Look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+  /looks_with_lookid_userid:
+    get:
+      operationId: get_look
+      parameters:
+      - description: Unique name of the look to retrieve
+        explode: true
+        in: query
+        name: look_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: User ID of user having this look
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+  /looks_with_userid:
+    get:
+      operationId: get_user_looks
+      parameters:
+      - description: Retrieve look by user_id
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+
+  /roles:
+    get:
+      operationId: list_roles
+      responses:
+        "200":
+          description: An array of roles
+      summary: Lists all roles
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+    post:
+      operationId: create_role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+        x-body-name: role_data
+      responses:
+        "201":
+          description: role created
+      summary: Create role
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+    put:
+      operationId: update_role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRole'
+        required: true
+        x-body-name: role_data
+      responses:
+        "200":
+          description: Role updated
+        "404":
+          description: Role not found
+      summary: Update a Role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+  /roles_with_roleid_eventid:
+    get:
+      operationId: get_role
+      parameters:
+      - description: Unique role_id to retrieve
+        explode: true
+        in: query
+        name: role_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: Unique event_id for role to retrieve
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+  /roles_with_eventid:
+    get:
+      operationId: get_event_roles
+      parameters:
+      - description: Retrieve roles of event
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: openapi_server.controllers.roles
+
+  /carts:
+    post:
+      operationId: create_cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+        x-body-name: cart
+      responses:
+        "201":
+          description: Cart created
+      summary: Create cart
+      tags:
+      - Carts
+      - Carts Create
+      x-openapi-router-controller: openapi_server.controllers.carts
+    put:
+      operationId: update_cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+        x-body-name: cart
+      responses:
+        "201":
+          description: Cart Updated Success
+      summary: Upadte cart
+      tags:
+      - Carts
+      - Cart Update
+      x-openapi-router-controller: openapi_server.controllers.carts
+  /cart_by_id:
+    get:
+      operationId: get_cart_by_id
+      parameters:
+      - description: Retrieve products of cart
+        explode: true
+        in: query
+        name: cart_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Cart
+        "404":
+          description: Cart not found
+      summary: Get a single cart by id
+      tags:
+      - Carts
+      - Carts Get
+      x-openapi-router-controller: openapi_server.controllers.carts
+
+
 components:
   schemas:
     User:
@@ -425,9 +729,9 @@ components:
         shopify_id:
           title: shopify_id
           type: string
-        temp:
-          title: temp
-          type: string
+        account_status:
+          title: account_status
+          type: boolean
         role:
           title: role
           type: string
@@ -690,4 +994,129 @@ components:
           title: id
           type: integer
       title: AuditLog
+      type: object
+    Look:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        look_name:
+          title: look_name
+          type: string
+        email:
+          title: email
+          type: string
+        product_specs:
+          title: product_specs
+          type: string
+      required:
+        - look_name
+        - email
+      title: Look
+      type: object
+    UpdateLook:
+      properties:
+        look_name:
+          title: look_name
+          type: string
+        user_id:
+          title: user_id
+          type: string
+        flag:
+          title: flag
+          type: boolean
+        product_specs:
+          title: product_specs
+          type: string
+      required:
+        - look_name
+        - flag
+      title: Look
+      type: object
+    Role:
+      properties:
+        id:
+          format: uuid
+          readOnly: true
+          title: id
+          type: string
+        role_name:
+          title: look_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        event_id:
+          title: event_id
+          type: string
+      required:
+        - role_name
+      title: Role
+      type: object
+    UpdateRole:
+      properties:
+        role_name:
+          title: role_name
+          type: string
+        new_role_name:
+          title: new_role_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        look_id:
+          title: look_id
+          type: string
+      required:
+        - role_name
+        - new_role_name
+      title: Role
+      type: object
+    Invite:
+      properties:
+        email:
+          title: email
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        event_name:
+          title: event_name
+          type: string
+        event_id:
+          title: event_id
+          type: string
+      required:
+        - event_id
+      title: Invite
+      type: object
+    Cart:
+      properties:
+        id:
+          title: id
+          type: string
+        event_id:
+          title: event_id
+          type: string
+        user_id:
+          title: user_id
+          type: string
+        attendee_id:
+          title: attendee_id
+          type: string
+        product_id:
+          title: product_id
+          type: integer
+        category:
+          title: category
+          type: string
+        quantity:
+          title: quantity
+          type: integer
+      title: Cart
       type: object

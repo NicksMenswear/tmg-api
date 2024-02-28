@@ -1,11 +1,5 @@
-import connexion
-from typing import Dict
-from typing import Tuple
-from typing import Union
 from openapi_server.database.models import Order, OrderItem, Event, User, ProductItem
 from openapi_server.database.database_manager import get_database_session
-from sqlalchemy import exists, text
-from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
 
@@ -67,7 +61,7 @@ def get_order_by_id(order_id):  # noqa: E501
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(status_code=204, detail="Order not found")
         return order.to_dict()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -88,7 +82,7 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
     try:
         orders = db.query(Order).filter(Order.user_id==user_id, Order.event_id==event_id)
         if not orders:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(status_code=204, detail="Order not found")
         return [order.to_dict() for order in orders]
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -119,7 +113,7 @@ def delete_order(order_id):
     try:
         order = db.query(Order).filter(Order.id==order_id).first()
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(status_code=204, detail="Order not found")
         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
         for order_item in order_items:
             db.delete(order_item)

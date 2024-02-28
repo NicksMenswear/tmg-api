@@ -1,6 +1,4 @@
 from __future__ import absolute_import
-from datetime import date, datetime  # noqa: F401
-from typing import List, Dict  # noqa: F401
 from openapi_server.models.base_model_ import Model
 from openapi_server import util
 
@@ -11,7 +9,7 @@ class User(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, first_name=None, last_name=None, email=None, shopify_id=None, temp=None, role=None):  # noqa: E501
+    def __init__(self, id=None, first_name=None, last_name=None, email=None, shopify_id=None, account_status=None, role=None):  # noqa: E501
         """User - a model defined in OpenAPI
 
         :param id: The id of this User.  # noqa: E501
@@ -31,7 +29,7 @@ class User(Model):
             'last_name': str,
             'email': str,
             'shopify_id': str,
-            'temp' : str,
+            'account_status' : bool,
             'role' : str
         }
 
@@ -41,7 +39,7 @@ class User(Model):
             'last_name': 'last_name',
             'email': 'email',
             'shopify_id': 'shopify_id',
-            'temp' : 'temp',
+            'account_status' : 'account_status',
             'role' : 'role'
         }
 
@@ -50,7 +48,7 @@ class User(Model):
         self._last_name = last_name
         self._email = email
         self._shopify_id = shopify_id
-        self._temp = temp
+        self._account_status = account_status
         self._role = role
 
     @classmethod
@@ -167,25 +165,25 @@ class User(Model):
         self._shopify_id = shopify_id
 
     @property
-    def temp(self):
-        """Gets the temporary of this User.
+    def account_status(self):
+        """Gets the account_status of this User.
 
-        :return: The temporary of this User.
+        :return: The account_status of this User.
         :rtype: str
         """
-        return self._temp
+        return self._account_status
 
-    @temp.setter
-    def temp(self, temp):
-        """Sets the temporary of this User.
+    @account_status.setter
+    def account_status(self, account_status):
+        """Sets the account_status of this User.
 
-        :param temporary: The temporary of this User.
-        :type temporary: str
+        :param account_status The account_status of this User.
+        :type account_status: bool
         """
-        if temp is None:
-            raise ValueError("Invalid value for `temporary`, must not be `None`")  # noqa: E501
+        if account_status is None:
+            raise ValueError("Invalid value for `account_statusorary`, must not be `None`")  # noqa: E501
 
-        self._temp = temp
+        self._account_status = account_status
 
     @property
     def role(self):

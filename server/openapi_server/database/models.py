@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Table, UUID
-# from sqlalchemy.types import List
-# from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from openapi_server.models.base_model_ import Model
 from datetime import datetime
 import uuid
@@ -16,7 +14,7 @@ class User(Base):
     last_name = Column(String, unique=False, index=True, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
     shopify_id = Column(String, unique=True, index=True, nullable=True)
-    temp = Column(String, unique=False, index=True, nullable=True)
+    account_status = Column(Boolean, unique=False, index=True, nullable=True)
     role = Column(String, unique=False, index=True, nullable=True)
 
 
@@ -27,8 +25,8 @@ class User(Base):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'shopify_id':self.shopify_id,
-            'temp' : self.temp,
+            'shopify_id':str(self.shopify_id),
+            'account_status' : self.account_status,
             'role' : self.role
         }
         return result
@@ -108,7 +106,7 @@ class Order(Base):
             'event_id': str(self.event_id),
             'order_date': self.order_date,
             'shipped_date': self.shipped_date,
-            'received_date': self.received_date, # assuming OrderItem has a to_dict method
+            'received_date': self.received_date,
         }
         return result
 
@@ -134,3 +132,79 @@ class OrderItem(Base):
 class AuditLog(Base):
     __tablename__ = 'audit_log'
     id = Column(Integer, primary_key=True)
+
+class Look(Base, Model):
+    __tablename__ = "looks"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    look_name = Column(String, index=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    product_specs = Column(String, index=True, nullable=True)
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'look_name': self.look_name,
+            'user_id': self.user_id,
+            'product_specs': self.product_specs
+        }
+        return result
+    
+class Role(Base, Model):
+    __tablename__ = "roles"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    role_name = Column(String, index=True, nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=False)
+    look_id = Column(UUID(as_uuid=True), ForeignKey('looks.id'), nullable=False)
+
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'role_name': self.role_name,
+            'event_id': self.event_id,
+            'look_id': self.look_id
+        }
+        return result
+class Cart(Base, Model):
+    __tablename__ = "carts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=True)
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey('attendees.id'), nullable=True)
+
+    cart_products = relationship("CartProduct", backref="cart")
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'event_id': self.event_id,
+            'attendee_id': self.attendee_id
+        }
+        return result
+
+class CartProduct(Base, Model):
+    __tablename__ = 'cartproducts'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    cart_id = Column(Integer, ForeignKey('carts.id'),nullable=False)
+    product_id = Column(BigInteger, index=True, nullable=True)
+    category = Column(String, index=True, nullable=True)
+    quantity = Column(Integer, index=True, nullable=True)
+
+    def to_dict(self):
+        """Convert the model instance to a dictionary."""
+        result = {
+            'id': self.id,
+            'cart_id': self.cart_id,
+            'product_id': self.product_id,
+            'category': self.category,
+            'quantity': self.quantity
+        }
+        return result

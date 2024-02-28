@@ -1,13 +1,9 @@
-import connexion
-from typing import Dict
-from typing import Tuple
-from typing import Union
 from openapi_server.database.models import Event, User, Attendee
 from openapi_server.database.database_manager import get_database_session
-from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError 
 from werkzeug.exceptions import HTTPException
 import uuid
+from .shopify import create_customer, get_customer
 
 
 db = get_database_session()
@@ -16,15 +12,21 @@ def add_attendee(attendee_data):
     """Add Attendee"""
     try:
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
-        if not user:
+        shopify_user = get_customer(attendee_data['email'])
+        if ((not user) and (not shopify_user)):
+            shopify_id = create_customer({
+                'first_name' : attendee_data['first_name'],
+                'last_name' : attendee_data['last_name'],
+                'email' : attendee_data['email'],
+            })
             user_id = uuid.uuid4()
             user = User(
                 id=user_id,
                 first_name=attendee_data['first_name'],
                 last_name=attendee_data['last_name'],
                 email=attendee_data['email'],
-                shopify_id=None,
-                temp = 'true',
+                shopify_id=shopify_id,
+                account_status = True,
                 role = None
             )
             db.add(user)
@@ -32,8 +34,7 @@ def add_attendee(attendee_data):
             db.refresh(user)
         
         attendee = db.query(User).filter(User.email == attendee_data["email"]).first()
-        existing_attendee = db.query(exists().where(Event.id == attendee_data["event_id"])
-                                            .where(Attendee.attendee_id == attendee.id)).scalar()
+        existing_attendee = db.query(Event).filter(Event.id == attendee_data["event_id"],Attendee.attendee_id == attendee.id).first()
 
         if existing_attendee:
             return 'Attendee with the same detail already exists!', 400
@@ -59,16 +60,16 @@ def add_attendee(attendee_data):
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-def list_attendee(attendee_data):
+def list_attendee(email,event_id):
     """List Attendee Detail"""
     try:
-        attendee = db.query(User).filter(User.email == attendee_data['email']).first()
+        attendee = db.query(User).filter(User.email == email).first()
         if not attendee:
-            raise HTTPException(status_code=404, detail="attendee not found")
+            raise HTTPException(status_code=204, detail="attendee not found")
 
-        attendee_details = db.query(Event).filter(Event.id == attendee_data['event_id'], Attendee.attendee_id==attendee.id).first()
+        attendee_details = db.query(Event).filter(Event.id == event_id, Attendee.attendee_id==attendee.id).first()
         if not attendee_details:
-                raise HTTPException(status_code=404, detail="data not found for this event and attendee")
+                raise HTTPException(status_code=204, detail="data not found for this event and attendee")
         return attendee_details.to_dict()  # Convert to list of dictionaries
 
     except Exception as e:
@@ -80,11 +81,11 @@ def update_attendee(attendee_data):
     try:
         attendee = db.query(User).filter(User.email == attendee_data['email']).first()
         if not attendee:
-            raise HTTPException(status_code=404, detail="attendee not found")
+            raise HTTPException(status_code=204, detail="attendee not found")
 
         attendee_detail = db.query(Event).filter(Event.id == attendee_data['event_id'], Attendee.attendee_id==attendee.id).first()
         if not attendee_detail:
-                raise HTTPException(status_code=404, detail="data not found for this event and attendee")
+                raise HTTPException(status_code=204, detail="data not found for this event and attendee")
         attendee_detail.style = attendee_data['style']
         attendee_detail.invi = attendee_data['invite']
         attendee_detail.pay = attendee_data['pay']
@@ -100,10 +101,10 @@ def get_attendees_by_eventid(event_id):
     try:
         event = db.query(Event).filter(Event.id==event_id).first()
         if not event:
-                raise HTTPException(status_code=404, detail="Event Not Found")
+            return 'Event Not Found', 204
         attendees_detail = db.query(Attendee).filter(Attendee.event_id == event_id).all()
         if not attendees_detail:
-                raise HTTPException(status_code=404, detail="No Attendee For This Event Found")
+            return 'No Attendee For This Event Found', 204
         formatted_data = []
         for attendee_detail in attendees_detail:
             attendee = db.query(User).filter(User.id==attendee_detail.attendee_id).first()
@@ -112,6 +113,7 @@ def get_attendees_by_eventid(event_id):
                 'first_name': attendee.first_name,
                 'last_name': attendee.last_name,
                 'email': attendee.email,
+                'account_status': attendee.account_status,
                 'event_id': attendee_detail.event_id,
                 'style' : attendee_detail.style,
                 'invite' : attendee_detail.invite,

@@ -190,9 +190,9 @@ paths:
       responses:
         "200":
           description: Attendee Get Success
-      summary:
+      summary: Attendee List
+      tags:
         - Attendees
-        - Attendee Get
       x-openapi-router-controller: openapi_server.controllers.attendees
   /event_attendees_by_eventid:
     get:

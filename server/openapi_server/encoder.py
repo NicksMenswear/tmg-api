@@ -1,5 +1,6 @@
 from json import JSONEncoder
-from openapi_server.models.base_model_ import Model
+# from openapi_server.models.base_model_ import Model
+from openapi_server.database.base_model_ import Model
 import six
 from datetime import datetime
 from uuid import UUID

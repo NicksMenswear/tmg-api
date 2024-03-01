@@ -1,4 +1,4 @@
-from openapi_server.models.product_item import ProductItem
+# from openapi_server.models.product_item import ProductItem
 from openapi_server.database.database_manager import get_database_session  # noqa: E501
 from openapi_server.database.models import ProductItem
 from werkzeug.exceptions import HTTPException

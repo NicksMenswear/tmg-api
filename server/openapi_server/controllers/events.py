@@ -8,6 +8,7 @@ from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import *
 
 
 db = get_database_session()
@@ -45,9 +46,12 @@ def create_event(event):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-def list_events(username):
+def list_events(username,key):
     """Lists all events"""
     try:
+        valid = verify_hmac(key)
+        if not valid:
+            return "Unauthorized User", 401
         user = db.query(User).filter(User.email == username).first()
         if not user:
             raise HTTPException(status_code=204, detail="User not found")

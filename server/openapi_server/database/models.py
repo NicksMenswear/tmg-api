@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from openapi_server.models.base_model_ import Model
+from .base_model_ import Model
 from datetime import datetime
 import uuid
 
@@ -195,6 +195,7 @@ class CartProduct(Base, Model):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     cart_id = Column(Integer, ForeignKey('carts.id'),nullable=False)
     product_id = Column(BigInteger, index=True, nullable=True)
+    variation_id = Column(BigInteger, index=True, nullable=True)
     category = Column(String, index=True, nullable=True)
     quantity = Column(Integer, index=True, nullable=True)
 
@@ -204,6 +205,7 @@ class CartProduct(Base, Model):
             'id': self.id,
             'cart_id': self.cart_id,
             'product_id': self.product_id,
+            'variation_id': self.variation_id,
             'category': self.category,
             'quantity': self.quantity
         }

@@ -116,13 +116,20 @@ paths:
       - Events
       - Event Update
       x-openapi-router-controller: openapi_server.controllers.events
-  /events/{username}:
+  /events/{username}/{key}:
     get:
       operationId: list_events
       parameters:
       - explode: false
         in: path
         name: username
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: key
         required: true
         schema:
           type: string
@@ -544,6 +551,15 @@ paths:
           format: uuid
           type: string
         style: form
+      - description: Key for validation
+        explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
       responses:
         "200":
           description: Details of the Look
@@ -695,6 +711,38 @@ paths:
         explode: true
         in: query
         name: cart_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Cart
+        "404":
+          description: Cart not found
+      summary: Get a single cart by id
+      tags:
+      - Carts
+      - Carts Get
+      x-openapi-router-controller: openapi_server.controllers.carts
+  /cart_by_event_attendee:
+    get:
+      operationId: get_cart_by_event_attendee
+      parameters:
+      - description: Retrieve products of cart
+        explode: true
+        in: query
+        name: event_id
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      - description: Retrieve products of cart
+        explode: true
+        in: query
+        name: attendee_id
         required: false
         schema:
           format: str
@@ -1115,6 +1163,9 @@ components:
           type: string
         product_id:
           title: product_id
+          type: integer
+        variation_id:
+          title: variation_id
           type: integer
         category:
           title: category

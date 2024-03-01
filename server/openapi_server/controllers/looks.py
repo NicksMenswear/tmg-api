@@ -3,6 +3,7 @@ from openapi_server.database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import *
 
 
 db = get_database_session()
@@ -50,9 +51,12 @@ def get_look(look_id,user_id):
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-def get_user_looks(user_id):
+def get_user_looks(user_id,key):
     """Specific user looks"""
     try:
+        valid = verify_hmac(key)
+        if not valid:
+            return "Unauthorized User", 401
         user_id = uuid.UUID(user_id)
         existing_user = db.query(User).filter_by(id=user_id).first()
         if not existing_user:

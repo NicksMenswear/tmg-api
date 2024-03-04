@@ -127,3 +127,23 @@ def get_attendees_by_eventid(event_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+def soft_delete_attendee(attendee_data):
+    """Deleteing Attendee Details"""
+    try:
+        attendee = db.query(User).filter(User.email == attendee_data['email']).first()
+        if not attendee:
+            raise HTTPException(status_code=204, detail="attendee not found")
+
+        attendee_detail = db.query(Attendee).filter(Attendee.event_id == attendee_data['event_id'], Attendee.attendee_id==attendee_data['attendee_id']).first()
+
+        if not attendee_detail:
+                raise HTTPException(status_code=204, detail="data not found for this event and attendee")
+        
+        attendee_detail.is_active = attendee_data['is_active']
+       
+        db.commit()
+        return 'Attendee Deleted successfully!', 200
+    except Exception as e:
+        db.rollback()
+        return "Internal Server Error", 500

@@ -142,6 +142,25 @@ paths:
       - Events
       - Event Get
       x-openapi-router-controller: openapi_server.controllers.events
+  /delete_events:  
+    put:
+      operationId: soft_delete_event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/DeleteEvent'
+        required: true
+        x-body-name: event
+      responses:
+        "200":
+          description: Event Deleted Success
+      summary: Event Delete
+      tags:
+      - Event
+      - Event Delete
+      x-openapi-router-controller: openapi_server.controllers.events
 
   /event_attendees:
     post:
@@ -223,6 +242,25 @@ paths:
       tags:
       - Attendee
       - Attendee Get
+      x-openapi-router-controller: openapi_server.controllers.attendees
+  /delete_event_attendee:  
+    put:
+      operationId: soft_delete_attendee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/DeleteAttendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "200":
+          description: Attendee Deleted Success
+      summary: Attendee Delete
+      tags:
+      - Attendees
+      - Attendee Delete
       x-openapi-router-controller: openapi_server.controllers.attendees
 
   /orders:
@@ -837,6 +875,24 @@ components:
         - event_date
       title: Event
       type: object
+    DeleteEvent:
+      properties:
+        event_id:
+          format: uuid
+          title: event_id
+          type: string
+        user_id:
+          format: uuid
+          title: user_id
+          type: string
+        is_active:
+          title: is_active
+          type: boolean
+      required:
+        - event_id
+        - user_id
+      title: DeleteEvent
+      type: object
 
     Attendee:
       properties:
@@ -908,7 +964,28 @@ components:
         - email
       title: UpdateAttendee
       type: object
-
+    DeleteAttendee:
+      properties:
+        email:
+          format: string
+          title: email
+          type: string
+        event_id:
+          format: uuid
+          title: event_id
+          type: string
+        attendee_id:
+          format: uuid
+          title: attendee_id
+          type: string
+        is_active:
+          title: is_active
+          type: boolean
+      required:
+        - attendee_id
+        - email
+      title: DeleteAttendee
+      type: object
     ListAttendee:
       properties:
         event_id:

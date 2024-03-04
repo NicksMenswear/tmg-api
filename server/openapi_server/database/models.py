@@ -38,6 +38,7 @@ class Event(Base, Model):
     event_name = Column(String, index=True, nullable=False)
     event_date = Column(DateTime, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -45,7 +46,8 @@ class Event(Base, Model):
             'id': self.id,
             'event_name': self.event_name,
             'event_date': str(self.event_date),
-            'user_id': str(self.user_id)
+            'user_id': str(self.user_id),
+            'is_active': self.is_active
         }
         return result
 
@@ -60,7 +62,8 @@ class Attendee(Base, Model):
     pay = Column(Integer, unique=False, index=True, nullable=False)
     size = Column(Integer, unique=False, index=True, nullable=False)
     ship = Column(Integer, unique=False, index=True, nullable=False)
-
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
+    
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -71,7 +74,8 @@ class Attendee(Base, Model):
             'invite': self.invite,
             'pay': self.pay,
             'size': self.size,
-            'ship': self.ship
+            'ship': self.ship,
+            'is_active': self.is_active
         }
         return result
 class ProductItem(Base):

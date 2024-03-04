@@ -75,3 +75,15 @@ def update_event(event):
         return {"message": "Event details updated successfully"}, 200
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+def soft_delete_event(event):
+    """Deleting Event Details."""
+    try:
+        event_detail = db.query(Event).filter(Event.id==event['event_id'],Event.user_id==event['user_id']).first()
+        if not event_detail:
+            raise HTTPException(status_code=404, detail="Event not found")
+        event_detail.is_active = event['is_active']
+        db.commit()
+        return {"message": "Event details deleted successfully"}, 200
+    except Exception as e:
+        return "Internal Server Error", 500

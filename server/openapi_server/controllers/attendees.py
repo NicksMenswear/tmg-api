@@ -10,7 +10,7 @@ from .hmac_1 import hmac_verification
 
 db = get_database_session()
 
-# @hmac_verification()
+@hmac_verification()
 def add_attendee(attendee_data):
     """Add Attendee"""
     try:
@@ -112,7 +112,7 @@ def update_attendee(attendee_data):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-# @hmac_verification()
+@hmac_verification()
 def get_attendees_by_eventid(event_id): 
     """List Attendee Detail"""
     try:

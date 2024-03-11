@@ -426,26 +426,6 @@ paths:
       tags:
       - Users
       x-openapi-router-controller: openapi_server.controllers.users
-    # delete:
-    #   operationId: delete_user
-    #   parameters:
-    #   - name: email
-    #     in: query
-    #     description: Unique identifier of the user to delete
-    #     required: true
-    #     schema:
-    #       type: string
-    #       format: email
-    #   responses:
-    #     "204":
-    #       description: User deleted successfully
-    #     "404":
-    #       description: User not found
-    #   summary: Delete order by ID
-    #   tags:
-    #   - Users
-    #   - Users Delete
-    #   x-openapi-router-controller: openapi_server.controllers.users
   /users/{email}:
     get:
       operationId: get_user_by_id

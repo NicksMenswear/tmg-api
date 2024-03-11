@@ -46,16 +46,7 @@ def create_user(user_data):  # noqa: E501
             role = user_data['role']
         )
 
-        # activation_url = get_activation_url(shopify_id)               
-        # sender_email='ali@themoderngroom.com'
-        # sender_password='Sailors321!@#$'
-        # reciever = user_data['email']
-        # subject ='registration email'
-        # send_mail = send_email(subject , activation_url ,sender_email,reciever,sender_password)
-        # print('send email------------------' , send_mail)
-        # return 'user creater'
         # send_mail = send_email(shopify_id , activation_url ,user_data['email'])
-        # return 'user created'
 
         db.add(user)
         db.commit()

@@ -3,8 +3,10 @@ from openapi_server.database.database_manager import get_database_session  # noq
 from openapi_server.database.models import ProductItem
 from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import hmac_verification
 
 
+@hmac_verification()
 def create_product_item(product_item):  # noqa: E501
     """Create product item
 
@@ -36,6 +38,7 @@ def create_product_item(product_item):  # noqa: E501
         db.close()
 
 
+@hmac_verification()
 def list_product_items():  # noqa: E501
     """Lists all product items
 

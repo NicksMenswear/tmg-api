@@ -3,10 +3,13 @@ from openapi_server.database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import hmac_verification
+
 
 
 db = get_database_session()
 
+@hmac_verification()
 def create_role(role_data):
     """Create role"""
     try:
@@ -31,6 +34,7 @@ def create_role(role_data):
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def get_role(role_id,event_id):
     """List specific role"""
     try:
@@ -39,13 +43,14 @@ def get_role(role_id,event_id):
             return 'Event not found', 204
         role_detail = db.query(Role).filter(Role.id == role_id).first()
         if not role_detail:
-            raise HTTPException(status_code=204, detail="Role not found")
+            return {'message':'Role not found'}, 204
 
         return role_detail.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def get_event_roles(event_id):
     """List event roles"""
     try:
@@ -62,24 +67,27 @@ def get_event_roles(event_id):
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def list_roles():
     """Lists all roles"""
     try:
         role_details = db.query(Role).all()
         if not role_details:
-            raise HTTPException(status_code=204, detail="Role not found")
+            return {'message':'Role not found'}, 204
+
 
         return [role_detail.to_dict() for role_detail in role_details]
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def update_role(role_data):
     """Updating Role Details"""
     try:
         role_detail = db.query(Role).filter(Role.role_name == role_data['role_name']).first()
         if not role_detail:
-            raise HTTPException(status_code=204, detail="Role not found")
+            return {'message':'Role not found'}, 204
         role_detail.role_name = role_data['new_role_name']
         role_detail.look_id = role_data['look_id']
         db.commit()

@@ -4,9 +4,12 @@ from werkzeug.exceptions import HTTPException
 from .shopify import get_activation_url, create_customer
 from .activecampaign import create_contact
 import uuid
+from .hmac_1 import hmac_verification
+
 
 db = get_database_session()
 
+@hmac_verification()
 def send_invite(invite_data):  # noqa: E501
     """Send Invite
 

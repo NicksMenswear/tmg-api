@@ -2,12 +2,14 @@ from openapi_server.database.models import Look, User, Role
 from openapi_server.database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
+from .hmac_1 import hmac_verification
 import uuid
-from .hmac_1 import *
 
 
 db = get_database_session()
 
+
+@hmac_verification()    
 def create_look(look_data):
     """Create look"""
     try:
@@ -36,6 +38,7 @@ def create_look(look_data):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
+@hmac_verification()    
 def get_look(look_id,user_id):
     """List specific look"""
     try:
@@ -44,44 +47,45 @@ def get_look(look_id,user_id):
             return 'User not found', 204
         look_detail = db.query(Look).filter(Look.id == look_id, Look.user_id == user_id).first()
         if not look_detail:
-            raise HTTPException(status_code=204, detail="Look not found")
+            return {'message':'Look not found'}, 204
 
         return look_detail.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-def get_user_looks(user_id,key):
+@hmac_verification()    
+def get_user_looks(user_id):
     """Specific user looks"""
     try:
-        valid = verify_hmac(key)
-        if not valid:
-            return "Unauthorized User", 401
         user_id = uuid.UUID(user_id)
         existing_user = db.query(User).filter_by(id=user_id).first()
         if not existing_user:
             return 'User not found', 204
         look_details = db.query(Look).filter(Look.user_id == user_id).all()
         if not look_details:
-            raise HTTPException(status_code=204, detail="Look not found")
+            return {'message':'Look not found'}, 204
 
         return [look_detail.to_dict() for look_detail in look_details]
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
+@hmac_verification()    
 def list_looks():
     """Lists all looks"""
     try:
         look_details = db.query(Look).all()
         if not look_details:
-            raise HTTPException(status_code=204, detail="Look not found")
+            return {'message':'Look not found'}, 204
+
 
         return [look_detail.to_dict() for look_detail in look_details]
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()    
 def update_look(look_data):
     """Updating Look Details"""
     try:

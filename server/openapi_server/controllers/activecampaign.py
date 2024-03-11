@@ -54,8 +54,6 @@ def create_contact(data):
         }
         data = json.dumps(body_data)
         response = requests.post(url, headers=headers , data=data)
-        print('------------------ Automation Response: ', response.status_code
-              )
         if response.status_code == 422:
             return "Already exist", 422
         elif response.status_code == 200 or response.status_code == 201:

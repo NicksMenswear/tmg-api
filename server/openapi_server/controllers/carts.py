@@ -6,6 +6,7 @@ from .shopify import *
 import uuid
 from dotenv import load_dotenv
 import os
+from .hmac_1 import hmac_verification
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -16,7 +17,7 @@ shopify_store = os.getenv('shopify_store')
 admin_api_access_token = os.getenv('admin_api_access_token')
 
 db = get_database_session()
-
+@hmac_verification()
 def create_cart(cart):  
     """Create cart
 
@@ -56,6 +57,8 @@ def create_cart(cart):
         print("Exception: ",e)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+@hmac_verification()
 def get_cart_by_id(cart_id):  # noqa: E501
     """Retrieve a specific cart by ID
 
@@ -91,6 +94,7 @@ def get_cart_by_id(cart_id):  # noqa: E501
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def get_cart_by_event_attendee(event_id,attendee_id):  # noqa: E501
     """Retrieve a specific cart by ID
 
@@ -140,6 +144,7 @@ def get_cart_by_event_attendee(event_id,attendee_id):  # noqa: E501
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def update_cart(cart):  # noqa: E501
     """Update an existing cart by ID
 

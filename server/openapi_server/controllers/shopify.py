@@ -88,7 +88,6 @@ def list_customer():
 
 def get_activation_url(customer_id):
     try:
-        customer_id = 6887752204419
         access_token = get_access_token()
         url = f'https://{shopify_store}.myshopify.com/admin/api/{api_version}/customers/{customer_id}/account_activation_url.json'
         headers = {

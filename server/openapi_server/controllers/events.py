@@ -8,18 +8,18 @@ from sqlalchemy import exists, text
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
-from .hmac_1 import *
+from .hmac_1 import hmac_verification
 
 
 db = get_database_session()
 
+@hmac_verification()
 def create_event(event):
     """Create event"""
     try:
         user = db.query(User).filter(User.email == event["email"]).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-
+            return {"message": "User not found"}, 204
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
                                             .where(Event.user_id == user.id)).scalar()
@@ -45,18 +45,15 @@ def create_event(event):
         db.rollback()
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-
-def list_events(username,key):
+@hmac_verification()
+def list_events(username):
     """Lists all events"""
     try:
-        valid = verify_hmac(key)
-        if not valid:
-            return "Unauthorized User", 401
         user = db.query(User).filter(User.email == username).first()
         if not user:
-            raise HTTPException(status_code=204, detail="User not found")
+            return {"message": "User not found"}, 200
 
-        events = db.query(Event).filter(Event.user_id == user.id).all()
+        events = db.query(Event).filter(Event.user_id == user.id , Event.is_active == True).all()
 
         return [event.to_dict() for event in events]  # Convert to list of dictionaries
 
@@ -64,26 +61,28 @@ def list_events(username,key):
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def update_event(event):
     """Updating Event Details."""
     try:
         event_detail = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id']).first()
         if not event_detail:
-            raise HTTPException(status_code=404, detail="Event not found")
+            return {"message": "Event not found"}, 200
         event_detail.event_date = event['event_date']
         db.commit()
         return {"message": "Event details updated successfully"}, 200
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@hmac_verification()
 def soft_delete_event(event):
     """Deleting Event Details."""
     try:
-        event_detail = db.query(Event).filter(Event.id==event['event_id'],Event.user_id==event['user_id']).first()
+        event_detail = db.query(Event).filter(Event.id==event['event_id']).first()
         if not event_detail:
-            raise HTTPException(status_code=404, detail="Event not found")
+            return "Event not found", 200
         event_detail.is_active = event['is_active']
         db.commit()
-        return {"message": "Event details deleted successfully"}, 200
+        return "Event details deleted successfully", 200
     except Exception as e:
         return "Internal Server Error", 500

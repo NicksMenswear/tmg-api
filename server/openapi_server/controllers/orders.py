@@ -20,10 +20,13 @@ def create_order(order):  # noqa: E501
 
     :rtype: None
     """
-
     try:
         user = db.query(User).filter(User.email == order["email"]).first()
+        if not user:
+            return "Email not found", 204
         event = db.query(Event).filter(Event.user_id == user.id).first()
+        if not event:
+            return "Event not found", 204
         order_id = uuid.uuid4()
         new_order = Order(
             id = order_id,
@@ -49,7 +52,8 @@ def create_order(order):  # noqa: E501
             db.refresh(new_orderitem)
         return 'Order created successfully!', 201
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()
@@ -69,7 +73,8 @@ def get_order_by_id(order_id):  # noqa: E501
             return {'message':'Order not found'}, 204
         return order.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()
@@ -92,7 +97,8 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
 
         return [order.to_dict() for order in orders]
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()
@@ -114,7 +120,8 @@ def update_order(order):  # noqa: E501
         db.commit()
         return {"message": "Order details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def delete_order(order_id):
@@ -132,4 +139,5 @@ def delete_order(order_id):
         db.delete(order)
         db.commit()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

@@ -2,9 +2,14 @@ import hmac
 import hashlib
 import os
 from flask import request
+from dotenv import load_dotenv
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+env_file_path = os.path.join(current_dir, '../../.env')
+load_dotenv(dotenv_path=env_file_path)
 
 
-secret_key = os.getenv("SECRET_KEY")
+secret_key = os.environ.get("SECRET_KEY_C2")
 secret_key=secret_key.encode('utf-8')
 
 def hmac_verification():

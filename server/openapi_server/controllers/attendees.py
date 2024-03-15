@@ -15,8 +15,13 @@ def add_attendee(attendee_data):
     """Add Attendee"""
     try:
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
+        print("================= User: ", user)
+        if user:
+            return 'Attendee with the same detail already exists!', 400
         shopify_user = get_customer(attendee_data['email'])
+        print(" ===================== shopify: ",shopify_user)
         if ((not user) and (not shopify_user)):
+            print("------------ Inside")
             shopify_id = create_customer({
                 'first_name' : attendee_data['first_name'],
                 'last_name' : attendee_data['last_name'],
@@ -37,6 +42,7 @@ def add_attendee(attendee_data):
             db.refresh(user)
         
         attendee = db.query(User).filter(User.email == attendee_data["email"]).first()
+        print(" ============== attendee: ", attendee)
         existing_attendee = db.query(Attendee).filter(Attendee.event_id == attendee_data["event_id"],Attendee.attendee_id == attendee.id, Attendee.is_active == True).first()
 
         if existing_attendee:
@@ -68,9 +74,9 @@ def add_attendee(attendee_data):
             db.refresh(new_attendee)
             return 'Attendee created successfully!', 201
     except SQLAlchemyError as e:
-        print(f"An SQLAlchemy error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()
 def list_attendee(email,event_id):
@@ -88,7 +94,7 @@ def list_attendee(email,event_id):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()
 def update_attendee(attendee_data):
@@ -110,7 +116,8 @@ def update_attendee(attendee_data):
         db.commit()
         return 'Attendee Updated successfully!', 201
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()
 def get_attendees_by_eventid(event_id): 
@@ -144,7 +151,7 @@ def get_attendees_by_eventid(event_id):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()    
 def soft_delete_attendee(attendee_data):
@@ -165,4 +172,5 @@ def soft_delete_attendee(attendee_data):
         return 'Attendee Deleted successfully!', 200
     except Exception as e:
         db.rollback()
-        raise HTTPException (status_code=500, detail='internal server error')
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

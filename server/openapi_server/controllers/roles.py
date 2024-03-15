@@ -30,9 +30,9 @@ def create_role(role_data):
             db.refresh(new_role)
             return new_role.to_dict()
     except SQLAlchemyError as e:
-        print(f"An SQLAlchemy error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def get_role(role_id,event_id):
@@ -48,7 +48,7 @@ def get_role(role_id,event_id):
         return role_detail.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def get_event_roles(event_id):
@@ -65,7 +65,7 @@ def get_event_roles(event_id):
         return [role_detail.to_dict() for role_detail in role_details]
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def list_roles():
@@ -75,11 +75,10 @@ def list_roles():
         if not role_details:
             return {'message':'Role not found'}, 204
 
-
         return [role_detail.to_dict() for role_detail in role_details]
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def update_role(role_data):
@@ -93,4 +92,5 @@ def update_role(role_data):
         db.commit()
         return {"message": "Role details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

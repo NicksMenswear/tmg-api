@@ -1,7 +1,5 @@
-# from openapi_server.models.product_item import ProductItem
 from openapi_server.database.database_manager import get_database_session  # noqa: E501
 from openapi_server.database.models import ProductItem
-from werkzeug.exceptions import HTTPException
 import uuid
 from .hmac_1 import hmac_verification
 
@@ -33,7 +31,8 @@ def create_product_item(product_item):  # noqa: E501
         return 'Product created successfully!', 201
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error") from e
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     finally:
         db.close()
 
@@ -59,6 +58,7 @@ def list_product_items():  # noqa: E501
             }) 
         return formatted_products
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     finally:
         db.close()

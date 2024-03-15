@@ -21,8 +21,8 @@ def create_contact(data):
     contact_details = {
         "contact": {
             "email": data['email'],
-            "first_name": data['first_name'],
-            "last_name": data['last_name'],
+            # "first_name": data['first_name'],
+            # "last_name": data['last_name'],
             "fieldValues": [  
                 {
                     "event_name": data['event_name'], 
@@ -59,5 +59,5 @@ def create_contact(data):
         elif response.status_code == 200 or response.status_code == 201:
             return "created contact in automation successfully", 201
     else:
-        return "Internal Server Error"
+        return "Internal Server Error", 500
 

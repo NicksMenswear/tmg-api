@@ -22,14 +22,13 @@ def create_event(event):
             return {"message": "User not found"}, 204
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
-                                            .where(Event.user_id == user.id)).scalar()
+                                            .where(Event.user_id == user.id).where(Event.is_active==True)).scalar()
 
         if existing_event:
             return 'event with the same detail already exists!', 400
 
         else:
             event_id = uuid.uuid4()
-            # attendee_json = event["attendee"]
             new_event = Event(
                 id=event_id,
                 event_name=event["event_name"],
@@ -41,9 +40,9 @@ def create_event(event):
             db.refresh(new_event)
             return new_event.to_dict()
     except SQLAlchemyError as e:
-        print(f"An SQLAlchemy error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def list_events(username):
@@ -59,7 +58,7 @@ def list_events(username):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def update_event(event):
@@ -72,7 +71,8 @@ def update_event(event):
         db.commit()
         return {"message": "Event details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def soft_delete_event(event):
@@ -85,4 +85,5 @@ def soft_delete_event(event):
         db.commit()
         return "Event details deleted successfully", 200
     except Exception as e:
-        return "Internal Server Error", 500
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

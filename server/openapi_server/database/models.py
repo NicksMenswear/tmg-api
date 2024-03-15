@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from .base_model_ import Model
@@ -143,7 +143,7 @@ class Look(Base, Model):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     look_name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    product_specs = Column(String, index=True, nullable=True)
+    product_specs = Column(JSON, nullable=True) 
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""

@@ -1,3 +1,5 @@
+from openapi_server.database.models import User
+from openapi_server.database.database_manager import get_database_session
 import requests
 import os
 from werkzeug.exceptions import HTTPException
@@ -8,21 +10,21 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 env_file_path = os.path.join(current_dir, '../../.env')
 
 load_dotenv(dotenv_path=env_file_path)
-shopify_store = os.getenv('shopify_store')
-client_id = os.getenv('client_id')
-admin_api_access_token = os.getenv('admin_api_access_token')
-client_secret = os.getenv('client_secret')
-api_version = os.getenv('api_version')
+shopify_store = os.environ.get('shopify_store')
+client_id = os.environ.get('client_id')
+admin_api_access_token = os.environ.get('admin_api_access_token')
+client_secret = os.environ.get('client_secret')
+api_version = os.environ.get('api_version')
 
+db = get_database_session()
 
-def search_customer_by_email(email,access_token):
+def search_customer_by_email(email):
     try:
+        user = db.query(User).filter(User.email == email).first()
         response = requests.get(
-            f'https://{shopify_store}.myshopify.com/admin/api/2024-01/customers/search.json',
-            params={'query': f'email:{email}'},
+            f'https://{shopify_store}.myshopify.com/admin/api/2024-01/customers/{user.shopify_id}.json',
             headers={
-                'Content-Type': 'application/json',
-                'X-Shopify-Access-Token': access_token,
+                'X-Shopify-Access-Token': admin_api_access_token,
             }
         )
         customers = response.json().get('customers',[])
@@ -59,36 +61,33 @@ def get_access_token():
                 'grant_type': 'client_credentials',
             }
         )
-
         access_token = response.json().get('access_token')
         return access_token
-    except requests.exceptions.RequestException as error:
-        print('Error getting access token:', error)
-        raise
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 def get_customer(email):
 
     try:
-        access_token = get_access_token()
-        customers = search_customer_by_email(email,access_token)
+        customers = search_customer_by_email(email)
         return customers
-    except Exception as error:
-        print(error)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 def list_customer():
 
     customer_email = 'syed@nicksmenswear.com'
 
     try:
-        access_token = get_access_token()
-        customers = search_customer_by_email(customer_email,access_token)
+        customers = search_customer_by_email(customer_email)
         print('Found customers: ', customers)
-    except Exception as error:
-        print(error)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 def get_activation_url(customer_id):
     try:
-        access_token = get_access_token()
         url = f'https://{shopify_store}.myshopify.com/admin/api/{api_version}/customers/{customer_id}/account_activation_url.json'
         headers = {
             'Content-Type': 'application/json',
@@ -102,14 +101,16 @@ def get_activation_url(customer_id):
             print(f'Activation URL: {activation_url}')
             return activation_url
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 def create_customer(customer_data):
     try:
         created_customer = create_shopify_customer(customer_data)
         if created_customer:
+    # product_specs = Column(String, index=True, nullable=True)
             print('Created customer:', created_customer['id'])
             return created_customer['id']
-    except Exception as error:
-        print(error)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

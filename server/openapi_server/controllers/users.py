@@ -1,7 +1,4 @@
 import connexion
-from typing import Dict
-from typing import Tuple
-from typing import Union
 from openapi_server.database.models import User, Event, Order, OrderItem
 from openapi_server.database.database_manager import get_database_session
 from .shopify import create_customer, get_customer ,get_activation_url
@@ -9,6 +6,17 @@ from .registration_email import send_email
 import uuid
 from werkzeug.exceptions import HTTPException
 from .hmac_1 import hmac_verification
+from dotenv import load_dotenv
+import os
+
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+env_file_path = os.path.join(current_dir, '../../.env')
+
+load_dotenv(dotenv_path=env_file_path)
+
+password = os.environ.get('sender_password')
 
 
 db = get_database_session()
@@ -25,6 +33,8 @@ def create_user(user_data):  # noqa: E501
     """ # noqa: E501
     try:
         existing_user = db.query(User).filter_by(email=user_data['email']).first()
+        if existing_user:
+            return 'user with the same email already exists!', 400
         shopify_user = get_customer(user_data['email'])
         if (existing_user and shopify_user):
             return 'user with the same email already exists!', 400
@@ -34,6 +44,9 @@ def create_user(user_data):  # noqa: E501
             'last_name' : user_data['last_name'],
             'email' : user_data['email'],
         })
+
+        if not shopify_id:
+            return "User not created in shopify", 400
 
         user_id = uuid.uuid4()
         user = User(
@@ -46,18 +59,25 @@ def create_user(user_data):  # noqa: E501
             role = user_data['role']
         )
 
-        # send_mail = send_email(shopify_id , activation_url ,user_data['email'])
+        activation_url = get_activation_url(shopify_id)
+        activation_link = f'<a href="{activation_url}">Click Me</a>'
+        body = f"Click the following link to activate your account: {activation_link}"
+                
+        sender_email='bsit833@gmail.com'
+        sender_password=password
+        reciever = user_data['email']
+        subject ='Registration email'
+        send_mail = send_email(subject , body ,sender_email,reciever,sender_password)
 
         db.add(user)
         db.commit()
-        db.refresh(user)
-    
+        db.refresh(user) 
         
         return 'User created successfully!', 201
     except Exception as e:
-        print(f"An error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()
@@ -87,7 +107,7 @@ def get_user_by_id(email):  # noqa: E501
         return formatted_user
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()
 def list_users():  # noqa: E501
@@ -115,7 +135,8 @@ def list_users():  # noqa: E501
         return formatted_users
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
+
     
 @hmac_verification()
 def update_user(user_data):  # noqa: E501
@@ -147,6 +168,6 @@ def update_user(user_data):  # noqa: E501
         db.refresh(user)
         return user.to_dict()
     except Exception as e:
-        print(f"An error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

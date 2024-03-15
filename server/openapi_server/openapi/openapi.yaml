@@ -905,6 +905,9 @@ components:
         ship:
           title: ship
           type: integer
+        role:
+          title: role
+          type: integer
       required:
         - email
         - event_id
@@ -1121,7 +1124,7 @@ components:
           type: string
         product_specs:
           title: product_specs
-          type: string
+          type: object
       required:
         - look_name
         - email
@@ -1140,7 +1143,7 @@ components:
           type: boolean
         product_specs:
           title: product_specs
-          type: string
+          type: object
       required:
         - look_name
         - flag
@@ -1202,6 +1205,11 @@ components:
         event_id:
           title: event_id
           type: string
+        data:
+          title: data
+          type: array
+          items:
+            type: object
       required:
         - event_id
       title: Invite

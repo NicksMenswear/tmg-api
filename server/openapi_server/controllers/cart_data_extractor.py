@@ -26,4 +26,5 @@ def data_extractor(response, variant_id):
             'specific_variant': specific_variant
         }
     except Exception as e:
-        print(e)
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

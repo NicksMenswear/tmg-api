@@ -17,6 +17,7 @@ shopify_store = os.getenv('shopify_store')
 admin_api_access_token = os.getenv('admin_api_access_token')
 
 db = get_database_session()
+
 @hmac_verification()
 def create_cart(cart):  
     """Create cart
@@ -54,8 +55,8 @@ def create_cart(cart):
         # return 'Cart created successfully!', 201
         return cart_id
     except Exception as e:
-        print("Exception: ",e)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()
@@ -92,7 +93,8 @@ def get_cart_by_id(cart_id):  # noqa: E501
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def get_cart_by_event_attendee(event_id,attendee_id):  # noqa: E501
@@ -116,15 +118,12 @@ def get_cart_by_event_attendee(event_id,attendee_id):  # noqa: E501
             "attendee_id": str(cart.attendee_id),
             "products": []
         }
-        access_token = get_access_token()
-        print('accesssssssssssss token: ',access_token)
         for product in cart_products:
             url = f"https://{shopify_store}.myshopify.com/admin/api/2024-01/products/{product.product_id}.json"
             headers = {
                 'Content-Type': 'application/json',
                 'X-Shopify-Access-Token': admin_api_access_token,
             }
-            print("-----------------------------Hitting URL", url)
             prod_response = requests.get(url, headers=headers)
             data = None
             if prod_response.status_code == 200:
@@ -142,7 +141,8 @@ def get_cart_by_event_attendee(event_id,attendee_id):  # noqa: E501
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
 def update_cart(cart):  # noqa: E501
@@ -195,4 +195,5 @@ def update_cart(cart):  # noqa: E501
             return 'Cart not found', 404
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

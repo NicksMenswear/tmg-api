@@ -26,6 +26,10 @@ def send_invite(invite_data):  # noqa: E501
     """
     try:
         if 'data' in invite_data:
+            # if not invite_data['first_name']:
+            #     invite_data.first_name = None
+            # if not invite_data['last_name']:
+            #     invite_data['['last_name'] = None
             responses = []
             for attendee in invite_data['data']:
                 existing_user = db.query(User).filter_by(email=attendee['email']).first()
@@ -38,8 +42,8 @@ def send_invite(invite_data):  # noqa: E501
 
                     data = {
                         'email': attendee['email'],
-                        'first_name': attendee['first_name'],
-                        'last_name': attendee['last_name'],
+                        # 'first_name': attendee['first_name'],
+                        # 'last_name': attendee['last_name'],
                         'event_name': invite_data['event_name'],
                         'event_id': invite_data['event_id'],
                         'activation_url': activation_url
@@ -48,16 +52,16 @@ def send_invite(invite_data):  # noqa: E501
                     responses.append(response)
                 else:
                     shopify_id = create_customer({
-                        'first_name': attendee['first_name'],
-                        'last_name': attendee['last_name'],
+                        # 'first_name': attendee['first_name'],
+                        # 'last_name': attendee['last_name'],
                         'email': attendee['email'],
                     })
 
                     user_id = uuid.uuid4()
                     user = User(
                         id=user_id,
-                        first_name=attendee['first_name'],
-                        last_name=attendee['last_name'],
+                        # first_name=attendee['first_name'],
+                        # last_name=attendee['last_name'],
                         email=attendee['email'],
                         shopify_id=shopify_id,
                         account_status=True,
@@ -71,8 +75,8 @@ def send_invite(invite_data):  # noqa: E501
 
                     data = {
                         'email': attendee['email'],
-                        'first_name': attendee['first_name'],
-                        'last_name': attendee['last_name'],
+                        # 'first_name': attendee['first_name'],
+                        # 'last_name': attendee['last_name'],
                         'event_name': invite_data['event_name'],
                         'event_id': invite_data['event_id'],
                         'activation_url': activation_url
@@ -82,9 +86,10 @@ def send_invite(invite_data):  # noqa: E501
 
             return responses
         else:
-            raise ValueError("Data is missing or not in the correct format")
+            return "Data is missing or not in the correct format", 204
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error") from e
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     finally:
         db.close()

@@ -21,6 +21,7 @@ def create_look(look_data):
             return 'Look with the same detail already exists!', 400
 
         else:
+            print("============================ look: ", look_data["product_specs"])
             look_id = uuid.uuid4()
             new_look = Look(
                 id=look_id,
@@ -32,10 +33,11 @@ def create_look(look_data):
             db.commit()
             db.refresh(new_look)
             return new_look.to_dict()
+            # return 'Look created successfully!', 201
     except SQLAlchemyError as e:
-        print(f"An SQLAlchemy error occurred: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
 @hmac_verification()    
@@ -52,7 +54,7 @@ def get_look(look_id,user_id):
         return look_detail.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()    
 def get_user_looks(user_id):
@@ -69,7 +71,7 @@ def get_user_looks(user_id):
         return [look_detail.to_dict() for look_detail in look_details]
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
     
 @hmac_verification()    
 def list_looks():
@@ -83,7 +85,7 @@ def list_looks():
         return [look_detail.to_dict() for look_detail in look_details]
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return f"Internal Server Error : {e}", 500
 
 @hmac_verification()    
 def update_look(look_data):
@@ -107,4 +109,5 @@ def update_look(look_data):
                 db.commit()
                 return {"message": "Look details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

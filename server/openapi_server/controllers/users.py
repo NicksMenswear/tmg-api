@@ -6,11 +6,8 @@ from .registration_email import send_email
 import uuid
 from werkzeug.exceptions import HTTPException
 from .hmac_1 import hmac_verification
-from dotenv import load_dotenv
 import os
 
-
-load_dotenv()
 
 password = os.getenv('sender_password')
 sender_email = os.getenv('sender_email')

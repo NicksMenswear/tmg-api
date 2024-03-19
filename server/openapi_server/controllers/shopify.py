@@ -2,10 +2,7 @@ from openapi_server.database.models import User
 from openapi_server.database.database_manager import get_database_session
 import requests
 import os
-from dotenv import load_dotenv
 
-
-load_dotenv()
 
 shopify_store = os.getenv('shopify_store')
 client_id = os.getenv('client_id')

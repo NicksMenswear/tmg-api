@@ -4,12 +4,10 @@ from .cart_data_extractor import *
 from werkzeug.exceptions import HTTPException
 from .shopify import *
 import uuid
-from dotenv import load_dotenv
 import os
 from .hmac_1 import hmac_verification
 
 
-load_dotenv()
 shopify_store = os.getenv('shopify_store')
 admin_api_access_token = os.getenv('admin_api_access_token')
 

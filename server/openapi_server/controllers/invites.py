@@ -38,7 +38,6 @@ def send_invite(invite_data):  # noqa: E501
                         activation_url = ""
                     else:
                         activation_url = get_activation_url(existing_user.shopify_id)
-                        print('act url: ', activation_url)
 
                     data = {
                         'email': attendee['email'],

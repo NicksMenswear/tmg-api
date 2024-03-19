@@ -2,12 +2,9 @@ import hmac
 import hashlib
 import os
 from flask import request
-from dotenv import load_dotenv
 
 
-load_dotenv()
-
-secret_key = os.getenv("SECRET_KEY_C2")
+secret_key = os.getenv("client_secret")
 secret_key=secret_key.encode('utf-8')
 
 def hmac_verification():

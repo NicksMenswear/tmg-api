@@ -1,10 +1,8 @@
 import requests
 import json
-from dotenv import load_dotenv
 import os
 
 
-load_dotenv()
 
 
 URL = "https://themoderngroom.api-us1.com/api/3/contacts"

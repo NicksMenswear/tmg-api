@@ -2,9 +2,6 @@ import requests
 import json
 import os
 
-
-
-
 URL = "https://themoderngroom.api-us1.com/api/3/contacts"
 API_KEY = os.getenv('API_KEY')
 

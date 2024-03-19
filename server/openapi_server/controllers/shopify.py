@@ -2,19 +2,16 @@ from openapi_server.database.models import User
 from openapi_server.database.database_manager import get_database_session
 import requests
 import os
-from werkzeug.exceptions import HTTPException
 from dotenv import load_dotenv
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
 
-env_file_path = os.path.join(current_dir, '../../.env')
+load_dotenv()
 
-load_dotenv(dotenv_path=env_file_path)
-shopify_store = os.environ.get('shopify_store')
-client_id = os.environ.get('client_id')
-admin_api_access_token = os.environ.get('admin_api_access_token')
-client_secret = os.environ.get('client_secret')
-api_version = os.environ.get('api_version')
+shopify_store = os.getenv('shopify_store')
+client_id = os.getenv('client_id')
+admin_api_access_token = os.getenv('admin_api_access_token')
+client_secret = os.getenv('client_secret')
+api_version = os.getenv('api_version')
 
 db = get_database_session()
 

@@ -9,10 +9,7 @@ import os
 from .hmac_1 import hmac_verification
 
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
-env_file_path = os.path.join(current_dir, '../../.env')
-
-load_dotenv(dotenv_path=env_file_path)
+load_dotenv()
 shopify_store = os.getenv('shopify_store')
 admin_api_access_token = os.getenv('admin_api_access_token')
 

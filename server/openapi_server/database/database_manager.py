@@ -3,11 +3,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
 
-env_file_path = os.path.join(current_dir, '../../.env')
-
-load_dotenv(dotenv_path=env_file_path)
+load_dotenv()
 db_user = os.getenv('DB_USER')
 db_password = os.getenv('DB_PASSWORD')
 db_host = os.getenv('DB_HOST')

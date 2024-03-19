@@ -4,6 +4,8 @@ import uuid
 from .hmac_1 import hmac_verification
 
 
+db = get_database_session()
+
 @hmac_verification()
 def create_product_item(product_item):  # noqa: E501
     """Create product item
@@ -16,7 +18,6 @@ def create_product_item(product_item):  # noqa: E501
     :rtype: None
     """
     try:
-        db = get_database_session()
         existing_product = db.query(ProductItem).filter_by(name=product_item['name']).first()
         if existing_product:
             return 'Item with the same name already exists!',400
@@ -47,7 +48,6 @@ def list_product_items():  # noqa: E501
     :rtype: List[ProductItem]
     """
     try:
-        db = get_database_session()
         formatted_products = []
         products = db.query(ProductItem).all()
         for product in products:

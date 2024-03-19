@@ -10,13 +10,10 @@ from dotenv import load_dotenv
 import os
 
 
-current_dir = os.path.dirname(os.path.realpath(__file__))
+load_dotenv()
 
-env_file_path = os.path.join(current_dir, '../../.env')
-
-load_dotenv(dotenv_path=env_file_path)
-
-password = os.environ.get('sender_password')
+password = os.getenv('sender_password')
+sender_email = os.getenv('sender_email')
 
 
 db = get_database_session()
@@ -62,8 +59,7 @@ def create_user(user_data):  # noqa: E501
         activation_url = get_activation_url(shopify_id)
         activation_link = f'<a href="{activation_url}">Click Me</a>'
         body = f"Click the following link to activate your account: {activation_link}"
-                
-        sender_email='bsit833@gmail.com'
+
         sender_password=password
         reciever = user_data['email']
         subject ='Registration email'

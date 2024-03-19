@@ -1,6 +1,5 @@
 from openapi_server.database.models import Order, OrderItem, Event, User, ProductItem
 from openapi_server.database.database_manager import get_database_session
-from werkzeug.exceptions import HTTPException
 import uuid
 from .hmac_1 import hmac_verification
 
@@ -70,7 +69,7 @@ def get_order_by_id(order_id):  # noqa: E501
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            return {'message':'Order not found'}, 204
+            return 'Order not found', 204
         return order.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -93,7 +92,7 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
     try:
         orders = db.query(Order).filter(Order.user_id==user_id, Order.event_id==event_id)
         if not orders:
-            return {'message':'Order not found'}, 204
+            return 'Order not found', 204
 
         return [order.to_dict() for order in orders]
     except Exception as e:
@@ -129,7 +128,7 @@ def delete_order(order_id):
     try:
         order = db.query(Order).filter(Order.id==order_id).first()
         if not order:
-            return {'message':'Order not found'}, 204
+            return 'Order not found', 204
 
         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
         for order_item in order_items:

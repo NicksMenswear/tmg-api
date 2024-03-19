@@ -19,7 +19,7 @@ def create_event(event):
     try:
         user = db.query(User).filter(User.email == event["email"]).first()
         if not user:
-            return {"message": "User not found"}, 204
+            return "User not found", 204
         existing_event = db.query(exists().where(Event.event_name == event["event_name"])
                                             .where(Event.event_date == event["event_date"])
                                             .where(Event.user_id == user.id).where(Event.is_active==True)).scalar()
@@ -50,7 +50,7 @@ def list_events(username):
     try:
         user = db.query(User).filter(User.email == username).first()
         if not user:
-            return {"message": "User not found"}, 200
+            return "User not found", 204
 
         events = db.query(Event).filter(Event.user_id == user.id , Event.is_active == True).all()
 
@@ -66,10 +66,10 @@ def update_event(event):
     try:
         event_detail = db.query(Event).filter(Event.id==event['id'],Event.user_id==event['user_id']).first()
         if not event_detail:
-            return {"message": "Event not found"}, 200
+            return "Event not found", 200
         event_detail.event_date = event['event_date']
         db.commit()
-        return {"message": "Event details updated successfully"}, 200
+        return "Event details updated successfully", 200
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500

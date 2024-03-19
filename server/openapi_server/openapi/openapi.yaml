@@ -1125,6 +1125,9 @@ components:
         product_specs:
           title: product_specs
           type: object
+        product_final_image:
+          title: product_final_image
+          type: string
       required:
         - look_name
         - email

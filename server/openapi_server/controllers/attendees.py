@@ -15,13 +15,10 @@ def add_attendee(attendee_data):
     """Add Attendee"""
     try:
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
-        print("================= User: ", user)
         if user:
             return 'Attendee with the same detail already exists!', 400
         shopify_user = get_customer(attendee_data['email'])
-        print(" ===================== shopify: ",shopify_user)
         if ((not user) and (not shopify_user)):
-            print("------------ Inside")
             shopify_id = create_customer({
                 'first_name' : attendee_data['first_name'],
                 'last_name' : attendee_data['last_name'],
@@ -42,7 +39,6 @@ def add_attendee(attendee_data):
             db.refresh(user)
         
         attendee = db.query(User).filter(User.email == attendee_data["email"]).first()
-        print(" ============== attendee: ", attendee)
         existing_attendee = db.query(Attendee).filter(Attendee.event_id == attendee_data["event_id"],Attendee.attendee_id == attendee.id, Attendee.is_active == True).first()
 
         if existing_attendee:
@@ -84,7 +80,7 @@ def list_attendee(email,event_id):
     try:
         attendee = db.query(User).filter(User.email == email).first()
         if not attendee:
-            return {'message':'attendee not found'}, 204
+            return 'attendee not found', 204
 
         attendee_details = db.query(Event).filter(Event.id == event_id, Attendee.attendee_id==attendee.id , Event.is_active==True , Attendee.is_active == True).first()
         if not attendee_details:
@@ -102,11 +98,11 @@ def update_attendee(attendee_data):
     try:
         attendee = db.query(User).filter(User.email == attendee_data['email']).first()
         if not attendee:
-            return {'message':'attendee not found'}, 204
+            return 'attendee not found', 204
 
         attendee_detail = db.query(Event).filter(Event.id == attendee_data['event_id'], Attendee.attendee_id==attendee.id).first()
         if not attendee_detail:
-            return {'message':'data not found for this event and attendee'}, 204
+            return 'data not found for this event and attendee', 204
 
         attendee_detail.style = attendee_data['style']
         attendee_detail.invi = attendee_data['invite']

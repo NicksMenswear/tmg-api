@@ -1,7 +1,6 @@
 from openapi_server.database.models import Role, User, Event
 from openapi_server.database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import HTTPException
 import uuid
 from .hmac_1 import hmac_verification
 
@@ -43,7 +42,7 @@ def get_role(role_id,event_id):
             return 'Event not found', 204
         role_detail = db.query(Role).filter(Role.id == role_id).first()
         if not role_detail:
-            return {'message':'Role not found'}, 204
+            return 'Role not found', 204
 
         return role_detail.to_dict()
     except Exception as e:
@@ -73,7 +72,7 @@ def list_roles():
     try:
         role_details = db.query(Role).all()
         if not role_details:
-            return {'message':'Role not found'}, 204
+            return 'Role not found', 204
 
         return [role_detail.to_dict() for role_detail in role_details]
     except Exception as e:
@@ -86,11 +85,11 @@ def update_role(role_data):
     try:
         role_detail = db.query(Role).filter(Role.role_name == role_data['role_name']).first()
         if not role_detail:
-            return {'message':'Role not found'}, 204
+            return 'Role not found', 204
         role_detail.role_name = role_data['new_role_name']
         role_detail.look_id = role_data['look_id']
         db.commit()
-        return {"message": "Role details updated successfully"}, 200
+        return "Role details updated successfully", 200
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500

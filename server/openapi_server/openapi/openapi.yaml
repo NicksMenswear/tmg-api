@@ -155,7 +155,6 @@ paths:
       summary: Event Delete
       tags:
       - Event
-      - Event Delete
       x-openapi-router-controller: openapi_server.controllers.events
 
   /event_attendees:
@@ -701,7 +700,6 @@ paths:
       summary: Create cart
       tags:
       - Carts
-      - Carts Create
       x-openapi-router-controller: openapi_server.controllers.carts
     put:
       operationId: update_cart
@@ -718,7 +716,6 @@ paths:
       summary: Upadte cart
       tags:
       - Carts
-      - Cart Update
       x-openapi-router-controller: openapi_server.controllers.carts
   /cart_by_id:
     get:
@@ -741,7 +738,6 @@ paths:
       summary: Get a single cart by id
       tags:
       - Carts
-      - Carts Get
       x-openapi-router-controller: openapi_server.controllers.carts
   /cart_by_event_attendee:
     get:
@@ -773,7 +769,6 @@ paths:
       summary: Get a single cart by id
       tags:
       - Carts
-      - Carts Get
       x-openapi-router-controller: openapi_server.controllers.carts
 
 

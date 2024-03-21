@@ -20,7 +20,7 @@ app.add_api('openapi.yaml',
 app.app.json_encoder = encoder.CustomJSONEncoder
 
 def lambda_handler(event, context):
-    # init_db()
+    init_db()
     return awsgi.response(app, event, context)
 
 def init_db():
@@ -29,7 +29,8 @@ def init_db():
     from openapi_server.database.models import Base
     from openapi_server.database.database_manager import DATABASE_URL
     engine = create_engine(DATABASE_URL, echo=True)
-    Base.metadata.create_all(bind=engine, checkfirst=True) 
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine) 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=8080)

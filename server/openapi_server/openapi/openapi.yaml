@@ -154,7 +154,7 @@ paths:
           description: Event Deleted Success
       summary: Event Delete
       tags:
-      - Event
+        - Events
       x-openapi-router-controller: openapi_server.controllers.events
 
   /event_attendees:
@@ -242,7 +242,7 @@ paths:
           description: Event not found
       summary: Retrieve a specific Event Attendees by Event ID
       tags:
-        - Attendee
+        - Attendees
       x-openapi-router-controller: openapi_server.controllers.attendees
   /delete_event_attendee:  
     put:
@@ -261,7 +261,6 @@ paths:
       summary: Attendee Delete
       tags:
       - Attendees
-      - Attendee Delete
       x-openapi-router-controller: openapi_server.controllers.attendees
 
   /orders:

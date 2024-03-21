@@ -199,7 +199,7 @@ class CartProduct(Base, Model):
     __tablename__ = 'cartproducts'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    cart_id = Column(Integer, ForeignKey('carts.id'),nullable=False)
+    cart_id = Column(UUID(as_uuid=True), ForeignKey('carts.id'),nullable=False)
     product_id = Column(BigInteger, index=True, nullable=True)
     variation_id = Column(BigInteger, index=True, nullable=True)
     category = Column(String, index=True, nullable=True)

@@ -1,10 +1,12 @@
-from openapi_server.models.product_item import ProductItem
 from openapi_server.database.database_manager import get_database_session  # noqa: E501
 from openapi_server.database.models import ProductItem
-from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import hmac_verification
 
 
+db = get_database_session()
+
+@hmac_verification()
 def create_product_item(product_item):  # noqa: E501
     """Create product item
 
@@ -16,7 +18,6 @@ def create_product_item(product_item):  # noqa: E501
     :rtype: None
     """
     try:
-        db = get_database_session()
         existing_product = db.query(ProductItem).filter_by(name=product_item['name']).first()
         if existing_product:
             return 'Item with the same name already exists!',400
@@ -31,11 +32,13 @@ def create_product_item(product_item):  # noqa: E501
         return 'Product created successfully!', 201
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Internal Server Error") from e
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     finally:
         db.close()
 
 
+@hmac_verification()
 def list_product_items():  # noqa: E501
     """Lists all product items
 
@@ -45,7 +48,6 @@ def list_product_items():  # noqa: E501
     :rtype: List[ProductItem]
     """
     try:
-        db = get_database_session()
         formatted_products = []
         products = db.query(ProductItem).all()
         for product in products:
@@ -56,6 +58,7 @@ def list_product_items():  # noqa: E501
             }) 
         return formatted_products
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
     finally:
         db.close()

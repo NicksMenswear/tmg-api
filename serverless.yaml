@@ -29,11 +29,22 @@ functions:
         - subnet-0558d5c84f76f6246
         - subnet-081fa5d80ecd9a253
     environment:
+      # SQLAlchemy Env Variables
       DB_HOST: tmg-api-db-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com
       DB_PORT: 5432
       DB_NAME: tmg_api
       DB_USER: postgres
-      DB_PASSWORD: 05BC0E22CCA7
+      DB_PASSWORD: ${ssm:/db/tmg-api-db/DB_PASSWORD}
+      # Shopify Env Variables
+      API_KEY: ${ssm:/shopify/c2/API_KEY}
+      sender_email: "bsit833@gmail.com"
+      sender_password: ${ssm:/shopify/c2/sender_password}
+      api_version: "2024-01"
+      shopify_store: "themodern-groom"
+      client_id: ${ssm:/shopify/c2/client_id}
+      client_secret: ${ssm:/shopify/c2/client_secret}
+      SECRET_KEY_C2: ${ssm:/shopify/c2/client_secret}
+      admin_api_access_token: ${ssm:/shopify/c2/admin_api_access_token}
 
 plugins:
   - serverless-python-requirements

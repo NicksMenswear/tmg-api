@@ -1,7 +1,5 @@
 import connexion
 import six
-
-from openapi_server.models.audit_log import AuditLog  # noqa: E501
 from openapi_server import util
 
 

@@ -1,11 +1,14 @@
 from openapi_server.database.models import Order, OrderItem, Event, User, ProductItem
 from openapi_server.database.database_manager import get_database_session
-from werkzeug.exceptions import HTTPException
 import uuid
+from .hmac_1 import hmac_verification
+
 
 
 db = get_database_session()
 
+
+@hmac_verification()
 def create_order(order):  # noqa: E501
     """Create order
 
@@ -16,10 +19,13 @@ def create_order(order):  # noqa: E501
 
     :rtype: None
     """
-
     try:
         user = db.query(User).filter(User.email == order["email"]).first()
+        if not user:
+            return "Email not found", 204
         event = db.query(Event).filter(Event.user_id == user.id).first()
+        if not event:
+            return "Event not found", 204
         order_id = uuid.uuid4()
         new_order = Order(
             id = order_id,
@@ -45,9 +51,11 @@ def create_order(order):  # noqa: E501
             db.refresh(new_orderitem)
         return 'Order created successfully!', 201
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
+@hmac_verification()
 def get_order_by_id(order_id):  # noqa: E501
     """Retrieve a specific order by ID
 
@@ -61,12 +69,14 @@ def get_order_by_id(order_id):  # noqa: E501
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            raise HTTPException(status_code=204, detail="Order not found")
+            return 'Order not found', 204
         return order.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
+@hmac_verification()
 def get_orders(user_id=None, event_id=None):  # noqa: E501
     """Retrieve all orders, optionally filtered by user ID or event ID
 
@@ -82,12 +92,15 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
     try:
         orders = db.query(Order).filter(Order.user_id==user_id, Order.event_id==event_id)
         if not orders:
-            raise HTTPException(status_code=204, detail="Order not found")
+            return 'Order not found', 204
+
         return [order.to_dict() for order in orders]
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
 
+@hmac_verification()
 def update_order(order):  # noqa: E501
     """Update an existing order by ID
 
@@ -106,14 +119,17 @@ def update_order(order):  # noqa: E501
         db.commit()
         return {"message": "Order details updated successfully"}, 200
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
 
+@hmac_verification()
 def delete_order(order_id):
     """ Deleting Order using id"""
     try:
         order = db.query(Order).filter(Order.id==order_id).first()
         if not order:
-            raise HTTPException(status_code=204, detail="Order not found")
+            return 'Order not found', 204
+
         order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
         for order_item in order_items:
             db.delete(order_item)
@@ -122,4 +138,5 @@ def delete_order(order_id):
         db.delete(order)
         db.commit()
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500

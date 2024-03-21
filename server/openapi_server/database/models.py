@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from openapi_server.models.base_model_ import Model
+from .base_model_ import Model
 from datetime import datetime
 import uuid
 
@@ -38,6 +38,7 @@ class Event(Base, Model):
     event_name = Column(String, index=True, nullable=False)
     event_date = Column(DateTime, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -45,7 +46,8 @@ class Event(Base, Model):
             'id': self.id,
             'event_name': self.event_name,
             'event_date': str(self.event_date),
-            'user_id': str(self.user_id)
+            'user_id': str(self.user_id),
+            'is_active': self.is_active
         }
         return result
 
@@ -60,7 +62,8 @@ class Attendee(Base, Model):
     pay = Column(Integer, unique=False, index=True, nullable=False)
     size = Column(Integer, unique=False, index=True, nullable=False)
     ship = Column(Integer, unique=False, index=True, nullable=False)
-
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
+    
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -71,7 +74,8 @@ class Attendee(Base, Model):
             'invite': self.invite,
             'pay': self.pay,
             'size': self.size,
-            'ship': self.ship
+            'ship': self.ship,
+            'is_active': self.is_active
         }
         return result
 class ProductItem(Base):
@@ -139,7 +143,8 @@ class Look(Base, Model):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     look_name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    product_specs = Column(String, index=True, nullable=True)
+    product_specs = Column(JSON, nullable=True)
+    product_final_image = Column(String, nullable=True)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -147,7 +152,8 @@ class Look(Base, Model):
             'id': self.id,
             'look_name': self.look_name,
             'user_id': self.user_id,
-            'product_specs': self.product_specs
+            'product_specs': self.product_specs,
+            'product_final_image': self.product_final_image
         }
         return result
     
@@ -193,8 +199,9 @@ class CartProduct(Base, Model):
     __tablename__ = 'cartproducts'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    cart_id = Column(Integer, ForeignKey('carts.id'),nullable=False)
+    cart_id = Column(UUID(as_uuid=True), ForeignKey('carts.id'),nullable=False)
     product_id = Column(BigInteger, index=True, nullable=True)
+    variation_id = Column(BigInteger, index=True, nullable=True)
     category = Column(String, index=True, nullable=True)
     quantity = Column(Integer, index=True, nullable=True)
 
@@ -204,6 +211,7 @@ class CartProduct(Base, Model):
             'id': self.id,
             'cart_id': self.cart_id,
             'product_id': self.product_id,
+            'variation_id': self.variation_id,
             'category': self.category,
             'quantity': self.quantity
         }

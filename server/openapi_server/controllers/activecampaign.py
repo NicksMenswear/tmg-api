@@ -1,11 +1,6 @@
 import requests
 import json
-from dotenv import load_dotenv
 import os
-
-
-load_dotenv()
-
 
 URL = "https://themoderngroom.api-us1.com/api/3/contacts"
 API_KEY = os.getenv('API_KEY')
@@ -21,8 +16,8 @@ def create_contact(data):
     contact_details = {
         "contact": {
             "email": data['email'],
-            "first_name": data['first_name'],
-            "last_name": data['last_name'],
+            # "first_name": data['first_name'],
+            # "last_name": data['last_name'],
             "fieldValues": [  
                 {
                     "event_name": data['event_name'], 
@@ -54,12 +49,10 @@ def create_contact(data):
         }
         data = json.dumps(body_data)
         response = requests.post(url, headers=headers , data=data)
-        print('------------------ Automation Response: ', response.status_code
-              )
         if response.status_code == 422:
             return "Already exist", 422
         elif response.status_code == 200 or response.status_code == 201:
             return "created contact in automation successfully", 201
     else:
-        return "Internal Server Error"
+        return "Internal Server Error", 500
 

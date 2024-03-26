@@ -49,8 +49,7 @@ def create_user(user_data):  # noqa: E501
             last_name=user_data['last_name'],
             email=user_data['email'],
             shopify_id=shopify_id,
-            account_status = user_data['account_status'],
-            role = user_data['role']
+            account_status = user_data['account_status']
         )
 
         activation_url = get_activation_url(shopify_id)
@@ -94,8 +93,7 @@ def get_user_by_id(email):  # noqa: E501
             'last_name': user.last_name,
             'email': user.email,
             'shopify_id': user.shopify_id,
-            'account_status' : user.account_status,
-            'role' : user.role
+            'account_status' : user.account_status
         }
         return formatted_user
     except Exception as e:
@@ -121,8 +119,7 @@ def list_users():  # noqa: E501
                 'last_name': user.last_name,
                 'email': user.email,
                 'shopify_id': user.shopify_id,
-                'account_status' : user.account_status,
-                'role' : user.role
+                'account_status' : user.account_status
             }
             formatted_users.append(formatted_user)
         return formatted_users
@@ -155,7 +152,6 @@ def update_user(user_data):  # noqa: E501
         user.last_name = user_data['last_name']
         user.shopify_id = user_data['shopify_id']
         user.account_status = user_data['account_status']
-        user.role = user_data['role']
 
         db.commit()
         db.refresh(user)

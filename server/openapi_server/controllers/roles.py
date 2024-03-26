@@ -17,9 +17,9 @@ def create_role(role_data):
             return 'Role with the same detail already exists!', 400
 
         else:
-            look_id = uuid.uuid4()
+            role_id = uuid.uuid4()
             new_role = Role(
-                id=look_id,
+                id=role_id,
                 role_name=role_data["role_name"],
                 event_id=role_data["event_id"],
                 look_id=role_data["look_id"]

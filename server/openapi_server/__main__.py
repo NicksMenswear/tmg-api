@@ -12,9 +12,9 @@ def main():
     app.app.json_encoder = encoder.CustomJSONEncoder
     app.add_api('openapi.yaml',
                 arguments={'title': 'The Modern Groom API'},
-                pythonic_params=True)
+                pythonic_params=True,strict_validation=True)
 
-    app.run(host="0.0.0.0",port=8080 , debug = True)
+    app.run(host="0.0.0.0",port=8081)
 
 
 if __name__ == '__main__':

@@ -42,6 +42,32 @@ paths:
   /audit:
     get:
       operationId: list_audit_entries
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           content:
@@ -58,6 +84,32 @@ paths:
   /products:
     get:
       operationId: list_product_items
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           content:
@@ -73,6 +125,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.product
     post:
       operationId: create_product_item
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -90,6 +168,32 @@ paths:
   /events:
     post:
       operationId: create_event
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -106,6 +210,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.events
     put:
       operationId: update_event
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -124,13 +254,38 @@ paths:
     get:
       operationId: list_events
       parameters:
-      - explode: false
-        in: path
-        name: username
-        required: true
-        schema:
-          type: string
-        style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - explode: false
+          in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          style: simple
       responses:
         "200":
           description: Successful response
@@ -141,6 +296,32 @@ paths:
   /delete_events:  
     put:
       operationId: soft_delete_event
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -161,6 +342,32 @@ paths:
   /event_attendees:
     post:
       operationId: add_attendee
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -179,13 +386,31 @@ paths:
     put:
       operationId: update_attendee
       parameters:
-      - explode: false
-        in: path
-        name: key
-        required: true
-        schema:
-          type: string
-        style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -205,6 +430,31 @@ paths:
       operationId: list_attendee
       parameters:
         - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - in: query
           name: email
           schema:
             type: string
@@ -213,9 +463,7 @@ paths:
           name: event_id
           schema:
             type: string
-          required: true
-
-          
+          required: true     
       responses:
         "200":
           description: Attendee Get Success
@@ -227,15 +475,40 @@ paths:
     get:
       operationId: get_attendees_by_eventid
       parameters:
-      - description: Unique identifier of the event to retrieve attendees
-        explode: true
-        in: query
-        name: event_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Unique identifier of the event to retrieve attendees
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the specific event
@@ -248,6 +521,32 @@ paths:
   /delete_event_attendee:  
     put:
       operationId: soft_delete_attendee
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -269,6 +568,31 @@ paths:
     delete:
       operationId: delete_order
       parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
         - name: order_id
           in: query
           description: Unique identifier of the order to delete
@@ -288,6 +612,31 @@ paths:
     get:
       operationId: get_orders
       parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
         - description: Optional user ID to filter orders
           explode: true
           in: query
@@ -315,6 +664,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.orders
     post:
       operationId: create_order
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -331,6 +706,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.orders
     put:
       operationId: update_order
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -353,6 +754,31 @@ paths:
     get:
       operationId: get_order_by_id
       parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
         - description: Unique identifier of the order to retrieve
           explode: false
           in: path
@@ -374,6 +800,32 @@ paths:
   /users:
     get:
       operationId: list_users
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           content:
@@ -389,6 +841,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.users
     post:
       operationId: create_user
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -405,6 +883,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.users
     put:
       operationId: update_user
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -425,6 +929,31 @@ paths:
     get:
       operationId: get_user_by_id
       parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
         - description: Unique ID of the user to retrieve
           explode: false
           in: path
@@ -450,6 +979,32 @@ paths:
   /shopify_customer:
     get:
       operationId: list_customer
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           description: Successful response
@@ -460,10 +1015,35 @@ paths:
         - Shopify
       x-openapi-router-controller: openapi_server.controllers.shopify
 
-
   /invite:
     post:
       operationId: send_invite
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -479,10 +1059,35 @@ paths:
       - Invites
       x-openapi-router-controller: openapi_server.controllers.invites
 
-
   /looks:
     get:
       operationId: list_looks
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           description: An array of looks
@@ -492,6 +1097,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.looks
     post:
       operationId: create_look
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -508,6 +1139,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.looks
     put:
       operationId: update_look
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -528,11 +1185,67 @@ paths:
     get:
       operationId: get_look
       parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Unique name of the look to retrieve
+          explode: true
+          in: query
+          name: look_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - description: User ID of user having this look
+          explode: true
+          in: query
+          name: user_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: openapi_server.controllers.looks
+  /looks_with_userid_eventid:
+    get:
+      operationId: get_look_userid_eventid
+      parameters:
       - description: Unique name of the look to retrieve
         explode: true
         in: query
-        name: look_id
-        required: false
+        name: user_id
+        required: true
         schema:
           format: uuid
           type: string
@@ -540,7 +1253,7 @@ paths:
       - description: User ID of user having this look
         explode: true
         in: query
-        name: user_id
+        name: event_id
         required: false
         schema:
           format: uuid
@@ -559,24 +1272,40 @@ paths:
     get:
       operationId: get_user_looks
       parameters:
-      - description: Retrieve look by user_id
-        explode: true
-        in: query
-        name: user_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
-      - description: Key for validation
-        explode: true
-        in: query
-        name: key
-        required: false
-        schema:
-          format: str
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Retrieve look by user_id
+          explode: true
+          in: query
+          name: user_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the Look
@@ -590,6 +1319,32 @@ paths:
   /roles:
     get:
       operationId: list_roles
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           description: An array of roles
@@ -599,6 +1354,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.roles
     post:
       operationId: create_role
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -615,6 +1396,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.roles
     put:
       operationId: update_role
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -635,24 +1442,49 @@ paths:
     get:
       operationId: get_role
       parameters:
-      - description: Unique role_id to retrieve
-        explode: true
-        in: query
-        name: role_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
-      - description: Unique event_id for role to retrieve
-        explode: true
-        in: query
-        name: event_id
-        required: false
-        schema:
-          format: uuid
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Unique role_id to retrieve
+          explode: true
+          in: query
+          name: role_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - description: Unique event_id for role to retrieve
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the Role
@@ -666,15 +1498,40 @@ paths:
     get:
       operationId: get_event_roles
       parameters:
-      - description: Retrieve roles of event
-        explode: true
-        in: query
-        name: event_id
-        required: false
-        schema:
-          format: str
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Retrieve roles of event
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the Role
@@ -688,6 +1545,32 @@ paths:
   /carts:
     post:
       operationId: create_cart
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -705,6 +1588,32 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.carts
     put:
       operationId: update_cart
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:
@@ -724,15 +1633,40 @@ paths:
     get:
       operationId: get_cart_by_id
       parameters:
-      - description: Retrieve products of cart
-        explode: true
-        in: query
-        name: cart_id
-        required: false
-        schema:
-          format: str
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Retrieve products of cart
+          explode: true
+          in: query
+          name: cart_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the Cart
@@ -747,24 +1681,49 @@ paths:
     get:
       operationId: get_cart_by_event_attendee
       parameters:
-      - description: Retrieve products of cart
-        explode: true
-        in: query
-        name: event_id
-        required: false
-        schema:
-          format: str
-          type: string
-        style: form
-      - description: Retrieve products of cart
-        explode: true
-        in: query
-        name: attendee_id
-        required: false
-        schema:
-          format: str
-          type: string
-        style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - description: Retrieve products of cart
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
+        - description: Retrieve products of cart
+          explode: true
+          in: query
+          name: attendee_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
       responses:
         "200":
           description: Details of the Cart
@@ -801,11 +1760,11 @@ components:
         account_status:
           title: account_status
           type: boolean
-        role:
-          title: role
-          type: string
       required:
         - email
+        - first_name
+        - last_name
+      additionalProperties: false
       title: User
       type: object
     Event:
@@ -819,6 +1778,10 @@ components:
           format: string
           title: event_name
           type: string
+        email:
+          format: string
+          title: email
+          type: string
         event_date:
           format: date-time
           title: event_date
@@ -829,8 +1792,10 @@ components:
           title: user_id
           type: string
       required:
+        - email
         - event_name
         - event_date
+      additionalProperties: false
       title: Event
       type: object
     UpdateEvent:
@@ -850,8 +1815,10 @@ components:
           title: event_date
           type: string
       required:
+        - id
         - user_id
         - event_date
+      additionalProperties: false
       title: Event
       type: object
     DeleteEvent:
@@ -860,16 +1827,12 @@ components:
           format: uuid
           title: event_id
           type: string
-        user_id:
-          format: uuid
-          title: user_id
-          type: string
         is_active:
           title: is_active
           type: boolean
       required:
         - event_id
-        - user_id
+      additionalProperties: false
       title: DeleteEvent
       type: object
 
@@ -905,13 +1868,11 @@ components:
         ship:
           title: ship
           type: integer
-        role:
-          title: role
-          type: integer
       required:
         - email
         - event_id
         - first_name
+      additionalProperties: false
       title: Attendee
       type: object
     UpdateAttendee:
@@ -944,9 +1905,13 @@ components:
           format: int64
           title: ship
           type: integer
+        role:
+          title: role
+          type: string
       required:
         - event_id
         - email
+      additionalProperties: false
       title: UpdateAttendee
       type: object
     DeleteAttendee:
@@ -969,6 +1934,7 @@ components:
       required:
         - attendee_id
         - email
+      additionalProperties: false
       title: DeleteAttendee
       type: object
     ListAttendee:
@@ -984,6 +1950,7 @@ components:
       required:
         - event_id
         - email
+      additionalProperties: false
       title: ListAttendee
       type: object
 
@@ -1005,6 +1972,7 @@ components:
           format: float
           title: price
           type: number
+      additionalProperties: false
       title: OrderItem
       type: object
     Order:
@@ -1055,6 +2023,7 @@ components:
           type: array
       required:
         - items
+      additionalProperties: false
       title: Order
       type: object
     UpdateOrder:
@@ -1075,6 +2044,7 @@ components:
           format: date-time
           title: received_date
           type: string
+      additionalProperties: false
       title: UpdateOrder
       type: object
     ProductItem:
@@ -1098,6 +2068,7 @@ components:
       required:
         - name
         - price
+      additionalProperties: false
       title: ProductItem
       type: object
     AuditLog:
@@ -1122,6 +2093,9 @@ components:
         email:
           title: email
           type: string
+        event_id:
+          title: event_id
+          type: string
         product_specs:
           title: product_specs
           type: object
@@ -1131,6 +2105,7 @@ components:
       required:
         - look_name
         - email
+      additionalProperties: false
       title: Look
       type: object
     UpdateLook:
@@ -1150,6 +2125,7 @@ components:
       required:
         - look_name
         - flag
+      additionalProperties: false
       title: Look
       type: object
     Role:
@@ -1165,11 +2141,12 @@ components:
         event_id:
           title: event_id
           type: string
-        event_id:
-          title: event_id
+        look_id:
+          title: look_id
           type: string
       required:
         - role_name
+      additionalProperties: false
       title: Role
       type: object
     UpdateRole:
@@ -1189,6 +2166,7 @@ components:
       required:
         - role_name
         - new_role_name
+      additionalProperties: false
       title: Role
       type: object
     Invite:
@@ -1215,6 +2193,7 @@ components:
             type: object
       required:
         - event_id
+      additionalProperties: false
       title: Invite
       type: object
     Cart:
@@ -1243,5 +2222,6 @@ components:
         quantity:
           title: quantity
           type: integer
+      additionalProperties: false
       title: Cart
       type: object

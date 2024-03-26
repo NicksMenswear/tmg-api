@@ -15,8 +15,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     shopify_id = Column(String, unique=True, index=True, nullable=True)
     account_status = Column(Boolean, unique=False, index=True, nullable=True)
-    role = Column(String, unique=False, index=True, nullable=True)
-
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -26,8 +24,7 @@ class User(Base):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'shopify_id':str(self.shopify_id),
-            'account_status' : self.account_status,
-            'role' : self.role
+            'account_status' : self.account_status
         }
         return result
 
@@ -63,7 +60,7 @@ class Attendee(Base, Model):
     size = Column(Integer, unique=False, index=True, nullable=False)
     ship = Column(Integer, unique=False, index=True, nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-    
+    role = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=True)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -75,7 +72,8 @@ class Attendee(Base, Model):
             'pay': self.pay,
             'size': self.size,
             'ship': self.ship,
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'role' : self.role
         }
         return result
 class ProductItem(Base):
@@ -143,6 +141,7 @@ class Look(Base, Model):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     look_name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey('events.id'), nullable=True)
     product_specs = Column(JSON, nullable=True)
     product_final_image = Column(String, nullable=True)
 

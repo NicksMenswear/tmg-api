@@ -29,7 +29,7 @@ def send_invite(invite_data):  # noqa: E501
             # if not invite_data['first_name']:
             #     invite_data.first_name = None
             # if not invite_data['last_name']:
-            #     invite_data['['last_name'] = None
+            #     invite_data['last_name'] = None
             responses = []
             for attendee in invite_data['data']:
                 existing_user = db.query(User).filter_by(email=attendee['email']).first()

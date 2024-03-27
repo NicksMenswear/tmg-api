@@ -20,6 +20,9 @@ def hmac_verification():
             sorted_params = ''.join([f"{key}={','.join(value) if isinstance(value, list) else value}" for key, value in sorted(query_params.items())])
             calculated_signature = hmac.new(secret_key, sorted_params.encode('utf-8'), hashlib.sha256).hexdigest()
             if hmac.compare_digest(signature, calculated_signature):
+                # Remove the HMAC parameters from the kwargs
+                for param in ('logged_in_customer_id', 'shop', 'path_prefix', 'timestamp', 'signature'):
+                    kwargs.pop(param, None)
                 return func(*args, **kwargs)
             else:
                 return "Unauthorized user!", 401

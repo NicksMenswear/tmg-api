@@ -1,6 +1,6 @@
 import connexion
 import six
-from openapi_server import util
+import util
 
 
 def list_audit_entries():  # noqa: E501

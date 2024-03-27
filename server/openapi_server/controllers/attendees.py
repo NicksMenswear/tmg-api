@@ -1,5 +1,5 @@
-from openapi_server.database.models import Event, User, Attendee
-from openapi_server.database.database_manager import get_database_session
+from database.models import Event, User, Attendee
+from database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError 
 from werkzeug.exceptions import HTTPException
 import uuid

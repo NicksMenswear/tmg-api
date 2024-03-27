@@ -1,5 +1,5 @@
-from openapi_server.database.models import Cart, CartProduct
-from openapi_server.database.database_manager import get_database_session
+from database.models import Cart, CartProduct
+from database.database_manager import get_database_session
 from .cart_data_extractor import *
 from werkzeug.exceptions import HTTPException
 from .shopify import *

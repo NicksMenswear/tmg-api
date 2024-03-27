@@ -1,10 +1,8 @@
-import connexion
-from openapi_server.database.models import User, Event, Order, OrderItem
-from openapi_server.database.database_manager import get_database_session
-from .shopify import create_customer, get_customer ,get_activation_url
+from database.models import User
+from database.database_manager import get_database_session
+from .shopify import create_customer ,get_activation_url
 from .registration_email import send_email
 import uuid
-from werkzeug.exceptions import HTTPException
 from .hmac_1 import hmac_verification
 import os
 

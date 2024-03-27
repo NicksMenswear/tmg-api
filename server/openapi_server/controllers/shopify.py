@@ -1,5 +1,5 @@
-from openapi_server.database.models import User
-from openapi_server.database.database_manager import get_database_session
+from database.models import User
+from database.database_manager import get_database_session
 import requests
 import os
 

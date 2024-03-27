@@ -1,5 +1,5 @@
-from openapi_server.database.database_manager import get_database_session  # noqa: E501
-from openapi_server.database.models import ProductItem
+from database.database_manager import get_database_session  # noqa: E501
+from database.models import ProductItem
 import uuid
 from .hmac_1 import hmac_verification
 

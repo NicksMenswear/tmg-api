@@ -4,7 +4,7 @@ import awsgi
 import connexion
 import logging
 
-from openapi_server import encoder
+import encoder
 
 root = logging.getLogger()
 if root.handlers:
@@ -22,8 +22,7 @@ app.app.json_encoder = encoder.CustomJSONEncoder
 def lambda_handler(event, context):
     return awsgi.response(app, event, context)
 
-def init_db():
-    # TODO replace with alembic migrations
+def _init_db():
     from sqlalchemy import create_engine
     from openapi_server.database.models import Base
     from openapi_server.database.database_manager import DATABASE_URL
@@ -32,5 +31,5 @@ def init_db():
     Base.metadata.create_all(bind=engine) 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=8080)
+    app.run(host="0.0.0.0", port=8080)
     

@@ -1,5 +1,5 @@
-from openapi_server.database.database_manager import get_database_session  # noqa: E501
-from openapi_server.database.models import User
+from database.database_manager import get_database_session  # noqa: E501
+from database.models import User
 from werkzeug.exceptions import HTTPException
 from .shopify import get_activation_url, create_customer
 from .activecampaign import create_contact

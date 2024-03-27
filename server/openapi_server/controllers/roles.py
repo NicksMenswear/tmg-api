@@ -1,5 +1,5 @@
-from openapi_server.database.models import Role, User, Event
-from openapi_server.database.database_manager import get_database_session
+from database.models import Role, User, Event
+from database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 import uuid
 from .hmac_1 import hmac_verification

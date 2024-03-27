@@ -2,7 +2,7 @@ import datetime
 
 import six
 import typing
-from openapi_server import typing_utils
+import typing_utils
 
 
 def _deserialize(data, klass):

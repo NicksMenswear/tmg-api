@@ -1,5 +1,5 @@
-from openapi_server.database.models import Order, OrderItem, Event, User, ProductItem
-from openapi_server.database.database_manager import get_database_session
+from database.models import Order, OrderItem, Event, User, ProductItem
+from database.database_manager import get_database_session
 import uuid
 from .hmac_1 import hmac_verification
 

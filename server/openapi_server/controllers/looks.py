@@ -1,5 +1,5 @@
-from openapi_server.database.models import Look, User, Role
-from openapi_server.database.database_manager import get_database_session
+from database.models import Look, User, Role
+from database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 from .hmac_1 import hmac_verification

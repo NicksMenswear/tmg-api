@@ -11,7 +11,7 @@ def hmac_verification():
     """HMAC verification authorizes all API calls by calculating and matching tokens received from Shopify with those created on the server side."""
     
     def decorator(func):
-        def wrapper(**kwargs):
+        def wrapper(*args, **kwargs):
             """Creating a decorator wrapper function for HMAC verification that accepts *kwargs from the API endpoint."""
             
             signature = request.args.get('signature', '')
@@ -20,7 +20,7 @@ def hmac_verification():
             sorted_params = ''.join([f"{key}={','.join(value) if isinstance(value, list) else value}" for key, value in sorted(query_params.items())])
             calculated_signature = hmac.new(secret_key, sorted_params.encode('utf-8'), hashlib.sha256).hexdigest()
             if hmac.compare_digest(signature, calculated_signature):
-                return func(**kwargs)
+                return func(*args, **kwargs)
             else:
                 return "Unauthorized user!", 401
 

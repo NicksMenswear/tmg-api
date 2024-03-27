@@ -38,7 +38,7 @@ paths:
       summary: TMG API
       tags:
         - Default
-      x-openapi-router-controller: openapi_server.controllers.default
+      x-openapi-router-controller: controllers.default
   /audit:
     get:
       operationId: list_audit_entries
@@ -54,7 +54,7 @@ paths:
       summary: Lists all audit entries
       tags:
         - Audit
-      x-openapi-router-controller: openapi_server.controllers.audit
+      x-openapi-router-controller: controllers.audit
   /products:
     get:
       operationId: list_product_items
@@ -70,7 +70,7 @@ paths:
       summary: Lists all product items
       tags:
         - Product
-      x-openapi-router-controller: openapi_server.controllers.product
+      x-openapi-router-controller: controllers.product
     post:
       operationId: create_product_item
       requestBody:
@@ -86,7 +86,7 @@ paths:
       summary: Create product item
       tags:
         - Product
-      x-openapi-router-controller: openapi_server.controllers.product
+      x-openapi-router-controller: controllers.product
   /events:
     post:
       operationId: create_event
@@ -103,7 +103,7 @@ paths:
       summary: Create event
       tags:
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
+      x-openapi-router-controller: controllers.events
     put:
       operationId: update_event
       requestBody:
@@ -119,7 +119,7 @@ paths:
       summary: Upadte event
       tags:
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
+      x-openapi-router-controller: controllers.events
   /events/{username}:
     get:
       operationId: list_events
@@ -137,7 +137,7 @@ paths:
       summary: Get event by email
       tags:
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
+      x-openapi-router-controller: controllers.events
   /delete_events:  
     put:
       operationId: soft_delete_event
@@ -155,7 +155,7 @@ paths:
       summary: Event Delete
       tags:
         - Events
-      x-openapi-router-controller: openapi_server.controllers.events
+      x-openapi-router-controller: controllers.events
 
   /event_attendees:
     post:
@@ -174,7 +174,7 @@ paths:
       summary: Attendee added
       tags:
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
+      x-openapi-router-controller: controllers.attendees
     put:
       operationId: update_attendee
       parameters:
@@ -199,7 +199,7 @@ paths:
       summary: Attendee Update
       tags:
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
+      x-openapi-router-controller: controllers.attendees
     get:
       operationId: list_attendee
       parameters:
@@ -221,7 +221,7 @@ paths:
       summary: Attendee List
       tags:
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
+      x-openapi-router-controller: controllers.attendees
   /event_attendees_by_eventid:
     get:
       operationId: get_attendees_by_eventid
@@ -243,7 +243,7 @@ paths:
       summary: Retrieve a specific Event Attendees by Event ID
       tags:
         - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
+      x-openapi-router-controller: controllers.attendees
   /delete_event_attendee:  
     put:
       operationId: soft_delete_attendee
@@ -261,7 +261,7 @@ paths:
       summary: Attendee Delete
       tags:
       - Attendees
-      x-openapi-router-controller: openapi_server.controllers.attendees
+      x-openapi-router-controller: controllers.attendees
 
   /orders:
     delete:
@@ -282,7 +282,7 @@ paths:
       summary: Delete order by ID
       tags:
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
+      x-openapi-router-controller: controllers.orders
     get:
       operationId: get_orders
       parameters:
@@ -310,7 +310,7 @@ paths:
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
+      x-openapi-router-controller: controllers.orders
     post:
       operationId: create_order
       requestBody:
@@ -326,7 +326,7 @@ paths:
       summary: Create order
       tags:
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
+      x-openapi-router-controller: controllers.orders
     put:
       operationId: update_order
       requestBody:
@@ -346,7 +346,7 @@ paths:
       summary: Update an existing order by ID
       tags:
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
+      x-openapi-router-controller: controllers.orders
   /orders/{order_id}:
     get:
       operationId: get_order_by_id
@@ -368,7 +368,7 @@ paths:
       summary: Retrieve a specific order by ID
       tags:
         - Orders
-      x-openapi-router-controller: openapi_server.controllers.orders
+      x-openapi-router-controller: controllers.orders
   /users:
     get:
       operationId: list_users
@@ -384,7 +384,7 @@ paths:
       summary: Lists all users
       tags:
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
+      x-openapi-router-controller: controllers.users
     post:
       operationId: create_user
       requestBody:
@@ -400,7 +400,7 @@ paths:
       summary: Create user
       tags:
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
+      x-openapi-router-controller: controllers.users
     put:
       operationId: update_user
       requestBody:
@@ -418,7 +418,7 @@ paths:
       summary: Update a user by ID
       tags:
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
+      x-openapi-router-controller: controllers.users
   /users/{email}:
     get:
       operationId: get_user_by_id
@@ -443,7 +443,7 @@ paths:
       summary: Get a single user by ID
       tags:
         - Users
-      x-openapi-router-controller: openapi_server.controllers.users
+      x-openapi-router-controller: controllers.users
 
   /shopify_customer:
     get:
@@ -456,7 +456,7 @@ paths:
       summary: List Shopify customer
       tags:
         - Shopify
-      x-openapi-router-controller: openapi_server.controllers.shopify
+      x-openapi-router-controller: controllers.shopify
 
 
   /invite:
@@ -475,7 +475,7 @@ paths:
       summary: Create Invite
       tags:
       - Invites
-      x-openapi-router-controller: openapi_server.controllers.invites
+      x-openapi-router-controller: controllers.invites
 
 
   /looks:
@@ -487,7 +487,7 @@ paths:
       summary: Lists all looks
       tags:
       - Looks
-      x-openapi-router-controller: openapi_server.controllers.looks
+      x-openapi-router-controller: controllers.looks
     post:
       operationId: create_look
       requestBody:
@@ -503,7 +503,7 @@ paths:
       summary: Create look
       tags:
       - Looks
-      x-openapi-router-controller: openapi_server.controllers.looks
+      x-openapi-router-controller: controllers.looks
     put:
       operationId: update_look
       requestBody:
@@ -521,7 +521,7 @@ paths:
       summary: Update a Look by name
       tags:
       - Looks
-      x-openapi-router-controller: openapi_server.controllers.looks
+      x-openapi-router-controller: controllers.looks
   /looks_with_lookid_userid:
     get:
       operationId: get_look
@@ -552,7 +552,7 @@ paths:
       summary: Get a single look by name
       tags:
       - Looks
-      x-openapi-router-controller: openapi_server.controllers.looks
+      x-openapi-router-controller: controllers.looks
   /looks_with_userid:
     get:
       operationId: get_user_looks
@@ -583,7 +583,7 @@ paths:
       summary: Get a single look by name
       tags:
       - Looks
-      x-openapi-router-controller: openapi_server.controllers.looks
+      x-openapi-router-controller: controllers.looks
 
   /roles:
     get:
@@ -594,7 +594,7 @@ paths:
       summary: Lists all roles
       tags:
       - Roles
-      x-openapi-router-controller: openapi_server.controllers.roles
+      x-openapi-router-controller: controllers.roles
     post:
       operationId: create_role
       requestBody:
@@ -610,7 +610,7 @@ paths:
       summary: Create role
       tags:
       - Roles
-      x-openapi-router-controller: openapi_server.controllers.roles
+      x-openapi-router-controller: controllers.roles
     put:
       operationId: update_role
       requestBody:
@@ -628,7 +628,7 @@ paths:
       summary: Update a Role by name
       tags:
       - Roles
-      x-openapi-router-controller: openapi_server.controllers.roles
+      x-openapi-router-controller: controllers.roles
   /roles_with_roleid_eventid:
     get:
       operationId: get_role
@@ -659,7 +659,7 @@ paths:
       summary: Get a single role by name
       tags:
       - Roles
-      x-openapi-router-controller: openapi_server.controllers.roles
+      x-openapi-router-controller: controllers.roles
   /roles_with_eventid:
     get:
       operationId: get_event_roles
@@ -681,7 +681,7 @@ paths:
       summary: Get a single role by name
       tags:
       - Roles
-      x-openapi-router-controller: openapi_server.controllers.roles
+      x-openapi-router-controller: controllers.roles
 
   /carts:
     post:
@@ -699,7 +699,7 @@ paths:
       summary: Create cart
       tags:
       - Carts
-      x-openapi-router-controller: openapi_server.controllers.carts
+      x-openapi-router-controller: controllers.carts
     put:
       operationId: update_cart
       requestBody:
@@ -715,7 +715,7 @@ paths:
       summary: Upadte cart
       tags:
       - Carts
-      x-openapi-router-controller: openapi_server.controllers.carts
+      x-openapi-router-controller: controllers.carts
   /cart_by_id:
     get:
       operationId: get_cart_by_id
@@ -737,7 +737,7 @@ paths:
       summary: Get a single cart by id
       tags:
       - Carts
-      x-openapi-router-controller: openapi_server.controllers.carts
+      x-openapi-router-controller: controllers.carts
   /cart_by_event_attendee:
     get:
       operationId: get_cart_by_event_attendee
@@ -768,7 +768,7 @@ paths:
       summary: Get a single cart by id
       tags:
       - Carts
-      x-openapi-router-controller: openapi_server.controllers.carts
+      x-openapi-router-controller: controllers.carts
 
 
 components:

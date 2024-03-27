@@ -22,6 +22,14 @@ def init_app():
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app
 
+def init_db():
+    from sqlalchemy import create_engine
+    from openapi_server.database.models import Base
+    from openapi_server.database.database_manager import DATABASE_URL
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine) 
+
 init_logging()
 app = init_app()
 

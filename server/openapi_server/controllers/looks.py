@@ -135,7 +135,6 @@ def get_look_userid_eventid(user_id,event_id=None):
 def get_user_looks(user_id):
     """Specific user looks"""
     try:
-        db = get_database_session()
         user_id = uuid.UUID(user_id)
         existing_user = db.query(User).filter_by(id=user_id).first()
         if not existing_user:

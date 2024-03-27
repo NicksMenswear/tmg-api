@@ -28,18 +28,16 @@ def create_user(user_data):  # noqa: E501
     try:
         existing_user = db.query(User).filter_by(email=user_data['email']).first()
         if existing_user:
-            return 'user with the same email already exists!', 400
-        shopify_user = get_customer(user_data['email'])
-        if (existing_user and shopify_user):
-            return 'user with the same email already exists!', 400
-        
-        shopify_id = create_customer({
-            'first_name' : user_data['first_name'],
-            'last_name' : user_data['last_name'],
-            'email' : user_data['email'],
-        })
+            return 'User with the same email already exists in TMG Database!', 400
 
-        if not shopify_id:
+        try:
+            shopify_id = create_customer({
+                'first_name' : user_data['first_name'],
+                'last_name' : user_data['last_name'],
+                'email' : user_data['email'],
+            })
+        except Exception as e:
+            print(e)
             return "User not created in shopify", 400
 
         user_id = uuid.uuid4()

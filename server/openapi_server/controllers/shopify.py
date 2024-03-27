@@ -28,22 +28,18 @@ def search_customer_by_email(email):
         raise
 
 def create_shopify_customer(customer_data):
-    try:
-        response = requests.post(
-            f'https://{shopify_store}.myshopify.com/admin/api/2024-01/customers.json',
-            json={
-                'customer': customer_data
-            },
-            headers={
-                'Content-Type': 'application/json',
-                'X-Shopify-Access-Token': admin_api_access_token,
-            }
-        )
-        created_customer = response.json().get('customer', {})
-        return created_customer
-    except requests.exceptions.RequestException as error:
-        print('Error creating customer:', error)
-        raise
+    response = requests.post(
+        f'https://{shopify_store}.myshopify.com/admin/api/2024-01/customers.json',
+        json={
+            'customer': customer_data
+        },
+        headers={
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': admin_api_access_token,
+        }
+    )
+    created_customer = response.json().get('customer', {})
+    return created_customer
 
 def get_access_token():
     try:
@@ -99,12 +95,7 @@ def get_activation_url(customer_id):
         return f"Internal Server Error : {e}", 500
 
 def create_customer(customer_data):
-    try:
-        created_customer = create_shopify_customer(customer_data)
-        if created_customer:
-    # product_specs = Column(String, index=True, nullable=True)
-            print('Created customer:', created_customer['id'])
-            return created_customer['id']
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    created_customer = create_shopify_customer(customer_data)
+    if created_customer:
+        print('Created customer:', created_customer['id'])
+        return created_customer['id']

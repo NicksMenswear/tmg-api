@@ -31,8 +31,7 @@ def add_attendee(attendee_data):
                 last_name=attendee_data['last_name'],
                 email=attendee_data['email'],
                 shopify_id=shopify_id,
-                account_status = True,
-                role=attendee_data['role']
+                account_status = True
             )
             db.add(user)
             db.commit()
@@ -49,11 +48,12 @@ def add_attendee(attendee_data):
             id = uuid.uuid4()
             user.first_name = attendee_data['first_name']
             user.last_name = attendee_data['last_name']
-            user.role = attendee_data['role']
             user.account_status = True
 
             db.commit()
             db.refresh(user)
+            if "role" not in attendee_data:
+                attendee_data['role'] = None
 
             new_attendee = Attendee(
                 id=id,
@@ -63,7 +63,8 @@ def add_attendee(attendee_data):
                 invite = attendee_data['invite'],
                 pay = attendee_data['pay'],
                 size = attendee_data['size'],
-                ship = attendee_data['ship']
+                ship = attendee_data['ship'],
+                role = attendee_data['role']
             )
             db.add(new_attendee)
             db.commit()
@@ -109,6 +110,7 @@ def update_attendee(attendee_data):
         attendee_detail.pay = attendee_data['pay']
         attendee_detail.size = attendee_data['size']
         attendee_detail.ship = attendee_data['ship']
+        attendee_detail.ship = attendee_data['role']
         db.commit()
         return 'Attendee Updated successfully!', 201
     except Exception as e:
@@ -140,7 +142,8 @@ def get_attendees_by_eventid(event_id):
                 'pay' : attendee_detail.pay,
                 'size' : attendee_detail.size,
                 'ship' : attendee_detail.ship,
-                'is_Active' : attendee_detail.is_active
+                'is_Active' : attendee_detail.is_active,
+                'role' : attendee_detail.role
             }
             formatted_data.append(data)
         return formatted_data

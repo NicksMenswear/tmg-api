@@ -58,7 +58,7 @@ def create_user(user_data):  # noqa: E501
         sender_password=password
         reciever = user_data['email']
         subject ='Registration email'
-        send_mail = send_email(subject , body ,sender_email,reciever,sender_password)
+        send_email(subject , body ,sender_email,reciever,sender_password)
 
         db.add(user)
         db.commit()

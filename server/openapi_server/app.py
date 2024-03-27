@@ -24,8 +24,8 @@ def lambda_handler(event, context):
 
 def _init_db():
     from sqlalchemy import create_engine
-    from openapi_server.database.models import Base
-    from openapi_server.database.database_manager import DATABASE_URL
+    from database.models import Base
+    from database.database_manager import DATABASE_URL
     engine = create_engine(DATABASE_URL, echo=True)
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine) 

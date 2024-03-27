@@ -6,8 +6,8 @@ import unittest
 from flask import json
 from six import BytesIO
 
-from openapi_server.models.audit_log import AuditLog  # noqa: E501
-from openapi_server.test import BaseTestCase
+from models.audit_log import AuditLog  # noqa: E501
+from test import BaseTestCase
 
 
 class TestAuditController(BaseTestCase):

@@ -2,7 +2,6 @@ from server.database.models import Look, User, Role, Attendee, Event
 from server.database.database_manager import get_database_session
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
-import numpy as np
 from server.controllers.hmac_1 import hmac_verification
 import uuid
 
@@ -94,14 +93,14 @@ def get_look_userid_eventid(user_id,event_id=None):
                     formatted_data.append(data)
                 else:
                     data = {
-                        'event_name': np.nan,
+                        'event_name': float('nan'),
                         'look_data': {
                         'id': look.id,
                         'look_name': look.look_name,
                         'user_id': look.user_id,
                         'product_specs': look.product_specs,
                         'product_final_image': look.product_final_image,
-                        'event_id': np.nan
+                        'event_id': float('nan')
                         }
                     }
                     formatted_data.append(data)

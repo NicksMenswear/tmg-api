@@ -5,7 +5,6 @@ flask-cors==4.0.0
 Jinja2==3.1.2
 jsonschema-specifications==2023.11.2
 jsonschema==4.17.3
-numpy==1.26.4
 requests==2.31.0
 SQLAlchemy-Utils==0.41.1
 SQLAlchemy==2.0.23

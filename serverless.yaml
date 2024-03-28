@@ -65,12 +65,12 @@ package:
   exclude:
     - .serverless/**
     - .tox/**
-    - ./build/**
+    - .build/**
     - .git/**
-    - '**/*.jar'
+    - '.vscode/**'
     - node_modules/**
     - venv/**
     - doc/**
+    - "__pycache__/**"
     - "**/__pycache__/**"
-    - "**/__pycache__"
     - ".#*"

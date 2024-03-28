@@ -2,7 +2,6 @@ import awsgi
 
 from server.app import init_app, init_logging, reset_db
 
-#reset_db()
 init_logging()
 app = init_app()
 

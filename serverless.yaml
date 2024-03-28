@@ -14,8 +14,7 @@ provider:
 
 functions:
   api:
-    handler: openapi_server.app.lambda_handler
-    module: server
+    handler: main.lambda_handler
     events:
       - http: ANY /
       - http: ANY /{proxy+}
@@ -63,12 +62,10 @@ custom:
     autoDomain: false
 
 package:
-  individually: true
   exclude:
     - .serverless/**
     - .tox/**
-    - ./**/.tox/**
-    - ./**/build/**
+    - ./build/**
     - .git/**
     - '**/*.jar'
     - node_modules/**

@@ -22,7 +22,7 @@ tox
 source .tox/py310/bin/activate
 
 # Run dev server
-python server/app.py
+python main.py
 ```
 
 and open your browser to here:

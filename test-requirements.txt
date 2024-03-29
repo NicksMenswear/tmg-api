@@ -2,4 +2,3 @@ pytest==7.4.4
 pytest-cov==4.1.0
 pytest-randomly==3.15.0
 Flask-Testing==0.8.1
-ShopifyAPI==12.4.0

@@ -48,6 +48,9 @@ def create_user(user_data):  # noqa: E501
             shopify_id=shopify_id,
             account_status = user_data['account_status']
         )
+        db.add(user)
+        db.commit()
+        db.refresh(user) 
 
         activation_url = get_activation_url(shopify_id)
         activation_link = f'<a href="{activation_url}">Click Me</a>'
@@ -57,10 +60,6 @@ def create_user(user_data):  # noqa: E501
         reciever = user_data['email']
         subject ='Registration email'
         send_email(subject , body ,sender_email,reciever,sender_password)
-
-        db.add(user)
-        db.commit()
-        db.refresh(user) 
         
         return 'User created successfully!', 201
     except Exception as e:

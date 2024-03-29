@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 import uuid
 from server.controllers.hmac_1 import hmac_verification
+from urllib.parse import unquote
 
 
 db = get_database_session()
@@ -47,6 +48,7 @@ def create_event(event):
 @hmac_verification()
 def list_events(username):
     """Lists all events"""
+    username = unquote(username)
     try:
         user = db.query(User).filter(User.email == username).first()
         if not user:

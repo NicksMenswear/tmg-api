@@ -5,6 +5,7 @@ from server.controllers.registration_email import send_email
 import uuid
 from server.controllers.hmac_1 import hmac_verification
 import os
+from urllib.parse import unquote
 
 
 password = os.getenv('sender_password')
@@ -80,7 +81,8 @@ def get_user_by_id(email):  # noqa: E501
     :rtype: User
     """
     try:
-        user = db.query(User).filter(User.email==email).first()
+        email = unquote(email)
+        user = db.query(User).filter(User.email == email).first()
         if not user:
             return {"message":f"User with email '{email}' does not exist"}, 204
         formatted_user = {

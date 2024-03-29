@@ -9,3 +9,4 @@ numpy==1.26.4
 requests==2.31.0
 SQLAlchemy-Utils==0.41.1
 SQLAlchemy==2.0.23
+ShopifyAPI==12.4.0

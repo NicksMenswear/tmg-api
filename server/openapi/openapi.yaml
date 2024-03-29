@@ -55,6 +55,26 @@ paths:
       tags:
         - Audit
       x-openapi-router-controller: server.controllers.audit
+
+  /login:
+    get:
+      operationId: login_val
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Successful response
+        "404":
+          description: User not found
+      summary: User Verfication
+      tags:
+        - Login
+      x-openapi-router-controller: server.controllers.login
+
   /products:
     get:
       operationId: list_product_items
@@ -478,112 +498,112 @@ paths:
       x-openapi-router-controller: server.controllers.invites
 
 
-  # /looks:
-  #   get:
-  #     operationId: list_looks
-  #     responses:
-  #       "200":
-  #         description: An array of looks
-  #     summary: Lists all looks
-  #     tags:
-  #     - Looks
-  #     x-openapi-router-controller: server.controllers.looks
-  #   post:
-  #     operationId: create_look
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/Look'
-  #       required: true
-  #       x-body-name: look_data
-  #     responses:
-  #       "201":
-  #         description: Look created
-  #     summary: Create look
-  #     tags:
-  #     - Looks
-  #     x-openapi-router-controller: server.controllers.looks
-  #   put:
-  #     operationId: update_look
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/UpdateLook'
-  #       required: true
-  #       x-body-name: look_data
-  #     responses:
-  #       "200":
-  #         description: Look updated
-  #       "404":
-  #         description: Look not found
-  #     summary: Update a Look by name
-  #     tags:
-  #     - Looks
-  #     x-openapi-router-controller: server.controllers.looks
-  # /looks_with_lookid_userid:
-  #   get:
-  #     operationId: get_look
-  #     parameters:
-  #     - description: Unique name of the look to retrieve
-  #       explode: true
-  #       in: query
-  #       name: look_id
-  #       required: false
-  #       schema:
-  #         format: uuid
-  #         type: string
-  #       style: form
-  #     - description: User ID of user having this look
-  #       explode: true
-  #       in: query
-  #       name: user_id
-  #       required: false
-  #       schema:
-  #         format: uuid
-  #         type: string
-  #       style: form
-  #     responses:
-  #       "200":
-  #         description: Details of the Look
-  #       "404":
-  #         description: Look not found
-  #     summary: Get a single look by name
-  #     tags:
-  #     - Looks
-  #     x-openapi-router-controller: server.controllers.looks
-  # /looks_with_userid:
-  #   get:
-  #     operationId: get_user_looks
-  #     parameters:
-  #     - description: Retrieve look by user_id
-  #       explode: true
-  #       in: query
-  #       name: user_id
-  #       required: false
-  #       schema:
-  #         format: uuid
-  #         type: string
-  #       style: form
-  #     - description: Key for validation
-  #       explode: true
-  #       in: query
-  #       name: key
-  #       required: false
-  #       schema:
-  #         format: str
-  #         type: string
-  #       style: form
-  #     responses:
-  #       "200":
-  #         description: Details of the Look
-  #       "404":
-  #         description: Look not found
-  #     summary: Get a single look by name
-  #     tags:
-  #     - Looks
-  #     x-openapi-router-controller: server.controllers.looks
+  /looks:
+    get:
+      operationId: list_looks
+      responses:
+        "200":
+          description: An array of looks
+      summary: Lists all looks
+      tags:
+      - Looks
+      x-openapi-router-controller: server.controllers.looks
+    post:
+      operationId: create_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Look'
+        required: true
+        x-body-name: look_data
+      responses:
+        "201":
+          description: Look created
+      summary: Create look
+      tags:
+      - Looks
+      x-openapi-router-controller: server.controllers.looks
+    put:
+      operationId: update_look
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLook'
+        required: true
+        x-body-name: look_data
+      responses:
+        "200":
+          description: Look updated
+        "404":
+          description: Look not found
+      summary: Update a Look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: server.controllers.looks
+  /looks_with_lookid_userid:
+    get:
+      operationId: get_look
+      parameters:
+      - description: Unique name of the look to retrieve
+        explode: true
+        in: query
+        name: look_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: User ID of user having this look
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: server.controllers.looks
+  /looks_with_userid:
+    get:
+      operationId: get_user_looks
+      parameters:
+      - description: Retrieve look by user_id
+        explode: true
+        in: query
+        name: user_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: Key for validation
+        explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          format: str
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Details of the Look
+        "404":
+          description: Look not found
+      summary: Get a single look by name
+      tags:
+      - Looks
+      x-openapi-router-controller: server.controllers.looks
 
   /roles:
     get:

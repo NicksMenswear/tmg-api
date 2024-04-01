@@ -65,7 +65,7 @@ custom:
 
   # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/
   datadog:
-    enabled: true
+    enabled: false
     site: us5.datadoghq.com
     apiKey: ${ssm:/sls/datadog/api_key}
     appKey: ${ssm:/sls/datadog/app_key}
@@ -78,7 +78,7 @@ custom:
     enableColdStartTracing: false
     uploadGitMetadata: false
     addLayers: false
-    addExtension: true # https://github.com/DataDog/serverless-plugin-datadog/issues/480
+    addExtension: false # https://github.com/DataDog/serverless-plugin-datadog/issues/480
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true

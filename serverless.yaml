@@ -78,7 +78,7 @@ custom:
     enableColdStartTracing: false
     uploadGitMetadata: false
     addLayers: false
-    addExtension: true
+    addExtension: true # https://github.com/DataDog/serverless-plugin-datadog/issues/480
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true

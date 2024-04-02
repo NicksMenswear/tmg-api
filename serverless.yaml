@@ -48,8 +48,10 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-domain-manager
+  - serverless-plugin-datadog
 
 custom:
+  # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:
     domainName: "api.dev.tmgcorp.net"
     basePath: ''
@@ -60,6 +62,50 @@ custom:
     securityPolicy: tls_1_2
     apiType: rest
     autoDomain: false
+
+  # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/
+  datadog:
+    enabled: false
+    site: us5.datadoghq.com
+    apiKey: ${ssm:/sls/datadog/api_key}
+    appKey: ${ssm:/sls/datadog/app_key}
+    enableDDLogs: false
+    enableXrayTracing: false
+    enableDDTracing: false
+    # enableASM: false
+    enableProfiling: false
+    enableSourceCodeIntegration: false
+    enableColdStartTracing: false
+    uploadGitMetadata: false
+    addLayers: false
+    addExtension: false
+    encodeAuthorizerContext: false
+    decodeAuthorizerContext: false
+    subscribeToAccessLogs: true
+    subscribeToExecutionLogs: true
+    forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
+    failOnError: true
+    logLevel: DEBUG
+    service: tmg-api
+    env: dev
+    subdomain: "api.dev.tmgcorp.net"
+    # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/#serverless-monitors
+    monitors:
+      - high_error_rate:
+          name: "High Error Rate on {{functionname}}"
+          message: "More than 10% of the function's invocations are errors. Notify @slack-notifications"
+          options:
+            include_tags: false
+      - timeout:
+          name: "Timeout on {{functionname}}"
+          message: "The function has timed out. Notify @slack-notifications"
+          options:
+            include_tags: false
+      - high_throttles:
+          name: "High Throttles on {{functionname}}"
+          message: "More than 20% of the function's invocations are throttled. Notify @slack-notifications"
+          options:
+            include_tags: false
 
 package:
   exclude:

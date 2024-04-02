@@ -29,6 +29,8 @@ functions:
         - subnet-0558d5c84f76f6246
         - subnet-081fa5d80ecd9a253
     environment:
+      # General
+      STAGE: ${self:provider.stage}
       # SQLAlchemy Env Variables
       DB_HOST: tmg-api-db-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com
       DB_PORT: 5432

@@ -76,6 +76,21 @@ class Attendee(Base, Model):
             'role' : self.role
         }
         return result
+    
+# class ProductItem(Base):
+#     __tablename__ = 'product_items'
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+#     name = Column(String,unique=True, nullable=False)
+#     price = Column(Float,nullable=False)
+
+#     def to_dict(self):
+#         """Convert the model instance to a dictionary."""
+#         result = {
+#             'id': self.id,
+#             'name': self.name,
+#             'price': self.price
+#         }
+#         return result
 
 class ProductItem(Base):
     __tablename__ = "product_items"

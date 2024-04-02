@@ -1861,6 +1861,134 @@ paths:
         - Product
       x-openapi-router-controller: server.controllers.product
 
+  /delete_product:
+    put:
+      operationId: soft_delete_product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteProductItem"
+        required: true
+        x-body-name: product_data
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DeleteProductItem"
+                type: object
+          description: Soft Delete Product 
+      summary: delete product items
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+  /products:
+    post:
+      operationId: create_product_item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductItem"
+        required: true
+        x-body-name: product_item
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: integer
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true  
+      responses:
+        "201":
+          description: Product item created
+      summary: Create product item
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+    get:
+      operationId: list_product_items
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true  
+      responses:
+        "200":
+          description: Successful response
+      summary: Get List Products
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product  
+
 components:
   schemas:
     User:

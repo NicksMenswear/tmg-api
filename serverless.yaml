@@ -72,13 +72,13 @@ custom:
     enableDDLogs: false
     enableXrayTracing: false
     enableDDTracing: false
-    enableASM: false
+    # enableASM: false
     enableProfiling: false
     enableSourceCodeIntegration: false
     enableColdStartTracing: false
     uploadGitMetadata: false
     addLayers: false
-    addExtension: false # https://github.com/DataDog/serverless-plugin-datadog/issues/480
+    addExtension: false
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true

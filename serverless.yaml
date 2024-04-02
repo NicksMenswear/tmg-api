@@ -65,7 +65,7 @@ custom:
 
   # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/
   datadog:
-    enabled: false
+    enabled: true
     site: us5.datadoghq.com
     apiKey: ${ssm:/sls/datadog/api_key}
     appKey: ${ssm:/sls/datadog/app_key}

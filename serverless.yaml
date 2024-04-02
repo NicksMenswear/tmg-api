@@ -77,7 +77,7 @@ custom:
     enableSourceCodeIntegration: false
     enableColdStartTracing: false
     uploadGitMetadata: false
-    addLayers: false
+    addLayers: true
     addExtension: false
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
@@ -92,11 +92,20 @@ custom:
     # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/#serverless-monitors
     monitors:
       - high_error_rate:
+          name: "High Error Rate on {{functionname}}"
           message: "More than 10% of the function's invocations are errors. Notify @slack-notifications"
+          options:
+            include_tags: false
       - timeout:
+          name: "Timeout on {{functionname}}"
           message: "The function has timed out. Notify @slack-notifications"
+          options:
+            include_tags: false
       - high_throttles:
+          name: "High Throttles on {{functionname}}"
           message: "More than 20% of the function's invocations are throttled. Notify @slack-notifications"
+          options:
+            include_tags: false
 
 package:
   exclude:

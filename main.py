@@ -7,7 +7,6 @@ if __name__ == '__main__':
     print("Running a local dev server...")
     init_logging(debug=True)
     app = init_app(swagger=True)
-    init_sentry()
     app.run(host="0.0.0.0", port=8080)
 else:  
     print("Running in AWS Lambda...")

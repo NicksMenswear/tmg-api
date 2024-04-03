@@ -17,7 +17,6 @@ db = get_database_session()
 def add_attendee(attendee_data):
     """Add Attendee"""
     try:
-        print("Attendee =================: ",attendee_data)
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
         # if user: 
         #     return 'Attendee with the same detail already exists!', 400
@@ -42,15 +41,6 @@ def add_attendee(attendee_data):
             db.add(user)
             db.commit()
             db.refresh(user)
-
-            activation_url = get_activation_url(shopify_id)
-            activation_link = f'<a href="{activation_url}">Click Me</a>'
-            body = f"You have been invited to an event. Click the following link to activate your account: {activation_link}"
-
-            sender_password=password
-            reciever = attendee_data['email']
-            subject ='Wedding Invite'
-            send_email(subject , body ,sender_email,reciever,sender_password)
         
         attendee = db.query(User).filter(User.email == attendee_data["email"]).first()
         existing_attendee = db.query(Attendee).filter(Attendee.event_id == attendee_data["event_id"],Attendee.attendee_id == attendee.id, Attendee.is_active == True).first()

@@ -10,12 +10,8 @@ db_port = os.getenv('DB_PORT')
 db_name = os.getenv('DB_NAME')
 
 DATABASE_URL = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
-
-# For Production
-# DATABASE_URL = f'postgresql://{db_user}:{db_password}@{db_host}/{db_name}'
-
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
 def get_database_session():
-    engine = create_engine(DATABASE_URL)
-    Session = sessionmaker(bind=engine)
     return Session()

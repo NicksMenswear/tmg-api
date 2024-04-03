@@ -30,24 +30,14 @@ def init_logging(debug=False):
     if root.handlers:
         for handler in root.handlers:
             root.removeHandler(handler)
-    level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format='%(asctime)s %(message)s', level=level)
+    logging.basicConfig(format='%(asctime)s %(message)s',level=logging.DEBUG)
 
-def init_app(swagger=False):
-    options = {"swagger_ui": False}
-    if swagger:
-        options.update({"swagger_ui": True, 'swagger_ui_config': {'url': '/openapi.yaml'}})
-    app = connexion.FlaskApp(
-        __name__, 
-        specification_dir='./openapi/', 
-        options=options
-    )
-    app.add_api(
-        'openapi.yaml',
-        arguments={'title': 'The Modern Groom API'},
-        pythonic_params=True,
-        strict_validation=True
-    )
+def init_app():
+    options = {'swagger_ui_config': {'url': '/openapi.yaml'}}
+    app = connexion.FlaskApp(__name__, specification_dir='./openapi/', options=options)
+    app.add_api('openapi.yaml',
+                arguments={'title': 'The Modern Groom API'},
+                pythonic_params=True, strict_validation=True)
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app
 

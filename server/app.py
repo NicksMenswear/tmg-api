@@ -34,9 +34,9 @@ def init_logging(debug=False):
     logging.basicConfig(format='%(asctime)s %(message)s', level=level)
 
 def init_app(swagger=False):
-    options = {}
+    options = {"swagger_ui": False}
     if swagger:
-        options.update({'swagger_ui_config': {'url': '/openapi.yaml'}})
+        options.update({"swagger_ui": True, 'swagger_ui_config': {'url': '/openapi.yaml'}})
     app = connexion.FlaskApp(
         __name__, 
         specification_dir='./openapi/', 
@@ -46,7 +46,7 @@ def init_app(swagger=False):
         'openapi.yaml',
         arguments={'title': 'The Modern Groom API'},
         pythonic_params=True,
-        strict_validation=True
+        strict_validation=False
     )
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app

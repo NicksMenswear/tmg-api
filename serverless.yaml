@@ -19,7 +19,7 @@ functions:
       - http: ANY /
       - http: ANY /{proxy+}
     provisionedConcurrency: 1
-    reservedConcurrency: 10
+    reservedConcurrency: 100
     timeout: 30
     memorySize: 256
     vpc:
@@ -74,27 +74,27 @@ custom:
     site: us5.datadoghq.com
     apiKey: ${ssm:/sls/datadog/api_key}
     appKey: ${ssm:/sls/datadog/app_key}
+    failOnError: true
+    logLevel: DEBUG
+    env: dev
+    service: tmg-api
+    subdomain: "api.dev.tmgcorp.net"
     redirectHandlers: ${self:custom.datadog_profiler}
     enableDDLogs: ${self:custom.datadog_profiler}
     enableXrayTracing: ${self:custom.datadog_profiler}
     enableDDTracing: ${self:custom.datadog_profiler}
-    enableASM: false
     enableProfiling: false
     enableSourceCodeIntegration: false
     enableColdStartTracing: ${self:custom.datadog_profiler}
     uploadGitMetadata: false
     addLayers: ${self:custom.datadog_profiler}
     addExtension: false
+    captureLambdaPayload: ${self:custom.datadog_profiler}
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true
     subscribeToExecutionLogs: true
     forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
-    failOnError: true
-    logLevel: DEBUG
-    env: dev
-    service: tmg-api
-    subdomain: "api.dev.tmgcorp.net"
     # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/#serverless-monitors
     monitors:
       - high_error_rate:

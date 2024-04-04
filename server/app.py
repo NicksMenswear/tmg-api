@@ -34,14 +34,20 @@ def init_logging(debug=False):
     logging.basicConfig(format='%(asctime)s %(message)s', level=level)
 
 def init_app(swagger=False):
-    options = {}
+    options = {"swagger_ui": False}
     if swagger:
-        options['swagger_ui_config'] = {'url': '/openapi.yaml'}
-    app = connexion.FlaskApp(__name__, specification_dir='./openapi/', options=options)
-    app.add_api('openapi.yaml',
-                arguments={'title': 'The Modern Groom API'},
-                pythonic_params=True,
-                strict_validation=True)
+        options.update({"swagger_ui": True, 'swagger_ui_config': {'url': '/openapi.yaml'}})
+    app = connexion.FlaskApp(
+        __name__, 
+        specification_dir='./openapi/', 
+        options=options
+    )
+    app.add_api(
+        'openapi.yaml',
+        arguments={'title': 'The Modern Groom API'},
+        pythonic_params=True,
+        strict_validation=True
+    )
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app
 
@@ -52,4 +58,3 @@ def reset_db():
     engine = create_engine(DATABASE_URL, echo=True)
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    

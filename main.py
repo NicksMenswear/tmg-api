@@ -14,6 +14,7 @@ else:
     init_sentry()
     app = init_app(swagger=False)
 
+
 # This is the entry point for the AWS Lambda function
 def lambda_handler(event, context):
     return awsgi.response(app, event, context)

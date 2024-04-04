@@ -84,7 +84,7 @@ custom:
     enableColdStartTracing: ${self:custom.datadog_profiler}
     uploadGitMetadata: false
     addLayers: ${self:custom.datadog_profiler}
-    addExtension: ${self:custom.datadog_profiler}
+    addExtension: false
     encodeAuthorizerContext: false
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger, JSON
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, UUID, Boolean, BigInteger, JSON, ARRAY, VARCHAR, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from server.database.base_model_ import Model
@@ -76,21 +76,58 @@ class Attendee(Base, Model):
             'role' : self.role
         }
         return result
+
 class ProductItem(Base):
-    __tablename__ = 'product_items'
+    __tablename__ = "product_items"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    name = Column(String,unique=True, nullable=False)
-    price = Column(Float,nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
+    name = Column(String, nullable=True)
+    sku = Column(String, nullable=True)  
+    weight_lb = Column(Float, nullable=True)  
+    height_in = Column(Float, nullable=True)  
+    width_in = Column(Float, nullable=True)  
+    length_in = Column(Float, nullable=True)  
+    value = Column(Float, nullable=True)  
+    price = Column(Float, nullable=True) 
+    on_hand = Column(Integer, nullable=True)  
+    allocated = Column(Integer, nullable=True) 
+    reserve = Column(Integer, nullable=True)  
+    non_sellable_total = Column(Integer, nullable=True)  
+    reorder_level = Column(Integer, nullable=True) 
+    reorder_amount = Column(Integer, nullable=True)  
+    replenishment_level = Column(Integer, nullable=True)  
+    available = Column(Integer, nullable=True) 
+    backorder = Column(Integer, nullable=True)  
+    barcode = Column(Numeric, nullable=True) 
+    tags = Column(ARRAY(VARCHAR), nullable=True) 
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
         result = {
-            'id': self.id,
-            'name': self.name,
-            'price': self.price
+        'id': self.id,
+        'is_active': self.is_active,
+        'name': self.name,
+        'sku': self.sku,
+        'weight_lb': self.weight_lb,
+        'height_in': self.height_in,
+        'width_in': self.width_in,
+        'length_in': self.length_in,
+        'value': self.value,
+        'price': self.price,
+        'on_hand': self.on_hand,
+        'allocated': self.allocated,
+        'reserve': self.reserve,
+        'non_sellable_total': self.non_sellable_total,
+        'reorder_level': self.reorder_level,
+        'reorder_amount': self.reorder_amount,
+        'replenishment_level': self.replenishment_level,
+        'available': self.available,
+        'backorder': self.backorder,
+        'barcode': self.barcode,
+        'tags': self.tags
+
         }
         return result
-
 class Order(Base):
     __tablename__ = 'orders'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)

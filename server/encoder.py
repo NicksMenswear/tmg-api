@@ -2,6 +2,7 @@ from json import JSONEncoder
 from server.database.base_model_ import Model
 from datetime import datetime
 from uuid import UUID
+from decimal import Decimal
 
 class CustomJSONEncoder(JSONEncoder):
     include_nulls = False
@@ -20,4 +21,7 @@ class CustomJSONEncoder(JSONEncoder):
             return str(o)  # Convert UUID to string for serialization
         elif isinstance(o, datetime):
             return o.isoformat()  # Convert datetime to ISO 8601 format
-        return super(CustomJSONEncoder, self).default(o)
+        elif isinstance(o, Decimal):
+            return float(o)  # Round float to 6 decimal places for serialization
+        else:
+            return super(CustomJSONEncoder, self).default(o)

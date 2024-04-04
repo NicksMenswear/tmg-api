@@ -1,13 +1,16 @@
 from server.database.models import Event, User, Attendee
 from server.database.database_manager import get_database_session
+from server.controllers.registration_email import send_email
 from sqlalchemy.exc import SQLAlchemyError 
 from werkzeug.exceptions import HTTPException
 import uuid
-from server.controllers.shopify import create_customer, get_customer
+from server.controllers.shopify import create_customer, get_customer, get_activation_url
 from server.controllers.hmac_1 import hmac_verification
+import os
 
 
-
+sender_email = os.getenv('sender_email')
+password = os.getenv('sender_password')
 db = get_database_session()
 
 @hmac_verification()
@@ -15,10 +18,11 @@ def add_attendee(attendee_data):
     """Add Attendee"""
     try:
         user = db.query(User).filter(User.email == attendee_data["email"]).first()
-        if user:
-            return 'Attendee with the same detail already exists!', 400
-        shopify_user = get_customer(attendee_data['email'])
-        if ((not user) and (not shopify_user)):
+        # if user: 
+        #     return 'Attendee with the same detail already exists!', 400
+        # shopify_user = get_customer(attendee_data['email'])
+        # if ((not user) and (not shopify_user)):
+        if user is None:
             shopify_id = create_customer({
                 'first_name' : attendee_data['first_name'],
                 'last_name' : attendee_data['last_name'],
@@ -31,8 +35,9 @@ def add_attendee(attendee_data):
                 last_name=attendee_data['last_name'],
                 email=attendee_data['email'],
                 shopify_id=shopify_id,
-                account_status = True
+                account_status = False
             )
+
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -42,13 +47,11 @@ def add_attendee(attendee_data):
 
         if existing_attendee:
             return 'Attendee with the same detail already exists!', 400
-        
-
         else:
             id = uuid.uuid4()
             user.first_name = attendee_data['first_name']
             user.last_name = attendee_data['last_name']
-            user.account_status = True
+            # user.account_status = True
 
             db.commit()
             db.refresh(user)
@@ -69,6 +72,7 @@ def add_attendee(attendee_data):
             db.add(new_attendee)
             db.commit()
             db.refresh(new_attendee)
+
             return 'Attendee created successfully!', 201
     except SQLAlchemyError as e:
         db.rollback()

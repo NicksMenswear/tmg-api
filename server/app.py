@@ -54,7 +54,6 @@ def init_app(swagger=False):
 def reset_db():
     from sqlalchemy import create_engine
     from server.database.models import Base
-    from server.database.database_manager import DATABASE_URL
-    engine = create_engine(DATABASE_URL, echo=True)
+    from server.database.database_manager import engine
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)

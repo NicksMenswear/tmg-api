@@ -20,7 +20,7 @@ functions:
       - http: ANY /{proxy+}
     provisionedConcurrency: 1
     reservedConcurrency: 100
-    timeout: 30
+    timeout: 10
     memorySize: 256
     vpc:
       securityGroupIds:

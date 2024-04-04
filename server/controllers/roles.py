@@ -34,7 +34,7 @@ def create_role(role_data):
         return f"Internal Server Error : {e}", 500
 
 @hmac_verification()
-def get_role(role_id,event_id):
+def get_role(role_id, event_id):
     """List specific role"""
     try:
         existing_event = db.query(Event).filter_by(id=event_id).first()

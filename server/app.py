@@ -46,7 +46,7 @@ def init_app(swagger=False):
         'openapi.yaml',
         arguments={'title': 'The Modern Groom API'},
         pythonic_params=True,
-        strict_validation=False
+        strict_validation=True
     )
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app

@@ -25,7 +25,7 @@ jobs:
           node-version: 21
         
       - name: Install Serverless
-        run: npm install -g serverless
+        run: npm install -g serverless@3.38.*
 
       - name: Install Serverless dependencies
         run: npm install

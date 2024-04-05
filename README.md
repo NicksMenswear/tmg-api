@@ -41,3 +41,7 @@ To run tests, use tox command:
 ```bash
 tox
 ```
+
+## Scripts
+
+More on scripts in [scripts/README.md](./scripts/README.md)

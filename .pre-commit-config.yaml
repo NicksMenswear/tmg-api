@@ -4,4 +4,4 @@ repos:
     hooks:
       - id: black
         args: [--verbose]
-        files: ^(?:server|main\.py)$
+        files: ^(?:server/|main\.py)$

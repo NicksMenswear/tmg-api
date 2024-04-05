@@ -40,4 +40,20 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
-      - run: sls deploy --stage dev
+      - name: Sls Deploy
+        run: sls deploy --stage dev
+      
+      - name: Notify Slack
+        if: ${{ always() }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            Serverless Deployment ${{ job.status == 'success' && 'Completed :rocket:' || 'Failed :hot_face:' }}
+            Repo: ${{ github.repository }}
+            Ref: ${{ github.ref }}
+            Job Status: ${{ job.status }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      
+        

@@ -90,7 +90,7 @@ def list_events_attendees(email):
     try:
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            return "User not found", 204
+            return "User not found", 200
         formatted_data = []
         attendees = db.query(Attendee).filter(Attendee.attendee_id == user.id).all()
         for attendee in attendees:
@@ -112,7 +112,7 @@ def list_events_attendees(email):
                     'product_final_image': look.product_final_image
                     }
                 data = {
-                'id': event.id,
+                'event_id': event.id,
                 'event_name': event.event_name,
                 'event_date': str(event.event_date),
                 'user_id': str(event.user_id),
@@ -122,7 +122,7 @@ def list_events_attendees(email):
             else:
                 look_data = {}
                 data = {
-                'id': event.id,
+                'event_id': event.id,
                 'event_name': event.event_name,
                 'event_date': str(event.event_date),
                 'user_id': str(event.user_id),

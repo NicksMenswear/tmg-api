@@ -39,6 +39,16 @@ paths:
       tags:
         - Default
       x-openapi-router-controller: server.controllers.default
+  /health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: Successful response
+      summary: TMG Health Check
+      tags:
+        - Health
+      x-openapi-router-controller: server.controllers.health
   /audit:
     get:
       operationId: list_audit_entries

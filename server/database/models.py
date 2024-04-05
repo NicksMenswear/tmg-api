@@ -66,6 +66,7 @@ class Attendee(Base, Model):
         """Convert the model instance to a dictionary."""
         result = {
             'id': self.id,
+            'attendee_id':self.attendee_id,
             'event_id': str(self.event_id),
             'style': self.style,
             'invite': self.invite,

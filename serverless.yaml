@@ -102,11 +102,6 @@ custom:
           message: "More than 10% of the function's invocations are errors. Notify @slack-notifications"
           options:
             include_tags: false
-      - timeout:
-          name: "Timeout on {{functionname}}"
-          message: "The function has timed out. Notify @slack-notifications"
-          options:
-            include_tags: false
       - high_throttles:
           name: "High Throttles on {{functionname}}"
           message: "More than 20% of the function's invocations are throttled. Notify @slack-notifications"

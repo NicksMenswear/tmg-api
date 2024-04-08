@@ -13,19 +13,13 @@ class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def test_events_username_get(self):
-        """Test case for events_username_get
-
-        
-        """
-        headers = { 
-        }
+        """Test case for events_username_get"""
+        headers = {}
         response = self.client.open(
-            '/v1/events/{username}'.format(username='username_example'),
-            method='GET',
-            headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            "/v1/events/{username}".format(username="username_example"), method="GET", headers=headers
+        )
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

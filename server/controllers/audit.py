@@ -1,5 +1,3 @@
-
-
 def list_audit_entries():  # noqa: E501
     """Lists all audit entries
 
@@ -8,4 +6,4 @@ def list_audit_entries():  # noqa: E501
 
     :rtype: List[AuditLog]
     """
-    return 'do some magic!'
+    return "do some magic!"

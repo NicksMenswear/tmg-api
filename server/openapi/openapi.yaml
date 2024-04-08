@@ -348,6 +348,48 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: server.controllers.events
+  /events_attendees/{email}:
+    get:
+      operationId: list_events_attendees
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          description: Successful response
+      summary: Get event by email
+      tags:
+        - Events
+      x-openapi-router-controller: server.controllers.events
   /delete_events:  
     put:
       operationId: soft_delete_event
@@ -1581,6 +1623,53 @@ paths:
       tags:
       - Roles
       x-openapi-router-controller: server.controllers.roles
+  /event_roles_with_look:
+    get:
+      operationId: get_event_roles_with_look
+      parameters:
+        - description: Retrieve roles of event
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+      - Roles
+      x-openapi-router-controller: server.controllers.roles
 
   /carts:
     post:
@@ -1860,6 +1949,134 @@ paths:
       tags:
         - Product
       x-openapi-router-controller: server.controllers.product
+
+  /delete_product:
+    put:
+      operationId: soft_delete_product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteProductItem"
+        required: true
+        x-body-name: product_data
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DeleteProductItem"
+                type: object
+          description: Soft Delete Product 
+      summary: delete product items
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+  /products:
+    post:
+      operationId: create_product_item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductItem"
+        required: true
+        x-body-name: product_item
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: integer
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true  
+      responses:
+        "201":
+          description: Product item created
+      summary: Create product item
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+    get:
+      operationId: list_product_items
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true  
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true  
+      responses:
+        "200":
+          description: Successful response
+      summary: Get List Products
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product  
 
 components:
   schemas:

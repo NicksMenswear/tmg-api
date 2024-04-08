@@ -22,8 +22,9 @@ def init_sentry():
         # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
         enable_tracing=True,
-        environment=os.getenv("STAGE")
+        environment=os.getenv("STAGE"),
     )
+
 
 def init_logging(debug=False):
     root = logging.getLogger()
@@ -31,29 +32,25 @@ def init_logging(debug=False):
         for handler in root.handlers:
             root.removeHandler(handler)
     level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format='%(asctime)s %(message)s', level=level)
+    logging.basicConfig(format="%(asctime)s %(message)s", level=level)
+
 
 def init_app(swagger=False):
     options = {"swagger_ui": False}
     if swagger:
-        options.update({"swagger_ui": True, 'swagger_ui_config': {'url': '/openapi.yaml'}})
-    app = connexion.FlaskApp(
-        __name__, 
-        specification_dir='./openapi/', 
-        options=options
-    )
+        options.update({"swagger_ui": True, "swagger_ui_config": {"url": "/openapi.yaml"}})
+    app = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
     app.add_api(
-        'openapi.yaml',
-        arguments={'title': 'The Modern Groom API'},
-        pythonic_params=True,
-        strict_validation=True
+        "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
     app.app.json_encoder = encoder.CustomJSONEncoder
     return app
+
 
 def reset_db():
     from sqlalchemy import create_engine
     from server.database.models import Base
     from server.database.database_manager import engine
+
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)

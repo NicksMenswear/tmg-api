@@ -3,12 +3,12 @@ import awsgi
 from server.app import init_app, init_logging, init_sentry, reset_db
 
 
-if __name__ == '__main__':  
+if __name__ == "__main__":
     print("Running a local dev server...")
     init_logging(debug=True)
     app = init_app(swagger=True)
     app.run(host="0.0.0.0", port=8080)
-else:  
+else:
     print("Running in AWS Lambda...")
     init_logging(debug=True)
     init_sentry()

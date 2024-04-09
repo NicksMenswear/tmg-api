@@ -59,7 +59,7 @@ def list_events(username):
         formatted_data = []
         events = db.query(Event).filter(Event.user_id == user.id, Event.is_active == True).all()
         for event in events:
-            roles = db.query(Role).filter(Role.event_id == event.id).all()
+            looks = db.query(Look).filter(Look.event_id == event.id).all()
             data = {
                 "id": event.id,
                 "event_name": event.event_name,
@@ -67,8 +67,7 @@ def list_events(username):
                 "user_id": str(event.user_id),
                 "looks": [],
             }
-            for role in roles:
-                look = db.query(Look).filter(Look.id == role.look_id).first()
+            for look in looks:
                 look_data = {
                     "id": look.id,
                     "look_name": look.look_name,
@@ -78,8 +77,6 @@ def list_events(username):
                 }
                 data["looks"].append(look_data)
             formatted_data.append(data)
-
-        # return [event.to_dict() for event in events]  # Convert to list of dictionaries
         return formatted_data
 
     except Exception as e:

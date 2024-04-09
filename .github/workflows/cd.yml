@@ -56,7 +56,7 @@ jobs:
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
       - name: Sls Deploy
-        run: sls deploy --stage stg
+        run: sls deploy --stage dev
 
       - name: Notify slack
         if: ${{ always() }}

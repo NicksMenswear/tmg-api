@@ -67,42 +67,37 @@ def get_event_roles(event_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500
-    
+
+
 @hmac_verification()
 def get_event_roles_with_look(event_id):
     """List event roles"""
     try:
         event_id = uuid.UUID(event_id)
-        existing_event = db.query(Event).filter(Event.id==event_id).first()
+        existing_event = db.query(Event).filter(Event.id == event_id).first()
         if not existing_event:
-            return 'Event not found', 204
+            return "Event not found", 204
         role_details = db.query(Role).filter(Role.event_id == event_id).all()
         if not role_details:
-            return 'Role not found', 204
+            return "Role not found", 204
         formatted_role_data = []
         formatted_look_data = []
         for role in role_details:
-            look = db.query(Look).filter(Look.id==role.look_id).first()
+            look = db.query(Look).filter(Look.id == role.look_id).first()
             data = {
-                "role_id":role.id,
-                "role_name":role.role_name,
-                "event_id":role.event_id,
-                "look_data":{
-                    "look_id":look.id,
-                    "look_name":look.look_name
-                }
+                "role_id": role.id,
+                "role_name": role.role_name,
+                "event_id": role.event_id,
+                "look_data": {"look_id": look.id, "look_name": look.look_name},
             }
             formatted_role_data.append(data)
 
         look_details = db.query(Look).filter(Look.event_id == event_id).all()
         for look in look_details:
-            look_data = {
-                    "look_id":look.id,
-                    "look_name":look.look_name
-                }
+            look_data = {"look_id": look.id, "look_name": look.look_name}
             formatted_look_data.append(look_data)
         # return [role_detail.to_dict() for role_detail in role_details]
-        return {"role_details":formatted_role_data,"all_looks":formatted_look_data}
+        return {"role_details": formatted_role_data, "all_looks": formatted_look_data}
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500

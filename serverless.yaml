@@ -2,7 +2,7 @@ service: tmg-api
 provider:
   name: aws
   runtime: python3.10
-  stage: dev
+  stage: ${sls:stage}
   region: us-west-2
   iam:
     role:
@@ -30,7 +30,7 @@ functions:
         - subnet-081fa5d80ecd9a253
     environment:
       # General
-      STAGE: ${self:provider.stage}
+      STAGE: ${sls:stage}
       # SQLAlchemy Env Variables
       DB_HOST: tmg-api-db-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com
       DB_PORT: 5432
@@ -56,9 +56,9 @@ plugins:
 custom:
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:
-    domainName: "api.dev.tmgcorp.net"
+    domainName: "api.${sls:stage}.tmgcorp.net"
     basePath: ''
-    certificateName: '*.dev.tmgcorp.net'
+    certificateName: '*.${sls:stage}.tmgcorp.net'
     createRoute53Record: true
     createRoute53IPv6Record: true
     endpointType: REGIONAL
@@ -76,9 +76,9 @@ custom:
     appKey: ${ssm:/sls/datadog/app_key}
     failOnError: true
     logLevel: DEBUG
-    env: dev
+    env: ${sls:stage}
     service: tmg-api
-    subdomain: "api.dev.tmgcorp.net"
+    subdomain: "api.${sls:stage}.tmgcorp.net"
     redirectHandlers: ${self:custom.datadog_profiler}
     enableDDLogs: ${self:custom.datadog_profiler}
     enableXrayTracing: ${self:custom.datadog_profiler}

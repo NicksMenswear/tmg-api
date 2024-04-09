@@ -46,7 +46,7 @@ jobs:
       - name: Get head commit message
         id: get_head_commit_message
         run: |
-          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h: \"%s\" by %an')" >> $GITHUB_OUTPUT
+          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
 
       - name: Notify slack
         if: ${{ always() }}

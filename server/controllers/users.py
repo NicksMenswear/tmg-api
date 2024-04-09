@@ -15,7 +15,7 @@ sender_email = os.getenv("sender_email")
 db = get_database_session()
 
 
-# @hmac_verification()
+@hmac_verification()
 def create_user(user_data):  # noqa: E501
     """Create user
 

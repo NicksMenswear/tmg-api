@@ -18,16 +18,12 @@ class TestOrdersGetController(BaseTestCase):
 
         Retrieve a specific order by ID
         """
-        headers = { 
-            'Accept': 'application/json',
+        headers = {
+            "Accept": "application/json",
         }
-        response = self.client.open(
-            '/v1/orders/{order_id}'.format(order_id=56),
-            method='GET',
-            headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        response = self.client.open("/v1/orders/{order_id}".format(order_id=56), method="GET", headers=headers)
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

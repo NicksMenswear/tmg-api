@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID
 from decimal import Decimal
 
+
 class CustomJSONEncoder(JSONEncoder):
     include_nulls = False
 

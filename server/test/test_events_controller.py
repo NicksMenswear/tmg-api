@@ -18,23 +18,15 @@ class TestEventsController(BaseTestCase):
 
         Create event
         """
-        event = {
-  "date" : "2000-01-23T04:56:07.000+00:00",
-  "id" : 0,
-  "type" : "type"
-}
-        headers = { 
-            'Content-Type': 'application/json',
+        event = {"date": "2000-01-23T04:56:07.000+00:00", "id": 0, "type": "type"}
+        headers = {
+            "Content-Type": "application/json",
         }
         response = self.client.open(
-            '/v1/events',
-            method='POST',
-            headers=headers,
-            data=json.dumps(event),
-            content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            "/v1/events", method="POST", headers=headers, data=json.dumps(event), content_type="application/json"
+        )
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

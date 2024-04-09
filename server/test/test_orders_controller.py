@@ -19,66 +19,47 @@ class TestOrdersController(BaseTestCase):
         Create order
         """
         order = {
-  "order_date" : "2000-01-23T04:56:07.000+00:00",
-  "event_id" : 1,
-  "user_id" : 6,
-  "received_date" : "2000-01-23T04:56:07.000+00:00",
-  "shipped_date" : "2000-01-23T04:56:07.000+00:00",
-  "id" : 0,
-  "items" : [ {
-    "product_item_id" : 5,
-    "quantity" : 5,
-    "price" : 2.302136
-  }, {
-    "product_item_id" : 5,
-    "quantity" : 5,
-    "price" : 2.302136
-  } ]
-}
-        headers = { 
-            'Content-Type': 'application/json',
+            "order_date": "2000-01-23T04:56:07.000+00:00",
+            "event_id": 1,
+            "user_id": 6,
+            "received_date": "2000-01-23T04:56:07.000+00:00",
+            "shipped_date": "2000-01-23T04:56:07.000+00:00",
+            "id": 0,
+            "items": [
+                {"product_item_id": 5, "quantity": 5, "price": 2.302136},
+                {"product_item_id": 5, "quantity": 5, "price": 2.302136},
+            ],
+        }
+        headers = {
+            "Content-Type": "application/json",
         }
         response = self.client.open(
-            '/v1/orders',
-            method='POST',
-            headers=headers,
-            data=json.dumps(order),
-            content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            "/v1/orders", method="POST", headers=headers, data=json.dumps(order), content_type="application/json"
+        )
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
     def test_get_order_by_id(self):
         """Test case for get_order_by_id
 
         Retrieve a specific order by ID
         """
-        headers = { 
-            'Accept': 'application/json',
+        headers = {
+            "Accept": "application/json",
         }
-        response = self.client.open(
-            '/v1/orders/{order_id}'.format(order_id=56),
-            method='GET',
-            headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        response = self.client.open("/v1/orders/{order_id}".format(order_id=56), method="GET", headers=headers)
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
     def test_get_orders(self):
         """Test case for get_orders
 
         Retrieve all orders, optionally filtered by user ID or event ID
         """
-        query_string = [('user_id', 56),
-                        ('event_id', 56)]
-        headers = { 
-            'Accept': 'application/json',
+        query_string = [("user_id", 56), ("event_id", 56)]
+        headers = {
+            "Accept": "application/json",
         }
-        response = self.client.open(
-            '/v1/orders',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        response = self.client.open("/v1/orders", method="GET", headers=headers, query_string=query_string)
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
     def test_update_order(self):
         """Test case for update_order
@@ -86,34 +67,29 @@ class TestOrdersController(BaseTestCase):
         Update an existing order by ID
         """
         order = {
-  "order_date" : "2000-01-23T04:56:07.000+00:00",
-  "event_id" : 1,
-  "user_id" : 6,
-  "received_date" : "2000-01-23T04:56:07.000+00:00",
-  "shipped_date" : "2000-01-23T04:56:07.000+00:00",
-  "id" : 0,
-  "items" : [ {
-    "product_item_id" : 5,
-    "quantity" : 5,
-    "price" : 2.302136
-  }, {
-    "product_item_id" : 5,
-    "quantity" : 5,
-    "price" : 2.302136
-  } ]
-}
-        headers = { 
-            'Content-Type': 'application/json',
+            "order_date": "2000-01-23T04:56:07.000+00:00",
+            "event_id": 1,
+            "user_id": 6,
+            "received_date": "2000-01-23T04:56:07.000+00:00",
+            "shipped_date": "2000-01-23T04:56:07.000+00:00",
+            "id": 0,
+            "items": [
+                {"product_item_id": 5, "quantity": 5, "price": 2.302136},
+                {"product_item_id": 5, "quantity": 5, "price": 2.302136},
+            ],
+        }
+        headers = {
+            "Content-Type": "application/json",
         }
         response = self.client.open(
-            '/v1/orders/{order_id}'.format(order_id=56),
-            method='PUT',
+            "/v1/orders/{order_id}".format(order_id=56),
+            method="PUT",
             headers=headers,
             data=json.dumps(order),
-            content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            content_type="application/json",
+        )
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,6 @@ import uuid
 from server.controllers.hmac_1 import hmac_verification
 
 
-
 db = get_database_session()
 
 
@@ -14,7 +13,7 @@ def create_order(order):  # noqa: E501
 
      # noqa: E501
 
-    :param order: 
+    :param order:
     :type order: dict | bytes
 
     :rtype: None
@@ -27,29 +26,23 @@ def create_order(order):  # noqa: E501
         if not event:
             return "Event not found", 204
         order_id = uuid.uuid4()
-        new_order = Order(
-            id = order_id,
-            user_id = user.id,
-            event_id = event.id,
-            shipped_date = None,
-            received_date = None
-        )
+        new_order = Order(id=order_id, user_id=user.id, event_id=event.id, shipped_date=None, received_date=None)
         db.add(new_order)
         db.commit()
         db.refresh(new_order)
-        for orderitem in order['items']:
-            product = db.query(ProductItem).filter(ProductItem.name == orderitem['name']).first()
+        for orderitem in order["items"]:
+            product = db.query(ProductItem).filter(ProductItem.name == orderitem["name"]).first()
             new_orderitem = OrderItem(
-                id = uuid.uuid4(),
-                order_id = order_id,
-                product_id = product.id,
-                quantity = orderitem['quantity'],
-                price = product.price
+                id=uuid.uuid4(),
+                order_id=order_id,
+                product_id=product.id,
+                quantity=orderitem["quantity"],
+                price=product.price,
             )
             db.add(new_orderitem)
             db.commit()
             db.refresh(new_orderitem)
-        return 'Order created successfully!', 201
+        return "Order created successfully!", 201
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500
@@ -69,7 +62,7 @@ def get_order_by_id(order_id):  # noqa: E501
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            return 'Order not found', 204
+            return "Order not found", 204
         return order.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -90,9 +83,9 @@ def get_orders(user_id=None, event_id=None):  # noqa: E501
     :rtype: List[Order]
     """
     try:
-        orders = db.query(Order).filter(Order.user_id==user_id, Order.event_id==event_id)
+        orders = db.query(Order).filter(Order.user_id == user_id, Order.event_id == event_id)
         if not orders:
-            return 'Order not found', 204
+            return "Order not found", 204
 
         return [order.to_dict() for order in orders]
     except Exception as e:
@@ -108,29 +101,30 @@ def update_order(order):  # noqa: E501
 
     :param order_id: Unique identifier of the order to update
     :type order_id: int
-    :param order: 
+    :param order:
     :type order: dict | bytes
     :rtype: None
     """
     try:
-        orders = db.query(Order).filter(Order.id == order['id']).first()
-        orders.shipped_date = order['shipped_date']
-        orders.received_date = order['received_date']
+        orders = db.query(Order).filter(Order.id == order["id"]).first()
+        orders.shipped_date = order["shipped_date"]
+        orders.received_date = order["received_date"]
         db.commit()
         return {"message": "Order details updated successfully"}, 200
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500
 
+
 @hmac_verification()
 def delete_order(order_id):
-    """ Deleting Order using id"""
+    """Deleting Order using id"""
     try:
-        order = db.query(Order).filter(Order.id==order_id).first()
+        order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            return 'Order not found', 204
+            return "Order not found", 204
 
-        order_items = db.query(OrderItem).filter(OrderItem.order_id==order.id)
+        order_items = db.query(OrderItem).filter(OrderItem.order_id == order.id)
         for order_item in order_items:
             db.delete(order_item)
         db.commit()

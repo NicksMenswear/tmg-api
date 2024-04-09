@@ -18,39 +18,30 @@ class TestProductController(BaseTestCase):
 
         Create product item
         """
-        product_item = {
-  "price" : 6.0274563,
-  "name" : "name",
-  "description" : "description",
-  "id" : 0
-}
-        headers = { 
-            'Content-Type': 'application/json',
+        product_item = {"price": 6.0274563, "name": "name", "description": "description", "id": 0}
+        headers = {
+            "Content-Type": "application/json",
         }
         response = self.client.open(
-            '/v1/product',
-            method='POST',
+            "/v1/product",
+            method="POST",
             headers=headers,
             data=json.dumps(product_item),
-            content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+            content_type="application/json",
+        )
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
     def test_list_product_items(self):
         """Test case for list_product_items
 
         Lists all product items
         """
-        headers = { 
-            'Accept': 'application/json',
+        headers = {
+            "Accept": "application/json",
         }
-        response = self.client.open(
-            '/v1/product',
-            method='GET',
-            headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        response = self.client.open("/v1/product", method="GET", headers=headers)
+        self.assert200(response, "Response body is : " + response.data.decode("utf-8"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

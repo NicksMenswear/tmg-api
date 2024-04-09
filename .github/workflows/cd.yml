@@ -7,7 +7,7 @@ on:
       - main
 
 concurrency:
-  group: CD
+  group: cd-stg
   cancel-in-progress: false
 
 permissions:
@@ -22,6 +22,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Get head commit message
+        id: get_head_commit_message
+        run: |
+          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+
+      - name: Notify slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *Serverless deployment has started for:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           
       - name: Setup node.js
         uses: actions/setup-node@v4
@@ -41,12 +56,7 @@ jobs:
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
       - name: Sls Deploy
-        run: sls deploy --stage dev
-      
-      - name: Get head commit message
-        id: get_head_commit_message
-        run: |
-          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+        run: sls deploy --stage stg
 
       - name: Notify slack
         if: ${{ always() }}
@@ -54,12 +64,12 @@ jobs:
         with:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
-            Serverless Deployment ${{ job.status == 'success' && 'Completed :rocket:' || 'Failed :hot_face:' }}
-            Repo: `${{ github.repository }}`
-            Ref: `${{ github.ref }}`
-            Commit: `${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}`
-            Logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            Status: *${{ job.status }}*
+            *Serverless Deployment ${{ job.status == 'success' && 'Completed :rocket:' || 'Failed :hot_face:' }}*
+            *Repo:* ${{ github.repository }}
+            *Ref:* ${{ github.ref }}
+            *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            *Status:* ${{ job.status }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       

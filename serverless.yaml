@@ -32,11 +32,11 @@ functions:
       # General
       STAGE: ${sls:stage}
       # SQLAlchemy Env Variables
-      DB_HOST: tmg-api-db-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com
+      DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
       DB_PORT: 5432
-      DB_NAME: tmg_api
-      DB_USER: postgres
-      DB_PASSWORD: ${ssm:/db/tmg-api-db/DB_PASSWORD}
+      DB_NAME: ${ssm:/${sls:stage}/db/DB_NAME}
+      DB_USER: ${ssm:/${sls:stage}/db/DB_USER}
+      DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
       # Shopify Env Variables
       API_KEY: ${ssm:/shopify/c2/API_KEY}
       sender_email: "bsit833@gmail.com"
@@ -64,7 +64,7 @@ custom:
     endpointType: REGIONAL
     securityPolicy: tls_1_2
     apiType: rest
-    autoDomain: false
+    autoDomain: true
 
   datadog_profiler: false
 

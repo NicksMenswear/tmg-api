@@ -1354,6 +1354,15 @@ paths:
             format: uuid
             type: string
           style: form
+        - description: Key for validation
+          explode: true
+          in: query
+          name: key
+          required: false
+          schema:
+            format: str
+            type: string
+          style: form
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1382,15 +1391,9 @@ paths:
       responses:
         "200":
           description: Details of the Look
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/Look"
-                type: array
         "404":
           description: Look not found
-      summary: Get a looks by user id
+      summary: Get a single look by name
       tags:
       - Looks
       x-openapi-router-controller: server.controllers.looks
@@ -2391,8 +2394,8 @@ components:
         look_name:
           title: look_name
           type: string
-        user_id:
-          title: user_id
+        email:
+          title: email
           type: string
         product_specs:
           title: product_specs
@@ -2402,7 +2405,7 @@ components:
           type: string
       required:
         - look_name
-        - user_id
+        - email
       title: Look
       type: object
     UpdateLook:

@@ -5,8 +5,16 @@ from sqlalchemy.orm import sessionmaker
 from server.app import init_app
 from server.test.services.emails import FakeEmailService
 from server.test.services.shopify import FakeShopifyService
+import os
 
-engine = create_engine(f"postgresql://postgres:postgres@localhost:5432/tmg_api")
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST")
+db_port = os.getenv("DB_PORT")
+db_name = os.getenv("DB_NAME")
+
+DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+engine = create_engine(DATABASE_URL)
 
 
 class BaseTestCase(TestCase):

@@ -17,8 +17,22 @@ services:
     image: python:3.10
     volumes:
       - .:/usr/src/app
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tmg_api
+      DB_USER: postgres
+      DB_PASSWORD: postgres
     working_dir: /usr/src/app
-    command: bash -c "apt-get update && apt-get install -y git && ls -alh && pip install tox && tox && . .tox/py3/bin/activate && pytest --verbose"
+    command: >
+      bash -c "apt-get update && 
+      apt-get install -y libpq-dev && 
+      pip install tox && 
+      tox && 
+      . .tox/py310/bin/activate && 
+      pip install --upgrade psycopg2 &&
+      export PYTHONPATH=${PYTHONPATH}:$(pwd)/server &&
+      pytest --verbose"
     depends_on:
       - db
 

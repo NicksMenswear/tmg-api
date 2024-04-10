@@ -28,7 +28,6 @@ services:
       bash -c "pip install tox &&
       git config --global --add safe.directory /usr/src/app &&
       tox || true &&
-      cat /root/.cache/pre-commit/pre-commit.log &&
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
       export PYTHONPATH=${PYTHONPATH}:$(pwd)/server &&

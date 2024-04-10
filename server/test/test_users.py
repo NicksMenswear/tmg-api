@@ -194,11 +194,11 @@ class TestUsers(BaseTestCase):
             method="PUT",
             data=json.dumps(
                 {
-                    "first_name": new_first_name,
-                    "last_name": new_last_name,
-                    "email": user.email,
-                    "shopify_id": new_shopify_id,
-                    "account_status": new_account_status,
+                    "first_name2": new_first_name,
+                    "last_name2": new_last_name,
+                    "email2": user.email,
+                    "shopify_id2": new_shopify_id,
+                    "account_status2": new_account_status,
                 }
             ),
             headers=self.request_headers,

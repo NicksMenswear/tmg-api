@@ -25,11 +25,8 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build and run Docker containers
-        run: docker-compose up --build -d
-
-      - name: Execute tests
-        run: docker-compose run app
+      - name: Build and run tests for Docker containers
+        run: ./run-tests.sh
 
       - name: Clean up
         if: always()

@@ -2,7 +2,7 @@ service: tmg-api
 provider:
   name: aws
   runtime: python3.10
-  stage: ${sls:stage}
+  stage: ${opt:stage, "dev"}
   region: us-west-2
   iam:
     role:
@@ -11,7 +11,7 @@ provider:
     restApi:
       accessLogging: true
       format: '$context.requestTime "$context.httpMethod $context.path $context.protocol" $context.status $context.identity.sourceIp $context.requestId'
-
+  
 functions:
   api:
     handler: main.lambda_handler

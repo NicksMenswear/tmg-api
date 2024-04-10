@@ -137,20 +137,15 @@ def get_look_userid_eventid(user_id, event_id=None):
 @hmac_verification()
 def get_user_looks(user_id):
     """Specific user looks"""
-    try:
-        user_id = uuid.UUID(user_id)
-        existing_user = db.query(User).filter_by(id=user_id).first()
-        if not existing_user:
-            return "User not found", 204
-        look_details = db.query(Look).filter(Look.user_id == user_id).all()
-        print()
-        if not look_details:
-            return "Look not found", 204
+    user_id = uuid.UUID(user_id)
+    existing_user = db.query(User).filter_by(id=user_id).first()
+    if not existing_user:
+        return "User not found", 204
+    look_details = db.query(Look).filter(Look.user_id == user_id).all()
+    if not look_details:
+        return "Look not found", 204
 
-        return [look_detail.to_dict() for look_detail in look_details]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return [look_detail.to_dict() for look_detail in look_details]
 
 
 @hmac_verification()

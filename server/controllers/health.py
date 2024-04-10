@@ -7,7 +7,7 @@ import requests
 TOP_SITES = [
     "https://www.google.com",
     "https://www.yahoo.com",
-    "https://www.facebook.com",
+    "https://www.netlify.com",
     "https://www.apple.com",
 ]
 

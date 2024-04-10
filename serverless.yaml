@@ -2,7 +2,7 @@ service: tmg-api
 provider:
   name: aws
   runtime: python3.10
-  stage: ${sls:stage}
+  stage: ${opt:stage, "dev"}
   region: us-west-2
   iam:
     role:

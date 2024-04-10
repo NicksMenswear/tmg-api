@@ -3,6 +3,7 @@ import os
 
 import connexion
 import logging
+from urllib.parse import urlparse
 
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
@@ -11,9 +12,19 @@ from server import encoder
 
 
 def init_sentry():
+    def filter_transactions(event, hint):
+        url_string = event["request"]["url"]
+        parsed_url = urlparse(url_string)
+
+        if parsed_url.path == "/health":
+            return None
+
+        return event
+
     sentry_sdk.init(
         dsn="https://8e6bac4bea5b3bf97a544417ca20e275@o4507018035724288.ingest.us.sentry.io/4507018177609728",
         integrations=[AwsLambdaIntegration(timeout_warning=True)],
+        enable_tracing=True,
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         traces_sample_rate=1.0,
@@ -21,7 +32,8 @@ def init_sentry():
         # of sampled transactions.
         # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
-        enable_tracing=True,
+        # Ignoring healthcheck transactions
+        before_send_transaction=filter_transactions,
         environment=os.getenv("STAGE"),
     )
 

@@ -26,6 +26,7 @@ services:
     working_dir: /usr/src/app
     command: >
       bash -c "pip install tox &&
+      git config --global --add safe.directory /usr/src/app &&
       tox || true &&
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&

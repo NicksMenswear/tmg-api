@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app
-    command: bash -c "apt-get update && apt-get install -y git && pip install tox && tox && . .tox/py3/bin/activate && pytest --verbose"
+    command: bash -c "apt-get update && apt-get install -y git && ls -alh && pip install tox && tox && . .tox/py3/bin/activate && pytest --verbose"
     depends_on:
       - db
 

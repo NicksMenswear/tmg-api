@@ -25,14 +25,13 @@ services:
       DB_PASSWORD: postgres
     working_dir: /usr/src/app
     command: >
-      bash -c "apt-get update && 
-      apt-get install -y libpq-dev && 
-      pip install tox && 
+      bash -c "pip install tox && 
       tox || true &&
       cat /root/.cache/pre-commit/pre-commit.log &&
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
       export PYTHONPATH=${PYTHONPATH}:$(pwd)/server &&
+      ./scripts/reset_db.sh &&
       pytest --verbose"
     depends_on:
       - db

@@ -25,7 +25,11 @@ services:
     command: >
       bash -c "pip install tox &&
       git config --global --add safe.directory /usr/src/app &&
+<<<<<<< HEAD
       tox &&
+=======
+      tox || true &&
+>>>>>>> 67aacfb (update)
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
       ./scripts/reset_db.sh &&

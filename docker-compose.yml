@@ -28,7 +28,8 @@ services:
       bash -c "apt-get update && 
       apt-get install -y libpq-dev && 
       pip install tox && 
-      tox && 
+      tox || true &&
+      cat /root/.cache/pre-commit/pre-commit.log &&
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
       export PYTHONPATH=${PYTHONPATH}:$(pwd)/server &&

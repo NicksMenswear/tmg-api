@@ -30,7 +30,6 @@ services:
       tox || true &&
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
-      export PYTHONPATH=${PYTHONPATH}:$(pwd)/server &&
       ./scripts/reset_db.sh &&
       pytest --verbose"
     depends_on:

@@ -141,15 +141,11 @@ def list_product_items():  # noqa: E501
         db.close()
 
 
-def single_product_item(product_id):  # noqa: E501
-    """show single product item
-
-    # noqa: E501
-    """
+def single_product_item(product_id):
     try:
         product = db.query(ProductItem).filter_by(id=product_id, is_active=True).first()
         if not product:
-            return "product not found!", 200
+            return "product not found!", 404
 
         return product.to_dict()
     except Exception as e:

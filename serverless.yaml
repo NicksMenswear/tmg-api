@@ -7,6 +7,8 @@ provider:
   iam:
     role:
       name: tmg-api-${sls:stage}-role
+  stackTags:
+      env: ${sls:stage}
   logs:
     restApi:
       accessLogging: true
@@ -52,6 +54,7 @@ plugins:
   - serverless-python-requirements
   - serverless-domain-manager
   - serverless-plugin-datadog
+  - serverless-plugin-resource-tagging
 
 custom:
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 

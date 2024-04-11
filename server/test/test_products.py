@@ -351,19 +351,23 @@ class TestProducts(BaseTestCase):
         # then
         self.assert404(response)
 
-    # def test_delete_non_existing_product(self):
-    #     # given
-    #     delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}
-    #
-    #     # when
-    #     response = self.client.open(
-    #         "/delete_product",
-    #         query_string=self.hmac_query_params,
-    #         method="PUT",
-    #         data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
-    #         headers=self.request_headers,
-    #         content_type=CONTENT_TYPE_JSON,
-    #     )
-    #
-    #     # then
-    #     self.assert404(response)
+    def test_delete_product(self):
+        # given
+        product_id = str(uuid.uuid4())
+        product = self.create_db_product(id=product_id)
+        self.db.add(product)
+        self.db.commit()
+        delete_product_payload = {"id": product_id, "is_active": False}
+
+        # when
+        response = self.client.open(
+            "/delete_product",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assertStatus(response, 204)

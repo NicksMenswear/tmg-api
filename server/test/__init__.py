@@ -16,6 +16,8 @@ db_name = os.getenv("DB_NAME")
 DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 engine = create_engine(DATABASE_URL)
 
+CONTENT_TYPE_JSON = "application/json"
+
 
 class BaseTestCase(TestCase):
     def create_app(self):
@@ -36,3 +38,8 @@ class BaseTestCase(TestCase):
             "timestamp": "1712665883",
             "signature": "test",
         }
+
+    def assert_equal_left(self, left, right):
+        # Asserts that all key-value pairs in left are present and equal in right.
+        for key in left:
+            self.assertEqual(left[key], right[key])

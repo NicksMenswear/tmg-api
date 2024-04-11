@@ -5,8 +5,9 @@ import random
 import unittest
 import uuid
 
+from server import encoder
 from server.database.models import User
-from server.test import BaseTestCase
+from server.test import BaseTestCase, CONTENT_TYPE_JSON
 
 
 class TestUsers(BaseTestCase):
@@ -17,7 +18,7 @@ class TestUsers(BaseTestCase):
         self.db.query(User).delete()
         self.db.commit()
         self.request_headers = {
-            "Accept": "application/json",
+            "Accept": CONTENT_TYPE_JSON,
         }
 
     @staticmethod
@@ -48,18 +49,13 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_user["shopify_id"], user.shopify_id)
         self.assertEqual(response_user["account_status"], user.account_status)
 
-    def assert_equal_left(self, left, right):
-        # Asserts that all key-value pairs in left are present and equal in right.
-        for key in left:
-            self.assertEqual(left[key], right[key])
-
     def test_get_non_existing_user_by_email(self):
         # when
         response = self.client.open(
             "/users/{email}".format(email=f"{str(uuid.uuid4())}@example.com"),
             query_string=self.hmac_query_params,
             method="GET",
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -99,9 +95,9 @@ class TestUsers(BaseTestCase):
             "/users",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(user),
+            data=json.dumps(user, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -120,9 +116,9 @@ class TestUsers(BaseTestCase):
             "/users",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(user),
+            data=json.dumps(user, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -135,7 +131,7 @@ class TestUsers(BaseTestCase):
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -156,7 +152,7 @@ class TestUsers(BaseTestCase):
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -174,9 +170,9 @@ class TestUsers(BaseTestCase):
             "/users",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=json.dumps(user),
+            data=json.dumps(user, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
@@ -189,36 +185,26 @@ class TestUsers(BaseTestCase):
         self.db.commit()
 
         # when
-        new_first_name = user.first_name + "-updated"
-        new_last_name = user.last_name + "-updated"
-        new_account_status = not user.account_status
-        new_shopify_id = str(random.randint(1000, 100000))
+        updated_user = self.create_user_request_payload(
+            first_name=user.first_name + "-updated",
+            last_name=user.last_name + "-updated",
+            email=user.email,
+            account_status=not user.account_status,
+        )
+        updated_user["shopify_id"] = str(random.randint(1000, 100000))
 
         response = self.client.open(
             "/users",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=json.dumps(
-                {
-                    "first_name": new_first_name,
-                    "last_name": new_last_name,
-                    "email": user.email,
-                    "shopify_id": new_shopify_id,
-                    "account_status": new_account_status,
-                }
-            ),
+            data=json.dumps(updated_user, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json["first_name"], new_first_name)
-        self.assertEqual(response.json["last_name"], new_last_name)
-        self.assertEqual(response.json["email"], user.email)
-        self.assertEqual(response.json["account_status"], new_account_status)
-        self.assertEqual(response.json["id"], str(user.id))
-        self.assertEqual(response.json["shopify_id"], new_shopify_id)
+        self.assert_equal_left(updated_user, response.json)
 
     def test_update_user_missing_required_fields(self):
         # when
@@ -226,14 +212,10 @@ class TestUsers(BaseTestCase):
             "/users",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=json.dumps({}),
+            data=json.dumps({}, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
         self.assert400(response)
-
-
-if __name__ == "__main__":
-    unittest.main()

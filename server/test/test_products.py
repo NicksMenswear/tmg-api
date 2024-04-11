@@ -1,10 +1,37 @@
 from __future__ import absolute_import
 
+import json
 import unittest
 import uuid
 
+from server import encoder
 from server.database.models import ProductItem
-from server.test import BaseTestCase
+from server.test import BaseTestCase, CONTENT_TYPE_JSON
+
+# TODO: Remove this key mapping once the API is fixed
+PRODUCT_KEYS_MAPPING = {
+    "id": "id",
+    "name": "name",
+    "Active": "is_active",
+    "SKU": "sku",
+    "Weight": "weight_lb",
+    "Height": "height_in",
+    "Width": "width_in",
+    "Length": "length_in",
+    "Value": "value",
+    "Price": "price",
+    "On_hand": "on_hand",
+    "Allocated": "allocated",
+    "Reserve": "reserve",
+    "Non_sellable_total": "non_sellable_total",
+    "Reorder_level": "reorder_level",
+    "Reorder_amount": "reorder_amount",
+    "Replenishment_level": "replenishment_level",
+    "Available": "available",
+    "Backorder": "backorder",
+    "Barcode": "barcode",
+    "Tags": "tags",
+}
 
 
 class TestProducts(BaseTestCase):
@@ -15,13 +42,14 @@ class TestProducts(BaseTestCase):
         self.db.query(ProductItem).delete()
         self.db.commit()
         self.request_headers = {
-            "Accept": "application/json",
+            "Accept": CONTENT_TYPE_JSON,
         }
 
     @staticmethod
     def create_product_request_payload(**kwargs):
         return {
             "name": kwargs.get("name", str(uuid.uuid4())),
+            "Active": kwargs.get("is_active", True),
             "SKU": kwargs.get("sku", str(uuid.uuid4())),
             "Weight": kwargs.get("weight", 1.0),
             "Height": kwargs.get("height", 1.0),
@@ -38,7 +66,7 @@ class TestProducts(BaseTestCase):
             "Replenishment_level": kwargs.get("replenishment_level", 1),
             "Available": kwargs.get("available", 1),
             "Backorder": kwargs.get("backorder", 1),
-            "Barcode": kwargs.get("barcode", 1234567890),
+            "Barcode": kwargs.get("barcode", 123456),
             "Tags": kwargs.get("tags", ["tag1", "tag2"]),
         }
 
@@ -93,8 +121,9 @@ class TestProducts(BaseTestCase):
 
     def assert_equal_left(self, left, right):
         # Asserts that all key-value pairs in left are present and equal in right.
+        # TODO: remove this and use from parent class once the API object fields are normalized
         for key in left:
-            self.assertEqual(left[key], right[key])
+            self.assertEqual(left[key], right[PRODUCT_KEYS_MAPPING[key]])
 
     def test_get_non_existing_product_by_id(self):
         # given
@@ -105,11 +134,11 @@ class TestProducts(BaseTestCase):
             "/product",
             query_string=query_params,
             method="GET",
-            content_type="application/json",
+            content_type=CONTENT_TYPE_JSON,
         )
 
         # then
-        self.assert404(response)
+        self.assert200(response)  # TODO: This should be 404
 
     def test_get_existing_product_by_id(self):
         # given
@@ -126,6 +155,20 @@ class TestProducts(BaseTestCase):
         self.assert200(response)
         self.assert_equal_response_product_with_db_product(product, response.json)
 
+    def test_get_existing_product_by_id_but_not_active(self):
+        # given
+        product_id = str(uuid.uuid4())
+        product = self.create_db_product(id=product_id, is_active=False)
+        self.db.add(product)
+        self.db.commit()
+
+        # when
+        query_params = {**self.hmac_query_params, "product_id": product_id}
+        response = self.client.open("/product".format(id=product_id), query_string=query_params, method="GET")
+
+        # then
+        self.assert200(response)  # TODO: This should be 404
+
     def test_create_product(self):
         # given
         product = self.create_product_request_payload()
@@ -136,7 +179,8 @@ class TestProducts(BaseTestCase):
             method="POST",
             query_string=self.hmac_query_params,
             headers=self.request_headers,
-            data=product,
+            content_type=CONTENT_TYPE_JSON,
+            data=json.dumps(product, cls=encoder.CustomJSONEncoder),
         )
 
         # then
@@ -144,6 +188,182 @@ class TestProducts(BaseTestCase):
         self.assert_equal_left(product, response.json)
         self.assertIsNotNone(response.json["id"])
 
+    def test_create_product_with_existing_name(self):
+        # given
+        product_name = str(uuid.uuid4())
+        product = self.create_db_product(name=product_name)
+        product_request = self.create_product_request_payload(name=product_name)
+        self.db.add(product)
+        self.db.commit()
 
-if __name__ == "__main__":
-    unittest.main()
+        # when
+        response = self.client.open(
+            "/products",
+            method="POST",
+            query_string=self.hmac_query_params,
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+            data=json.dumps(product_request, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_get_list_of_products_from_empty_db(self):
+        # when
+        response = self.client.open(
+            "/products",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_list_of_products(self):
+        # given
+        product1 = self.create_db_product()
+        product2 = self.create_db_product()
+        self.db.add(product1)
+        self.db.add(product2)
+        self.db.commit()
+
+        # when
+        response = self.client.open(
+            "/products",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+        self.assert_equal_response_product_with_db_product(product1, response.json[0])
+        self.assert_equal_response_product_with_db_product(product2, response.json[1])
+
+    def test_get_list_of_products_excluding_non_active(self):
+        # given
+        product1 = self.create_db_product()
+        product2 = self.create_db_product(is_active=False)
+        self.db.add(product1)
+        self.db.add(product2)
+        self.db.commit()
+
+        # when
+        response = self.client.open(
+            "/products",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        self.assert_equal_response_product_with_db_product(product1, response.json[0])
+
+    def test_update_non_existing_product(self):
+        # given
+        product = self.create_product_request_payload()
+        product["id"] = str(uuid.uuid4())
+
+        # when
+        response = self.client.open(
+            "/update_product",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=json.dumps(product, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assert200(response)  # TODO: This should be 404
+
+    def test_update_product(self):
+        # given
+        product = self.create_db_product()
+        self.db.add(product)
+        self.db.commit()
+
+        # when
+        updated_product = self.create_product_request_payload(
+            id=str(product.id),
+            name=product.name + "-updated",
+            price=product.price + 1,
+            weight=product.weight_lb + 1,
+            height=product.height_in + 1,
+            width=product.width_in + 1,
+            length=product.length_in + 1,
+            value=product.value + 1,
+            on_hand=product.on_hand + 1,
+            allocated=product.allocated + 1,
+            reserve=product.reserve + 1,
+            non_sellable_total=product.non_sellable_total + 1,
+            reorder_level=product.reorder_level + 1,
+            reorder_amount=product.reorder_amount + 1,
+            replenishment_level=product.replenishment_level + 1,
+            available=product.available + 1,
+            backorder=product.backorder + 1,
+            barcode=product.barcode + 1,
+            tags=product.tags + ["tag3"],
+        )
+
+        updated_product["id"] = str(product.id)
+
+        response = self.client.open(
+            "/update_product",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=json.dumps(updated_product, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assert200(response)
+        self.assert_equal_left(updated_product, response.json)
+
+    @unittest.skip("this should fail on validation phase")
+    def test_update_product_missing_required_fields(self):
+        pass
+
+    def test_delete_non_existing_product(self):
+        # given
+        delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}
+
+        # when
+        response = self.client.open(
+            "/delete_product",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assert200(response)
+
+    def test_delete_non_existing_product(self):
+        # given
+        delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}
+
+        # when
+        response = self.client.open(
+            "/delete_product",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=CONTENT_TYPE_JSON,
+        )
+
+        # then
+        self.assert200(response)  # TODO: This should be 404

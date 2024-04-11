@@ -17,7 +17,7 @@ def create_user(user_data):
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
         print(str(e))
-        return jsonify({"errors": "Failed to create product"}), 500
+        return jsonify({"errors": "Failed to create user"}), 500
 
     return user.to_dict(), 201
 

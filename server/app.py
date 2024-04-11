@@ -7,8 +7,8 @@ import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from server import encoder
-from server.services.emails import EmailService
-from server.services.shopify import ShopifyService
+from server.services.emails import EmailService, FakeEmailService
+from server.services.shopify import ShopifyService, FakeShopifyService
 
 
 def init_sentry():
@@ -59,8 +59,10 @@ def init_app(swagger=False):
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
 
-    app.app.shopify_service = ShopifyService()
-    app.app.email_service = EmailService()
+    app.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
+
+    app.app.shopify_service = FakeShopifyService() if app.app.config["TESTING"] else ShopifyService()
+    app.app.email_service = FakeEmailService() if app.app.config["TESTING"] else EmailService()
 
     app.app.json_encoder = encoder.CustomJSONEncoder
 

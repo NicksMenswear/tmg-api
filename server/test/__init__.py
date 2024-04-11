@@ -1,10 +1,10 @@
 from flask_testing import TestCase
+from server.services.emails import FakeEmailService
+from server.services.shopify import FakeShopifyService
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from server.app import init_app
-from server.test.services.emails import FakeEmailService
-from server.test.services.shopify import FakeShopifyService
 import os
 
 db_user = os.getenv("DB_USER")

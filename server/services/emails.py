@@ -6,6 +6,11 @@ from email.mime.text import MIMEText
 from server.controllers.shopify import get_activation_url
 
 
+class FakeEmailService:
+    def send_activation_url(self, email, shopify_customer_id):
+        pass
+
+
 class EmailService:
     def __init__(self):
         self.sender_password = os.getenv("sender_password")

@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tmg_api
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: python:3.10
+    volumes:
+      - .:/usr/src/app
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tmg_api
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    working_dir: /usr/src/app
+    command: >
+      bash -c "pip install tox &&
+      git config --global --add safe.directory /usr/src/app &&
+      tox &&
+      . .tox/py310/bin/activate && 
+      pip install --upgrade psycopg2 &&
+      ./scripts/reset_db.sh &&
+      pytest --verbose"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

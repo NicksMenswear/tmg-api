@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import os
-
-import connexion
 import logging
+import os
 from urllib.parse import urlparse
 
+import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
-
 from server import encoder
+from server.services.emails import EmailService, FakeEmailService
+from server.services.shopify import ShopifyService, FakeShopifyService
 
 
 def init_sentry():
@@ -49,18 +49,27 @@ def init_logging(debug=False):
 
 def init_app(swagger=False):
     options = {"swagger_ui": False}
+
     if swagger:
         options.update({"swagger_ui": True, "swagger_ui_config": {"url": "/openapi.yaml"}})
+
     app = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
+
     app.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
+
+    app.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
+
+    app.app.shopify_service = FakeShopifyService() if app.app.config["TESTING"] else ShopifyService()
+    app.app.email_service = FakeEmailService() if app.app.config["TESTING"] else EmailService()
+
     app.app.json_encoder = encoder.CustomJSONEncoder
+
     return app
 
 
 def reset_db():
-    from sqlalchemy import create_engine
     from server.database.models import Base
     from server.database.database_manager import engine
 

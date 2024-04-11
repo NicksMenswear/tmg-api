@@ -62,17 +62,17 @@ paths:
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -100,27 +100,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: email
           schema:
@@ -144,22 +144,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -185,22 +185,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -228,22 +228,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -270,22 +270,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -325,17 +325,17 @@ paths:
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -356,22 +356,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -390,7 +390,7 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: server.controllers.events
-  /delete_events:  
+  /delete_events:
     put:
       operationId: soft_delete_event
       parameters:
@@ -398,22 +398,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -443,22 +443,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -493,22 +493,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -546,28 +546,28 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
             type: string
           required: true
-          
+
       responses:
         "200":
           description: Attendee Get Success
@@ -592,22 +592,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -622,7 +622,7 @@ paths:
       tags:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
-  /delete_event_attendee:  
+  /delete_event_attendee:
     put:
       operationId: soft_delete_attendee
       parameters:
@@ -630,22 +630,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -664,7 +664,7 @@ paths:
           description: Attendee Deleted Success
       summary: Attendee Delete
       tags:
-      - Attendees
+        - Attendees
       x-openapi-router-controller: server.controllers.attendees
 
   /orders:
@@ -682,22 +682,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -737,22 +737,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -772,22 +772,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -814,22 +814,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -870,22 +870,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -908,22 +908,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -949,22 +949,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -991,22 +991,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1044,22 +1044,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1087,22 +1087,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1112,7 +1112,7 @@ paths:
         "200":
           description: Successful response
           content:
-            application/json: {}
+            application/json: { }
       summary: List Shopify customer
       tags:
         - Shopify
@@ -1127,22 +1127,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1160,7 +1160,7 @@ paths:
           description: Invite created
       summary: Create Invite
       tags:
-      - Invites
+        - Invites
       x-openapi-router-controller: server.controllers.invites
 
   /looks:
@@ -1171,22 +1171,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1197,7 +1197,7 @@ paths:
           description: An array of looks
       summary: Lists all looks
       tags:
-      - Looks
+        - Looks
       x-openapi-router-controller: server.controllers.looks
     post:
       operationId: create_look
@@ -1206,22 +1206,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1239,7 +1239,7 @@ paths:
           description: Look created
       summary: Create look
       tags:
-      - Looks
+        - Looks
       x-openapi-router-controller: server.controllers.looks
     put:
       operationId: update_look
@@ -1248,22 +1248,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1283,7 +1283,7 @@ paths:
           description: Look not found
       summary: Update a Look by name
       tags:
-      - Looks
+        - Looks
       x-openapi-router-controller: server.controllers.looks
   /looks_with_lookid_userid:
     get:
@@ -1311,22 +1311,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1339,7 +1339,7 @@ paths:
           description: Look not found
       summary: Get a single look by name
       tags:
-      - Looks
+        - Looks
       x-openapi-router-controller: server.controllers.looks
   /looks_with_userid:
     get:
@@ -1367,22 +1367,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1395,7 +1395,7 @@ paths:
           description: Look not found
       summary: Get a single look by name
       tags:
-      - Looks
+        - Looks
       x-openapi-router-controller: server.controllers.looks
 
   /roles:
@@ -1406,22 +1406,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1432,7 +1432,7 @@ paths:
           description: An array of roles
       summary: Lists all roles
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
     post:
       operationId: create_role
@@ -1441,22 +1441,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1474,7 +1474,7 @@ paths:
           description: role created
       summary: Create role
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
     put:
       operationId: update_role
@@ -1483,22 +1483,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1518,7 +1518,7 @@ paths:
           description: Role not found
       summary: Update a Role by name
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
   /roles_with_roleid_eventid:
     get:
@@ -1546,22 +1546,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1574,7 +1574,7 @@ paths:
           description: Role not found
       summary: Get a single role by name
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
   /roles_with_eventid:
     get:
@@ -1593,22 +1593,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1621,7 +1621,7 @@ paths:
           description: Role not found
       summary: Get a single role by name
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
   /event_roles_with_look:
     get:
@@ -1640,22 +1640,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1668,7 +1668,7 @@ paths:
           description: Role not found
       summary: Get a single role by name
       tags:
-      - Roles
+        - Roles
       x-openapi-router-controller: server.controllers.roles
 
   /carts:
@@ -1679,22 +1679,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1712,7 +1712,7 @@ paths:
           description: Cart created
       summary: Create cart
       tags:
-      - Carts
+        - Carts
       x-openapi-router-controller: server.controllers.carts
     put:
       operationId: update_cart
@@ -1721,22 +1721,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1754,7 +1754,7 @@ paths:
           description: Cart Updated Success
       summary: Upadte cart
       tags:
-      - Carts
+        - Carts
       x-openapi-router-controller: server.controllers.carts
   /cart_by_id:
     get:
@@ -1773,22 +1773,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1801,7 +1801,7 @@ paths:
           description: Cart not found
       summary: Get a single cart by id
       tags:
-      - Carts
+        - Carts
       x-openapi-router-controller: server.controllers.carts
   /cart_by_event_attendee:
     get:
@@ -1829,22 +1829,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1857,7 +1857,7 @@ paths:
           description: Cart not found
       summary: Get a single cart by id
       tags:
-      - Carts
+        - Carts
       x-openapi-router-controller: server.controllers.carts
   /product:
     get:
@@ -1872,27 +1872,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
             type: string
-          required: true  
+          required: true
       responses:
         "200":
           description: show single product by id
@@ -1915,27 +1915,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
             type: string
-          required: true  
+          required: true
       responses:
         "200":
           content:
@@ -1965,22 +1965,22 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: shop
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true  
+          required: true
         - in: query
           name: signature
           schema:
@@ -1994,89 +1994,11 @@ paths:
                 items:
                   $ref: "#/components/schemas/DeleteProductItem"
                 type: object
-          description: Soft Delete Product 
+          description: Soft Delete Product
       summary: delete product items
       tags:
         - Product
       x-openapi-router-controller: server.controllers.product
-  /products:
-    post:
-      operationId: create_product_item
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductItem"
-        required: true
-        x-body-name: product_item
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: integer
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true  
-      responses:
-        "201":
-          description: Product item created
-      summary: Create product item
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.product
-    get:
-      operationId: list_product_items
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true  
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true  
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true  
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true  
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true  
-      responses:
-        "200":
-          description: Successful response
-      summary: Get List Products
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.product  
 
 components:
   schemas:
@@ -2597,24 +2519,24 @@ components:
           items:
             type: string
       required:
-        - name   
+        - name
         - Value
-        - Length    
-        - SKU    
-        - Barcode    
-        - Active    
-        - Weight   
-        - Height    
-        - Width    
-        - On_hand    
-        - Allocated    
-        - Reserve    
-        - Non_sellable_total    
-        - Reorder_amount    
-        - Replenishment_level    
-        - Available    
-        - Backorder    
-        - Tags        
+        - Length
+        - SKU
+        - Barcode
+        - Active
+        - Weight
+        - Height
+        - Width
+        - On_hand
+        - Allocated
+        - Reserve
+        - Non_sellable_total
+        - Reorder_amount
+        - Replenishment_level
+        - Available
+        - Backorder
+        - Tags
       title: ProductItem
       type: object
     DeleteProductItem:
@@ -2631,7 +2553,7 @@ components:
           title: is_active
           type: boolean
       required:
-        - id        
-        - is_active        
+        - id
+        - is_active
       title: DeleteProductItem
       type: object

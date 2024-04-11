@@ -83,9 +83,11 @@ class UserService:
         self.shopify_service = shopify_service
         self.email_service = email_service
 
-    def create_user(self, first_name, last_name, email, account_status):
+    def create_user(self, **kwargs):
         try:
-            shopify_customer_id = self.shopify_service.create_customer(first_name, last_name, email)["id"]
+            shopify_customer_id = self.shopify_service.create_customer(
+                kwargs.get("first_name"), kwargs["last_name"], kwargs["email"]
+            )["id"]
         except Exception as e:
             raise ServiceError("Failed to create shopify user.", e)
 
@@ -94,11 +96,11 @@ class UserService:
 
             user = User(
                 id=user_id,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
+                first_name=kwargs.get("first_name"),
+                last_name=kwargs.get("last_name"),
+                email=kwargs.get("email"),
                 shopify_id=shopify_customer_id,
-                account_status=account_status,
+                account_status=kwargs.get("account_status"),
             )
 
             self.db.add(user)
@@ -128,13 +130,13 @@ class UserService:
         self.db.delete(user)
         self.db.commit()
 
-    def update_user(self, email, updated_first_name, updated_last_name, updated_account_status, updated_shopify_id):
-        user = self.get_user_by_email(email)
+    def update_user(self, **kwargs):
+        user = self.get_user_by_email(kwargs["email"])
 
-        user.first_name = updated_first_name
-        user.last_name = updated_last_name
-        user.account_status = updated_account_status
-        user.shopify_id = updated_shopify_id
+        user.first_name = kwargs.get("first_name")
+        user.last_name = kwargs.get("last_name")
+        user.account_status = kwargs.get("account_status")
+        user.shopify_id = kwargs.get("shopify_id")
 
         self.db.commit()
         self.db.refresh(user)

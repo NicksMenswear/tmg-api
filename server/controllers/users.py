@@ -37,9 +37,7 @@ def create_user(user_data):
         return jsonify({"errors": {"email": ["User with the same email already exists."]}}), 400
 
     try:
-        user = user_service.create_user(
-            user_data["first_name"], user_data["last_name"], user_data["email"], user_data["account_status"]
-        )
+        user = user_service.create_user(**user_data)
     except ServiceError as e:
         print(e)
         return jsonify({"errors": "Failed to create user."}), 500
@@ -106,13 +104,7 @@ def update_user(user_data):
     if not user:
         return jsonify({"errors": ["User not found."]}), 404
 
-    user = user_service.update_user(
-        user_data["email"],
-        user_data["first_name"],
-        user_data["last_name"],
-        user_data["account_status"],
-        user_data["shopify_id"],
-    )
+    user = user_service.update_user(**user_data)
 
     return user.to_dict()
 >>>>>>> b823bcd (update)

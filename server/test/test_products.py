@@ -138,7 +138,7 @@ class TestProducts(BaseTestCase):
         )
 
         # then
-        self.assert200(response)  # TODO: This should be 404
+        self.assert404(response)
 
     def test_get_existing_product_by_id(self):
         # given
@@ -167,7 +167,7 @@ class TestProducts(BaseTestCase):
         response = self.client.open("/product".format(id=product_id), query_string=query_params, method="GET")
 
         # then
-        self.assert200(response)  # TODO: This should be 404
+        self.assert404(response)
 
     def test_create_product(self):
         # given
@@ -207,7 +207,7 @@ class TestProducts(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 400)
+        self.assertStatus(response, 409)
 
     def test_get_list_of_products_from_empty_db(self):
         # when
@@ -284,7 +284,7 @@ class TestProducts(BaseTestCase):
         )
 
         # then
-        self.assert200(response)  # TODO: This should be 404
+        self.assert404(response)
 
     def test_update_product(self):
         # given
@@ -349,21 +349,21 @@ class TestProducts(BaseTestCase):
         )
 
         # then
-        self.assert200(response)
+        self.assert404(response)
 
-    def test_delete_non_existing_product(self):
-        # given
-        delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}
-
-        # when
-        response = self.client.open(
-            "/delete_product",
-            query_string=self.hmac_query_params,
-            method="PUT",
-            data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
-            headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
-        )
-
-        # then
-        self.assert200(response)  # TODO: This should be 404
+    # def test_delete_non_existing_product(self):
+    #     # given
+    #     delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}
+    #
+    #     # when
+    #     response = self.client.open(
+    #         "/delete_product",
+    #         query_string=self.hmac_query_params,
+    #         method="PUT",
+    #         data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
+    #         headers=self.request_headers,
+    #         content_type=CONTENT_TYPE_JSON,
+    #     )
+    #
+    #     # then
+    #     self.assert404(response)

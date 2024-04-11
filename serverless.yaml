@@ -4,6 +4,8 @@ provider:
   runtime: python3.10
   stage: ${opt:stage, "dev"}
   region: us-west-2
+  tags:
+    env: ${opt:stage, "dev"}
   iam:
     role:
       name: tmg-api-${sls:stage}-role

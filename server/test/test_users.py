@@ -49,6 +49,11 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_user["shopify_id"], user.shopify_id)
         self.assertEqual(response_user["account_status"], user.account_status)
 
+    def assert_equal_left(self, left, right):
+        # Asserts that all key-value pairs in left are present and equal in right.
+        for key in left:
+            self.assertEqual(left[key], right[key])
+
     def test_get_non_existing_user_by_email(self):
         # when
         response = self.client.open(

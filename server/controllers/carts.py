@@ -1,12 +1,8 @@
-from server.database.models import Cart, CartProduct
-from server.database.database_manager import get_database_session
-from server.controllers.cart_data_extractor import *
-from werkzeug.exceptions import HTTPException
-from server.controllers.shopify import *
 import uuid
-import os
-from server.controllers.hmac_1 import hmac_verification
 
+from server.controllers.hmac_1 import hmac_verification
+from server.controllers.shopify import *
+from server.database.models import Cart, CartProduct
 
 shopify_store = os.getenv("shopify_store")
 admin_api_access_token = os.getenv("admin_api_access_token")
@@ -191,6 +187,36 @@ def update_cart(cart):  # noqa: E501
         else:
             return "Cart not found", 404
 
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return f"Internal Server Error : {e}", 500
+
+
+def data_extractor(response, variant_id):
+
+    try:
+        product_details = response
+        product = product_details.get("product", {})
+        product_id = product.get("id")
+        title = product.get("title")
+        vendor = product.get("vendor")
+        body_html = product.get("body_html")
+        images = product.get("images")
+        variants = product.get("variants", [])
+        specific_variant = [variant for variant in variants if str(variant["id"]) == str(variant_id)]
+        if specific_variant:
+            specific_variant = specific_variant[0]
+        else:
+            specific_variant = None
+
+        return {
+            "product_id": product_id,
+            "title": title,
+            "vendor": vendor,
+            "body_html": body_html,
+            "images": images,
+            "specific_variant": specific_variant,
+        }
     except Exception as e:
         print(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500

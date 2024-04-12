@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from server.controllers.shopify import get_activation_url
+from server.services import ServiceError
 
 
 class FakeEmailService:
@@ -37,9 +38,8 @@ class EmailService:
                 smtp_server.login(sender_email, password)
                 smtp_server.sendmail(sender_email, receiver_email, msg.as_string())
                 print("Message sent successfully.")
-
         except Exception as e:
-            print(f"Failed to send email. Error: {str(e)}")
+            raise ServiceError("Failed to send email.", e)
 
     def send_activation_url(self, email, shopify_customer_id):
         activation_url = get_activation_url(shopify_customer_id)

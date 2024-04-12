@@ -1,165 +1,71 @@
-from server.database.models import Look, User, Role, Attendee, Event
-from server.database.database_manager import get_database_session
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import HTTPException
-from server.controllers.hmac_1 import hmac_verification
 import uuid
 
+from flask import jsonify
+from flask import current_app as app
+
+from server.controllers.hmac_1 import hmac_verification
+from server.database.database_manager import get_database_session, session_factory
+from server.database.models import Look, User, Role, Attendee, Event
+from server.services import NotFoundError, ServiceError, DuplicateError
+from server.services.look import LookService
+from server.services.user import UserService
 
 db = get_database_session()
 
 
 @hmac_verification()
 def create_look(look_data):
-    """Create look"""
+    session = session_factory()
+
+    look_service = LookService(session)
+    user_service = UserService(session)
+
+    user = user_service.get_user_by_email(look_data["email"])
+
+    if not user:
+        return jsonify({"errors": "User not found"}), 404
+
     try:
-        existing_user = db.query(User).filter_by(email=look_data["email"]).first()
-        if not existing_user:
-            return "User not found", 204
-        if look_data["look_name"] == "":
-            return "Look name cannot be empty", 400
+        del look_data["email"]
+        enriched_look_data = {**look_data, "user_id": user.id}
 
-        existing_look = (
-            db.query(Look).filter(Look.look_name == look_data["look_name"], Look.user_id == existing_user.id).first()
-        )
-        if existing_look and existing_user:
-            return "Look with the same detail already exists!", 400
-        if "event_id" not in look_data:
-            look_data["event_id"] = None
+        look = look_service.create_look(**enriched_look_data)
+    except DuplicateError as e:
+        app.logger.debug(e.message, e)
+        return jsonify({"errors": e.message}), 409
+    except ServiceError as e:
+        app.logger.error(e.message, e)
+        return jsonify({"errors": "Failed to create look"}), 500
 
-        look_id = uuid.uuid4()
-        new_look = Look(
-            id=look_id,
-            look_name=look_data["look_name"],
-            event_id=look_data["event_id"],
-            user_id=existing_user.id,
-            product_specs=look_data["product_specs"],
-            product_final_image=look_data["product_final_image"],
-        )
-        db.add(new_look)
-        db.commit()
-        db.refresh(new_look)
-        return new_look.to_dict()
-        # return 'Look created successfully!', 201
-    except SQLAlchemyError as e:
-        db.rollback()
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return look.to_dict(), 201
 
 
 @hmac_verification()
 def get_look(look_id, user_id):
-    """List specific look"""
-    try:
-        db = get_database_session()
-        existing_user = db.query(User).filter_by(id=user_id).first()
-        if not existing_user:
-            return "User not found", 204
-        look_detail = db.query(Look).filter(Look.id == look_id, Look.user_id == user_id).first()
+    look_service = LookService(session_factory())
 
-        if not look_detail:
-            return "Look not found", 204
+    look = look_service.get_look_by_id_and_user(look_id, user_id)
 
-        return look_detail.to_dict()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    if not look:
+        return jsonify({"errors": NotFoundError.MESSAGE}), 404
 
-
-@hmac_verification()
-def get_look_userid_eventid(user_id, event_id=None):
-    """List looks based on user_id and event_id"""
-    try:
-        db = get_database_session()
-        existing_user = db.query(User).filter_by(id=user_id).first()
-        if not existing_user:
-            return "User not found", 204
-        if event_id == None:
-            look_details = db.query(Look).filter(Look.user_id == user_id).all()
-            if not look_details:
-                return "Look not found", 204
-            formatted_data = []
-            for look in look_details:
-                event = db.query(Event).filter(Event.id == look.event_id, Event.is_active == True).first()
-                if event:
-                    data = {
-                        "event_name": event.event_name,
-                        "look_data": {
-                            "id": look.id,
-                            "look_name": look.look_name,
-                            "user_id": look.user_id,
-                            "product_specs": look.product_specs,
-                            "product_final_image": look.product_final_image,
-                            "event_id": look.event_id,
-                        },
-                    }
-                    formatted_data.append(data)
-                else:
-                    data = {
-                        "event_name": float("nan"),
-                        "look_data": {
-                            "id": look.id,
-                            "look_name": look.look_name,
-                            "user_id": look.user_id,
-                            "product_specs": look.product_specs,
-                            "product_final_image": look.product_final_image,
-                            "event_id": float("nan"),
-                        },
-                    }
-                    formatted_data.append(data)
-            return formatted_data
-        else:
-            look_details = db.query(Look).filter(Look.user_id == user_id, Look.event_id == event_id).all()
-            if not look_details:
-                return "Look not found", 204
-            event = db.query(Event).filter(Event.id == event_id, Event.is_active == True).first()
-            formatted_data = []
-            if event:
-                for look in look_details:
-                    data = {
-                        "event_name": event.event_name,
-                        "look_data": {
-                            "id": look.id,
-                            "look_name": look.look_name,
-                            "user_id": look.user_id,
-                            "product_specs": look.product_specs,
-                            "product_final_image": look.product_final_image,
-                            "event_id": look.event_id,
-                        },
-                    }
-                    formatted_data.append(data)
-                return formatted_data
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return look.to_dict(), 200
 
 
 @hmac_verification()
 def get_user_looks(user_id):
-    """Specific user looks"""
-    user_id = uuid.UUID(user_id)
-    existing_user = db.query(User).filter_by(id=user_id).first()
-    if not existing_user:
-        return "User not found", 204
-    look_details = db.query(Look).filter(Look.user_id == user_id).all()
-    if not look_details:
-        return "Look not found", 204
+    look_service = LookService(session_factory())
 
-    return [look_detail.to_dict() for look_detail in look_details]
+    looks = look_service.get_looks_for_user(user_id)
+
+    return [look.to_dict() for look in looks]
 
 
 @hmac_verification()
 def list_looks():
-    """Lists all looks"""
-    try:
-        look_details = db.query(Look).all()
-        if not look_details:
-            return "Look not found", 204
+    look_service = LookService(session_factory())
 
-        return [look_detail.to_dict() for look_detail in look_details]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return [look.to_dict() for look in look_service.get_all_looks()], 200
 
 
 @hmac_verification()

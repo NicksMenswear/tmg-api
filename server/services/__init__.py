@@ -1,6 +1,8 @@
 class ServiceError(Exception):
     def __init__(self, message, original_exception=None):
         super().__init__(message)
+
+        self.message = message
         self.original_exception = original_exception
 
 

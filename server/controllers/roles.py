@@ -1,167 +1,101 @@
-from server.database.models import Role, User, Event, Look
-from server.database.database_manager import get_database_session
-from sqlalchemy.exc import SQLAlchemyError
-import uuid
-from server.controllers.hmac_1 import hmac_verification
+from flask import current_app as app, jsonify
 
+from server.controllers.hmac_1 import hmac_verification
+from server.database.database_manager import get_database_session, session_factory
+from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services.event import EventService
+from server.services.look import LookService
+from server.services.role import RoleService
 
 db = get_database_session()
 
 
 @hmac_verification()
 def create_role(role_data):
-    """Create role"""
-    try:
-        existing_role = db.query(Role).filter(Role.role_name == role_data["role_name"]).first()
-        if existing_role:
-            return "Role with the same detail already exists!", 400
+    session = session_factory()
 
-        else:
-            role_id = uuid.uuid4()
-            new_role = Role(
-                id=role_id,
-                role_name=role_data["role_name"],
-                event_id=role_data["event_id"],
-                look_id=role_data["look_id"],
-            )
-            db.add(new_role)
-            db.commit()
-            db.refresh(new_role)
-            return new_role.to_dict()
-    except SQLAlchemyError as e:
-        db.rollback()
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    role_service = RoleService(session)
+    event_service = EventService(session)
+    look_service = LookService(session)
+
+    if event_service.get_event_by_id(role_data["event_id"]) is None:
+        return jsonify({"errors": "Event not found"}), 404
+
+    if look_service.get_look_by_id(role_data["look_id"]) is None:
+        return jsonify({"errors": "Look not found"}), 404
+
+    try:
+        role = role_service.create_role(**role_data)
+    except DuplicateError as e:
+        app.logger.debug(e.message, e)
+        return jsonify({"errors": e.message}), 409
+    except ServiceError as e:
+        app.logger.error(e.message, e)
+        return jsonify({"errors": "Failed to create role"}), 500
+
+    return role.to_dict(), 201
 
 
 @hmac_verification()
 def get_role(role_id, event_id):
-    """List specific role"""
-    try:
-        existing_event = db.query(Event).filter_by(id=event_id).first()
-        if not existing_event:
-            return "Event not found", 204
-        role_detail = db.query(Role).filter(Role.id == role_id).first()
-        if not role_detail:
-            return "Role not found", 204
+    role_service = RoleService(session_factory())
 
-        return role_detail.to_dict()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    role = role_service.get_role_by_id(role_id)
+
+    if not role:
+        return jsonify({"errors": "Role not found"}), 404
+
+    return role.to_dict(), 200
 
 
 @hmac_verification()
 def get_event_roles(event_id):
-    """List event roles"""
-    try:
-        event_id = uuid.UUID(event_id)
-        existing_event = db.query(Event).filter(Event.id == event_id).first()
-        if not existing_event:
-            return "Event not found", 204
-        role_details = db.query(Role).filter(Role.event_id == event_id).all()
-        if not role_details:
-            return "Role not found", 204
+    session = session_factory()
 
-        return [role_detail.to_dict() for role_detail in role_details]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    role_service = RoleService(session)
+    event_service = EventService(session)
+
+    if not event_service.get_event_by_id(event_id):
+        return jsonify({"errors": "Event not found"}), 404
+
+    roles = role_service.get_roles_by_event_id(event_id)
+
+    return jsonify([role.to_dict() for role in roles]), 200
 
 
 @hmac_verification()
 def get_event_roles_with_look(event_id):
-    """List event roles"""
-    try:
-        event_id = uuid.UUID(event_id)
-        existing_event = db.query(Event).filter(Event.id == event_id).first()
-        if not existing_event:
-            return "Event not found", 204
-        role_details = db.query(Role).filter(Role.event_id == event_id).all()
-        if not role_details:
-            return "Role not found", 204
-        formatted_role_data = []
-        formatted_look_data = []
-        for role in role_details:
-            look = db.query(Look).filter(Look.id == role.look_id).first()
-            data = {
-                "role_id": role.id,
-                "role_name": role.role_name,
-                "event_id": role.event_id,
-                "look_data": {"look_id": look.id, "look_name": look.look_name},
-            }
-            formatted_role_data.append(data)
+    session = session_factory()
 
-        look_details = db.query(Look).filter(Look.event_id == event_id).all()
-        for look in look_details:
-            look_data = {"look_id": look.id, "look_name": look.look_name}
-            formatted_look_data.append(look_data)
-        # return [role_detail.to_dict() for role_detail in role_details]
-        return {"role_details": formatted_role_data, "all_looks": formatted_look_data}
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    event_service = EventService(session)
+    event = event_service.get_event_by_id(event_id)
 
+    if not event:
+        return jsonify({"errors": "Event not found"}), 404
 
-@hmac_verification()
-def get_event_roles_with_look(event_id):
-    """List event roles"""
-    try:
-        event_id = uuid.UUID(event_id)
-        existing_event = db.query(Event).filter(Event.id == event_id).first()
-        if not existing_event:
-            return "Event not found", 204
-        role_details = db.query(Role).filter(Role.event_id == event_id).all()
-        if not role_details:
-            return "Role not found", 204
-        formatted_role_data = []
-        formatted_look_data = []
-        for role in role_details:
-            look = db.query(Look).filter(Look.id == role.look_id).first()
-            data = {
-                "role_id": role.id,
-                "role_name": role.role_name,
-                "event_id": role.event_id,
-                "look_data": {"look_id": look.id, "look_name": look.look_name},
-            }
-            formatted_role_data.append(data)
+    role_service = RoleService(session)
 
-        look_details = db.query(Look).filter(Look.event_id == event_id).all()
-        for look in look_details:
-            look_data = {"look_id": look.id, "look_name": look.look_name}
-            formatted_look_data.append(look_data)
-        # return [role_detail.to_dict() for role_detail in role_details]
-        return {"role_details": formatted_role_data, "all_looks": formatted_look_data}
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return role_service.get_event_roles_with_looks(event_id)
 
 
 @hmac_verification()
 def list_roles():
-    """Lists all roles"""
-    try:
-        role_details = db.query(Role).all()
-        if not role_details:
-            return "Role not found", 204
+    role_service = RoleService(session_factory())
 
-        return [role_detail.to_dict() for role_detail in role_details]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return [role.to_dict() for role in role_service.get_all_roles()], 200
 
 
 @hmac_verification()
 def update_role(role_data):
-    """Updating Role Details"""
+    role_service = RoleService(session_factory())
+
     try:
-        role_detail = db.query(Role).filter(Role.role_name == role_data["role_name"]).first()
-        if not role_detail:
-            return "Role not found", 204
-        role_detail.role_name = role_data["new_role_name"]
-        role_detail.look_id = role_data["look_id"]
-        db.commit()
-        return "Role details updated successfully", 200
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+        role = role_service.update_role(role_data)
+    except NotFoundError as e:
+        app.logger.debug(e.message, e)
+        return jsonify({"errors": e.message}), 404
+    except ServiceError as e:
+        app.logger.error(e.message, e)
+        return jsonify({"errors": "Failed to update role"}), 500
+
+    return role.to_dict(), 200

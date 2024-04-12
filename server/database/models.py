@@ -1,3 +1,6 @@
+import uuid
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,9 +18,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
 from server.database.base_model_ import Model
-from datetime import datetime
-import uuid
 
 Base = declarative_base()
 
@@ -216,7 +218,7 @@ class Look(Base):
         }
 
 
-class Role(Base, Model):
+class Role(Base):
     __tablename__ = "roles"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -225,9 +227,7 @@ class Role(Base, Model):
     look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"), nullable=False)
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {"id": self.id, "role_name": self.role_name, "event_id": self.event_id, "look_id": self.look_id}
-        return result
+        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id, "look_id": self.look_id}
 
 
 class Cart(Base, Model):

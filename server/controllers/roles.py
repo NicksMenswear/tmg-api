@@ -1,9 +1,11 @@
-from server.database.models import Role, User, Event, Look
-from server.database.database_manager import get_database_session
-from sqlalchemy.exc import SQLAlchemyError
 import uuid
-from server.controllers.hmac_1 import hmac_verification
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from server.controllers.hmac_1 import hmac_verification
+from server.database.database_manager import get_database_session, session_factory
+from server.database.models import Role, Event, Look
+from server.services.role import RoleService
 
 db = get_database_session()
 
@@ -139,16 +141,9 @@ def get_event_roles_with_look(event_id):
 
 @hmac_verification()
 def list_roles():
-    """Lists all roles"""
-    try:
-        role_details = db.query(Role).all()
-        if not role_details:
-            return "Role not found", 204
+    role_service = RoleService(session_factory())
 
-        return [role_detail.to_dict() for role_detail in role_details]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return f"Internal Server Error : {e}", 500
+    return [role.to_dict() for role in role_service.get_all_roles()], 200
 
 
 @hmac_verification()

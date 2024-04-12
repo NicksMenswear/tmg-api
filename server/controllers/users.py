@@ -36,7 +36,7 @@ def get_user_by_id(email):
 
 
 @hmac_verification()
-def list_users():
+def get_all_users():
     user_service = UserService(session_factory())
 
     return [user.to_dict() for user in user_service.get_all_users()], 200

@@ -902,7 +902,7 @@ paths:
       x-openapi-router-controller: server.controllers.orders
   /users:
     get:
-      operationId: list_users
+      operationId: get_all_users
       parameters:
         - in: query
           name: logged_in_customer_id

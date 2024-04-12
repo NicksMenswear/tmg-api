@@ -65,7 +65,7 @@ class ProductService(BaseService):
 
         return product
 
-    def update_product(self, product_id, **kwargs):
+    def update_product(self, product_id, **product_data):
         with self.session_factory() as db:
             product = db.query(ProductItem).filter_by(id=product_id).first()
 
@@ -73,25 +73,25 @@ class ProductService(BaseService):
                 raise NotFoundError()
 
             try:
-                product.name = kwargs["name"]
-                product.sku = kwargs["SKU"]
-                product.weight_lb = kwargs["Weight"]
-                product.height_in = kwargs["Height"]
-                product.width_in = kwargs["Width"]
-                product.length_in = kwargs["Length"]
-                product.value = kwargs["Value"]
-                product.price = kwargs["Price"]
-                product.on_hand = kwargs["On_hand"]
-                product.allocated = kwargs["Allocated"]
-                product.reserve = kwargs["Reserve"]
-                product.non_sellable_total = kwargs["Non_sellable_total"]
-                product.reorder_level = kwargs["Reorder_level"]
-                product.reorder_amount = kwargs["Reorder_amount"]
-                product.replenishment_level = kwargs["Replenishment_level"]
-                product.available = kwargs["Available"]
-                product.backorder = kwargs["Backorder"]
-                product.barcode = kwargs["Barcode"]
-                product.tags = kwargs["Tags"]
+                product.name = product_data["name"]
+                product.sku = product_data["SKU"]
+                product.weight_lb = product_data["Weight"]
+                product.height_in = product_data["Height"]
+                product.width_in = product_data["Width"]
+                product.length_in = product_data["Length"]
+                product.value = product_data["Value"]
+                product.price = product_data["Price"]
+                product.on_hand = product_data["On_hand"]
+                product.allocated = product_data["Allocated"]
+                product.reserve = product_data["Reserve"]
+                product.non_sellable_total = product_data["Non_sellable_total"]
+                product.reorder_level = product_data["Reorder_level"]
+                product.reorder_amount = product_data["Reorder_amount"]
+                product.replenishment_level = product_data["Replenishment_level"]
+                product.available = product_data["Available"]
+                product.backorder = product_data["Backorder"]
+                product.barcode = product_data["Barcode"]
+                product.tags = product_data["Tags"]
 
                 db.commit()
                 db.refresh(product)

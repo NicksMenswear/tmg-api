@@ -2,8 +2,6 @@ import random
 import uuid
 from datetime import datetime
 
-from server.database.models import ProductItem, User, Order, Event
-
 
 def create_user_request_payload(**user_data):
     return {
@@ -55,4 +53,12 @@ def create_look_request_payload(**look_data):
         "event_id": look_data.get("event_id", None),
         "product_specs": look_data.get("product_specs", {}),
         "product_final_image": look_data.get("product_final_image", ""),
+    }
+
+
+def create_role_request_payload(**look_data):
+    return {
+        "role_name": look_data.get("role_name", str(uuid.uuid4())),
+        "event_id": look_data.get("event_id", str(uuid.uuid4())),
+        "look_id": look_data.get("look_id", str(uuid.uuid4())),
     }

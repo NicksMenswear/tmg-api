@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from server.app import init_app
-from server.database.models import Order, ProductItem, User, Event, Look
+from server.database.models import Order, ProductItem, User, Event, Look, Role
 from server.services.emails import FakeEmailService
 from server.services.shopify import FakeShopifyService
 
@@ -36,6 +36,7 @@ class BaseTestCase(TestCase):
         self.session_factory = self.session
         self.db = self.session_factory()
 
+        self.db.query(Role).delete()
         self.db.query(Look).delete()
         self.db.query(Event).delete()
         self.db.query(Order).delete()

@@ -11,7 +11,7 @@ def create_product_item(product_item):
     try:
         product = product_service.create_product(**product_item)
     except DuplicateError as e:
-        app.logger.error(e.message, e)
+        app.logger.debug(e.message, e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
         app.logger.error(e.message, e)
@@ -45,7 +45,7 @@ def update_product_item(product_data):
     try:
         product = product_service.update_product(product_data["id"], **product_data)
     except NotFoundError as e:
-        app.logger.error(e.message, e)
+        app.logger.debug(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
         app.logger.error(e.message, e)
@@ -60,7 +60,7 @@ def soft_delete_product(product_data):
     try:
         product_service.deactivate_product(product_data["id"])
     except NotFoundError as e:
-        app.logger.error(e.message, e)
+        app.logger.debug(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
         app.logger.error(e.message, e)

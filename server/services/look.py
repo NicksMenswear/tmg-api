@@ -13,6 +13,10 @@ class LookService(BaseService):
         with self.session_factory() as db:
             return db.query(Look).all()
 
+    def get_look_by_id(self, look_id):
+        with self.session_factory() as db:
+            return db.query(Look).filter(Look.id == look_id).first()
+
     def get_looks_for_user(self, user_id):
         with self.session_factory() as db:
             return db.query(Look).filter(Look.user_id == user_id).all()

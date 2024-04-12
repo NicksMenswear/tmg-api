@@ -9,6 +9,10 @@ class EventService(BaseService):
     def __init__(self, session_factory):
         super().__init__(session_factory)
 
+    def get_event_by_id(self, event_id):
+        with self.session_factory() as db:
+            return db.query(Event).filter_by(id=event_id).first()
+
     def create_event(self, **event_data):
         with self.session_factory() as db:
             # user = db.query(Event).filter_by(email=user_data["email"]).first()

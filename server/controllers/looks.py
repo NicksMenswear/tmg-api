@@ -31,7 +31,7 @@ def create_look(look_data):
 
         look = look_service.create_look(**enriched_look_data)
     except DuplicateError as e:
-        app.logger.error(e.message, e)
+        app.logger.debug(e.message, e)
         return jsonify({"errors": e.message}), 409
     except ServiceError as e:
         app.logger.error(e.message, e)

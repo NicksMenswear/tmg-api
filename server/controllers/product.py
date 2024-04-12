@@ -1,4 +1,5 @@
 from flask import jsonify
+from flask import current_app as app
 from server.database.database_manager import session_factory
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.product import ProductService
@@ -10,10 +11,10 @@ def create_product_item(product_item):
     try:
         product = product_service.create_product(**product_item)
     except DuplicateError as e:
-        print(str(e))
+        app.logger.error(e.message, e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        print(str(e))
+        app.logger.error(e.message, e)
         return jsonify({"errors": "Failed to create product"}), 500
 
     return product.to_dict(), 201
@@ -44,10 +45,10 @@ def update_product_item(product_data):
     try:
         product = product_service.update_product(product_data["id"], **product_data)
     except NotFoundError as e:
-        print(e)
+        app.logger.error(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        print(e)
+        app.logger.error(e.message, e)
         return jsonify({"errors": "Failed to update product."}), 500
 
     return product.to_dict(), 200
@@ -59,10 +60,10 @@ def soft_delete_product(product_data):
     try:
         product_service.deactivate_product(product_data["id"])
     except NotFoundError as e:
-        print(e)
+        app.logger.error(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        print(e)
+        app.logger.error(e.message, e)
         return jsonify({"errors": "Failed to deactivate product."}), 500
 
     return None, 204

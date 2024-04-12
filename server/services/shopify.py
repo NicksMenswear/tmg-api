@@ -3,6 +3,8 @@ import random
 
 import requests
 
+from server.services import ServiceError
+
 
 class FakeShopifyService:
     def create_customer(self, first_name, last_name, email):
@@ -28,9 +30,12 @@ class ShopifyService:
         return response.json()
 
     def create_customer(self, first_name, last_name, email):
-        created_customer = self.__admin_api_request(
-            f"{self.__shopify_admin_api_endpoint}/customers.json",
-            {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
-        )
+        try:
+            created_customer = self.__admin_api_request(
+                f"{self.__shopify_admin_api_endpoint}/customers.json",
+                {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
+            )
 
-        return created_customer.get("customer")
+            return created_customer.get("customer")
+        except Exception as e:
+            raise ServiceError("Failed to create shopify customer.", e)

@@ -41,6 +41,9 @@ class UserService(BaseService):
 
                 db.commit()
                 db.refresh(user)
+            except ServiceError as e:
+                db.rollback()
+                raise ServiceError(e.message, e)
             except Exception as e:
                 db.rollback()
                 raise ServiceError("Failed to create user.", e)

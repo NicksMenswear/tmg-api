@@ -1,6 +1,7 @@
 import uuid
 
 from flask import jsonify
+from flask import current_app as app
 
 from server.controllers.hmac_1 import hmac_verification
 from server.database.database_manager import get_database_session, session_factory
@@ -30,10 +31,10 @@ def create_look(look_data):
 
         look = look_service.create_look(**enriched_look_data)
     except DuplicateError as e:
-        print(str(e))
+        app.logger.error(e.message, e)
         return jsonify({"errors": e.message}), 409
     except ServiceError as e:
-        print(str(e))
+        app.logger.error(e.message, e)
         return jsonify({"errors": "Failed to create look"}), 500
 
     return look.to_dict(), 201

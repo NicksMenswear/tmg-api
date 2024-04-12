@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+
 from server import encoder
 from server.services.emails import EmailService, FakeEmailService
 from server.services.shopify import ShopifyService, FakeShopifyService
@@ -44,7 +45,7 @@ def init_logging(debug=False):
         for handler in root.handlers:
             root.removeHandler(handler)
     level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format="%(asctime)s %(message)s", level=level)
+    logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", level=level)
 
 
 def init_app(swagger=False):

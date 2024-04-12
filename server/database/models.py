@@ -44,7 +44,7 @@ class User(Base):
         return result
 
 
-class Event(Base, Model):
+class Event(Base):
     __tablename__ = "events"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -195,7 +195,7 @@ class AuditLog(Base):
     id = Column(Integer, primary_key=True)
 
 
-class Look(Base, Model):
+class Look(Base):
     __tablename__ = "looks"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -206,15 +206,14 @@ class Look(Base, Model):
     product_final_image = Column(String, nullable=True)
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
+        return {
             "id": self.id,
             "look_name": self.look_name,
+            "event_id": self.event_id,
             "user_id": self.user_id,
             "product_specs": self.product_specs,
             "product_final_image": self.product_final_image,
         }
-        return result
 
 
 class Role(Base, Model):

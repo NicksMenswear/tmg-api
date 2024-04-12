@@ -2,9 +2,10 @@ import uuid
 
 from server.database.models import ProductItem
 from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services.base import BaseService
 
 
-class ProductService:
+class ProductService(BaseService):
     def __init__(self, session_factory):
         self.session_factory = session_factory
 
@@ -24,9 +25,9 @@ class ProductService:
         with self.session_factory() as db:
             return db.query(ProductItem).filter_by(is_active=True).all()
 
-    def create_product(self, **kwargs):
+    def create_product(self, **product_data):
         with self.session_factory() as db:
-            product = db.query(ProductItem).filter_by(name=kwargs["name"]).first()
+            product = db.query(ProductItem).filter_by(name=product_data["name"]).first()
 
             if product:
                 raise DuplicateError("Product already exists")
@@ -34,26 +35,26 @@ class ProductService:
             try:
                 product = ProductItem(
                     id=uuid.uuid4(),
-                    is_active=kwargs.get("Active", True),
-                    name=kwargs["name"],
-                    sku=kwargs["SKU"],
-                    weight_lb=kwargs["Weight"],
-                    height_in=kwargs["Height"],
-                    width_in=kwargs["Width"],
-                    length_in=kwargs["Length"],
-                    value=kwargs["Value"],
-                    price=kwargs["Price"],
-                    on_hand=kwargs["On_hand"],
-                    allocated=kwargs["Allocated"],
-                    reserve=kwargs["Reserve"],
-                    non_sellable_total=kwargs["Non_sellable_total"],
-                    reorder_level=kwargs["Reorder_level"],
-                    reorder_amount=kwargs["Reorder_amount"],
-                    replenishment_level=kwargs["Replenishment_level"],
-                    available=kwargs["Available"],
-                    backorder=kwargs["Backorder"],
-                    barcode=kwargs["Barcode"],
-                    tags=kwargs["Tags"],
+                    is_active=product_data.get("Active", True),
+                    name=product_data["name"],
+                    sku=product_data["SKU"],
+                    weight_lb=product_data["Weight"],
+                    height_in=product_data["Height"],
+                    width_in=product_data["Width"],
+                    length_in=product_data["Length"],
+                    value=product_data["Value"],
+                    price=product_data["Price"],
+                    on_hand=product_data["On_hand"],
+                    allocated=product_data["Allocated"],
+                    reserve=product_data["Reserve"],
+                    non_sellable_total=product_data["Non_sellable_total"],
+                    reorder_level=product_data["Reorder_level"],
+                    reorder_amount=product_data["Reorder_amount"],
+                    replenishment_level=product_data["Replenishment_level"],
+                    available=product_data["Available"],
+                    backorder=product_data["Backorder"],
+                    barcode=product_data["Barcode"],
+                    tags=product_data["Tags"],
                 )
 
                 db.add(product)

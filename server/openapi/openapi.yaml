@@ -305,13 +305,13 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: server.controllers.events
-  /events/{username}:
+  /events/{email}:
     get:
       operationId: list_events
       parameters:
         - explode: false
           in: path
-          name: username
+          name: email
           required: true
           schema:
             type: string

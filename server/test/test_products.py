@@ -6,7 +6,9 @@ import uuid
 
 from server import encoder
 from server.database.models import ProductItem
-from server.test import BaseTestCase, CONTENT_TYPE_JSON
+from server.services.product import ProductService
+from server.test import BaseTestCase
+from server.test.fixtures import create_product_request_payload
 
 # TODO: Remove this key mapping once the API is fixed
 PRODUCT_KEYS_MAPPING = {
@@ -36,65 +38,9 @@ PRODUCT_KEYS_MAPPING = {
 
 class TestProducts(BaseTestCase):
     def setUp(self):
-        super(TestProducts, self).setUp()
+        super().setUp()
 
-        self.db = self.session()
-        self.db.query(ProductItem).delete()
-        self.db.commit()
-        self.request_headers = {
-            "Accept": CONTENT_TYPE_JSON,
-        }
-
-    @staticmethod
-    def create_product_request_payload(**kwargs):
-        return {
-            "name": kwargs.get("name", str(uuid.uuid4())),
-            "Active": kwargs.get("is_active", True),
-            "SKU": kwargs.get("sku", str(uuid.uuid4())),
-            "Weight": kwargs.get("weight", 1.0),
-            "Height": kwargs.get("height", 1.0),
-            "Width": kwargs.get("width", 1.0),
-            "Length": kwargs.get("length", 1.0),
-            "Value": kwargs.get("value", 1.0),
-            "Price": kwargs.get("price", 1.0),
-            "On_hand": kwargs.get("on_hand", 1),
-            "Allocated": kwargs.get("allocated", 1),
-            "Reserve": kwargs.get("reserve", 1),
-            "Non_sellable_total": kwargs.get("non_sellable_total", 1),
-            "Reorder_level": kwargs.get("reorder_level", 1),
-            "Reorder_amount": kwargs.get("reorder_amount", 1),
-            "Replenishment_level": kwargs.get("replenishment_level", 1),
-            "Available": kwargs.get("available", 1),
-            "Backorder": kwargs.get("backorder", 1),
-            "Barcode": kwargs.get("barcode", 123456),
-            "Tags": kwargs.get("tags", ["tag1", "tag2"]),
-        }
-
-    @staticmethod
-    def create_db_product(**kwargs):
-        return ProductItem(
-            id=kwargs.get("id", str(uuid.uuid4())),
-            is_active=kwargs.get("is_active", True),
-            name=kwargs.get("name", str(uuid.uuid4())),
-            sku=kwargs.get("SKU", str(uuid.uuid4())),
-            weight_lb=kwargs.get("Weight", 1.0),
-            height_in=kwargs.get("Height", 1.0),
-            width_in=kwargs.get("Width", 1.0),
-            length_in=kwargs.get("Length", 1.0),
-            value=kwargs.get("Value", 1.0),
-            price=kwargs.get("Price", 1.0),
-            on_hand=kwargs.get("On_hand", 1),
-            allocated=kwargs.get("Allocated", 1),
-            reserve=kwargs.get("Reserve", 1),
-            non_sellable_total=kwargs.get("Non_sellable_total", 1),
-            reorder_level=kwargs.get("Reorder_level", 1),
-            reorder_amount=kwargs.get("Reorder_amount", 1),
-            replenishment_level=kwargs.get("Replenishment_level", 1),
-            available=kwargs.get("Available", 1),
-            backorder=kwargs.get("Backorder", 1),
-            barcode=kwargs.get("Barcode", 1234567890),
-            tags=kwargs.get("Tags", ["tag1", "tag2"]),
-        )
+        self.product_service = ProductService(self.session_factory)
 
     def assert_equal_response_product_with_db_product(self, product: ProductItem, response_product: dict):
         self.assertEqual(response_product.get("id"), str(product.id))
@@ -134,7 +80,7 @@ class TestProducts(BaseTestCase):
             "/product",
             query_string=query_params,
             method="GET",
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -142,14 +88,11 @@ class TestProducts(BaseTestCase):
 
     def test_get_existing_product_by_id(self):
         # given
-        product_id = str(uuid.uuid4())
-        product = self.create_db_product(id=product_id)
-        self.db.add(product)
-        self.db.commit()
+        product = self.product_service.create_product(**create_product_request_payload())
 
         # when
-        query_params = {**self.hmac_query_params, "product_id": product_id}
-        response = self.client.open("/product".format(id=product_id), query_string=query_params, method="GET")
+        query_params = {**self.hmac_query_params, "product_id": product.id}
+        response = self.client.open("/product".format(id=product.id), query_string=query_params, method="GET")
 
         # then
         self.assert200(response)
@@ -158,9 +101,7 @@ class TestProducts(BaseTestCase):
     def test_get_existing_product_by_id_but_not_active(self):
         # given
         product_id = str(uuid.uuid4())
-        product = self.create_db_product(id=product_id, is_active=False)
-        self.db.add(product)
-        self.db.commit()
+        self.product_service.create_product(**create_product_request_payload(id=product_id, is_active=False))
 
         # when
         query_params = {**self.hmac_query_params, "product_id": product_id}
@@ -171,7 +112,7 @@ class TestProducts(BaseTestCase):
 
     def test_create_product(self):
         # given
-        product = self.create_product_request_payload()
+        product = create_product_request_payload()
 
         # when
         response = self.client.open(
@@ -179,7 +120,7 @@ class TestProducts(BaseTestCase):
             method="POST",
             query_string=self.hmac_query_params,
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
             data=json.dumps(product, cls=encoder.CustomJSONEncoder),
         )
 
@@ -190,19 +131,17 @@ class TestProducts(BaseTestCase):
 
     def test_create_product_with_existing_name(self):
         # given
-        product_name = str(uuid.uuid4())
-        product = self.create_db_product(name=product_name)
-        product_request = self.create_product_request_payload(name=product_name)
-        self.db.add(product)
-        self.db.commit()
+        product_name = f"product-{str(uuid.uuid4())}"
+        product = self.product_service.create_product(**create_product_request_payload(name=product_name))
 
         # when
+        product_request = create_product_request_payload(name=product_name)
         response = self.client.open(
             "/products",
             method="POST",
             query_string=self.hmac_query_params,
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
             data=json.dumps(product_request, cls=encoder.CustomJSONEncoder),
         )
 
@@ -216,7 +155,7 @@ class TestProducts(BaseTestCase):
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -225,11 +164,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products(self):
         # given
-        product1 = self.create_db_product()
-        product2 = self.create_db_product()
-        self.db.add(product1)
-        self.db.add(product2)
-        self.db.commit()
+        product1 = self.product_service.create_product(**create_product_request_payload())
+        product2 = self.product_service.create_product(**create_product_request_payload())
 
         # when
         response = self.client.open(
@@ -237,7 +173,7 @@ class TestProducts(BaseTestCase):
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -248,11 +184,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products_excluding_non_active(self):
         # given
-        product1 = self.create_db_product()
-        product2 = self.create_db_product(is_active=False)
-        self.db.add(product1)
-        self.db.add(product2)
-        self.db.commit()
+        product1 = self.product_service.create_product(**create_product_request_payload())
+        self.product_service.create_product(**create_product_request_payload(is_active=False))
 
         # when
         response = self.client.open(
@@ -260,7 +193,7 @@ class TestProducts(BaseTestCase):
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -270,7 +203,7 @@ class TestProducts(BaseTestCase):
 
     def test_update_non_existing_product(self):
         # given
-        product = self.create_product_request_payload()
+        product = create_product_request_payload()
         product["id"] = str(uuid.uuid4())
 
         # when
@@ -280,7 +213,7 @@ class TestProducts(BaseTestCase):
             method="PUT",
             data=json.dumps(product, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -288,12 +221,10 @@ class TestProducts(BaseTestCase):
 
     def test_update_product(self):
         # given
-        product = self.create_db_product()
-        self.db.add(product)
-        self.db.commit()
+        product = self.product_service.create_product(**create_product_request_payload())
 
         # when
-        updated_product = self.create_product_request_payload(
+        updated_product = create_product_request_payload(
             id=str(product.id),
             name=product.name + "-updated",
             price=product.price + 1,
@@ -323,7 +254,7 @@ class TestProducts(BaseTestCase):
             method="PUT",
             data=json.dumps(updated_product, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -345,7 +276,7 @@ class TestProducts(BaseTestCase):
             method="PUT",
             data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then
@@ -353,11 +284,8 @@ class TestProducts(BaseTestCase):
 
     def test_delete_product(self):
         # given
-        product_id = str(uuid.uuid4())
-        product = self.create_db_product(id=product_id)
-        self.db.add(product)
-        self.db.commit()
-        delete_product_payload = {"id": product_id, "is_active": False}
+        product = self.product_service.create_product(**create_product_request_payload())
+        delete_product_payload = {"id": product.id, "is_active": False}
 
         # when
         response = self.client.open(
@@ -366,7 +294,7 @@ class TestProducts(BaseTestCase):
             method="PUT",
             data=json.dumps(delete_product_payload, cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
-            content_type=CONTENT_TYPE_JSON,
+            content_type=self.content_type,
         )
 
         # then

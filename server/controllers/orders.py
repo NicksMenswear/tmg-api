@@ -50,19 +50,10 @@ def create_order(order):  # noqa: E501
 
 @hmac_verification()
 def get_order_by_id(order_id):  # noqa: E501
-    """Retrieve a specific order by ID
-
-     # noqa: E501
-
-    :param order_id: Unique identifier of the order to retrieve
-    :type order_id: int
-
-    :rtype: Order
-    """
     try:
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
-            return "Order not found", 204
+            return "Order not found", 404
         return order.to_dict()
     except Exception as e:
         print(f"An error occurred: {e}")

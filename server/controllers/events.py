@@ -49,13 +49,13 @@ def create_event(event):
 
 
 @hmac_verification()
-def list_events(username):
+def list_events(email):
     """Lists all events"""
-    username = unquote(username)
+    email = unquote(email)
     try:
-        user = db.query(User).filter(User.email == username).first()
+        user = db.query(User).filter(User.email == email).first()
         if not user:
-            return "User not found", 204
+            return "User not found", 404
         formatted_data = []
         events = db.query(Event).filter(Event.user_id == user.id, Event.is_active == True).all()
         for event in events:
@@ -65,6 +65,7 @@ def list_events(username):
                 "event_name": event.event_name,
                 "event_date": str(event.event_date),
                 "user_id": str(event.user_id),
+                "is_active": event.is_active,
                 "looks": [],
             }
             for look in looks:

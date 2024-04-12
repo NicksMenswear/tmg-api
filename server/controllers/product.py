@@ -1,7 +1,7 @@
 from flask import jsonify
 from server.database.database_manager import session_factory
 from server.services import ServiceError, NotFoundError, DuplicateError
-from server.services.products import ProductService
+from server.services.product import ProductService
 
 
 def create_product_item(product_item):

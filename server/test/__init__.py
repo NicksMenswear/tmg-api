@@ -1,11 +1,13 @@
+import os
+
 from flask_testing import TestCase
-from server.services.emails import FakeEmailService
-from server.services.shopify import FakeShopifyService
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from server.app import init_app
-import os
+from server.database.models import Order, ProductItem, User, Event, Look
+from server.services.emails import FakeEmailService
+from server.services.shopify import FakeShopifyService
 
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
@@ -30,6 +32,21 @@ class BaseTestCase(TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
+
+        self.session_factory = self.session
+        self.db = self.session_factory()
+
+        self.db.query(Look).delete()
+        self.db.query(Event).delete()
+        self.db.query(Order).delete()
+        self.db.query(ProductItem).delete()
+        self.db.query(User).delete()
+        self.db.commit()
+
+        self.content_type = CONTENT_TYPE_JSON
+        self.request_headers = {
+            "Accept": CONTENT_TYPE_JSON,
+        }
 
         self.hmac_query_params = {
             "logged_in_customer_id": "123456789",

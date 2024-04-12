@@ -9,20 +9,6 @@ from server.test import BaseTestCase
 from server.test.fixtures import create_user_request_payload, create_event_request_payload
 
 
-# - get non existing event by id           - 404
-# - get existing event by id               - 200
-# - create event with existing id          - 400
-# - create event with all fields populated - 201
-# - create event with missing fields       - 400
-# - get list of events in empty db         - 200, []
-# - get list of events in non empty db     - 200, [...]
-# - update event with non existing id      - 404
-# - update event with existing id          - 200
-# - update event with missing fields       - 400
-# - delete event with non existing id      - 404
-# - delete event with existing id          - 204
-
-
 class TestEvents(BaseTestCase):
     def setUp(self):
         super().setUp()

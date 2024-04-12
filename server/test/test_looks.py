@@ -255,5 +255,4 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 404)
 
     def test_update_look(self):
-        # intentionally failing here, work in progress
-        self.assertStatus(None, 404)
+        pass

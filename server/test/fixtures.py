@@ -92,3 +92,29 @@ def attendee_request(**attendee_data):
         "ship": attendee_data.get("ship", random.randint(1, 100)),
         "is_active": attendee_data.get("is_active", True),
     }
+
+
+def order_request(**order_data):
+    return {
+        "email": order_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        "user_id": order_data.get("user_id", str(uuid.uuid4())),
+        "event_id": order_data.get("event_id", str(uuid.uuid4())),
+        "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
+        "received_date": order_data.get("received_date", datetime.now().isoformat()),
+        "items": order_data.get("items", []),
+    }
+
+
+def order_item(**order_item_data):
+    return {
+        "name": order_item_data.get("name", str(uuid.uuid4())),
+        "quantity": order_item_data.get("quantity", random.randint(1, 100)),
+    }
+
+
+def update_order_request(**order_data):
+    return {
+        "id": order_data.get("id", str(uuid.uuid4())),
+        "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
+        "received_date": order_data.get("received_date", datetime.now().isoformat()),
+    }

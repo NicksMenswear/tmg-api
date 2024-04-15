@@ -47,7 +47,7 @@ def create_cart(cart):
 
 
 @hmac_verification()
-def get_cart_by_id(cart_id):  # noqa: E501
+def get_cart_by_id(cart_id):
     """Retrieve a specific cart by ID
 
      # noqa: E501

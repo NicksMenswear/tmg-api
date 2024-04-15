@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from server.app import init_app
-from server.database.models import Order, ProductItem, User, Event, Look, Role, Attendee
+from server.database.models import Order, ProductItem, User, Event, Look, Role, Attendee, OrderItem
 from server.services.emails import FakeEmailService
 from server.services.shopify import FakeShopifyService
 
@@ -39,8 +39,9 @@ class BaseTestCase(TestCase):
         self.db.query(Attendee).delete()
         self.db.query(Role).delete()
         self.db.query(Look).delete()
-        self.db.query(Event).delete()
+        self.db.query(OrderItem).delete()
         self.db.query(Order).delete()
+        self.db.query(Event).delete()
         self.db.query(ProductItem).delete()
         self.db.query(User).delete()
         self.db.commit()

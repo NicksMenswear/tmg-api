@@ -6,12 +6,13 @@ from server.services.base import BaseService
 
 
 class EventService(BaseService):
-    def __init__(self, session_factory):
-        super().__init__(session_factory)
-
     def get_event_by_id(self, event_id):
         with self.session_factory() as db:
             return db.query(Event).filter_by(id=event_id).first()
+
+    def get_event_by_user_id(self, user_id):
+        with self.session_factory() as db:
+            return db.query(Event).filter_by(user_id=user_id).first()  # TODO: this is bug!
 
     def create_event(self, **event_data):
         with self.session_factory() as db:

@@ -1,6 +1,6 @@
 import uuid
 
-from server.database.models import Event, User, Look
+from server.database.models import Event, User, Look, Attendee, Role
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.base import BaseService
 from server.services.look import LookService
@@ -57,6 +57,61 @@ class EventService(BaseService):
                 enriched_events.append(enriched_event)
 
             return enriched_events
+
+    def get_events_with_attendees_by_user_email(self, email):
+        with self.session_factory() as db:
+            user = db.query(User).filter_by(email=email).first()
+
+            if not user:
+                raise NotFoundError("User not found.")
+
+            attendees = db.query(Attendee).filter(Attendee.attendee_id == user.id).all()
+
+            formatted_data = []
+
+            for attendee in attendees:
+                event = db.query(Event).filter(Event.id == attendee.event_id, Event.is_active).first()
+
+                if event is None:
+                    continue
+
+                role = db.query(Role).filter(Role.id == attendee.role).first()
+
+                if role:
+                    look = db.query(Look).filter(Look.id == role.look_id).first()
+
+                    if look is None:
+                        look_data = {}
+                    else:
+                        look_data = {
+                            "id": look.id,
+                            "look_name": look.look_name,
+                            "product_specs": look.product_specs,
+                            "product_final_image": look.product_final_image,
+                        }
+                    data = {
+                        "event_id": event.id,
+                        "event_name": event.event_name,
+                        "event_date": str(event.event_date),
+                        "user_id": str(event.user_id),
+                        "look_data": look_data,
+                    }
+
+                    formatted_data.append(data)
+                else:
+                    look_data = {}
+
+                    data = {
+                        "event_id": event.id,
+                        "event_name": event.event_name,
+                        "event_date": str(event.event_date),
+                        "user_id": str(event.user_id),
+                        "look_data": look_data,
+                    }
+
+                    formatted_data.append(data)
+
+            return formatted_data
 
     def create_event(self, **event_data):
         with self.session_factory() as db:

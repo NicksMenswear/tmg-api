@@ -6,8 +6,10 @@ from datetime import datetime
 
 from server import encoder
 from server.database.models import Event
+from server.services.attendee import AttendeeService
 from server.services.event import EventService
 from server.services.look import LookService
+from server.services.role import RoleService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
@@ -19,6 +21,8 @@ class TestEvents(BaseTestCase):
         self.user_service = UserService(self.session_factory)
         self.event_service = EventService(self.session_factory)
         self.look_service = LookService(self.session_factory)
+        self.attendee_service = AttendeeService(self.session_factory)
+        self.role_service = RoleService(self.session_factory)
 
     def assert_equal_response_event_with_db_event(self, event: Event, response_event: dict):
         self.assertEqual(response_event["id"], str(event.id))
@@ -200,3 +204,34 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 204)
+
+    def test_get_events_with_attendees_by_user_email(self):
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
+        role = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
+        attendee = self.attendee_service.create_attendee(
+            **fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id)
+        )
+
+        # when
+        response = self.client.open(
+            "/events_attendees/{email}".format(email=user.email),
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["event_id"], str(event.id))
+        self.assertEqual(response.json[0]["event_name"], event.event_name)
+        self.assertEqual(response.json[0]["event_date"], str(event.event_date))
+        self.assertEqual(response.json[0]["user_id"], str(event.user_id))
+        self.assertEqual(response.json[0]["look_data"]["id"], str(look.id))
+        self.assertEqual(response.json[0]["look_data"]["look_name"], look.look_name)
+        self.assertEqual(response.json[0]["look_data"]["product_specs"], look.product_specs)
+        self.assertEqual(response.json[0]["look_data"]["product_final_image"], look.product_final_image)

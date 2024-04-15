@@ -72,6 +72,15 @@ class AttendeeService(BaseService):
 
             return attendee
 
+    def get_attendee_by_id(self, attendee_id):
+        with self.session_factory() as db:
+            attendee = db.query(Attendee).filter(Attendee.id == attendee_id).first()
+
+            if not attendee:
+                raise NotFoundError("Attendee not found.")
+
+            return attendee
+
     def get_attendee_event(self, email, event_id):
         with self.session_factory() as db:
             user = self.user_service.get_user_by_email(email)

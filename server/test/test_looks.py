@@ -5,8 +5,10 @@ import uuid
 
 from server import encoder
 from server.database.models import Look
+from server.services.attendee import AttendeeService
 from server.services.event import EventService
 from server.services.look import LookService
+from server.services.role import RoleService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
@@ -16,7 +18,9 @@ class TestLooks(BaseTestCase):
         super().setUp()
 
         self.look_service = LookService(self.session_factory)
+        self.role_service = RoleService(self.session_factory)
         self.user_service = UserService(self.session_factory)
+        self.attendee_service = AttendeeService(self.session_factory)
         self.event_service = EventService(self.session_factory)
 
     def assert_equal_response_look_with_db_look(self, look: Look, response_look: dict):
@@ -253,5 +257,104 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
+    def test_update_look_for_invalid_user(self):
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
+
+        # when
+        look_data = fixtures.update_look_request(
+            event_id=event.id, user_id=user.id, email=f"{str(uuid.uuid4())}@example.com"
+        )
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_update_look_for_invalid_look_id(self):
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
+
+        # when
+        look_data = fixtures.update_look_request(
+            event_id=event.id, user_id=user.id, email=user.email, look_id=str(uuid.uuid4())
+        )
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_update_look_for_invalid_event_id(self):
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
+
+        # when
+        look_data = fixtures.update_look_request(
+            user_id=user.id, email=user.email, look_id=look.id, event_id=str(uuid.uuid4())
+        )
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
     def test_update_look(self):
-        pass
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
+        role = self.role_service.create_role(**fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        attendee = self.attendee_service.create_attendee(
+            **fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+        )
+
+        # when
+        look_data = fixtures.update_look_request(
+            user_id=str(user.id),
+            email=user.email,
+            look_id=str(look.id),
+            event_id=str(event.id),
+            attendee_id=str(attendee.id),
+            look_name=f"{str(uuid.uuid4())}-new_look_name",
+        )
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertNotEqual(response.json["id"], str(look.id))

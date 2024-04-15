@@ -6,9 +6,6 @@ from server.services.base import BaseService
 
 
 class ProductService(BaseService):
-    def __init__(self, session_factory):
-        self.session_factory = session_factory
-
     def get_product_by_name(self, name):
         with self.session_factory() as db:
             return db.query(ProductItem).filter_by(name=name).first()

@@ -482,13 +482,6 @@ paths:
     put:
       operationId: update_attendee
       parameters:
-        - explode: false
-          in: path
-          name: key
-          required: true
-          schema:
-            type: string
-          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -530,7 +523,7 @@ paths:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
     get:
-      operationId: list_attendee
+      operationId: get_attendee_event
       parameters:
         - in: query
           name: email
@@ -2060,12 +2053,10 @@ components:
       properties:
         id:
           format: uuid
-          readOnly: true
           title: id
           type: string
         user_id:
           format: uuid
-          readOnly: true
           title: user_id
           type: string
         event_date:

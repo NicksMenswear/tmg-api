@@ -8,8 +8,7 @@ import uuid
 from server import encoder
 from server.database.models import User
 from server.services.user import UserService
-from server.test import BaseTestCase
-from server.test.fixtures import create_user_request_payload
+from server.test import BaseTestCase, fixtures
 
 
 class TestUsers(BaseTestCase):
@@ -51,7 +50,7 @@ class TestUsers(BaseTestCase):
     def test_get_existing_user_by_email(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        user = self.user_service.create_user(**create_user_request_payload(email=email))
+        user = self.user_service.create_user(**fixtures.user_request(email=email))
 
         # when
         response = self.client.open(
@@ -64,7 +63,7 @@ class TestUsers(BaseTestCase):
 
     def test_create_user(self):
         # when
-        user = create_user_request_payload()
+        user = fixtures.user_request()
 
         response = self.client.open(
             "/users",
@@ -83,7 +82,7 @@ class TestUsers(BaseTestCase):
 
     def test_create_user_without_email(self):
         # when
-        user = create_user_request_payload()
+        user = fixtures.user_request()
         del user["email"]
 
         response = self.client.open(
@@ -114,8 +113,8 @@ class TestUsers(BaseTestCase):
 
     def test_get_list_of_users(self):
         # given
-        user1 = self.user_service.create_user(**create_user_request_payload())
-        user2 = self.user_service.create_user(**create_user_request_payload())
+        user1 = self.user_service.create_user(**fixtures.user_request())
+        user2 = self.user_service.create_user(**fixtures.user_request())
 
         # when
         response = self.client.open(
@@ -134,7 +133,7 @@ class TestUsers(BaseTestCase):
 
     def test_update_user_with_non_existing_email(self):
         # when
-        user = create_user_request_payload()
+        user = fixtures.user_request()
 
         response = self.client.open(
             "/users",
@@ -150,10 +149,10 @@ class TestUsers(BaseTestCase):
 
     def test_update_user(self):
         # given
-        user = self.user_service.create_user(**create_user_request_payload())
+        user = self.user_service.create_user(**fixtures.user_request())
 
         # when
-        updated_user = create_user_request_payload(
+        updated_user = fixtures.user_request(
             first_name=user.first_name + "-updated",
             last_name=user.last_name + "-updated",
             email=user.email,

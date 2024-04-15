@@ -7,8 +7,7 @@ import uuid
 from server import encoder
 from server.database.models import ProductItem
 from server.services.product import ProductService
-from server.test import BaseTestCase
-from server.test.fixtures import create_product_request_payload
+from server.test import BaseTestCase, fixtures
 
 # TODO: Remove this key mapping once the API is fixed
 PRODUCT_KEYS_MAPPING = {
@@ -88,7 +87,7 @@ class TestProducts(BaseTestCase):
 
     def test_get_existing_product_by_id(self):
         # given
-        product = self.product_service.create_product(**create_product_request_payload())
+        product = self.product_service.create_product(**fixtures.product_request())
 
         # when
         query_params = {**self.hmac_query_params, "product_id": product.id}
@@ -101,7 +100,7 @@ class TestProducts(BaseTestCase):
     def test_get_existing_product_by_id_but_not_active(self):
         # given
         product_id = str(uuid.uuid4())
-        self.product_service.create_product(**create_product_request_payload(id=product_id, is_active=False))
+        self.product_service.create_product(**fixtures.product_request(id=product_id, is_active=False))
 
         # when
         query_params = {**self.hmac_query_params, "product_id": product_id}
@@ -112,7 +111,7 @@ class TestProducts(BaseTestCase):
 
     def test_create_product(self):
         # given
-        product = create_product_request_payload()
+        product = fixtures.product_request()
 
         # when
         response = self.client.open(
@@ -132,10 +131,10 @@ class TestProducts(BaseTestCase):
     def test_create_product_with_existing_name(self):
         # given
         product_name = f"product-{str(uuid.uuid4())}"
-        product = self.product_service.create_product(**create_product_request_payload(name=product_name))
+        product = self.product_service.create_product(**fixtures.product_request(name=product_name))
 
         # when
-        product_request = create_product_request_payload(name=product_name)
+        product_request = fixtures.product_request(name=product_name)
         response = self.client.open(
             "/products",
             method="POST",
@@ -164,8 +163,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products(self):
         # given
-        product1 = self.product_service.create_product(**create_product_request_payload())
-        product2 = self.product_service.create_product(**create_product_request_payload())
+        product1 = self.product_service.create_product(**fixtures.product_request())
+        product2 = self.product_service.create_product(**fixtures.product_request())
 
         # when
         response = self.client.open(
@@ -184,8 +183,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products_excluding_non_active(self):
         # given
-        product1 = self.product_service.create_product(**create_product_request_payload())
-        self.product_service.create_product(**create_product_request_payload(is_active=False))
+        product1 = self.product_service.create_product(**fixtures.product_request())
+        self.product_service.create_product(**fixtures.product_request(is_active=False))
 
         # when
         response = self.client.open(
@@ -203,7 +202,7 @@ class TestProducts(BaseTestCase):
 
     def test_update_non_existing_product(self):
         # given
-        product = create_product_request_payload()
+        product = fixtures.product_request()
         product["id"] = str(uuid.uuid4())
 
         # when
@@ -221,10 +220,10 @@ class TestProducts(BaseTestCase):
 
     def test_update_product(self):
         # given
-        product = self.product_service.create_product(**create_product_request_payload())
+        product = self.product_service.create_product(**fixtures.product_request())
 
         # when
-        updated_product = create_product_request_payload(
+        updated_product = fixtures.product_request(
             id=str(product.id),
             name=product.name + "-updated",
             price=product.price + 1,
@@ -284,7 +283,7 @@ class TestProducts(BaseTestCase):
 
     def test_delete_product(self):
         # given
-        product = self.product_service.create_product(**create_product_request_payload())
+        product = self.product_service.create_product(**fixtures.product_request())
         delete_product_payload = {"id": product.id, "is_active": False}
 
         # when

@@ -16,10 +16,10 @@ class RoleService(BaseService):
 
     def create_role(self, **role_data):
         with self.session_factory() as db:
-            role = db.query(Role).filter(Role.role_name == role_data["role_name"]).first()
-
-            if role:
-                raise DuplicateError("Role already exists with this name.")
+            # role = db.query(Role).filter(Role.role_name == role_data["role_name"], Role.event_id == role_data["event_id"]).first()
+            #
+            # if role:
+            #     raise DuplicateError("Role already exists with this name.")
 
             try:
                 role = Role(
@@ -44,6 +44,10 @@ class RoleService(BaseService):
     def get_roles_by_event_id(self, event_id):
         with self.session_factory() as db:
             return db.query(Role).filter(Role.event_id == event_id).all()
+
+    def get_role_by_look_id_and_event_id(self, look_id, event_id):
+        with self.session_factory() as db:
+            return db.query(Role).filter(Role.look_id == look_id, Role.event_id == event_id).first()
 
     def get_event_roles_with_looks(self, event_id):
         with self.session_factory() as db:

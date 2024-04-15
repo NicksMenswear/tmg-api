@@ -46,8 +46,8 @@ class TestRoles(BaseTestCase):
         # given
         user1 = self.user_service.create_user(**fixtures.user_request())
         user2 = self.user_service.create_user(**fixtures.user_request())
-        event1 = self.event_service.create_event(**fixtures.event_request(user_id=user1.id))
-        event2 = self.event_service.create_event(**fixtures.event_request(user_id=user2.id))
+        event1 = self.event_service.create_event(**fixtures.event_request(email=user1.email))
+        event2 = self.event_service.create_event(**fixtures.event_request(email=user2.email))
         look1 = self.look_service.create_look(**fixtures.look_request(event_id=event1.id, user_id=user1.id))
         look2 = self.look_service.create_look(**fixtures.look_request(event_id=event2.id, user_id=user2.id))
         role1 = self.role_service.create_role(**fixtures.role_request(event_id=event1.id, look_id=look1.id))
@@ -73,7 +73,7 @@ class TestRoles(BaseTestCase):
     def test_create_role(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
 
         # when
@@ -95,7 +95,7 @@ class TestRoles(BaseTestCase):
     def test_create_role_event_not_found(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
 
         # when
@@ -116,7 +116,7 @@ class TestRoles(BaseTestCase):
     def test_create_role_look_not_found(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
 
         # when
         role = fixtures.role_request(event_id=str(event.id), look_id=str(uuid.uuid4()))
@@ -137,7 +137,7 @@ class TestRoles(BaseTestCase):
     def test_create_role_with_same_name_as_existing(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
         role = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
 
@@ -159,7 +159,7 @@ class TestRoles(BaseTestCase):
     def test_get_role_by_id(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
         role = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
 
@@ -196,7 +196,7 @@ class TestRoles(BaseTestCase):
     def test_get_roles_by_event_id(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
         role1 = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
         role2 = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
@@ -236,7 +236,7 @@ class TestRoles(BaseTestCase):
     def test_get_roles_for_event_without_roles(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
 
         # when
         query_params = {**self.hmac_query_params, "event_id": str(event.id)}
@@ -256,7 +256,7 @@ class TestRoles(BaseTestCase):
     def test_get_roles_with_look(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
         role1 = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
         role2 = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
@@ -293,7 +293,7 @@ class TestRoles(BaseTestCase):
     def test_get_roles_without_looks(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
 
         # when
         query_params = {**self.hmac_query_params, "event_id": str(event.id)}
@@ -315,7 +315,7 @@ class TestRoles(BaseTestCase):
     def test_update_role(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
         role = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
 

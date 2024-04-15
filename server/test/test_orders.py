@@ -43,7 +43,7 @@ class TestOrders(BaseTestCase):
 
     def test_get_order_by_id(self):
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         product = self.product_service.create_product(**fixtures.product_request())
         order = self.order_service.create_order(
             **fixtures.order_request(
@@ -105,7 +105,7 @@ class TestOrders(BaseTestCase):
     def test_create_order_without_items(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
 
         # when
         response = self.client.open(
@@ -127,7 +127,7 @@ class TestOrders(BaseTestCase):
     def test_create_order(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         product1 = self.product_service.create_product(**fixtures.product_request())
         product2 = self.product_service.create_product(**fixtures.product_request())
 
@@ -163,7 +163,7 @@ class TestOrders(BaseTestCase):
     def test_get_orders_empty(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
 
         # when
         query_params = {
@@ -187,7 +187,7 @@ class TestOrders(BaseTestCase):
     def test_get_orders(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         product1 = self.product_service.create_product(**fixtures.product_request())
         product2 = self.product_service.create_product(**fixtures.product_request())
         product3 = self.product_service.create_product(**fixtures.product_request())
@@ -235,7 +235,7 @@ class TestOrders(BaseTestCase):
     def test_update_order(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         product = self.product_service.create_product(**fixtures.product_request())
         order = self.order_service.create_order(
             **fixtures.order_request(
@@ -269,7 +269,7 @@ class TestOrders(BaseTestCase):
     def test_delete_order(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
         product = self.product_service.create_product(**fixtures.product_request())
         order = self.order_service.create_order(
             **fixtures.order_request(

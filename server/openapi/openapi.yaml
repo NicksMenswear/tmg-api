@@ -2053,12 +2053,10 @@ components:
       properties:
         id:
           format: uuid
-          readOnly: true
           title: id
           type: string
         user_id:
           format: uuid
-          readOnly: true
           title: user_id
           type: string
         event_date:

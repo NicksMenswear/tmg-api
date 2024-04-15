@@ -41,8 +41,8 @@ class BaseTestCase(TestCase):
         self.db.query(Look).delete()
         self.db.query(OrderItem).delete()
         self.db.query(Order).delete()
-        self.db.query(Event).delete()
         self.db.query(ProductItem).delete()
+        self.db.query(Event).delete()
         self.db.query(User).delete()
         self.db.commit()
 

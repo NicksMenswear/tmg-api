@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 
-def create_user_request_payload(**user_data):
+def user_request(**user_data):
     return {
         "first_name": user_data.get("first_name", str(uuid.uuid4())),
         "last_name": user_data.get("last_name", str(uuid.uuid4())),
@@ -12,7 +12,7 @@ def create_user_request_payload(**user_data):
     }
 
 
-def create_product_request_payload(**product_data):
+def product_request(**product_data):
     return {
         "name": product_data.get("name", str(uuid.uuid4())),
         "Active": product_data.get("is_active", True),
@@ -37,7 +37,7 @@ def create_product_request_payload(**product_data):
     }
 
 
-def create_event_request_payload(**event_data):
+def event_request(**event_data):
     return {
         "event_name": event_data.get("event_name", str(uuid.uuid4())),
         "event_date": event_data.get("event_date", datetime.now().isoformat()),
@@ -46,7 +46,7 @@ def create_event_request_payload(**event_data):
     }
 
 
-def create_look_request_payload(**look_data):
+def look_request(**look_data):
     return {
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
@@ -56,9 +56,25 @@ def create_look_request_payload(**look_data):
     }
 
 
-def create_role_request_payload(**look_data):
+def role_request(**look_data):
     return {
         "role_name": look_data.get("role_name", str(uuid.uuid4())),
         "event_id": look_data.get("event_id", str(uuid.uuid4())),
         "look_id": look_data.get("look_id", str(uuid.uuid4())),
+    }
+
+
+def attendee_request(**attendee_data):
+    return {
+        "email": attendee_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        "event_id": attendee_data.get("event_id", str(uuid.uuid4())),
+        "first_name": attendee_data.get("first_name", str(uuid.uuid4())),
+        "last_name": attendee_data.get("last_name", str(uuid.uuid4())),
+        "role": attendee_data.get("role"),
+        "style": attendee_data.get("style", random.randint(1, 100)),
+        "invite": attendee_data.get("invite", random.randint(1, 100)),
+        "pay": attendee_data.get("pay", random.randint(1, 100)),
+        "size": attendee_data.get("size", random.randint(1, 100)),
+        "ship": attendee_data.get("ship", random.randint(1, 100)),
+        "is_active": attendee_data.get("is_active", True),
     }

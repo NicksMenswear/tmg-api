@@ -5,8 +5,7 @@ import uuid
 from server.database.models import Event
 from server.services.event import EventService
 from server.services.user import UserService
-from server.test import BaseTestCase
-from server.test.fixtures import create_user_request_payload, create_event_request_payload
+from server.test import BaseTestCase, fixtures
 
 
 class TestEvents(BaseTestCase):
@@ -41,7 +40,7 @@ class TestEvents(BaseTestCase):
     def test_get_empty_list_of_events_by_user_email(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        self.user_service.create_user(**create_user_request_payload(email=email))
+        self.user_service.create_user(**fixtures.user_request(email=email))
 
         # when
         response = self.client.open(
@@ -58,10 +57,10 @@ class TestEvents(BaseTestCase):
     def test_get_list_of_2_events_by_user_email_but_only_1_active(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        user = self.user_service.create_user(**create_user_request_payload(email=email))
+        user = self.user_service.create_user(**fixtures.user_request(email=email))
 
-        self.event_service.create_event(**create_event_request_payload(user_id=user.id, is_active=False))
-        active_event = self.event_service.create_event(**create_event_request_payload(user_id=user.id, is_active=True))
+        self.event_service.create_event(**fixtures.event_request(user_id=user.id, is_active=False))
+        active_event = self.event_service.create_event(**fixtures.event_request(user_id=user.id, is_active=True))
 
         # when
         response = self.client.open(

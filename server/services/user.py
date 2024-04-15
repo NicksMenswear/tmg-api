@@ -37,7 +37,8 @@ class UserService(BaseService):
 
                 db.add(user)
 
-                self.email_service.send_activation_url(user.email, shopify_customer_id)
+                if user.account_status:
+                    self.email_service.send_activation_url(user.email, shopify_customer_id)
 
                 db.commit()
                 db.refresh(user)
@@ -49,6 +50,10 @@ class UserService(BaseService):
                 raise ServiceError("Failed to create user.", e)
 
             return user
+
+    def get_user_by_id(self, user_id):
+        with self.session_factory() as db:
+            return db.query(User).filter_by(id=user_id).first()
 
     def get_user_by_email(self, email):
         with self.session_factory() as db:

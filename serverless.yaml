@@ -98,18 +98,6 @@ custom:
     subscribeToAccessLogs: true
     subscribeToExecutionLogs: true
     forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
-    # https://docs.datadoghq.com/serverless/libraries_integrations/plugin/#serverless-monitors
-    monitors:
-      - high_error_rate:
-          name: "High Error Rate on {{functionname}}"
-          message: "More than 10% of the function's invocations are errors. Notify @slack-notifications"
-          options:
-            include_tags: false
-      - high_throttles:
-          name: "High Throttles on {{functionname}}"
-          message: "More than 20% of the function's invocations are throttled. Notify @slack-notifications"
-          options:
-            include_tags: false
 
 package:
   exclude:

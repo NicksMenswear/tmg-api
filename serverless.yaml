@@ -40,15 +40,15 @@ functions:
       DB_USER: ${ssm:/${sls:stage}/db/DB_USER}
       DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
       # Shopify Env Variables
-      API_KEY: ${ssm:/shopify/c2/API_KEY}
+      API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
       sender_email: "bsit833@gmail.com"
-      sender_password: ${ssm:/shopify/c2/sender_password}
+      sender_password: ${ssm:/${sls:stage}/shopify/sender_password}
       api_version: "2024-01"
       shopify_store: "themodern-groom"
-      client_id: ${ssm:/shopify/c2/client_id}
-      client_secret: ${ssm:/shopify/c2/client_secret}
-      SECRET_KEY_C2: ${ssm:/shopify/c2/client_secret}
-      admin_api_access_token: ${ssm:/shopify/c2/admin_api_access_token}
+      client_id: ${ssm:/${sls:stage}/shopify/client_id}
+      client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
+      SECRET_KEY_C2: ${ssm:/${sls:stage}/shopify/client_secret}
+      admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
 
 plugins:
   - serverless-python-requirements

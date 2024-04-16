@@ -46,6 +46,9 @@ def init_logging(debug=False):
             root.removeHandler(handler)
     level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", level=level)
+    if debug:
+        sql_logger = logging.getLogger("sqlalchemy.engine")
+        sql_logger.setLevel(logging.INFO)
 
 
 def init_app(swagger=False):

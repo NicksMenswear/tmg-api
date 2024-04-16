@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  app:
+  test-api:
     image: python:3.10
     volumes:
       - .:/usr/src/app
@@ -21,7 +21,7 @@ services:
       DB_NAME: tmg_api
       DB_USER: postgres
       DB_PASSWORD: postgres
-    working_dir: /usr/src/app
+    working_dir: /usr/src/app/
     command: >
       bash -c "pip install tox &&
       git config --global --add safe.directory /usr/src/app &&
@@ -29,9 +29,23 @@ services:
       . .tox/py310/bin/activate && 
       pip install --upgrade psycopg2 &&
       ./scripts/reset_db.sh &&
+      cd server/ &&
       pytest --verbose"
     depends_on:
       - db
+
+  test-end-to-end:
+    image: mcr.microsoft.com/playwright/python:v1.43.0-jammy
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/tests
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      bash -c "pip install pytest pytest-playwright &&
+      pytest --verbose"
+    tty: false
+    restart: "no"
 
 volumes:
   postgres_data:

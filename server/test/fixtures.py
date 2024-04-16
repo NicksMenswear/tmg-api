@@ -134,3 +134,31 @@ def update_order_request(**order_data):
         "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
         "received_date": order_data.get("received_date", datetime.now().isoformat()),
     }
+
+
+def create_cart_request(**cart_data):
+    return {
+        "user_id": cart_data.get("user_id"),
+        "event_id": cart_data.get("event_id", str(uuid.uuid4())),
+        "attendee_id": cart_data.get("attendee_id", str(uuid.uuid4())),
+        "products": cart_data.get("products", []),
+    }
+
+
+def update_cart_request(**cart_data):
+    return {
+        "id": cart_data.get("id", str(uuid.uuid4())),
+        "user_id": cart_data.get("user_id", str(uuid.uuid4())),
+        "event_id": cart_data.get("event_id", str(uuid.uuid4())),
+        "attendee_id": cart_data.get("attendee_id", str(uuid.uuid4())),
+        "products": cart_data.get("products", []),
+    }
+
+
+def create_cart_product_request(**cart_product_data):
+    return {
+        "product_id": cart_product_data.get("product_id", random.randint(1000, 1000000)),
+        "variation_id": cart_product_data.get("variation_id", random.randint(1000, 1000000)),
+        "category": cart_product_data.get("category", str(uuid.uuid4())),
+        "quantity": cart_product_data.get("quantity", random.randint(1, 100)),
+    }

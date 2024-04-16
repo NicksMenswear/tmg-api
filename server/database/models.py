@@ -230,7 +230,7 @@ class Role(Base):
         return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id, "look_id": self.look_id}
 
 
-class Cart(Base, Model):
+class Cart(Base):
     __tablename__ = "carts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -238,15 +238,13 @@ class Cart(Base, Model):
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=True)
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"), nullable=True)
 
-    cart_products = relationship("CartProduct", backref="cart")
+    cart_products = relationship("CartProduct", back_populates="cart", lazy="dynamic")
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {"id": self.id, "user_id": self.user_id, "event_id": self.event_id, "attendee_id": self.attendee_id}
-        return result
+        return {"id": self.id, "user_id": self.user_id, "event_id": self.event_id, "attendee_id": self.attendee_id}
 
 
-class CartProduct(Base, Model):
+class CartProduct(Base):
     __tablename__ = "cartproducts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
@@ -255,10 +253,10 @@ class CartProduct(Base, Model):
     variation_id = Column(BigInteger, index=True, nullable=True)
     category = Column(String, index=True, nullable=True)
     quantity = Column(Integer, index=True, nullable=True)
+    cart = relationship("Cart", back_populates="cart_products")
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
+        return {
             "id": self.id,
             "cart_id": self.cart_id,
             "product_id": self.product_id,
@@ -266,4 +264,3 @@ class CartProduct(Base, Model):
             "category": self.category,
             "quantity": self.quantity,
         }
-        return result

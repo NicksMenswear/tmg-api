@@ -64,8 +64,8 @@ custom:
     slim: false
     strip: false
     dockerExtraFiles:
-      - /usr/lib/x86_64-linux-gnu/libssl.so.1.1
       - /usr/lib/x86_64-linux-gnu/libpq.so.5
+      - /usr/lib/x86_64-linux-gnu/libssl.so.1.1
 
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:

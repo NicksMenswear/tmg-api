@@ -61,14 +61,17 @@ custom:
   pythonRequirements:
     dockerizePip: true
     dockerFile: build/Dockerfile
-    slim: false
-    strip: false
     dockerExtraFiles:
       - /usr/lib/x86_64-linux-gnu/libpq.so.5
       - /usr/lib/x86_64-linux-gnu/libssl.so.1.1
       - /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
       - /usr/lib/x86_64-linux-gnu/libldap_r-2.4.so.2
       - /usr/lib/x86_64-linux-gnu/liblber-2.4.so.2
+      - /usr/lib/x86_64-linux-gnu/libsasl2.so.2
+      - /usr/lib/x86_64-linux-gnu/libgnutls.so.30
+      - /usr/lib/x86_64-linux-gnu/libnettle.so.8
+      - /usr/lib/x86_64-linux-gnu/libhogweed.so.6
+
 
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:

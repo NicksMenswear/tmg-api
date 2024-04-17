@@ -58,6 +58,9 @@ plugins:
   - serverless-plugin-lambda-insights
 
 custom:
+  lambdaInsights: 
+    lambdaInsightsVersion: 35
+
   pythonRequirements:
     dockerizePip: true
     dockerFile: build/Dockerfile
@@ -71,7 +74,6 @@ custom:
       - /usr/lib/x86_64-linux-gnu/libgnutls.so.30
       - /usr/lib/x86_64-linux-gnu/libnettle.so.8
       - /usr/lib/x86_64-linux-gnu/libhogweed.so.6
-
 
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:

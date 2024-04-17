@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
+import sys
 from urllib.parse import urlparse
 
 import connexion
@@ -10,6 +11,8 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from server import encoder
 from server.services.emails import EmailService, FakeEmailService
 from server.services.shopify import ShopifyService, FakeShopifyService
+from server.database.models import Base
+from server.database.database_manager import engine, Session
 
 
 def init_sentry():
@@ -74,8 +77,15 @@ def init_app(swagger=False):
 
 
 def reset_db():
-    from server.database.models import Base
-    from server.database.database_manager import engine
-
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+
+
+def lambda_teardown(signum, frame):
+    print("SIGTERM received.")
+    print("Closing DB sessions...")
+    Session.close_all()
+    print("Terminating DB connections...")
+    engine.dispose()
+    print("Cleanup complete. Exiting.")
+    sys.exit(0)

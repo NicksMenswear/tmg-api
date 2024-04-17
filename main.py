@@ -1,6 +1,7 @@
 import awsgi
+import signal
 
-from server.app import init_app, init_logging, init_sentry, reset_db
+from server.app import init_app, init_logging, init_sentry, reset_db, lambda_teardown
 
 
 if __name__ == "__main__":
@@ -18,3 +19,7 @@ else:
 # This is the entry point for the AWS Lambda function
 def lambda_handler(event, context):
     return awsgi.response(app, event, context)
+
+
+# Handle lambda termination gracefully
+signal.signal(signal.SIGTERM, lambda_teardown)

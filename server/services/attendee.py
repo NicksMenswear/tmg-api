@@ -90,11 +90,12 @@ class AttendeeService(BaseService):
 
             event = (
                 db.query(Event)
+                .join(Attendee, Event.id == Attendee.event_id)
                 .filter(
                     Event.id == event_id,
                     Attendee.attendee_id == user.id,
-                    Event.is_active,
-                    Attendee.is_active,
+                    Event.is_active == True,
+                    Attendee.is_active == True,
                 )
                 .first()
             )
@@ -112,7 +113,10 @@ class AttendeeService(BaseService):
                 raise NotFoundError("Event not found.")
 
             attendees = (
-                db.query(Attendee).filter(Attendee.event_id == event_id, Attendee.is_active, Event.is_active).all()
+                db.query(Attendee)
+                .join(Event, Attendee.event_id == Event.id)
+                .filter(Attendee.event_id == event_id, Attendee.is_active == True, Event.is_active == True)
+                .all()
             )
 
             enriched_attendees = []
@@ -149,7 +153,8 @@ class AttendeeService(BaseService):
 
             attendee = (
                 db.query(Attendee)
-                .filter(Attendee.attendee_id == attendee_user.id, Attendee.event_id == attendee_data["event_id"])
+                .join(Event, Attendee.event_id == Event.id)
+                .filter(Attendee.event_id == attendee_data["event_id"], Attendee.attendee_id == attendee_user.id)
                 .first()
             )
 

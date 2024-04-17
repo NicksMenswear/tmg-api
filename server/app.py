@@ -7,12 +7,13 @@ from urllib.parse import urlparse
 import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+from sqlalchemy.orm import close_all_sessions
 
 from server import encoder
 from server.services.emails import EmailService, FakeEmailService
 from server.services.shopify import ShopifyService, FakeShopifyService
 from server.database.models import Base
-from server.database.database_manager import engine, Session
+from server.database.database_manager import engine
 
 
 def init_sentry():
@@ -84,7 +85,7 @@ def reset_db():
 def lambda_teardown(signum, frame):
     print("SIGTERM received.")
     print("Closing DB sessions...")
-    Session.close_all()
+    close_all_sessions()
     print("Terminating DB connections...")
     engine.dispose()
     print("Cleanup complete. Exiting.")

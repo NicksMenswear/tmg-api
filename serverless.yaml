@@ -58,8 +58,9 @@ plugins:
   - serverless-plugin-lambda-insights
 
 custom:
-  lambdaInsights: 
-    lambdaInsightsVersion: 35
+  lambdaInsights:
+    # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html 
+    lambdaInsightsVersion: 52
 
   pythonRequirements:
     dockerizePip: true

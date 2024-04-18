@@ -10,7 +10,7 @@ This example uses the [Connexion](https://github.com/zalando/connexion) library 
 
 ## Requirements
 
-- Python 3.10
+- Python 3.12
 - `pip install tox`
 
 ## Usage
@@ -24,7 +24,7 @@ To run the server, please execute the following from the root directory:
 tox
 
 # Activate venv
-source .tox/py310/bin/activate
+source .tox/py312/bin/activate
 ```
 
 Note that pre-commit git hook will be installed as well

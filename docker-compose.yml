@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   test-api:
-    image: python:3.10
+    image: python:3.12
     volumes:
       - .:/usr/src/app
     environment:

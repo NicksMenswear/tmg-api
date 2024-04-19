@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "punycode": "^2.3.1",
+    "serverless-plugin-lambda-insights": "^2.0.0",
     "serverless-plugin-resource-tagging": "^1.2.0"
   }
 }

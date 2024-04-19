@@ -1,7 +1,7 @@
 service: tmg-api
 provider:
   name: aws
-  runtime: python3.10
+  runtime: python3.12
   stage: ${opt:stage, "dev"}
   region: us-west-2
   iam:
@@ -24,6 +24,7 @@ functions:
     reservedConcurrency: 100
     timeout: 10
     memorySize: 256
+    lambdaInsights: true
     vpc:
       securityGroupIds:
         - sg-0649f5114f8fdde15
@@ -54,8 +55,27 @@ plugins:
   - serverless-domain-manager
   - serverless-plugin-datadog
   - serverless-plugin-resource-tagging
+  - serverless-plugin-lambda-insights
 
 custom:
+  lambdaInsights:
+    # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html 
+    lambdaInsightsVersion: 52
+
+  pythonRequirements:
+    dockerizePip: true
+    dockerFile: build/Dockerfile
+    dockerExtraFiles:
+      - /usr/lib/x86_64-linux-gnu/libpq.so.5
+      - /usr/lib/x86_64-linux-gnu/libssl.so.1.1
+      - /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
+      - /usr/lib/x86_64-linux-gnu/libldap_r-2.4.so.2
+      - /usr/lib/x86_64-linux-gnu/liblber-2.4.so.2
+      - /usr/lib/x86_64-linux-gnu/libsasl2.so.2
+      - /usr/lib/x86_64-linux-gnu/libgnutls.so.30
+      - /usr/lib/x86_64-linux-gnu/libnettle.so.8
+      - /usr/lib/x86_64-linux-gnu/libhogweed.so.6
+
   # https://github.com/amplify-education/serverless-domain-manager/tree/main 
   customDomain:
     domainName: "api.${sls:stage}.tmgcorp.net"
@@ -111,3 +131,7 @@ package:
     - "__pycache__/**"
     - "**/__pycache__/**"
     - ".#*"
+    - "build/**"
+    - "env/**"
+    - "scripts/**"
+    - "tests/**"

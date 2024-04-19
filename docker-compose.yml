@@ -12,7 +12,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   test-api:
-    image: python:3.10
+    image: python:3.12
     volumes:
       - .:/usr/src/app
     environment:
@@ -26,7 +26,7 @@ services:
       bash -c "pip install tox &&
       git config --global --add safe.directory /usr/src/app &&
       tox &&
-      . .tox/py310/bin/activate && 
+      . .tox/py312/bin/activate && 
       pip install --upgrade psycopg2 &&
       ./scripts/reset_db.sh &&
       cd server/ &&

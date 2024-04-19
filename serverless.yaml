@@ -64,7 +64,7 @@ custom:
 
   pythonRequirements:
     dockerizePip: true
-    dockerFile: build/Dockerfile
+    dockerFile: pip/Dockerfile
     dockerExtraFiles:
       - /usr/lib/x86_64-linux-gnu/libpq.so.5
       - /usr/lib/x86_64-linux-gnu/libssl.so.1.1
@@ -132,6 +132,7 @@ package:
     - "**/__pycache__/**"
     - ".#*"
     - "build/**"
+    - "pip/**"
     - "env/**"
     - "scripts/**"
     - "tests/**"

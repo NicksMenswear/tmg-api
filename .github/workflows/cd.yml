@@ -55,6 +55,9 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+          
       - name: Sls Deploy
         run: sls deploy --stage dev
 

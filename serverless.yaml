@@ -131,3 +131,7 @@ package:
     - "__pycache__/**"
     - "**/__pycache__/**"
     - ".#*"
+    - "build/**"
+    - "env/**"
+    - "scripts/**"
+    - "tests/**"

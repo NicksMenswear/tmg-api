@@ -1,4 +1,4 @@
-import requests
+import urllib3
 import json
 import os
 
@@ -25,12 +25,11 @@ def create_contact(data):
     }
 
     data = json.dumps(contact_details)
-    response = requests.post(URL, headers=headers, data=data)
-
-    response_data = response.json()
-
-    if response.status_code == 422:
+    response = urllib3.request("POST", URL, headers=headers, body=data)
+    if response.status == 422:
         return "Already exist", 422
+
+    response_data = json.loads(response.data.decode("utf-8"))
     contact_value = response_data.get("contact", {}).get("id")
 
     print("Contact Value:", contact_value)
@@ -39,10 +38,10 @@ def create_contact(data):
         url = "https://themoderngroom.api-us1.com/api/3/contactAutomations"
         body_data = {"contactAutomation": {"contact": str(contact_value), "automation": "189"}}
         data = json.dumps(body_data)
-        response = requests.post(url, headers=headers, data=data)
-        if response.status_code == 422:
+        response = urllib3.request("POST", url, headers=headers, data=data)
+        if response.status == 422:
             return "Already exist", 422
-        elif response.status_code == 200 or response.status_code == 201:
+        elif response.status == 200 or response.status == 201:
             return "created contact in automation successfully", 201
     else:
         return "Internal Server Error", 500
@@ -68,12 +67,11 @@ def create_contact_user(data):
 
     print(" ======================== Contact details: ", contact_details)
     data = json.dumps(contact_details)
-    response = requests.post(URL, headers=headers, data=data)
-
-    response_data = response.json()
-
-    if response.status_code == 422:
+    response = urllib3.request("POST", URL, headers=headers, data=data)
+    if response.status == 422:
         return "Already exist", 422
+
+    response_data = json.loads(response.data.decode("utf-8"))
     contact_value = response_data.get("contact", {}).get("id")
 
     print("Contact Value:", contact_value)
@@ -82,10 +80,10 @@ def create_contact_user(data):
         url = "https://themoderngroom.api-us1.com/api/3/contactAutomations"
         body_data = {"contactAutomation": {"contact": str(contact_value), "automation": "189"}}
         data = json.dumps(body_data)
-        response = requests.post(url, headers=headers, data=data)
-        if response.status_code == 422:
+        response = urllib3.request("POST", url, headers=headers, data=data)
+        if response.status == 422:
             return "Already exist", 422
-        elif response.status_code == 200 or response.status_code == 201:
+        elif response.status == 200 or response.status == 201:
             return "created contact in automation successfully", 201
     else:
         return "Internal Server Error", 500

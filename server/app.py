@@ -44,37 +44,27 @@ def init_sentry():
 
 
 def init_logging(debug=False):
-    root = logging.getLogger()
-    if root.handlers:
-        for handler in root.handlers:
-            root.removeHandler(handler)
     level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", level=level)
-    if debug:
-        sql_logger = logging.getLogger("sqlalchemy.engine")
-        sql_logger.setLevel(logging.INFO)
+    logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=level, force=True)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    for name in logging.root.manager.loggerDict:
+        if name.startswith("connexion."):
+            logging.getLogger(name).setLevel(logging.INFO)
 
 
-def init_app(swagger=False):
+def init_app():
     options = {"swagger_ui": False}
+    api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
 
-    if swagger:
-        options.update({"swagger_ui": True, "swagger_ui_config": {"url": "/openapi.yaml"}})
-
-    app = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-
-    app.add_api(
+    api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
 
-    app.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
-
-    app.app.shopify_service = FakeShopifyService() if app.app.config["TESTING"] else ShopifyService()
-    app.app.email_service = FakeEmailService() if app.app.config["TESTING"] else EmailService()
-
-    app.app.json_encoder = encoder.CustomJSONEncoder
-
-    return app
+    api.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
+    api.app.shopify_service = FakeShopifyService() if api.app.config["TESTING"] else ShopifyService()
+    api.app.email_service = FakeEmailService() if api.app.config["TESTING"] else EmailService()
+    api.app.json_encoder = encoder.CustomJSONEncoder
+    return api
 
 
 def reset_db():

@@ -1,8 +1,10 @@
-import requests
+import os
+import json
+import urllib3
+
 from server.database.models import User
 from server.database.database_manager import get_database_session
 from server.controllers.hmac_1 import hmac_verification
-import os
 
 
 db = get_database_session()
@@ -14,13 +16,14 @@ admin_api_access_token = os.getenv("admin_api_access_token")
 def login_val(email):
     try:
         user = db.query(User).filter(User.email == email).first()
-        response = requests.get(
+        response = urllib3.request(
+            "GET",
             f"https://{shopify_store}.myshopify.com/admin/api/2024-01/customers/search.json?query=email:{email}",
             headers={
                 "X-Shopify-Access-Token": admin_api_access_token,
             },
         )
-        customers_response = response.json().get("customers", [])
+        customers_response = json.loads(response.data.decode("utf-8")).get("customers", [])
         if isinstance(customers_response, list):
             if len(customers_response) > 0:
                 state = customers_response[0]["state"]

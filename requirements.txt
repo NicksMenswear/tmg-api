@@ -1,11 +1,10 @@
 psycopg2==2.9.9  # duplicates build/Dockerfile
 aws-wsgi==0.2.7
-connexion[swagger-ui]==2.14.2
+connexion==2.14.2
 sentry-sdk[flask]==1.44.0
 flask-cors==4.0.0
 Jinja2==3.1.2
-jsonschema-specifications==2023.11.2
 jsonschema==4.17.3
-requests==2.31.0
-SQLAlchemy-Utils==0.41.1
-SQLAlchemy==2.0.23
+jsonschema-specifications==2023.11.2
+SQLAlchemy==2.0.29
+SQLAlchemy-Utils==0.41.2

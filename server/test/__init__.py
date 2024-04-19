@@ -23,7 +23,7 @@ CONTENT_TYPE_JSON = "application/json"
 
 class BaseTestCase(TestCase):
     def create_app(self):
-        app = init_app(swagger=False).app
+        app = init_app().app
         app.config["TESTING"] = True
         app.shopify_service = FakeShopifyService()
         app.email_service = FakeEmailService()

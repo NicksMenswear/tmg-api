@@ -44,10 +44,9 @@ functions:
       sender_email: "bsit833@gmail.com"
       sender_password: ${ssm:/${sls:stage}/shopify/sender_password}
       api_version: "2024-01"
-      shopify_store: "themodern-groom"
+      shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
       client_id: ${ssm:/${sls:stage}/shopify/client_id}
       client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
-      SECRET_KEY_C2: ${ssm:/${sls:stage}/shopify/client_secret}
       admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
 
 plugins:

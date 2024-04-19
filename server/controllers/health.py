@@ -47,8 +47,7 @@ def __check_external_connection():
 
 def __site_available(url):
     try:
-        http = urllib3.PoolManager()
-        response = http.request("GET", url, timeout=3)
+        response = urllib3.request("GET", url, timeout=3)
         return 200 <= response.status < 400
     except Exception as e:
         app.logger.error(f"Failed to connect to {url}: {e}")

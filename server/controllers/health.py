@@ -8,14 +8,13 @@ import urllib3
 TOP_SITES = [
     "https://www.google.com",
     "https://www.yahoo.com",
-    "https://www.netlify.com",
     "https://www.apple.com",
 ]
 
 
 def health():
     try:
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=2) as executor:
             checks = (executor.submit(check) for check in (__check_db_connection, __check_external_connection))
             for future in as_completed(checks):
                 future.result()
@@ -47,7 +46,7 @@ def __check_external_connection():
 
 def __site_available(url):
     try:
-        response = urllib3.request("GET", url, timeout=3)
+        response = urllib3.request("HEAD", url, timeout=3, retries=False)
         return 200 <= response.status < 400
     except Exception as e:
         app.logger.error(f"Failed to connect to {url}: {e}")

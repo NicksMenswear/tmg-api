@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 import os
 
 
@@ -12,6 +13,11 @@ db_name = os.getenv("DB_NAME")
 DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 engine = create_engine(DATABASE_URL, echo=False)
 Session = sessionmaker(bind=engine)
+
+
+print("Connecting to database...")
+with engine.connect():
+    print("Database connected successfully.")
 
 
 def session_factory():

@@ -34,5 +34,18 @@ jobs:
         with:
           payload: |
             {
-              "text":":warning: E2E [tests failed](https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml)"
+              "attachments":[
+                {
+                  "fallback":"E2E test failed: <https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml|GitHub Action>",
+                  "pretext":"E2E test failed: <https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml|GitHub Action>",
+                  "color":"#D00000",
+                  "fields":[
+                      {
+                        "title":"Failure",
+                        "value":"One or more tests failed",
+                        "short":false
+                      }
+                    ]
+                  }
+              ]
             }

@@ -1,8 +1,6 @@
 from playwright.sync_api import Page
 
-BASE_STORE_URL = "https://quickstart-a91e1214.myshopify.com"
-CONFIG_REQUIRE_STORE_PASSWORD = True
-CONFIG_STORE_PASSWORD = "test123"
+from . import CONFIG_STORE_PASSWORD, CONFIG_REQUIRE_STORE_PASSWORD, BASE_STORE_URL
 
 
 def access_store(page: Page):

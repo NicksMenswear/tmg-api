@@ -4,10 +4,7 @@ from datetime import datetime
 from email import policy
 from time import time, sleep
 
-IMAP_HOST = "outlook.office365.com"
-IMAP_PORT = 993
-EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
-EMAIL_ACCOUNT_PASSWORD = "fbb06fc8-fd64-11ee-8a70-d73cbe5bfd61"
+from . import EMAIL_ACCOUNT_USERNAME, EMAIL_ACCOUNT_PASSWORD, IMAP_HOST, IMAP_PORT
 
 
 def look_for_email(subject, email_from, email_to, timeout_seconds=120):

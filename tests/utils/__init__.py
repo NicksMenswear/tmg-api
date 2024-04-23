@@ -1,0 +1,2 @@
+TEST_USER_EMAIL = "e2etmg@hotmail.com"
+TEST_USER_PASSWORD = "123456"

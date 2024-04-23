@@ -1,21 +1,18 @@
 from playwright.sync_api import Page, expect
 
+import utils
 from utils import api, string, ui
-
-TEST_USER_EMAIL = "zinovii+07@themoderngroom.com"
-TEST_USER_PASSWORD = "123456"
 
 
 def test_basic_create_event(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
     event_name = f"test-event-{string.rnd_str()}"
     attendee_first_name = "f-" + string.rnd_str(4)
     attendee_last_name = "l-" + string.rnd_str(4)
     attendee_email = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 
@@ -30,11 +27,6 @@ def test_basic_create_event(page: Page):
 
 
 def test_create_multiple_events(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
     event_name_1 = f"test-event-{string.rnd_str()}"
     attendee_first_name_1 = "f-" + string.rnd_str(4)
     attendee_last_name_1 = "l-" + string.rnd_str(4)
@@ -43,6 +35,10 @@ def test_create_multiple_events(page: Page):
     attendee_first_name_2 = "f-" + string.rnd_str(4)
     attendee_last_name_2 = "l-" + string.rnd_str(4)
     attendee_email_2 = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 
@@ -56,13 +52,6 @@ def test_create_multiple_events(page: Page):
 
 
 def test_create_event_and_add_few_attendees(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
-    expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
-
     event_name = f"test-event-{string.rnd_str()}"
     attendee_first_name_1 = "f-" + string.rnd_str(4)
     attendee_last_name_1 = "l-" + string.rnd_str(4)
@@ -73,6 +62,10 @@ def test_create_event_and_add_few_attendees(page: Page):
     attendee_first_name_3 = "f-" + string.rnd_str(4)
     attendee_last_name_3 = "l-" + string.rnd_str(4)
     attendee_email_3 = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 
@@ -87,13 +80,6 @@ def test_create_event_and_add_few_attendees(page: Page):
 
 
 def test_create_event_add_and_remove_attendees(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
-    expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
-
     event_name = f"test-event-{string.rnd_str()}"
     attendee_first_name_1 = "f-" + string.rnd_str(4)
     attendee_last_name_1 = "l-" + string.rnd_str(4)
@@ -101,6 +87,10 @@ def test_create_event_add_and_remove_attendees(page: Page):
     attendee_first_name_2 = "f-" + string.rnd_str(4)
     attendee_last_name_2 = "l-" + string.rnd_str(4)
     attendee_email_2 = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 
@@ -119,13 +109,6 @@ def test_create_event_add_and_remove_attendees(page: Page):
 
 
 def test_delete_single_event(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
-    expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
-
     event_name_1 = f"test-event-{string.rnd_str()}"
     attendee_first_name_1 = "f-" + string.rnd_str(4)
     attendee_last_name_1 = "l-" + string.rnd_str(4)
@@ -137,6 +120,10 @@ def test_delete_single_event(page: Page):
     attendee_first_name_3 = "f-" + string.rnd_str(4)
     attendee_last_name_3 = "l-" + string.rnd_str(4)
     attendee_email_3 = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 
@@ -155,17 +142,14 @@ def test_delete_single_event(page: Page):
 
 
 def test_delete_all_events(page: Page):
-    api.delete_all_events(TEST_USER_EMAIL)
-
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-
-    expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
-
     event_name_1 = f"test-event-{string.rnd_str()}"
     attendee_first_name_1 = "f-" + string.rnd_str(4)
     attendee_last_name_1 = "l-" + string.rnd_str(4)
     attendee_email_1 = f"test-{string.rnd_str()}@example.com"
+
+    api.delete_all_events(utils.TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
 

@@ -2,12 +2,10 @@ import email
 
 from playwright.sync_api import Page, expect
 
-from utils import email
-from utils import string, ui
+import utils
+from utils import string, ui, email
 
 EMAIL_FROM = "bsit833@gmail.com"
-TEST_USER_EMAIL = "zinovii+07@themoderngroom.com"
-TEST_USER_PASSWORD = "123456"
 
 
 def test_login(page: Page):
@@ -15,7 +13,7 @@ def test_login(page: Page):
     expect(page.locator("a", has_text="Account")).not_to_be_visible()
 
     ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    ui.login(page, utils.TEST_USER_EMAIL, utils.TEST_USER_PASSWORD)
 
     expect(page.get_by_role("link", name="Account Login")).not_to_be_visible()
     expect(page.get_by_role("link", name="Account Account")).to_be_visible()

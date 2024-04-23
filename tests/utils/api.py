@@ -2,7 +2,7 @@ import json
 
 import requests
 
-ACTIVE_ENV = "stg"
+ACTIVE_ENV = "dev"
 
 API_PARAMS = {
     "dev": {

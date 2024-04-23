@@ -1,12 +1,12 @@
 from playwright.sync_api import Page
 
-from . import CONFIG_STORE_PASSWORD, CONFIG_REQUIRE_STORE_PASSWORD, BASE_STORE_URL
+from . import STORE_PASSWORD, REQUIRE_STORE_PASSWORD, STORE_URL
 
 
 def access_store(page: Page):
-    if CONFIG_REQUIRE_STORE_PASSWORD:
-        page.goto(BASE_STORE_URL)
-        page.get_by_label("Enter store password").fill(CONFIG_STORE_PASSWORD)
+    if REQUIRE_STORE_PASSWORD:
+        page.goto(STORE_URL)
+        page.get_by_label("Enter store password").fill(STORE_PASSWORD)
         page.get_by_role("button", name="Enter").click()
 
 

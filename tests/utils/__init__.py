@@ -15,12 +15,14 @@ STORE_CONFIG = {
         "url": "https://quickstart-a91e1214.myshopify.com",
         "password": "test123",
         "config_require_store_password": True,
+        "password_reset_email": "e2etmg+693f5c389399@hotmail.com",
     }
 }
 
-BASE_STORE_URL = STORE_CONFIG[ACTIVE_ENV]["url"]
-CONFIG_REQUIRE_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["config_require_store_password"]
-CONFIG_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["password"]
+STORE_URL = STORE_CONFIG[ACTIVE_ENV]["url"]
+REQUIRE_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["config_require_store_password"]
+STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["password"]
+TEST_PASSWORD_RESET_EMAIL = STORE_CONFIG[ACTIVE_ENV]["password_reset_email"]
 
 API_PARAMS = {
     "dev": {

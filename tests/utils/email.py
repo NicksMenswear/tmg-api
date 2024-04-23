@@ -50,19 +50,20 @@ def search_emails(mail, subject, email_from, email_to):
 
 
 def get_email_body(msg):
+    content = ""
     if msg.is_multipart():
         for part in msg.walk():
             content_type = part.get_content_type()
             content_disposition = str(part.get("Content-Disposition"))
 
             if content_type == "text/plain" and "attachment" not in content_disposition:
-                return part.get_payload()
+                content = content + part.get_payload()
             elif content_type == "text/html" and "attachment" not in content_disposition:
-                return part.get_payload()
+                content = content + part.get_payload()
     else:
         content_type = msg.get_content_type()
 
         if content_type == "text/plain" or content_type == "text/html":
-            return msg.get_payload()
+            content = msg.get_payload()
 
-    return ""
+    return content

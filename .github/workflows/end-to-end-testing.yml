@@ -2,6 +2,8 @@ name: END-TO-END-TESTS
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 10,12,14,16,18,20,22 * * *'
 
 jobs:
   test:
@@ -21,3 +23,15 @@ jobs:
       - name: Clean up
         if: always()
         run: docker-compose down
+
+      - name: Notify to Slack
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          payload: |
+            {
+              "text": ":warning: E2E test failed: <https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml|Click here> for details!"
+            }

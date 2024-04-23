@@ -12,21 +12,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Build and run end-to-end tests
-        run: ./test-end-to-end.sh
-
-      - name: Notify Slack
-        if: failure()
-        uses: slackapi/slack-github-action@v1.16.0
-        with:
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: '{"text":"E2E tests failed :warning:"}'
-
-      - name: Clean up
+#      - name: Set up Docker Compose
+#        run: |
+#          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#          sudo chmod +x /usr/local/bin/docker-compose
+#
+#      - name: Build and run end-to-end tests
+#        run: ./test-end-to-end.sh
+#
+#      - name: Clean up
+#        if: always()
+#        run: docker-compose down
+#
+      - name: Notify to Slack
+#        if: failure()
         if: always()
-        run: docker-compose down
+        uses: slackapi/slack-github-action@v1.26.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C06V758NKQF'
+          slack-message: 'E2E tests failed :warning:'

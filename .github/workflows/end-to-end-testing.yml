@@ -34,5 +34,5 @@ jobs:
         with:
           payload: |
             {
-              "text":"E2E tests failed :warning:"
+              "text":":warning: E2E [tests failed](https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml)"
             }

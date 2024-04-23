@@ -2,6 +2,8 @@ name: END-TO-END-TESTS
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 10,12,14,16,18,20,22 * * *'
 
 jobs:
   test:
@@ -17,6 +19,13 @@ jobs:
 
       - name: Build and run end-to-end tests
         run: ./test-end-to-end.sh
+
+      - name: Notify Slack
+        if: failure()
+        uses: slackapi/slack-github-action@v1.16.0
+        with:
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: '{"text":"E2E tests failed :warning:"}'
 
       - name: Clean up
         if: always()

@@ -15,8 +15,8 @@ STORE_CONFIG = {
         "url": "https://quickstart-a91e1214.myshopify.com",
         "password": "test123",
         "config_require_store_password": True,
-        "password_reset_email": "e2etmg+693f5c389399@hotmail.com",
-    }
+    },
+    "stg": {"url": "https://tmg-staging.myshopify.com/", "password": "test123", "config_require_store_password": True},
 }
 
 STORE_URL = STORE_CONFIG[ACTIVE_ENV]["url"]

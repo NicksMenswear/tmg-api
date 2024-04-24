@@ -2,6 +2,7 @@ import email
 import quopri
 import re
 
+import pytest
 from playwright.sync_api import Page, expect
 
 from utils import string, api, ui, email, TEST_USER_EMAIL, TEST_USER_PASSWORD, EMAIL_FROM
@@ -67,6 +68,7 @@ def test_logout(page: Page):
     expect(page.get_by_role("link", name="Login")).to_be_visible()
 
 
+@pytest.mark.skip(reason="Shopify doesn't do password reset from github actions for some reason. Works locally though.")
 def test_password_reset(page: Page):
     first_name = f"f-{string.rnd_str(12)}"
     last_name = f"l-{string.rnd_str(12)}"

@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
-from sqlalchemy.orm import close_all_sessions
 
 from server import encoder
 from server.services.emails import EmailService, FakeEmailService
@@ -55,24 +54,11 @@ def init_logging(debug=False):
 def init_app():
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
-
-    api.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
-    api.app.shopify_service = FakeShopifyService() if api.app.config["TESTING"] else ShopifyService()
-    api.app.email_service = FakeEmailService() if api.app.config["TESTING"] else EmailService()
     api.app.json_encoder = encoder.CustomJSONEncoder
-
-    @api.app.teardown_request
-    def teardown_request(exception):
-        if exception:
-            db.session.rollback()
-        db.session.remove()
-
     FlaskApp.set(api.app)
-
     return api
 
 
@@ -92,8 +78,8 @@ def lambda_teardown(signum, frame):
     print("SIGTERM received.")
     app = FlaskApp.current()
     with app.app_context():
-        print("Closing DB sessions...")
-        close_all_sessions()
+        print("Closing DB session...")
+        db.session.remove()
         print("Terminating DB connections...")
         db.engine.dispose()
     print("Cleanup complete. Exiting.")

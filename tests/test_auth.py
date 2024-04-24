@@ -47,7 +47,7 @@ def test_signup_form(page: Page):
     page.locator("#customer_password_confirmation").fill(password)
     page.get_by_role("button", name="Activate Account").click()
 
-    confirmation_email_body = email.look_for_email("Customer account confirmation", None, user_email)
+    confirmation_email_body = email.look_for_email("Customer account confirmation", None, user_email, 300)
     assert "You've activated your customer account." in confirmation_email_body
 
     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
@@ -88,7 +88,7 @@ def test_password_reset(page: Page):
     page.locator("#customer_password_confirmation").fill(password)
     page.get_by_role("button", name="Activate Account").click()
 
-    confirmation_email_body = email.look_for_email("Customer account confirmation", None, user_email)
+    confirmation_email_body = email.look_for_email("Customer account confirmation", None, user_email, 300)
     assert "You've activated your customer account." in confirmation_email_body
 
     ui.access_store(page)
@@ -101,7 +101,7 @@ def test_password_reset(page: Page):
     page.get_by_role("textbox", name="Email address", exact=True).fill(user_email)
     page.get_by_role("button", name="Submit").click()
 
-    email_content = email.look_for_email("Customer account password reset", None, user_email, 180)
+    email_content = email.look_for_email("Customer account password reset", None, user_email, 300)
     assert email_content is not None
 
     decoded_content = quopri.decodestring(email_content.replace("=\n", "")).decode("utf-8")

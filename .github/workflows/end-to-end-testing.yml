@@ -2,13 +2,40 @@ name: END-TO-END-TESTS
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy. One of [all|dev|stg|prd]. Default: all'
+        required: false
+        default: 'all'
   schedule:
-    - cron: '0 8,10,12,14,16,18,20 * * *'
+    - cron: '0 8,12,16,20 * * *'
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.set-matrix.outputs.environments }}
     steps:
+      - id: set-matrix
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "all" ]; then
+            echo '["dev","stg"]' > environments.json
+          else
+            echo '["${{ github.event.inputs.environment }}"]' > environments.json
+          fi
+          echo "environments=$(cat environments.json)" >> $GITHUB_OUTPUT
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{fromJson(needs.setup.outputs.environments)}}
+    steps:
+      - name: Echo Environment
+        run: echo "Running tests on ${{ matrix.environment }}"
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -19,6 +46,8 @@ jobs:
 
       - name: Build and run end-to-end tests
         run: ./test-end-to-end.sh
+        env:
+          ACTIVE_ENV: ${{ matrix.environment }}
 
       - name: Clean up
         if: always()
@@ -33,5 +62,5 @@ jobs:
         with:
           payload: |
             {
-              "text": ":warning: E2E test failed: <https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml|Click here> for details!"
+              "text": ":warning: E2E tests failed on '${{ matrix.environment }}' env. <https://github.com/NicksMenswear/tmg-api/actions/workflows/end-to-end-testing.yml|Click here> for details."
             }

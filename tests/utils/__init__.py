@@ -11,18 +11,13 @@ EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
 EMAIL_ACCOUNT_PASSWORD = "fbb06fc8-fd64-11ee-8a70-d73cbe5bfd61"
 
 STORE_CONFIG = {
-    "dev": {
-        "url": "https://quickstart-a91e1214.myshopify.com",
-        "password": "test123",
-        "config_require_store_password": True,
-        "password_reset_email": "e2etmg+693f5c389399@hotmail.com",
-    }
+    "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123", "require_store_password": True},
+    "stg": {"url": "https://tmg-staging.myshopify.com", "password": "test123", "require_store_password": True},
 }
 
-STORE_URL = STORE_CONFIG[ACTIVE_ENV]["url"]
-REQUIRE_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["config_require_store_password"]
-STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["password"]
-TEST_PASSWORD_RESET_EMAIL = STORE_CONFIG[ACTIVE_ENV]["password_reset_email"]
+STORE_URL = STORE_CONFIG.get(ACTIVE_ENV).get("url")
+REQUIRE_STORE_PASSWORD = STORE_CONFIG.get(ACTIVE_ENV).get("require_store_password")
+STORE_PASSWORD = STORE_CONFIG.get(ACTIVE_ENV).get("password")
 
 API_PARAMS = {
     "dev": {
@@ -38,11 +33,11 @@ API_PARAMS = {
     "stg": {
         "url": "https://api.stg.tmgcorp.net",
         "hmac": {
-            "logged_in_customer_id": "6519862853674",
-            "path_prefix": "/apps/prod",
-            "shop": "themodern-groom.myshopify.com",
-            "signature": "945b5cc30592e6d967717cee1a66da445d2ac6222971cfe645d72268ca66b8d3",
-            "timestamp": "1713351981",
+            "logged_in_customer_id": "7304856600801",
+            "path_prefix": "/apps/staging",
+            "shop": "tmg-staging.myshopify.com",
+            "signature": "ddca24b84f084aad360f8530f071a53c9948b14f6671b0184479cf277a5120b8",
+            "timestamp": "1713979125",
         },
     },
 }

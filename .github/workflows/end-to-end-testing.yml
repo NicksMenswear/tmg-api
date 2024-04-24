@@ -19,13 +19,11 @@ jobs:
     - id: set-matrix
       run: |
         if [ "${{ github.event.inputs.environment }}" = "all" ]; then
-          echo 'environments=["dev","stg"]' >> $GITHUB_ENV
+          echo '["dev","stg"]' > environments.json
         else
-          echo 'environments=["${{ github.event.inputs.environment }}"]' >> $GITHUB_ENV
+          echo '["${{ github.event.inputs.environment }}"]' > environments.json
         fi
-        echo "================"
-        cat $GITHUB_ENV
-        echo "================"
+        echo "environments=$(cat environments.json)" >> $GITHUB_ENV
 
   test:
     needs: setup

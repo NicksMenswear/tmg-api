@@ -1,9 +1,12 @@
-from flask import current_app as app
-from server.database.database_manager import get_database_session
-from server.database.models import ProductItem
+import logging
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import urllib3
+from server.database.models import ProductItem
+from server.controllers.util import http
+from server.flask_app import FlaskApp
+
+logger = logging.getLogger(__name__)
 
 TOP_SITES = [
     "https://www.google.com",
@@ -15,26 +18,26 @@ TOP_SITES = [
 def health():
     try:
         with ThreadPoolExecutor(max_workers=2) as executor:
-            checks = (executor.submit(check) for check in (__check_db_connection, __check_external_connection))
+            checks = (executor.submit(check) for check in (_check_db_connection, _check_external_connection))
             for future in as_completed(checks):
                 future.result()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(e)
         return f"Internal Server Error: {e}", 500
 
     return "OK", 200
 
 
-def __check_db_connection():
-    db = get_database_session()
-    db.query(ProductItem).first()
+def _check_db_connection():
+    with FlaskApp.app_context():
+        ProductItem.query.first()
 
 
-def __check_external_connection():
+def _check_external_connection():
     num_successful_requests = 0
 
     with ThreadPoolExecutor(max_workers=len(TOP_SITES)) as executor:
-        futures = (executor.submit(__site_available, url) for url in TOP_SITES)
+        futures = (executor.submit(_site_available, url) for url in TOP_SITES)
 
         for future in as_completed(futures):
             if future.result():
@@ -44,10 +47,10 @@ def __check_external_connection():
         raise Exception("Failed to connect to more then one of the top sites.")
 
 
-def __site_available(url):
+def _site_available(url):
     try:
-        response = urllib3.request("HEAD", url, timeout=3, retries=False)
+        response = http("HEAD", url)
         return 200 <= response.status < 400
     except Exception as e:
-        app.logger.error(f"Failed to connect to {url}: {e}")
+        logger.warn(f"Failed to connect to {url}: {e}")
         return False

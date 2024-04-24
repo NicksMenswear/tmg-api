@@ -1,27 +1,30 @@
+import logging
+
 from flask import jsonify
-from flask import current_app as app
-from server.database.database_manager import session_factory
+from server.database.database_manager import db
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.product import ProductService
 
+logger = logging.getLogger(__name__)
+
 
 def create_product_item(product_item):
-    product_service = ProductService(session_factory())
+    product_service = ProductService()
 
     try:
         product = product_service.create_product(**product_item)
     except DuplicateError as e:
-        app.logger.debug(e.message, e)
+        logger.debug(e.message, e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        app.logger.error(e.message, e)
+        logger.error(e.message, e)
         return jsonify({"errors": "Failed to create product"}), 500
 
     return product.to_dict(), 201
 
 
 def list_product_items():
-    product_service = ProductService(session_factory())
+    product_service = ProductService()
 
     products = product_service.get_all_active_products()
 
@@ -29,7 +32,7 @@ def list_product_items():
 
 
 def single_product_item(product_id):
-    product_service = ProductService(session_factory())
+    product_service = ProductService()
 
     product = product_service.get_active_product_by_id(product_id)
 
@@ -40,30 +43,30 @@ def single_product_item(product_id):
 
 
 def update_product_item(product_data):
-    product_service = ProductService(session_factory())
+    product_service = ProductService()
 
     try:
         product = product_service.update_product(product_data["id"], **product_data)
     except NotFoundError as e:
-        app.logger.debug(e.message, e)
+        logger.debug(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        app.logger.error(e.message, e)
+        logger.error(e.message, e)
         return jsonify({"errors": "Failed to update product."}), 500
 
     return product.to_dict(), 200
 
 
 def soft_delete_product(product_data):
-    product_service = ProductService(session_factory())
+    product_service = ProductService()
 
     try:
         product_service.deactivate_product(product_data["id"])
     except NotFoundError as e:
-        app.logger.debug(e.message, e)
+        logger.debug(e.message, e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        app.logger.error(e.message, e)
+        logger.error(e.message, e)
         return jsonify({"errors": "Failed to deactivate product."}), 500
 
     return None, 204

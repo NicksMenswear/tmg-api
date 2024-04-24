@@ -5,4 +5,4 @@ def get_default():  # noqa: E501
 
     :rtype: Str
     """
-    return "Hello!"
+    return "OK"

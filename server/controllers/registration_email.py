@@ -1,7 +1,10 @@
-import os
+import logging
+
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+logger = logging.getLogger(__name__)
 
 
 def send_email(subject, body, sender_email, receiver_email, password):
@@ -23,7 +26,7 @@ def send_email(subject, body, sender_email, receiver_email, password):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
             smtp_server.login(sender_email, password)
             smtp_server.sendmail(sender_email, receiver_email, msg.as_string())
-            print("Message sent successfully.")
+            logger.info("Message sent successfully.")
 
     except Exception as e:
-        print(f"Failed to send email. Error: {str(e)}")
+        logger.error(f"Failed to send email. Error: {str(e)}")

@@ -11,16 +11,12 @@ EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
 EMAIL_ACCOUNT_PASSWORD = "fbb06fc8-fd64-11ee-8a70-d73cbe5bfd61"
 
 STORE_CONFIG = {
-    "dev": {
-        "url": "https://quickstart-a91e1214.myshopify.com",
-        "password": "test123",
-        "config_require_store_password": True,
-    },
-    "stg": {"url": "https://tmg-staging.myshopify.com/", "password": "test123", "config_require_store_password": True},
+    "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123"},
+    "stg": {"url": "https://tmg-staging.myshopify.com", "password": "test123"},
 }
 
 STORE_URL = STORE_CONFIG[ACTIVE_ENV]["url"]
-REQUIRE_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["config_require_store_password"]
+REQUIRE_STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]("config_require_store_password", True)
 STORE_PASSWORD = STORE_CONFIG[ACTIVE_ENV]["password"]
 TEST_PASSWORD_RESET_EMAIL = STORE_CONFIG[ACTIVE_ENV]["password_reset_email"]
 

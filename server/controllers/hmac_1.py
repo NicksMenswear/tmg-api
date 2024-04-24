@@ -2,7 +2,8 @@ import hashlib
 import hmac
 import os
 
-from flask import current_app, request
+from flask import current_app as app
+from flask import request
 
 secret_key = os.getenv("client_secret", "")
 secret_key = secret_key.encode("utf-8")
@@ -26,11 +27,12 @@ def hmac_verification():
             )
             calculated_signature = hmac.new(secret_key, sorted_params.encode("utf-8"), hashlib.sha256).hexdigest()
 
-            is_in_testing_mode = current_app.config.get("TESTING")
+            is_in_testing_mode = app.config.get("TESTING")
 
             if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
                 # Remove the HMAC parameters from the kwargs
                 for param in ("logged_in_customer_id", "shop", "path_prefix", "timestamp", "signature"):
+                    app.logger.info(f"{param}={kwargs.get(param)}")
                     kwargs.pop(param, None)
                 return func(*args, **kwargs)
             else:

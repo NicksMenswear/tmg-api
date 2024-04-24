@@ -34,8 +34,8 @@ API_PARAMS = {
         "url": "https://api.stg.tmgcorp.net",
         "hmac": {
             "logged_in_customer_id": "6519862853674",
-            "path_prefix": "/apps/prod",
-            "shop": "themodern-groom.myshopify.com",
+            "path_prefix": "/apps/staging",
+            "shop": "tmg-staging.myshopify.com",
             "signature": "945b5cc30592e6d967717cee1a66da445d2ac6222971cfe645d72268ca66b8d3",
             "timestamp": "1713351981",
         },

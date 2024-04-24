@@ -309,7 +309,7 @@ def test_send_invites_and_activate_new_account(page: Page):
     page.locator("#customer_password_confirmation").fill(attendee_password)
     page.get_by_role("button", name="Activate Account").click()
 
-    confirmation_email_body = email.look_for_email("Customer account confirmation", None, attendee_email)
+    confirmation_email_body = email.look_for_email("Customer account confirmation", None, attendee_email, 240)
     assert "You've activated your customer account." in confirmation_email_body
 
 

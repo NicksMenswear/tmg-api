@@ -101,7 +101,7 @@ def test_password_reset(page: Page):
     page.get_by_role("textbox", name="Email address", exact=True).fill(user_email)
     page.get_by_role("button", name="Submit").click()
 
-    email_content = email.look_for_email("Customer account password reset", None, user_email, 180)
+    email_content = email.look_for_email("Customer account password reset", None, user_email, 240)
     assert email_content is not None
 
     decoded_content = quopri.decodestring(email_content.replace("=\n", "")).decode("utf-8")

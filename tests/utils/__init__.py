@@ -33,11 +33,11 @@ API_PARAMS = {
     "stg": {
         "url": "https://api.stg.tmgcorp.net",
         "hmac": {
-            "logged_in_customer_id": "6519862853674",
+            "logged_in_customer_id": "7304856600801",
             "path_prefix": "/apps/staging",
             "shop": "tmg-staging.myshopify.com",
-            "signature": "945b5cc30592e6d967717cee1a66da445d2ac6222971cfe645d72268ca66b8d3",
-            "timestamp": "1713351981",
+            "signature": "ddca24b84f084aad360f8530f071a53c9948b14f6671b0184479cf277a5120b8",
+            "timestamp": "1713979125",
         },
     },
 }

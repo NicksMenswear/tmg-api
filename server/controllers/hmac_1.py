@@ -32,7 +32,7 @@ def hmac_verification():
             if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
                 # Remove the HMAC parameters from the kwargs
                 for param in ("logged_in_customer_id", "shop", "path_prefix", "timestamp", "signature"):
-                    app.logger.info(f"{param}={kwargs.get(param)}")
+                    # app.logger.info(f"{param}={kwargs.get(param)}")
                     kwargs.pop(param, None)
                 return func(*args, **kwargs)
             else:

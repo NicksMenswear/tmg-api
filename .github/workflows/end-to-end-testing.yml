@@ -8,7 +8,7 @@ on:
         required: false
         default: 'all'
   schedule:
-    - cron: '0 8,10,12,14,16,18,20 * * *'
+    - cron: '0 8,12,16,20 * * *'
 
 jobs:
   setup:

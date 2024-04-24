@@ -4,9 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy. One of dev|stg|prd. Default: dev'
-        required: false
-        default: 'dev'
+        type: choice
+        description: Environment to deploy
+        options:
+        - dev
+        - stg
   push:
     branches:
       - main

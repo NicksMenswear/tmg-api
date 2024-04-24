@@ -1,7 +1,6 @@
 from playwright.sync_api import Page, expect
 
-from tests.utils import email, EMAIL_FROM, STORE_URL
-from utils import api, string, ui, TEST_USER_EMAIL, TEST_USER_PASSWORD
+from utils import api, string, ui, email, EMAIL_FROM, STORE_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD
 
 
 def test_basic_create_event(page: Page):

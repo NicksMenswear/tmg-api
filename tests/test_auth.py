@@ -4,8 +4,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from tests.utils import api
-from utils import string, ui, email, TEST_USER_EMAIL, TEST_USER_PASSWORD, EMAIL_FROM
+from utils import string, api, ui, email, TEST_USER_EMAIL, TEST_USER_PASSWORD, EMAIL_FROM
 
 
 def test_login(page: Page):

@@ -63,7 +63,7 @@ jobs:
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
       - name: Sls Deploy
-        run: sls deploy --stage ${{ github.event.inputs.environment || dev }}
+        run: sls deploy --stage ${{ github.event.inputs.environment || 'dev' }}
 
       - name: Notify slack
         if: ${{ always() }}

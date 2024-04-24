@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy. One of [all|dev|stg|prd]. Default: all'
-        required: false
-        default: 'all'
+        type: choice
+        description: Environment to test
+        options:
+        - all
+        - dev
+        - stg
   schedule:
     - cron: '0 8,12,16,20 * * *'
 

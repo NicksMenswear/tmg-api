@@ -30,7 +30,7 @@ def look_for_email(subject, email_from, email_to, timeout_seconds=120):
 def search_emails(mail, subject, email_from, email_to):
     mail.select("inbox")
 
-    formatted_date = datetime.fromtimestamp(time() - 300).strftime("%d-%b-%Y")
+    formatted_date = datetime.fromtimestamp(time() - 60 * 60 * 24 * 2).strftime("%d-%b-%Y")
     result, data = mail.uid("search", None, f'(SINCE "{formatted_date}")')
 
     if result == "OK":

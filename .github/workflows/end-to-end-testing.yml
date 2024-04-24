@@ -34,7 +34,9 @@ jobs:
 #        environment: ${{fromJson(needs.setup.outputs.environments)}}
     steps:
       - name: Echo Environment
-        run: echo "${{fromJson(needs.setup.outputs.environments)}}"
+        run: echo "${{ needs.setup.outputs.environments }}"
+
+#        run: echo "${{fromJson(needs.setup.outputs.environments)}}"
 #      - name: Echo Environment
 #        run: echo "Running tests on ${{ matrix.environment }}"
 #

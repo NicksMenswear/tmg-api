@@ -23,7 +23,7 @@ jobs:
         else
           echo '["${{ github.event.inputs.environment }}"]' > environments.json
         fi
-        echo "environments='$(cat environments.json)'" >> $GITHUB_ENV
+        echo "environments=$(cat environments.json)" >> $GITHUB_OUTPUT
 
   test:
     needs: setup

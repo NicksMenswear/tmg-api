@@ -23,6 +23,9 @@ jobs:
         else
           echo 'environments=["${{ github.event.inputs.environment }}"]' >> $GITHUB_ENV
         fi
+        echo "================"
+        echo $GITHUB_ENV
+        echo "================"
 
   test:
     needs: setup

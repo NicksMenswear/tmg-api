@@ -40,7 +40,8 @@ services:
       - .:/usr/src/app
     working_dir: /usr/src/app/tests
     environment:
-      - PYTHONUNBUFFERED=1
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
     command: >
       bash -c "pip install pytest pytest-playwright &&
       pytest --verbose"

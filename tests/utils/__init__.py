@@ -2,7 +2,7 @@ import os
 
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
-TEST_USER_EMAIL = "e2etmg@hotmail.com"
+TEST_USER_EMAIL = "e2etmg+02@hotmail.com"
 TEST_USER_PASSWORD = "123456"
 EMAIL_FROM = "bsit833@gmail.com"
 IMAP_HOST = "outlook.office365.com"

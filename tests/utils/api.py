@@ -8,6 +8,22 @@ BASE_API_URL = API_PARAMS[ACTIVE_ENV]["url"]
 API_HMAC_QUERY_PARAMS = API_PARAMS[ACTIVE_ENV]["hmac"]
 
 
+def create_user(first_name, last_name, email, account_status=True):
+    response = requests.post(
+        f"{BASE_API_URL}/users",
+        params=API_HMAC_QUERY_PARAMS,
+        headers=API_HEADERS,
+        data=json.dumps(
+            {"first_name": first_name, "last_name": last_name, "email": email, "account_status": account_status}
+        ),
+    )
+
+    if response.status_code == 201:
+        return
+
+    raise Exception(f"Failed to create user - {first_name}/{last_name}/{email}")
+
+
 def get_all_events_by_email(email):
     response = requests.get(f"{BASE_API_URL}/events/{email}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
 

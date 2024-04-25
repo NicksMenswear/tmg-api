@@ -20,10 +20,10 @@ def add_attendee(attendee_data):
     try:
         attendee = attendee_service.create_attendee(**attendee_data)
     except DuplicateError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to create attendee"}), 500
 
     return attendee.to_dict(), 201
@@ -36,10 +36,10 @@ def get_attendee_event(email, event_id):
     try:
         event = attendee_service.get_attendee_event(email, event_id)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to get attendee's event"}), 500
 
     return event.to_dict(), 200
@@ -52,10 +52,10 @@ def update_attendee(attendee_data):
     try:
         attendee = attendee_service.update_attendee(**attendee_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to get attendee"}), 500
 
     return attendee.to_dict(), 200
@@ -68,7 +68,7 @@ def get_attendees_by_eventid(event_id):
     try:
         attendees = attendee_service.get_attendees_for_event_by_id(event_id)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
 
     return attendees, 200
@@ -81,10 +81,10 @@ def soft_delete_attendee(attendee_data):
     try:
         attendee_service.soft_delete_attendee(**attendee_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return None, 204

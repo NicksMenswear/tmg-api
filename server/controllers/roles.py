@@ -26,10 +26,10 @@ def create_role(role_data):
     try:
         role = role_service.create_role(**role_data)
     except DuplicateError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 409
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to create role"}), 500
 
     return role.to_dict(), 201
@@ -87,10 +87,10 @@ def update_role(role_data):
     try:
         role = role_service.update_role(role_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to update role"}), 500
 
     return role.to_dict(), 200

@@ -19,7 +19,7 @@ def create_cart(cart):
     try:
         cart = cart_service.create_cart(**cart)
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return str(cart.id), 201
@@ -32,7 +32,7 @@ def get_cart_by_id(cart_id):
     try:
         cart = cart_service.get_cart_by_id(cart_id)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
 
     return cart, 200
@@ -45,10 +45,10 @@ def get_cart_by_event_attendee(event_id, attendee_id):
     try:
         return cart_service.get_cart_by_event_attendee(event_id, attendee_id), 200
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
 
@@ -59,10 +59,10 @@ def update_cart(cart):
     try:
         cart = cart_service.update_cart(**cart)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return cart.to_dict(), 200

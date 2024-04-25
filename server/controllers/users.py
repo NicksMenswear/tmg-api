@@ -16,10 +16,10 @@ def create_user(user_data):
     try:
         user = user_service.create_user(**user_data)
     except DuplicateError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to create user"}), 500
 
     return user.to_dict(), 201
@@ -51,10 +51,10 @@ def update_user(user_data):
     try:
         user = user_service.update_user(**user_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to update user."}), 500
 
     return user.to_dict(), 200

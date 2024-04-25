@@ -26,10 +26,10 @@ def create_look(look_data):
 
         look = look_service.create_look(**enriched_look_data)
     except DuplicateError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 409
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to create look"}), 500
 
     return look.to_dict(), 201
@@ -70,10 +70,10 @@ def update_look(look_data):
     try:
         look = look_service.update_look(**look_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return look.to_dict(), 200

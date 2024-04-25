@@ -14,10 +14,10 @@ def create_product_item(product_item):
     try:
         product = product_service.create_product(**product_item)
     except DuplicateError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to create product"}), 500
 
     return product.to_dict(), 201
@@ -48,10 +48,10 @@ def update_product_item(product_data):
     try:
         product = product_service.update_product(product_data["id"], **product_data)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to update product."}), 500
 
     return product.to_dict(), 200
@@ -63,10 +63,10 @@ def soft_delete_product(product_data):
     try:
         product_service.deactivate_product(product_data["id"])
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": "Failed to deactivate product."}), 500
 
     return None, 204

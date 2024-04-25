@@ -16,10 +16,10 @@ def create_order(order):
     try:
         order = order_service.create_order(**order)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return order, 201
@@ -53,10 +53,10 @@ def update_order(order):
     try:
         order = order_service.update_order(**order)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return order, 200
@@ -69,10 +69,10 @@ def delete_order(order_id):
     try:
         order_service.delete_order(order_id)
     except NotFoundError as e:
-        logger.debug(e.message, e)
+        logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
     except ServiceError as e:
-        logger.error(e.message, e)
+        logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
     return None, 204

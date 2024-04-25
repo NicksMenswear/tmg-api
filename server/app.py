@@ -7,13 +7,12 @@ from urllib.parse import urlparse
 import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
-from sqlalchemy.orm import close_all_sessions
 
 from server import encoder
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
-from server.database.models import Base
-from server.database.database_manager import engine
+from server.database.database_manager import db, DATABASE_URL
+from server.flask_app import FlaskApp
+from server.services.emails import FakeEmailService, EmailService
+from server.services.shopify import FakeShopifyService, ShopifyService
 
 
 def init_sentry():
@@ -45,7 +44,7 @@ def init_sentry():
 
 def init_logging(debug=False):
     level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=level, force=True)
+    logging.basicConfig(format="%(levelname)s %(name)s: %(message)s", level=level, force=True)
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     for name in logging.root.manager.loggerDict:
         if name.startswith("connexion."):
@@ -55,28 +54,34 @@ def init_logging(debug=False):
 def init_app():
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
-
-    api.app.config["TESTING"] = str(os.getenv("TMG_APP_TESTING", False)).lower() == "true"
-    api.app.shopify_service = FakeShopifyService() if api.app.config["TESTING"] else ShopifyService()
-    api.app.email_service = FakeEmailService() if api.app.config["TESTING"] else EmailService()
     api.app.json_encoder = encoder.CustomJSONEncoder
+    api.app.config["TMG_APP_TESTING"] = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+    FlaskApp.set(api.app)
     return api
 
 
-def reset_db():
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+def init_db():
+    app = FlaskApp.current()
+    with app.app_context():
+        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+        app.config["SQLALCHEMY_ECHO"] = False
+        db.init_app(app)
+
+        print("Connecting to database...")
+        with db.engine.connect():
+            print("Database connected successfully.")
 
 
 def lambda_teardown(signum, frame):
     print("SIGTERM received.")
-    print("Closing DB sessions...")
-    close_all_sessions()
-    print("Terminating DB connections...")
-    engine.dispose()
+    app = FlaskApp.current()
+    with app.app_context():
+        print("Closing DB session...")
+        db.session.remove()
+        print("Terminating DB connections...")
+        db.engine.dispose()
     print("Cleanup complete. Exiting.")
     sys.exit(0)

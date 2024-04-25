@@ -1,9 +1,14 @@
-import urllib3
 import json
+import logging
 import os
 
+import urllib3
+
+from server.controllers.util import http
+from server.database.database_manager import db
 from server.database.models import User
-from server.database.database_manager import get_database_session
+
+logger = logging.getLogger(__name__)
 
 
 shopify_store = os.getenv("shopify_store")
@@ -12,13 +17,12 @@ admin_api_access_token = os.getenv("admin_api_access_token")
 client_secret = os.getenv("client_secret")
 api_version = os.getenv("api_version")
 
-db = get_database_session()
-
 
 def search_customer_by_email(email):
     try:
-        user = db.query(User).filter(User.email == email).first()
-        response = urllib3.request(
+
+        user = db.session.query(User).filter(User.email == email).first()
+        response = http(
             "GET",
             f"https://{shopify_store}.myshopify.com/admin/api/2024-01/customers/{user.shopify_id}.json",
             headers={
@@ -29,12 +33,12 @@ def search_customer_by_email(email):
         customers = json.loads(response.data.decode("utf-8")).get("customers", [])
         return customers
     except urllib3.exceptions.RequestError as error:
-        print("Error searching for customer by email:", error)
+        logger.error("Error searching for customer by email:", error)
         raise
 
 
 def create_shopify_customer(customer_data):
-    response = urllib3.request(
+    response = http(
         "POST",
         f"https://{shopify_store}.myshopify.com/admin/api/2024-01/customers.json",
         json={"customer": customer_data},
@@ -49,7 +53,7 @@ def create_shopify_customer(customer_data):
 
 def get_access_token():
     try:
-        response = urllib3.request(
+        response = http(
             "POST",
             f"https://{shopify_store}.myshopify.com/admin/oauth/access_token",
             json={
@@ -62,7 +66,7 @@ def get_access_token():
         access_token = response.json().get("access_token")
         return access_token
     except urllib3.exceptions.RequestError as error:
-        print("Error searching for customer by email:", error)
+        logger.error("Error searching for customer by email:", error)
         raise
 
 
@@ -71,7 +75,7 @@ def get_customer(email):
         customers = search_customer_by_email(email)
         return customers
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
 
 
 # TODO delete this function
@@ -79,9 +83,9 @@ def list_customer():
     customer_email = "syed@nicksmenswear.com"
     try:
         customers = search_customer_by_email(customer_email)
-        print("Found customers: ", customers)
+        logger.info("Found customers: ", customers)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500
 
 
@@ -92,18 +96,18 @@ def get_activation_url(customer_id):
             "Content-Type": "application/json",
             "X-Shopify-Access-Token": admin_api_access_token,
         }
-        response = urllib3.request("POST", url, headers=headers)
+        response = http("POST", url, headers=headers)
         if response.status == 200:
             activation_url = json.loads(response.data.decode("utf-8")).get("account_activation_url")
-            print(f"Activation URL: {activation_url}")
+            logger.info(f"Activation URL: {activation_url}")
             return activation_url
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return f"Internal Server Error : {e}", 500
 
 
 def create_customer(customer_data):
     created_customer = create_shopify_customer(customer_data)
     if created_customer:
-        print("Created customer:", created_customer["id"])
+        logger.info("Created customer:", created_customer["id"])
         return created_customer["id"]

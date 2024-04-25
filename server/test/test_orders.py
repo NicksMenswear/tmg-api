@@ -17,10 +17,10 @@ class TestOrders(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.user_service = UserService(self.session_factory)
-        self.event_service = EventService(self.session_factory)
-        self.order_service = OrderService(self.session_factory)
-        self.product_service = ProductService(self.session_factory)
+        self.user_service = UserService()
+        self.event_service = EventService()
+        self.order_service = OrderService()
+        self.product_service = ProductService()
 
     def assert_equal_response_order_with_db_order(self, order: Order, response_order: dict):
         self.assertEqual(response_order["id"], str(order["id"]))

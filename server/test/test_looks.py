@@ -17,11 +17,11 @@ class TestLooks(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.look_service = LookService(self.session_factory)
-        self.role_service = RoleService(self.session_factory)
-        self.user_service = UserService(self.session_factory)
-        self.attendee_service = AttendeeService(self.session_factory)
-        self.event_service = EventService(self.session_factory)
+        self.look_service = LookService()
+        self.role_service = RoleService()
+        self.user_service = UserService()
+        self.attendee_service = AttendeeService()
+        self.event_service = EventService()
 
     def assert_equal_response_look_with_db_look(self, look: Look, response_look: dict):
         self.assertEqual(response_look["id"], str(look.id))

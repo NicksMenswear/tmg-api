@@ -1,52 +1,39 @@
-import os
-
 from flask_testing import TestCase
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from server.app import init_app
+from server.app import init_app, init_db
+from server.flask_app import FlaskApp
+from server.database.database_manager import db
 from server.database.models import Order, ProductItem, User, Event, Look, Role, Attendee, OrderItem, Cart, CartProduct
 from server.services.emails import FakeEmailService
 from server.services.shopify import FakeShopifyService
-
-db_user = os.getenv("DB_USER")
-db_password = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST")
-db_port = os.getenv("DB_PORT")
-db_name = os.getenv("DB_NAME")
-
-DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-engine = create_engine(DATABASE_URL)
 
 CONTENT_TYPE_JSON = "application/json"
 
 
 class BaseTestCase(TestCase):
     def create_app(self):
+        FlaskApp.cleanup()
         app = init_app().app
-        app.config["TESTING"] = True
+        init_db()
+        app.config["TMG_APP_TESTING"] = True
         app.shopify_service = FakeShopifyService()
         app.email_service = FakeEmailService()
-        self.session = sessionmaker(bind=engine)
         return app
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
-        self.session_factory = self.session
-        self.db = self.session_factory()
-
-        self.db.query(CartProduct).delete()
-        self.db.query(Cart).delete()
-        self.db.query(Attendee).delete()
-        self.db.query(Role).delete()
-        self.db.query(Look).delete()
-        self.db.query(OrderItem).delete()
-        self.db.query(Order).delete()
-        self.db.query(ProductItem).delete()
-        self.db.query(Event).delete()
-        self.db.query(User).delete()
-        self.db.commit()
+        CartProduct.query.delete()
+        Cart.query.delete()
+        Attendee.query.delete()
+        Role.query.delete()
+        Look.query.delete()
+        OrderItem.query.delete()
+        Order.query.delete()
+        ProductItem.query.delete()
+        Event.query.delete()
+        User.query.delete()
+        db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON
         self.request_headers = {

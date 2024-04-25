@@ -31,3 +31,21 @@ jobs:
       - name: Clean up
         if: always()
         run: docker-compose down
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Smoke test by starting test db, app and simple test
+        run: ./test-smoke.sh
+
+      - name: Clean up
+        if: always()
+        run: docker-compose down

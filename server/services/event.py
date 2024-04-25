@@ -10,7 +10,6 @@ from server.services.look import LookService
 class EventService(BaseService):
     def __init__(self):
         super().__init__()
-
         self.look_service = LookService()
 
     def get_event_by_id(self, event_id):

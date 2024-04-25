@@ -58,15 +58,8 @@ def init_app():
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
+    api.app.config["TMG_APP_TESTING"] = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
     FlaskApp.set(api.app)
-    current_app = FlaskApp.current()
-    current_app.config["TMG_APP_TESTING"] = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
-
-    current_app.shopify_service = (
-        ShopifyService() if not current_app.config["TMG_APP_TESTING"] else FakeShopifyService()
-    )
-    current_app.email_service = EmailService() if not current_app.config["TMG_APP_TESTING"] else FakeEmailService()
-
     return api
 
 

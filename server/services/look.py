@@ -3,8 +3,8 @@ import uuid
 from server.database.database_manager import db
 from server.database.models import Look
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.attendee import AttendeeService
 from server.services.base import BaseService
+from server.services.attendee import AttendeeService
 from server.services.role import RoleService
 from server.services.user import UserService
 
@@ -12,7 +12,6 @@ from server.services.user import UserService
 class LookService(BaseService):
     def __init__(self):
         super().__init__()
-
         self.user_service = UserService()
         self.role_service = RoleService()
         self.attendee_service = AttendeeService()

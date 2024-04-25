@@ -5,6 +5,7 @@ from server.controllers.util import http
 from server.database.models import ProductItem
 from server.flask_app import FlaskApp
 
+
 logger = logging.getLogger(__name__)
 
 TOP_SITES = [

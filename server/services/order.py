@@ -12,7 +12,6 @@ from server.services.user import UserService
 class OrderService(BaseService):
     def __init__(self):
         super().__init__()
-
         self.user_service = UserService()
         self.event_service = EventService()
         self.product_service = ProductService()

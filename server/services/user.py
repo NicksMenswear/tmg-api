@@ -2,17 +2,22 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import User
-from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.base import BaseService
+from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.emails import EmailService, FakeEmailService
+from server.flask_app import FlaskApp
 
 
 class UserService(BaseService):
-    def __init__(self, shopify_service=None, email_service=None):
+    def __init__(self):
         super().__init__()
-
-        self.shopify_service = shopify_service or FlaskApp.current().shopify_service
-        self.email_service = email_service or FlaskApp.current().email_service
+        if FlaskApp.current().config["TMG_APP_TESTING"]:
+            self.shopify_service = FakeShopifyService()
+            self.email_service = FakeEmailService()
+        else:
+            self.shopify_service = ShopifyService()
+            self.email_service = EmailService()
 
     def create_user(self, **user_data):
         user = User.query.filter_by(email=user_data["email"]).first()

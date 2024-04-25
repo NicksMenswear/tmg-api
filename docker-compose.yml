@@ -35,6 +35,40 @@ services:
     depends_on:
       - db
 
+  app:
+    image: python:3.12
+    volumes:
+      - .:/usr/src/app
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tmg_api
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_POOL_SIZE: 100
+      TMG_APP_TESTING: 'true'
+    working_dir: /usr/src/app/
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "pip install -r requirements.txt &&
+      pip install --upgrade psycopg2 &&
+      ./scripts/reset_db.sh &&
+      python main.py"
+    depends_on:
+      - db
+
+  smoke-test:
+    image: python:3.12
+    command: >
+      bash -c "
+      echo 'Waiting for app to start...' &&
+      sleep 20 &&
+      curl 'http://app:8080/users?logged_in_customer_id=1&path_prefix=/apps/dev&shop=1.myshopify.com&signature=1&timestamp=1' --silent --verbose --fail -H 'Content-Type: application/json' -d '{\"first_name\": \"test\",\"last_name\": \"user\",\"email\": \"test-user@example.com\",\"account_status\": true}'"
+    depends_on:
+      - db
+      - app
+
   test-end-to-end:
     image: mcr.microsoft.com/playwright/python:v1.43.0-jammy
     volumes:

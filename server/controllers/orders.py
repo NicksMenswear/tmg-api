@@ -1,8 +1,8 @@
 import logging
+
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
-from server.database.database_manager import db
 from server.services import NotFoundError, ServiceError
 from server.services.order import OrderService
 

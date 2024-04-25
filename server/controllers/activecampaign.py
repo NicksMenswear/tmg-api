@@ -1,8 +1,7 @@
 import json
-import os
 import logging
+import os
 
-from server.flask_app import FlaskApp
 from server.controllers.util import http
 
 logger = logging.getLogger(__name__)

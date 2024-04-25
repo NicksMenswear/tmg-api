@@ -2,14 +2,15 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Cart, CartProduct
+from server.flask_app import FlaskApp
 from server.services import NotFoundError, ServiceError
 from server.services.base import BaseService
-from server.flask_app import FlaskApp
 
 
 class CartService(BaseService):
     def __init__(self, shopify_service=None):
         super().__init__()
+
         self.shopify_service = shopify_service or FlaskApp.current().shopify_service
 
     def get_cart_by_id(self, cart_id):

@@ -2,7 +2,7 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Role, Look
-from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services import ServiceError, NotFoundError
 from server.services.base import BaseService
 
 

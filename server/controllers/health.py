@@ -1,9 +1,8 @@
 import logging
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from server.database.models import ProductItem
 from server.controllers.util import http
+from server.database.models import ProductItem
 from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
@@ -52,5 +51,5 @@ def _site_available(url):
         response = http("HEAD", url)
         return 200 <= response.status < 400
     except Exception as e:
-        logger.warn(f"Failed to connect to {url}: {e}")
+        logger.warning(f"Failed to connect to {url}: {e}")
         return False

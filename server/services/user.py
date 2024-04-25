@@ -2,9 +2,9 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import User
+from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.base import BaseService
-from server.flask_app import FlaskApp
 
 
 class UserService(BaseService):

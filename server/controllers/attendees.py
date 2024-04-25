@@ -1,13 +1,11 @@
-import os
 import logging
+import os
 
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
-from server.database.database_manager import db
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.attendee import AttendeeService
-from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 

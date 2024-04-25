@@ -1,9 +1,9 @@
-import os
 import hashlib
 import hmac
-import urllib3
+import os
 from functools import wraps
 
+import urllib3
 from flask import request
 
 from server.flask_app import FlaskApp
@@ -29,7 +29,7 @@ def hmac_verification(func):
         )
         calculated_signature = hmac.new(secret_key, sorted_params.encode("utf-8"), hashlib.sha256).hexdigest()
 
-        is_in_testing_mode = FlaskApp.current().config.get("TESTING")
+        is_in_testing_mode = FlaskApp.current().config.get("TMG_APP_TESTING")
 
         if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
             # Remove the HMAC parameters from the kwargs

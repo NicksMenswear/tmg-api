@@ -15,7 +15,7 @@ class BaseTestCase(TestCase):
         FlaskApp.cleanup()
         app = init_app().app
         init_db()
-        app.config["TESTING"] = True
+        app.config["TMG_APP_TESTING"] = True
         app.shopify_service = FakeShopifyService()
         app.email_service = FakeEmailService()
         return app

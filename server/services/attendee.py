@@ -2,10 +2,10 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event
+from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.base import BaseService
 from server.services.user import UserService
-from server.flask_app import FlaskApp
 
 
 class AttendeeService(BaseService):

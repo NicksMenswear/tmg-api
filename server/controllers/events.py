@@ -3,10 +3,8 @@ import logging
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
-from server.database.database_manager import db
 from server.services import NotFoundError, ServiceError, DuplicateError
 from server.services.event import EventService
-from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 

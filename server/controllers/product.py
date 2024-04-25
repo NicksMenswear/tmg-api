@@ -1,7 +1,7 @@
 import logging
 
 from flask import jsonify
-from server.database.database_manager import db
+
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.product import ProductService
 

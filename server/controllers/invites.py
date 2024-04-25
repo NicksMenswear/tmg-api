@@ -1,13 +1,11 @@
-import os
 import logging
+import os
 
+from server.controllers.registration_email import send_email
+from server.controllers.shopify import get_activation_url
+from server.controllers.util import hmac_verification
 from server.database.database_manager import db
 from server.database.models import User
-from server.controllers.shopify import get_activation_url, create_customer, get_customer
-from server.controllers.registration_email import send_email
-from server.controllers.activecampaign import create_contact
-from server.controllers.util import hmac_verification
-
 
 logger = logging.getLogger(__name__)
 

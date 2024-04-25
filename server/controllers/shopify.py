@@ -1,11 +1,12 @@
 import json
-import os
-import urllib3
 import logging
+import os
 
-from server.database.models import User
-from server.database.database_manager import db
+import urllib3
+
 from server.controllers.util import http
+from server.database.database_manager import db
+from server.database.models import User
 
 logger = logging.getLogger(__name__)
 

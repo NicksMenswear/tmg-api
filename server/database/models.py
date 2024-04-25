@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy.orm import relationship
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -16,9 +16,9 @@ from sqlalchemy import (
     VARCHAR,
     Numeric,
 )
+from sqlalchemy.orm import relationship
 
 from server.database.database_manager import db
-
 
 Base = db.Model
 

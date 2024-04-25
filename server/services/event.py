@@ -8,7 +8,7 @@ from server.services.look import LookService
 
 
 class EventService(BaseService):
-    def __init__(self, shopify_service=None, email_service=None):
+    def __init__(self):
         super().__init__()
 
         self.look_service = LookService()

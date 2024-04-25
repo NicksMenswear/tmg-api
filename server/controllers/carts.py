@@ -1,13 +1,9 @@
-import logging
-
 from flask import jsonify
 
-from server.controllers.util import hmac_verification
 from server.controllers.shopify import *
-from server.database.database_manager import db
+from server.controllers.util import hmac_verification
 from server.services import ServiceError, NotFoundError
 from server.services.cart import CartService
-from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 

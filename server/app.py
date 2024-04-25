@@ -9,10 +9,10 @@ import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
 from server import encoder
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
+from server.services.emails import FakeEmailService, EmailService
+from server.services.shopify import FakeShopifyService, ShopifyService
 
 
 def init_sentry():
@@ -59,6 +59,14 @@ def init_app():
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
     FlaskApp.set(api.app)
+    current_app = FlaskApp.current()
+    current_app.config["TMG_APP_TESTING"] = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+
+    current_app.shopify_service = (
+        ShopifyService() if not current_app.config["TMG_APP_TESTING"] else FakeShopifyService()
+    )
+    current_app.email_service = EmailService() if not current_app.config["TMG_APP_TESTING"] else FakeEmailService()
+
     return api
 
 

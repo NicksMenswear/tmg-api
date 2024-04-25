@@ -2,7 +2,6 @@ import os
 
 from flask_sqlalchemy import SQLAlchemy
 
-
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
 db_host = os.getenv("DB_HOST")
@@ -22,4 +21,5 @@ engine_options = dict(
     pool_recycle=3600,
     echo_pool=True,
 )
+
 db = SQLAlchemy(engine_options=engine_options)

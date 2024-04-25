@@ -16,12 +16,11 @@ from sqlalchemy import (
     VARCHAR,
     Numeric,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from server.database.base_model_ import Model
+from server.database.database_manager import db
 
-Base = declarative_base()
+Base = db.Model
 
 
 class User(Base):

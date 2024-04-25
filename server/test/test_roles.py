@@ -17,10 +17,10 @@ class TestRoles(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.user_service = UserService(self.session_factory)
-        self.look_service = LookService(self.session_factory)
-        self.event_service = EventService(self.session_factory)
-        self.role_service = RoleService(self.session_factory)
+        self.user_service = UserService()
+        self.look_service = LookService()
+        self.event_service = EventService()
+        self.role_service = RoleService()
 
     def assert_equal_response_role_with_db_role(self, role: Role, response_role: dict):
         self.assertEqual(response_role["id"], str(role.id))

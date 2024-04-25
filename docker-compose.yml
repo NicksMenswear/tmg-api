@@ -21,6 +21,7 @@ services:
       DB_NAME: tmg_api
       DB_USER: postgres
       DB_PASSWORD: postgres
+      DB_POOL_SIZE: 100
     working_dir: /usr/src/app/
     command: >
       bash -c "pip install tox &&

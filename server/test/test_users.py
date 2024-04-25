@@ -15,7 +15,7 @@ class TestUsers(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.user_service = UserService(self.session_factory)
+        self.user_service = UserService()
 
     def assert_equal_response_user_with_db_user(self, user: User, response_user: dict):
         self.assertEqual(response_user["id"], str(user.id))

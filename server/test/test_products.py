@@ -39,7 +39,7 @@ class TestProducts(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.product_service = ProductService(self.session_factory)
+        self.product_service = ProductService()
 
     def assert_equal_response_product_with_db_product(self, product: ProductItem, response_product: dict):
         self.assertEqual(response_product.get("id"), str(product.id))

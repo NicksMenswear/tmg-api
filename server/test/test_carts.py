@@ -18,12 +18,12 @@ class TestCarts(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.look_service = LookService(self.session_factory)
-        self.role_service = RoleService(self.session_factory)
-        self.user_service = UserService(self.session_factory)
-        self.attendee_service = AttendeeService(self.session_factory)
-        self.event_service = EventService(self.session_factory)
-        self.cart_service = CartService(self.session_factory)
+        self.look_service = LookService()
+        self.role_service = RoleService()
+        self.user_service = UserService()
+        self.attendee_service = AttendeeService()
+        self.event_service = EventService()
+        self.cart_service = CartService()
 
     def assert_equal_cart(self, cart: Cart, request_cart: dict):
         self.assertEqual(request_cart.get("user_id"), str(cart.user_id) if cart.user_id else None)
@@ -63,7 +63,7 @@ class TestCarts(BaseTestCase):
         self.assertStatus(response, 201)
         cart_id = response.json
         self.assertIsNotNone(cart_id)
-        cart = self.db.query(Cart).filter_by(id=cart_id).one_or_none()
+        cart = Cart.query.filter_by(id=cart_id).one_or_none()
         self.assert_equal_cart(cart, cart_request)
         self.assertEqual(cart.cart_products.count(), 0)
 
@@ -95,7 +95,7 @@ class TestCarts(BaseTestCase):
         self.assertStatus(response, 201)
         cart_id = response.json
         self.assertIsNotNone(cart_id)
-        cart = self.db.query(Cart).filter_by(id=cart_id).one_or_none()
+        cart = Cart.query.filter_by(id=cart_id).one_or_none()
         self.assertIsNotNone(cart)
         self.assert_equal_cart(cart, cart_request)
         self.assertEqual(cart.cart_products.count(), 0)
@@ -131,7 +131,7 @@ class TestCarts(BaseTestCase):
         self.assertStatus(response, 201)
         cart_id = response.json
         self.assertIsNotNone(cart_id)
-        cart = self.db.query(Cart).filter_by(id=cart_id).one_or_none()
+        cart = Cart.query.filter_by(id=cart_id).one_or_none()
         self.assertIsNotNone(cart)
         self.assert_equal_cart(cart, cart_request)
         products = cart.cart_products.all()
@@ -177,7 +177,7 @@ class TestCarts(BaseTestCase):
         self.assert_equal_cart(cart, response.json)
         products = response.json["products"]
         self.assertEqual(len(products), 3)
-        cart_products = self.db.query(CartProduct).filter_by(cart_id=cart.id).all()
+        cart_products = CartProduct.query.filter_by(cart_id=cart.id).all()
         self.assert_equal_cart_product(cart_products[0], products[0])
         self.assert_equal_cart_product(cart_products[1], products[1])
         self.assert_equal_cart_product(cart_products[2], products[2])

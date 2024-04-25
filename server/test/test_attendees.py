@@ -16,11 +16,11 @@ class TestAttendees(BaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.attendee_service = AttendeeService(self.session_factory)
-        self.user_service = UserService(self.session_factory)
-        self.event_service = EventService(self.session_factory)
-        self.look_service = LookService(self.session_factory)
-        self.role_service = RoleService(self.session_factory)
+        self.attendee_service = AttendeeService()
+        self.user_service = UserService()
+        self.event_service = EventService()
+        self.look_service = LookService()
+        self.role_service = RoleService()
 
     def assert_equal_attendee(self, attendee_request, attendee_response):
         self.assertEqual(str(attendee_request["event_id"]), attendee_response["event_id"])

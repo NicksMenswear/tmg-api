@@ -14,7 +14,7 @@ else:
     print("Running in AWS Lambda...")
     init_logging(debug=True)
     init_sentry()
-    init_app()
+    app = init_app()
     init_db()
 
 

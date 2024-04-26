@@ -11,6 +11,8 @@ from server.flask_app import FlaskApp
 secret_key = os.getenv("client_secret", "")
 secret_key = secret_key.encode("utf-8")
 
+http_pool = urllib3.PoolManager()
+
 
 def hmac_verification(func):
     """HMAC verification authorizes all API calls by calculating and matching tokens received from Shopify with those created on the server side."""
@@ -48,4 +50,4 @@ def http(*args, **kwargs):
         "retries": urllib3.util.Retry(total=1, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)
-    return urllib3.request(*args, **merge_kwargs)
+    return http_pool.request(*args, **merge_kwargs)

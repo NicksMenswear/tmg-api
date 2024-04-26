@@ -12,6 +12,12 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'README.md'
+      - 'test-*'
 
 concurrency:
   group: cd-stg

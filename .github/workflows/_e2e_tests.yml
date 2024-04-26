@@ -1,0 +1,52 @@
+name: e2e-test
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      stage:
+        required: true
+        type: string
+        description: Stage to run tests against
+      notify:
+        type: boolean
+        default: true
+        description: Notify Slack
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo Environment
+        run: echo "Running tests on ${{ inputs.stage }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Build and run end-to-end tests
+        run: ./test-end-to-end.sh
+        env:
+          ACTIVE_ENV: ${{ inputs.stage }}
+
+      - name: Clean up
+        if: always()
+        run: docker-compose down
+
+      - name: Notify to Slack
+        if: failure() && ${{ inputs.notify }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *E2E Tests "${{ inputs.stage }}" failed* :red_circle:
+            *Ref:* "${{ inputs.ref }}"
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

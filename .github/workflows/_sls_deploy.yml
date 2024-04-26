@@ -1,0 +1,90 @@
+name: sls-deploy
+
+on:
+  workflow_call:
+    inputs: 
+      ref:
+        required: true
+        type: string
+      stage:
+        required: true
+        type: string
+        description: Stage to deploy to
+      sls-args:
+        required: false
+        type: string
+        description: Serverless arguments
+      notify:
+          type: boolean
+          default: true
+          description: Notify Slack
+
+concurrency:
+  group: ${{ github.workflow.name }}-${{ inputs.stage }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get head commit message
+        id: get_head_commit_message
+        run: |
+          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+
+      - name: Notify slack
+        if: ${{ inputs.notify }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *API "${{ inputs.stage }}" now deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+
+      - name: Install Serverless
+        run: npm install -g serverless@3.38.*
+
+      - name: Install Serverless dependencies
+        run: npm install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
+
+      - name: Sls Deploy
+        run: sls deploy ${{ inputs.sls-args }} --stage ${{ inputs.stage }}
+
+      - name: Notify slack
+        if: ${{ always() && inputs.notify }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *API "${{ inputs.stage }}" deployment ${{ job.status == 'success' && 'Completed :large_green_circle:' || job.status == 'cancelled' && 'Cancelled :large_yellow_circle:' || 'Failed :red_circle:' }}*
+            *Repo:* ${{ github.repository }}
+            *Ref:* ${{ github.ref }}
+            *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            *Status:* ${{ job.status }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

@@ -1,0 +1,42 @@
+name: on-release
+
+on:
+  push:
+    tags:        
+      - prd-*
+
+jobs:
+  verify-stg-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get CI status of the corresponding stage release
+        id: get_ci_status
+        run: |
+          stage_tag="${GITHUB_REF_NAME/prd/stg}"
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${stage_tag}/status)
+          echo "status_code=$status" >> GITHUB_OUTPUT
+
+      - name: Ensure stage tag exists and has success status
+        run: |
+          status_code="${{ steps.get_ci_status.outputs.status_code }}"
+          if [[ $status_code != "200" ]]; then
+            echo "Staging tag ${{ github.ref_name }} doesn't exist or has no CI status."
+            exit 1
+          fi
+
+          if [[ $status_code != "success" ]]; then
+            echo "Staging tag ${{ github.ref_name }} does not have success CI status."
+            exit 1
+          fi
+
+  cd:
+    uses: ./.github/workflows/_sls_deploy.yml
+    with:
+      ref: ${{ github.ref_name }}
+      stage: prd
+  
+  e2e:
+    uses: ./.github/workflows/_e2e_tests.yml
+    with:
+      ref: ${{ github.ref_name }}
+      stage: prd

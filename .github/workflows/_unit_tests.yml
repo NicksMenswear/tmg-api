@@ -1,7 +1,11 @@
-name: CI
+name: unit-test
 
 on:
-  pull_request: {}
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
 
 jobs:
   lint:
@@ -14,11 +18,13 @@ jobs:
           src: "."
           version: "~= 22.0"
 
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up Docker Compose
         run: |

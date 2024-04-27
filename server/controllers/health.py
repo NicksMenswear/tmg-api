@@ -22,7 +22,7 @@ def health():
             for future in as_completed(checks):
                 future.result()
     except Exception as e:
-        logger.error(e)
+        logger.exception(e)
         return f"Internal Server Error: {e}", 500
 
     return "OK", 200

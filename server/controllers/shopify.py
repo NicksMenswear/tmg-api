@@ -33,7 +33,7 @@ def search_customer_by_email(email):
         customers = json.loads(response.data.decode("utf-8")).get("customers", [])
         return customers
     except urllib3.exceptions.RequestError as error:
-        logger.error("Error searching for customer by email:", error)
+        logger.error("Error searching for customer by email:", error, exc_info=True)
         raise
 
 
@@ -66,7 +66,7 @@ def get_access_token():
         access_token = response.json().get("access_token")
         return access_token
     except urllib3.exceptions.RequestError as error:
-        logger.error("Error searching for customer by email:", error)
+        logger.error("Error searching for customer by email:", error, exc_info=True)
         raise
 
 
@@ -75,7 +75,7 @@ def get_customer(email):
         customers = search_customer_by_email(email)
         return customers
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.exception(e)
 
 
 # TODO delete this function
@@ -85,7 +85,7 @@ def list_customer():
         customers = search_customer_by_email(customer_email)
         logger.info("Found customers: ", customers)
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.exception(e)
         return f"Internal Server Error : {e}", 500
 
 
@@ -102,7 +102,7 @@ def get_activation_url(customer_id):
             logger.info(f"Activation URL: {activation_url}")
             return activation_url
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.exception(e)
         return f"Internal Server Error : {e}", 500
 
 

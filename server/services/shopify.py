@@ -1,7 +1,8 @@
 import os
 import random
+import json
 
-import requests
+from server.controllers.util import http
 
 from server.services import ServiceError, NotFoundError
 
@@ -33,7 +34,8 @@ class ShopifyService:
         self.__shopify_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
 
     def admin_api_request(self, endpoint, payload):
-        response = requests.post(
+        response = http(
+            "POST",
             endpoint,
             json=payload,
             headers={
@@ -42,10 +44,11 @@ class ShopifyService:
             },
         )
 
-        return response.json()
+        return json.loads(response.data.decode("utf-8"))
 
     def admin_api_get_request(self, endpoint):
-        response = requests.get(
+        response = http(
+            "GET",
             endpoint,
             headers={
                 "Content-Type": "application/json",
@@ -53,10 +56,10 @@ class ShopifyService:
             },
         )
 
-        if response.status_code == 404:
+        if response.status == 404:
             raise NotFoundError("Product not found in store.")
 
-        return response.json()
+        return json.loads(response.data.decode("utf-8"))
 
     def create_customer(self, first_name, last_name, email):
         try:

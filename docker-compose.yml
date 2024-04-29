@@ -62,9 +62,9 @@ services:
     image: python:3.12
     command: >
       bash -c "
-      echo 'Waiting for app to start...' &&
-      sleep 20 &&
-      curl 'http://app:8080/health' --verbose --fail &&
+      echo 'Waiting for app to start...' && 
+      sleep 20 && 
+      curl 'http://app:8080/health' --verbose --fail && 
       curl 'http://app:8080/users?logged_in_customer_id=1&path_prefix=/apps/dev&shop=1.myshopify.com&signature=1&timestamp=1' --verbose --fail -H 'Content-Type: application/json' -d '{\"first_name\": \"test\",\"last_name\": \"user\",\"email\": \"test-user@example.com\",\"account_status\": true}'"
     depends_on:
       - db

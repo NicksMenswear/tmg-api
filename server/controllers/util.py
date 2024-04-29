@@ -56,4 +56,4 @@ def http(method, *args, **kwargs):
             }
         )
     merge_kwargs.update(kwargs)
-    return http_pool.request(*args, **merge_kwargs)
+    return http_pool.request(method, *args, **merge_kwargs)

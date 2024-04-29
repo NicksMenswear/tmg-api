@@ -42,7 +42,7 @@ jobs:
         run: docker-compose down
 
       - name: Notify to Slack
-        if: failure() && ${{ inputs.notify }}
+        if: ${{ failure() && inputs.notify }}
         uses: slackapi/slack-github-action@v1
         with:
           channel-id: 'C06KT69EN30' # Notifications

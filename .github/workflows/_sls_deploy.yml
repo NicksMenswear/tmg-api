@@ -18,6 +18,11 @@ on:
           type: boolean
           default: true
           description: Notify Slack
+      release:
+          type: boolean
+          default: false
+          description: Is this a release deployment
+
 
 concurrency:
   group: ${{ github.workflow.name }}-${{ inputs.stage }}
@@ -25,11 +30,12 @@ concurrency:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.stage }}
     timeout-minutes: 20
 
     steps:
@@ -42,6 +48,12 @@ jobs:
         id: get_head_commit_message
         run: |
           echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true
 
       - name: Notify slack
         if: ${{ inputs.notify }}

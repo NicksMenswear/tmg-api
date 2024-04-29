@@ -56,5 +56,5 @@ def send_invite(invite_data):  # noqa: E501
             return "Data is missing or not in the correct format", 204
     except Exception as e:
         db.session.rollback()
-        logger.error(f"An error occurred: {e}")
+        logger.exception(e)
         return f"Internal Server Error : {e}", 500

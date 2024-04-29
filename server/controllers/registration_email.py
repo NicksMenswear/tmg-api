@@ -29,4 +29,4 @@ def send_email(subject, body, sender_email, receiver_email, password):
             logger.info("Message sent successfully.")
 
     except Exception as e:
-        logger.error(f"Failed to send email. Error: {str(e)}")
+        logger.exception(e)

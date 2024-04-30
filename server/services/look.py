@@ -31,7 +31,7 @@ class LookService(BaseService):
     def get_look_by_id_and_user(self, look_id, user_id):
         return Look.query.filter(Look.id == look_id, Look.user_id == user_id).first()
 
-    def create_look(self, **look_data):
+    def create_look(self, look_data):
         look = Look.query.filter(Look.look_name == look_data["look_name"], Look.user_id == look_data["user_id"]).first()
 
         if look:
@@ -55,7 +55,7 @@ class LookService(BaseService):
 
         return look
 
-    def update_look(self, **look_data):
+    def update_look(self, look_data):
         user = self.user_service.get_user_by_email(look_data["email"])
 
         if not user:

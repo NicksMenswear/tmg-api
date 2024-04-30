@@ -160,7 +160,7 @@ class AttendeeService(BaseService):
 
         return attendee
 
-    def soft_delete_attendee(self, **attendee_data):
+    def soft_delete_attendee(self, attendee_data):
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not attendee_user:

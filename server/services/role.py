@@ -13,7 +13,7 @@ class RoleService(BaseService):
     def get_role_by_name(self, role_name):
         return Role.query.filter(Role.role_name == role_name).first()
 
-    def create_role(self, **role_data):
+    def create_role(self, role_data):
         # role = Role.query.filter(Role.role_name == role_data["role_name"], Role.event_id == role_data["event_id"]).first()
         #
         # if role:

@@ -87,7 +87,7 @@ class TestProducts(BaseTestCase):
 
     def test_get_existing_product_by_id(self):
         # given
-        product = self.product_service.create_product(**fixtures.product_request())
+        product = self.product_service.create_product(fixtures.product_request())
 
         # when
         query_params = {**self.hmac_query_params, "product_id": product.id}
@@ -100,7 +100,7 @@ class TestProducts(BaseTestCase):
     def test_get_existing_product_by_id_but_not_active(self):
         # given
         product_id = str(uuid.uuid4())
-        self.product_service.create_product(**fixtures.product_request(id=product_id, is_active=False))
+        self.product_service.create_product(fixtures.product_request(id=product_id, is_active=False))
 
         # when
         query_params = {**self.hmac_query_params, "product_id": product_id}
@@ -131,7 +131,7 @@ class TestProducts(BaseTestCase):
     def test_create_product_with_existing_name(self):
         # given
         product_name = f"product-{str(uuid.uuid4())}"
-        product = self.product_service.create_product(**fixtures.product_request(name=product_name))
+        product = self.product_service.create_product(fixtures.product_request(name=product_name))
 
         # when
         product_request = fixtures.product_request(name=product_name)
@@ -163,8 +163,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products(self):
         # given
-        product1 = self.product_service.create_product(**fixtures.product_request())
-        product2 = self.product_service.create_product(**fixtures.product_request())
+        product1 = self.product_service.create_product(fixtures.product_request())
+        product2 = self.product_service.create_product(fixtures.product_request())
 
         # when
         response = self.client.open(
@@ -183,8 +183,8 @@ class TestProducts(BaseTestCase):
 
     def test_get_list_of_products_excluding_non_active(self):
         # given
-        product1 = self.product_service.create_product(**fixtures.product_request())
-        self.product_service.create_product(**fixtures.product_request(is_active=False))
+        product1 = self.product_service.create_product(fixtures.product_request())
+        self.product_service.create_product(fixtures.product_request(is_active=False))
 
         # when
         response = self.client.open(
@@ -220,7 +220,7 @@ class TestProducts(BaseTestCase):
 
     def test_update_product(self):
         # given
-        product = self.product_service.create_product(**fixtures.product_request())
+        product = self.product_service.create_product(fixtures.product_request())
 
         # when
         updated_product = fixtures.product_request(
@@ -283,7 +283,7 @@ class TestProducts(BaseTestCase):
 
     def test_delete_product(self):
         # given
-        product = self.product_service.create_product(**fixtures.product_request())
+        product = self.product_service.create_product(fixtures.product_request())
         delete_product_payload = {"id": product.id, "is_active": False}
 
         # when

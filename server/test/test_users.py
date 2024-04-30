@@ -50,7 +50,7 @@ class TestUsers(BaseTestCase):
     def test_get_existing_user_by_email(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        user = self.user_service.create_user(**fixtures.user_request(email=email))
+        user = self.user_service.create_user(fixtures.user_request(email=email))
 
         # when
         response = self.client.open(
@@ -113,8 +113,8 @@ class TestUsers(BaseTestCase):
 
     def test_get_list_of_users(self):
         # given
-        user1 = self.user_service.create_user(**fixtures.user_request())
-        user2 = self.user_service.create_user(**fixtures.user_request())
+        user1 = self.user_service.create_user(fixtures.user_request())
+        user2 = self.user_service.create_user(fixtures.user_request())
 
         # when
         response = self.client.open(
@@ -149,7 +149,7 @@ class TestUsers(BaseTestCase):
 
     def test_update_user(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
+        user = self.user_service.create_user(fixtures.user_request())
 
         # when
         updated_user = fixtures.user_request(

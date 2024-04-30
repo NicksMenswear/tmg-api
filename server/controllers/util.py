@@ -51,5 +51,6 @@ def http(method, *args, **kwargs):
     }
     merge_kwargs.update(kwargs)
     if method == "POST":
-        http_pool = urllib3.PoolManager()  # Avoid caching connections for POST, use new pool every time.
+        # Avoid caching connections for POST, use new pool every time.
+        return urllib3.PoolManager().request(method, *args, **merge_kwargs)
     return http_pool.request(method, *args, **merge_kwargs)

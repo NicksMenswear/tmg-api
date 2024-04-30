@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 import connexion
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
@@ -40,6 +41,8 @@ def init_sentry():
         before_send_transaction=filter_transactions,
         environment=os.getenv("STAGE"),
     )
+    for logger in ["connexion.decorators.validation"]:
+        ignore_logger(logger)
 
 
 def init_logging(debug=False):

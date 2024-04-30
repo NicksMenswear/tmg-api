@@ -19,7 +19,7 @@ class UserService(BaseService):
             self.shopify_service = ShopifyService()
             self.email_service = EmailService()
 
-    def create_user(self, **user_data):
+    def create_user(self, user_data):
         user = User.query.filter_by(email=user_data["email"]).first()
 
         if user:
@@ -64,7 +64,7 @@ class UserService(BaseService):
     def get_all_users(self):
         return User.query.all()
 
-    def update_user(self, **user_data):
+    def update_user(self, user_data):
         user = User.query.filter_by(email=user_data["email"]).first()
 
         if not user:

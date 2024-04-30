@@ -34,9 +34,13 @@ class EmailService:
             """
 
             msg.attach(MIMEText(html_body, "html"))
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5) as smtp_server:
                 smtp_server.login(sender_email, password)
-                smtp_server.sendmail(sender_email, receiver_email, msg.as_string())
+                smtp_server.sendmail(
+                    sender_email,
+                    receiver_email,
+                    msg.as_string(),
+                )
                 print("Message sent successfully.")
         except Exception as e:
             raise ServiceError("Failed to send email.", e)

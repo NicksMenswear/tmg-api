@@ -47,6 +47,7 @@ def create_shopify_customer(customer_data):
             "X-Shopify-Access-Token": admin_api_access_token,
         },
     )
+    response.raise_for_status()
     created_customer = json.loads(response.data.decode("utf-8")).get("customer", {})
     return created_customer
 
@@ -63,6 +64,7 @@ def get_access_token():
             },
         )
         response.raise_for_status()
+
         access_token = response.json().get("access_token")
         return access_token
     except urllib3.exceptions.RequestError as error:
@@ -97,10 +99,12 @@ def get_activation_url(customer_id):
             "X-Shopify-Access-Token": admin_api_access_token,
         }
         response = http("POST", url, headers=headers)
-        if response.status == 200:
-            activation_url = json.loads(response.data.decode("utf-8")).get("account_activation_url")
-            logger.info(f"Activation URL: {activation_url}")
-            return activation_url
+        response.raise_for_status()
+
+        activation_url = json.loads(response.data.decode("utf-8")).get("account_activation_url")
+        logger.info(f"Activation URL: {activation_url}")
+
+        return activation_url
     except Exception as e:
         logger.exception(e)
         return f"Internal Server Error : {e}", 500

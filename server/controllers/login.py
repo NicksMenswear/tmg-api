@@ -25,6 +25,8 @@ def login_val(email):
                 "X-Shopify-Access-Token": admin_api_access_token,
             },
         )
+        response.raise_for_status()
+
         customers_response = json.loads(response.data.decode("utf-8")).get("customers", [])
         if isinstance(customers_response, list):
             if len(customers_response) > 0:

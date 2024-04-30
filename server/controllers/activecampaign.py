@@ -33,24 +33,27 @@ def create_contact(data):
     response = http("POST", URL, headers=headers, body=data)
     if response.status == 422:
         return "Already exist", 422
+    response.raise_for_status()
 
     response_data = json.loads(response.data.decode("utf-8"))
     contact_value = response_data.get("contact", {}).get("id")
 
     logger.info(f"Contact Value: {contact_value}")
 
-    if contact_value:
-        url = "https://themoderngroom.api-us1.com/api/3/contactAutomations"
-        body_data = {"contactAutomation": {"contact": str(contact_value), "automation": "189"}}
-        data = json.dumps(body_data)
-        response = http("POST", url, headers=headers, data=data)
-        if response.status == 422:
-            return "Already exist", 422
-        elif response.status == 200 or response.status == 201:
-            return "created contact in automation successfully", 201
-    else:
+    if not contact_value:
         logger.error("No contact_value found.")
         return "Internal Server Error", 500
+
+    url = "https://themoderngroom.api-us1.com/api/3/contactAutomations"
+    body_data = {"contactAutomation": {"contact": str(contact_value), "automation": "189"}}
+    data = json.dumps(body_data)
+
+    response = http("POST", url, headers=headers, data=data)
+    if response.status == 422:
+        return "Already exist", 422
+    response.raise_for_status()
+
+    return "Created contact in automation successfully", 200
 
 
 def create_contact_user(data):
@@ -73,9 +76,11 @@ def create_contact_user(data):
 
     logger.info(f"Contact details: {contact_details}")
     data = json.dumps(contact_details)
+
     response = http("POST", URL, headers=headers, data=data)
     if response.status == 422:
         return "Already exist", 422
+    response.raise_for_status()
 
     response_data = json.loads(response.data.decode("utf-8"))
     contact_value = response_data.get("contact", {}).get("id")

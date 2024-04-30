@@ -78,12 +78,14 @@ class LookService(BaseService):
 
         try:
             new_look = self.create_look(
-                id=uuid.uuid4(),
-                look_name=look_data["look_name"],
-                event_id=look_data.get("event_id"),
-                user_id=look_data.get("user_id"),
-                product_specs=look_data.get("product_specs"),
-                product_final_image=look_data.get("product_final_image"),
+                look_data=dict(
+                    id=uuid.uuid4(),
+                    look_name=look_data["look_name"],
+                    event_id=look_data.get("event_id"),
+                    user_id=look_data.get("user_id"),
+                    product_specs=look_data.get("product_specs"),
+                    product_final_image=look_data.get("product_final_image"),
+                )
             )
 
             new_role = self.role_service.create_role(

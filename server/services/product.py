@@ -19,7 +19,7 @@ class ProductService(BaseService):
     def get_all_active_products(self):
         return ProductItem.query.filter_by(is_active=True).all()
 
-    def create_product(self, **product_data):
+    def create_product(self, product_data):
         product = ProductItem.query.filter_by(name=product_data["name"]).first()
 
         if product:
@@ -57,7 +57,7 @@ class ProductService(BaseService):
             raise ServiceError("Failed to create product.", e)
         return product
 
-    def update_product(self, product_id, **product_data):
+    def update_product(self, product_id, product_data):
         product = ProductItem.query.filter_by(id=product_id).first()
 
         if not product:

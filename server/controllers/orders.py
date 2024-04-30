@@ -14,7 +14,7 @@ def create_order(order):
     order_service = OrderService()
 
     try:
-        order = order_service.create_order(**order)
+        order = order_service.create_order(order)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404
@@ -51,7 +51,7 @@ def update_order(order):
     order_service = OrderService()
 
     try:
-        order = order_service.update_order(**order)
+        order = order_service.update_order(order)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404

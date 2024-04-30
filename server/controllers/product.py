@@ -12,7 +12,7 @@ def create_product_item(product_item):
     product_service = ProductService()
 
     try:
-        product = product_service.create_product(**product_item)
+        product = product_service.create_product(product_item)
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
@@ -46,7 +46,7 @@ def update_product_item(product_data):
     product_service = ProductService()
 
     try:
-        product = product_service.update_product(product_data["id"], **product_data)
+        product = product_service.update_product(product_data["id"], product_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": NotFoundError.MESSAGE}), 404

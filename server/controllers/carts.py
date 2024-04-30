@@ -17,7 +17,7 @@ def create_cart(cart):
     cart_service = CartService()
 
     try:
-        cart = cart_service.create_cart(**cart)
+        cart = cart_service.create_cart(cart)
     except ServiceError as e:
         logger.exception(e)
         return jsonify({"errors": e.message}), 500
@@ -57,7 +57,7 @@ def update_cart(cart):
     cart_service = CartService()
 
     try:
-        cart = cart_service.update_cart(**cart)
+        cart = cart_service.update_cart(cart)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

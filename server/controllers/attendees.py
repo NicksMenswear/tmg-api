@@ -18,7 +18,7 @@ def add_attendee(attendee_data):
     attendee_service = AttendeeService()
 
     try:
-        attendee = attendee_service.create_attendee(**attendee_data)
+        attendee = attendee_service.create_attendee(attendee_data)
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
@@ -50,7 +50,7 @@ def update_attendee(attendee_data):
     attendee_service = AttendeeService()
 
     try:
-        attendee = attendee_service.update_attendee(**attendee_data)
+        attendee = attendee_service.update_attendee(attendee_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
@@ -79,7 +79,7 @@ def soft_delete_attendee(attendee_data):
     attendee_service = AttendeeService()
 
     try:
-        attendee_service.soft_delete_attendee(**attendee_data)
+        attendee_service.soft_delete_attendee(attendee_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

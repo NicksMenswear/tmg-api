@@ -29,11 +29,11 @@ def create_event(event):
 
 
 @hmac_verification
-def list_events(email):
+def list_events_for_user_by_email(email):
     event_service = EventService()
 
     try:
-        events = event_service.get_events_with_looks_by_user_email(email)
+        events = event_service.list_events_for_user_by_email(email)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

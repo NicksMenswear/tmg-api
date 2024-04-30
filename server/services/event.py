@@ -4,21 +4,16 @@ from server.database.database_manager import db
 from server.database.models import Event, User, Look, Attendee, Role
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.base import BaseService
-from server.services.look import LookService
 
 
 class EventService(BaseService):
-    def __init__(self):
-        super().__init__()
-        self.look_service = LookService()
-
     def get_event_by_id(self, event_id):
         return Event.query.filter_by(id=event_id).first()
 
     def get_event_by_user_id(self, user_id):
         return Event.query.filter_by(user_id=user_id).first()  # TODO: this is bug!
 
-    def get_events_with_looks_by_user_email(self, email):
+    def list_events_for_user_by_email(self, email):
         user = User.query.filter_by(email=email).first()
 
         if not user:
@@ -26,34 +21,7 @@ class EventService(BaseService):
 
         events = Event.query.filter(Event.user_id == user.id, Event.is_active).all()
 
-        enriched_events = []
-
-        for event in events:
-            enriched_event = {
-                "id": event.id,
-                "event_name": event.event_name,
-                "event_date": str(event.event_date),
-                "user_id": str(event.user_id),
-                "is_active": event.is_active,
-                "looks": [],
-            }
-
-            looks = self.look_service.get_looks_by_event_id(event.id)
-
-            for look in looks:
-                enriched_event["looks"].append(
-                    {
-                        "id": look.id,
-                        "look_name": look.look_name,
-                        "user_id": look.user_id,
-                        "product_specs": look.product_specs,
-                        "product_final_image": look.product_final_image,
-                    }
-                )
-
-            enriched_events.append(enriched_event)
-
-        return enriched_events
+        return [event.to_dict() for event in events]
 
     def get_events_with_attendees_by_user_email(self, email):
         user = User.query.filter_by(email=email).first()

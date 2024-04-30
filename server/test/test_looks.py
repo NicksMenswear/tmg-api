@@ -113,6 +113,38 @@ class TestLooks(BaseTestCase):
         self.assert_equal_response_look_with_db_look(look11, response.json[0])
         self.assert_equal_response_look_with_db_look(look21, response.json[1])
 
+    def test_get_non_existing_look_by_id(self):
+        # when
+        response = self.client.open(
+            f"/looks/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_look_by_id(self):
+        # given
+        user = self.user_service.create_user(**fixtures.user_request())
+        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/looks/{str(look.id)}",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assert_equal_response_look_with_db_look(look, response.json)
+
     def test_get_look_by_id_and_user(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())

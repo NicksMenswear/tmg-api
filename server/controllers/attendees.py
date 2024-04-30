@@ -62,7 +62,7 @@ def update_attendee(attendee_data):
 
 
 @hmac_verification
-def get_attendees_by_eventid(event_id):
+def get_attendees_for_event(event_id):
     attendee_service = AttendeeService()
 
     try:

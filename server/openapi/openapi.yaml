@@ -307,7 +307,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{email}:
     get:
-      operationId: list_events
+      operationId: list_events_for_user_by_email
       parameters:
         - explode: false
           in: path

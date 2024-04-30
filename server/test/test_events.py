@@ -31,9 +31,6 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_event["user_id"], str(event.user_id))
         self.assertEqual(response_event["is_active"], event.is_active)
 
-        if "looks" in response_event and len(response_event["looks"]) > 0:
-            pass
-
     def test_get_events_for_non_existing_user_by_email(self):
         # when
         response = self.client.open(
@@ -141,12 +138,10 @@ class TestEvents(BaseTestCase):
             self.event_service.get_event_by_id(response.json["id"]), response.json
         )
 
-    def test_get_events_with_look_by_user_email(self):
+    def test_get_events_for_user_by_email(self):
         # given
         user = self.user_service.create_user(**fixtures.user_request())
         event = self.event_service.create_event(**fixtures.event_request(email=user.email))
-        look1 = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
-        look2 = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
 
         # when
         response = self.client.open(

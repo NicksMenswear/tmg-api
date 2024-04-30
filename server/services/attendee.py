@@ -82,8 +82,8 @@ class AttendeeService(BaseService):
             .filter(
                 Event.id == event_id,
                 Attendee.attendee_id == user.id,
-                Event.is_active == True,
-                Attendee.is_active == True,
+                Event.is_active,
+                Attendee.is_active,
             )
             .first()
         )

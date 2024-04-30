@@ -570,7 +570,7 @@ paths:
       x-openapi-router-controller: server.controllers.attendees
   /event_attendees_by_eventid:
     get:
-      operationId: get_attendees_by_eventid
+      operationId: get_attendees_for_event
       parameters:
         - description: Unique identifier of the event to retrieve attendees
           explode: true

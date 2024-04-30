@@ -23,7 +23,7 @@ def add_attendee(attendee_data):
         logger.debug(e)
         return jsonify({"errors": DuplicateError.MESSAGE}), 409
     except ServiceError as e:
-        logger.exception(e)
+        logger.exception(e.message)
         return jsonify({"errors": "Failed to create attendee"}), 500
 
     return attendee.to_dict(), 201
@@ -39,7 +39,7 @@ def get_attendee_event(email, event_id):
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.exception(e)
+        logger.exception(e.message)
         return jsonify({"errors": "Failed to get attendee's event"}), 500
 
     return event.to_dict(), 200
@@ -55,14 +55,14 @@ def update_attendee(attendee_data):
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.exception(e)
+        logger.exception(e.message)
         return jsonify({"errors": "Failed to get attendee"}), 500
 
     return attendee.to_dict(), 200
 
 
 @hmac_verification
-def get_attendees_by_eventid(event_id):
+def get_attendees_for_event(event_id):
     attendee_service = AttendeeService()
 
     try:
@@ -84,7 +84,7 @@ def soft_delete_attendee(attendee_data):
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
     except ServiceError as e:
-        logger.exception(e)
+        logger.exception(e.message)
         return jsonify({"errors": e.message}), 500
 
     return None, 204

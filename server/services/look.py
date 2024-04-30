@@ -31,7 +31,7 @@ class LookService(BaseService):
     def get_look_by_id_and_user(self, look_id, user_id):
         return Look.query.filter(Look.id == look_id, Look.user_id == user_id).first()
 
-    def create_look(self, **look_data):
+    def create_look(self, look_data):
         look = Look.query.filter(Look.look_name == look_data["look_name"], Look.user_id == look_data["user_id"]).first()
 
         if look:
@@ -55,7 +55,7 @@ class LookService(BaseService):
 
         return look
 
-    def update_look(self, **look_data):
+    def update_look(self, look_data):
         user = self.user_service.get_user_by_email(look_data["email"])
 
         if not user:
@@ -78,16 +78,18 @@ class LookService(BaseService):
 
         try:
             new_look = self.create_look(
-                id=uuid.uuid4(),
-                look_name=look_data["look_name"],
-                event_id=look_data.get("event_id"),
-                user_id=look_data.get("user_id"),
-                product_specs=look_data.get("product_specs"),
-                product_final_image=look_data.get("product_final_image"),
+                look_data=dict(
+                    id=uuid.uuid4(),
+                    look_name=look_data["look_name"],
+                    event_id=look_data.get("event_id"),
+                    user_id=look_data.get("user_id"),
+                    product_specs=look_data.get("product_specs"),
+                    product_final_image=look_data.get("product_final_image"),
+                )
             )
 
             new_role = self.role_service.create_role(
-                role_name=role.role_name, event_id=role.event_id, look_id=new_look.id
+                role_data=dict(role_name=role.role_name, event_id=role.event_id, look_id=new_look.id)
             )
 
             attendee.role = new_role.id

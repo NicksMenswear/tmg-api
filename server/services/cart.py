@@ -29,7 +29,7 @@ class CartService(BaseService):
 
         return cart
 
-    def create_cart(self, **cart_data):
+    def create_cart(self, cart_data):
         try:
             cart = Cart(
                 id=uuid.uuid4(),
@@ -80,7 +80,7 @@ class CartService(BaseService):
 
         return response
 
-    def update_cart(self, **update_cart_data):
+    def update_cart(self, update_cart_data):
         cart = Cart.query.filter(Cart.id == update_cart_data["id"]).one_or_none()
 
         if not cart:

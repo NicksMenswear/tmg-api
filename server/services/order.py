@@ -42,7 +42,7 @@ class OrderService(BaseService):
 
         return enriched_orders
 
-    def create_order(self, **order_data):
+    def create_order(self, order_data):
         user = self.user_service.get_user_by_email(order_data["email"])
 
         if not user:
@@ -87,7 +87,7 @@ class OrderService(BaseService):
 
         return enriched_order
 
-    def update_order(self, **order_data):
+    def update_order(self, order_data):
         order = Order.query.filter(Order.id == order_data["id"]).first()
 
         if not order:

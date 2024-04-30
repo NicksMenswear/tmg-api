@@ -77,7 +77,7 @@ class EventService(BaseService):
 
         return formatted_data
 
-    def create_event(self, **event_data):
+    def create_event(self, event_data):
         user = User.query.filter_by(email=event_data["email"]).first()
 
         if not user:
@@ -107,7 +107,7 @@ class EventService(BaseService):
 
         return event
 
-    def update_event(self, **event_data):
+    def update_event(self, event_data):
         event = Event.query.filter(Event.id == event_data["id"], Event.user_id == event_data["user_id"]).first()
 
         if not event:
@@ -123,7 +123,7 @@ class EventService(BaseService):
 
         return event
 
-    def soft_delete_event(self, **event_data):
+    def soft_delete_event(self, event_data):
         event = Event.query.filter(Event.id == event_data["event_id"], Event.user_id == event_data["user_id"]).first()
 
         if not event:

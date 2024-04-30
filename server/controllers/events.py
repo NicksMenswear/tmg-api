@@ -14,7 +14,7 @@ def create_event(event):
     event_service = EventService()
 
     try:
-        event = event_service.create_event(**event)
+        event = event_service.create_event(event)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
@@ -59,7 +59,7 @@ def update_event(event):
     event_service = EventService()
 
     try:
-        event = event_service.update_event(**event)
+        event = event_service.update_event(event)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
@@ -75,7 +75,7 @@ def soft_delete_event(event):
     event_service = EventService()
 
     try:
-        event_service.soft_delete_event(**event)
+        event_service.soft_delete_event(event)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

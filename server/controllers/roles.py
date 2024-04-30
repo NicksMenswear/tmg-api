@@ -24,7 +24,7 @@ def create_role(role_data):
         return jsonify({"errors": "Look not found"}), 404
 
     try:
-        role = role_service.create_role(**role_data)
+        role = role_service.create_role(role_data)
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 409

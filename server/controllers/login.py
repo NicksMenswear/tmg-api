@@ -25,6 +25,9 @@ def login_val(email):
                 "X-Shopify-Access-Token": admin_api_access_token,
             },
         )
+        if response.status >= 400:
+            return f"Failed to search customers with {response.status}", 500
+
         customers_response = json.loads(response.data.decode("utf-8")).get("customers", [])
         if isinstance(customers_response, list):
             if len(customers_response) > 0:

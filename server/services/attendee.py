@@ -21,14 +21,14 @@ class AttendeeService(BaseService):
             self.shopify_service = ShopifyService()
             self.email_service = EmailService()
 
-    def create_attendee(self, **attendee_data):
+    def create_attendee(self, attendee_data):
         user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not user:
             disabled_user = {**attendee_data, "account_status": False}
 
             try:
-                user = self.user_service.create_user(**disabled_user)
+                user = self.user_service.create_user(disabled_user)
             except Exception as e:
                 raise ServiceError("Failed to create user for attendee.", e)
 
@@ -130,7 +130,7 @@ class AttendeeService(BaseService):
 
         return enriched_attendees
 
-    def update_attendee(self, **attendee_data):
+    def update_attendee(self, attendee_data):
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not attendee_user:
@@ -160,7 +160,7 @@ class AttendeeService(BaseService):
 
         return attendee
 
-    def soft_delete_attendee(self, **attendee_data):
+    def soft_delete_attendee(self, attendee_data):
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not attendee_user:

@@ -46,7 +46,7 @@ class TestEvents(BaseTestCase):
     def test_get_empty_list_of_events_by_user_email(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        self.user_service.create_user(**fixtures.user_request(email=email))
+        self.user_service.create_user(fixtures.user_request(email=email))
 
         # when
         response = self.client.open(
@@ -63,10 +63,10 @@ class TestEvents(BaseTestCase):
     def test_get_list_of_2_events_by_user_email_but_only_1_active(self):
         # given
         email = f"{str(uuid.uuid4())}@example.com"
-        user = self.user_service.create_user(**fixtures.user_request(email=email))
+        user = self.user_service.create_user(fixtures.user_request(email=email))
 
-        self.event_service.create_event(**fixtures.event_request(email=user.email, is_active=False))
-        active_event = self.event_service.create_event(**fixtures.event_request(email=user.email, is_active=True))
+        self.event_service.create_event(fixtures.event_request(email=user.email, is_active=False))
+        active_event = self.event_service.create_event(fixtures.event_request(email=user.email, is_active=True))
 
         # when
         response = self.client.open(
@@ -97,8 +97,8 @@ class TestEvents(BaseTestCase):
 
     def test_create_event_duplicate(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
 
         # when
         response = self.client.open(
@@ -118,7 +118,7 @@ class TestEvents(BaseTestCase):
 
     def test_create_event(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
+        user = self.user_service.create_user(fixtures.user_request())
 
         # when
         event_request = fixtures.event_request(email=user.email)
@@ -140,8 +140,8 @@ class TestEvents(BaseTestCase):
 
     def test_get_events_for_user_by_email(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
 
         # when
         response = self.client.open(
@@ -159,8 +159,8 @@ class TestEvents(BaseTestCase):
 
     def test_update_event(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
 
         # when
         response = self.client.open(
@@ -181,8 +181,8 @@ class TestEvents(BaseTestCase):
 
     def test_soft_delete_event(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
 
         # when
         response = self.client.open(
@@ -202,12 +202,12 @@ class TestEvents(BaseTestCase):
 
     def test_get_events_with_attendees_by_user_email(self):
         # given
-        user = self.user_service.create_user(**fixtures.user_request())
-        event = self.event_service.create_event(**fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(**fixtures.look_request(event_id=event.id, user_id=user.id))
-        role = self.role_service.create_role(**fixtures.role_request(event_id=event.id, look_id=look.id))
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        look = self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
+        role = self.role_service.create_role(fixtures.role_request(event_id=event.id, look_id=look.id))
         attendee = self.attendee_service.create_attendee(
-            **fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id)
+            fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id)
         )
 
         # when

@@ -89,7 +89,7 @@ class LookService(BaseService):
             )
 
             new_role = self.role_service.create_role(
-                role_name=role.role_name, event_id=role.event_id, look_id=new_look.id
+                role_data=dict(role_name=role.role_name, event_id=role.event_id, look_id=new_look.id)
             )
 
             attendee.role = new_role.id

@@ -44,10 +44,16 @@ def hmac_verification(func):
     return wrapper
 
 
-def http(*args, **kwargs):
+def http(method, *args, **kwargs):
     merge_kwargs = {
         "timeout": 3,
         "retries": urllib3.util.Retry(total=1, connect=None, read=None, redirect=0, status=None),
     }
+    if method == "POST":
+        merge_kwargs.update(
+            {
+                "retries": urllib3.util.Retry(connect=1, read=0, redirect=0, status=0, allowed_methods=["POST"]),
+            }
+        )
     merge_kwargs.update(kwargs)
-    return http_pool.request(*args, **merge_kwargs)
+    return http_pool.request(method, *args, **merge_kwargs)

@@ -153,14 +153,16 @@ class TestCarts(BaseTestCase):
             fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
         )
         cart = self.cart_service.create_cart(
-            user_id=str(user.id),
-            event_id=str(event.id),
-            attendee_id=str(attendee.id),
-            products=[
-                fixtures.create_cart_product_request(),
-                fixtures.create_cart_product_request(),
-                fixtures.create_cart_product_request(),
-            ],
+            dict(
+                user_id=str(user.id),
+                event_id=str(event.id),
+                attendee_id=str(attendee.id),
+                products=[
+                    fixtures.create_cart_product_request(),
+                    fixtures.create_cart_product_request(),
+                    fixtures.create_cart_product_request(),
+                ],
+            )
         )
 
         # when
@@ -205,12 +207,14 @@ class TestCarts(BaseTestCase):
             fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
         )
         cart = self.cart_service.create_cart(
-            user_id=str(user.id),
-            event_id=str(event.id),
-            attendee_id=str(attendee.id),
-            products=[
-                fixtures.create_cart_product_request(),
-            ],
+            dict(
+                user_id=str(user.id),
+                event_id=str(event.id),
+                attendee_id=str(attendee.id),
+                products=[
+                    fixtures.create_cart_product_request(),
+                ],
+            )
         )
 
         # when
@@ -254,14 +258,16 @@ class TestCarts(BaseTestCase):
             fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
         )
         cart = self.cart_service.create_cart(
-            user_id=str(user.id),
-            event_id=str(event.id),
-            attendee_id=str(attendee.id),
-            products=[
-                fixtures.create_cart_product_request(),
-                fixtures.create_cart_product_request(),
-                fixtures.create_cart_product_request(),
-            ],
+            dict(
+                user_id=str(user.id),
+                event_id=str(event.id),
+                attendee_id=str(attendee.id),
+                products=[
+                    fixtures.create_cart_product_request(),
+                    fixtures.create_cart_product_request(),
+                    fixtures.create_cart_product_request(),
+                ],
+            )
         )
 
         update_cart_request = fixtures.update_cart_request(

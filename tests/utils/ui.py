@@ -20,7 +20,7 @@ def login(page: Page, email: str, password: str):
 def create_new_event(
     page: Page, event_name: str, event_date: str, attendee_first_name: str, attendee_last_name: str, attendee_email: str
 ):
-    page.get_by_role("link", name="NEW EVENTS").click()
+    page.get_by_role("link", name="NEW EVENT").click()
     page.get_by_label("Event Name:").fill(event_name)
     page.get_by_label("Event Date:").fill(event_date)
     page.get_by_role("button", name="Save").click()

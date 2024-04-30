@@ -29,7 +29,8 @@ def search_customer_by_email(email):
                 "X-Shopify-Access-Token": admin_api_access_token,
             },
         )
-        response.raise_for_status()
+        if response.status >= 400:
+            return f"Failed to get shopify customer with {response.status}", 500
         customers = json.loads(response.data.decode("utf-8")).get("customers", [])
         return customers
     except urllib3.exceptions.RequestError as error:
@@ -47,7 +48,9 @@ def create_shopify_customer(customer_data):
             "X-Shopify-Access-Token": admin_api_access_token,
         },
     )
-    response.raise_for_status()
+    if response.status >= 400:
+        return f"Failed to create shopify customer with {response.status}", 500
+
     created_customer = json.loads(response.data.decode("utf-8")).get("customer", {})
     return created_customer
 
@@ -63,7 +66,8 @@ def get_access_token():
                 "grant_type": "client_credentials",
             },
         )
-        response.raise_for_status()
+        if response.status >= 400:
+            return f"Failed to get shopify access_token with {response.status}", 500
 
         access_token = response.json().get("access_token")
         return access_token
@@ -99,7 +103,8 @@ def get_activation_url(customer_id):
             "X-Shopify-Access-Token": admin_api_access_token,
         }
         response = http("POST", url, headers=headers)
-        response.raise_for_status()
+        if response.status >= 400:
+            return f"Failed to create account_activation_url {response.status}", 500
 
         activation_url = json.loads(response.data.decode("utf-8")).get("account_activation_url")
         logger.info(f"Activation URL: {activation_url}")

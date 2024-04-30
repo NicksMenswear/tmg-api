@@ -43,7 +43,8 @@ class ShopifyService:
                 "X-Shopify-Access-Token": self.__admin_api_access_token,
             },
         )
-        response.raise_for_status()
+        if response.status >= 400:
+            raise ServiceError(f"Shopify API request failed with {response.status}")
         return json.loads(response.data.decode("utf-8"))
 
     def admin_api_get_request(self, endpoint):
@@ -58,7 +59,8 @@ class ShopifyService:
 
         if response.status == 404:
             raise NotFoundError("Product not found in store.")
-        response.raise_for_status()
+        if response.status >= 400:
+            raise ServiceError(f"Shopify API request failed with {response.status}")
 
         return json.loads(response.data.decode("utf-8"))
 

@@ -385,3 +385,37 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertNotEqual(response.json["id"], str(look.id))
+
+    def test_get_empty_set_of_events_for_look(self):
+        # when
+        response = self.client.open(
+            f"/looks/{str(uuid.uuid4())}/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_events_for_look(self):
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
+
+        # when
+        response = self.client.open(
+            f"/looks/{str(look.id)}/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["id"], str(event.id))
+        self.assertEqual(response.json[0]["event_name"], str(event.event_name))

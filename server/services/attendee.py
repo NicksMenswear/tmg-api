@@ -13,6 +13,7 @@ class AttendeeService:
     def __init__(self):
         super().__init__()
         self.user_service = UserService()
+
         if FlaskApp.current().config["TMG_APP_TESTING"]:
             self.shopify_service = FakeShopifyService()
             self.email_service = FakeEmailService()
@@ -94,6 +95,10 @@ class AttendeeService:
         return event
 
     def get_attendees_for_event_by_id(self, event_id):
+        from server.services.look import LookService
+
+        look_service = LookService()
+
         event = Event.query.filter(Event.id == event_id).first()
 
         if not event:
@@ -101,7 +106,7 @@ class AttendeeService:
 
         attendees = (
             Attendee.query.join(Event, Attendee.event_id == Event.id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active == True, Event.is_active == True)
+            .filter(Attendee.event_id == event_id, Attendee.is_active, Event.is_active)
             .all()
         )
 
@@ -128,7 +133,7 @@ class AttendeeService:
             }
 
             if attendee.look_id:
-                look = self.look_service.get_look_by_id(attendee.look_id)
+                look = look_service.get_look_by_id(attendee.look_id)
 
                 if look:
                     data["look_name"] = look.name

@@ -25,6 +25,16 @@ class LookService:
     def get_look_by_id_and_user(self, look_id, user_id):
         return Look.query.filter(Look.id == look_id, Look.user_id == user_id).first()
 
+    def get_events_for_look(self, look_id):
+        looks = Look.query.filter(Look.id == look_id).all()
+
+        if looks:
+            event_ids = [look.event_id for look in looks]
+
+            return Event.query.filter(Event.id.in_(event_ids)).all()
+
+        return []
+
     def create_look(self, look_data):
         look = Look.query.filter(Look.look_name == look_data["look_name"], Look.user_id == look_data["user_id"]).first()
 

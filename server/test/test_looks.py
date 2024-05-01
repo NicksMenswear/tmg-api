@@ -94,7 +94,7 @@ class TestLooks(BaseTestCase):
         event2 = self.event_service.create_event(fixtures.event_request(email=user2.email))
         look11 = self.look_service.create_look(fixtures.look_request(event_id=event1.id, user_id=user1.id))
         look21 = self.look_service.create_look(fixtures.look_request(event_id=event2.id, user_id=user1.id))
-        look22 = self.look_service.create_look(fixtures.look_request(event_id=event2.id, user_id=user2.id))
+        self.look_service.create_look(fixtures.look_request(event_id=event2.id, user_id=user2.id))
 
         # when
         query_params = {**self.hmac_query_params.copy(), "user_id": str(user1.id)}
@@ -293,7 +293,7 @@ class TestLooks(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
+        self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
 
         # when
         look_data = fixtures.update_look_request(
@@ -316,12 +316,9 @@ class TestLooks(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
 
         # when
-        look_data = fixtures.update_look_request(
-            event_id=event.id, user_id=user.id, email=user.email, look_id=str(uuid.uuid4())
-        )
+        look_data = fixtures.update_look_request(event_id=event.id, user_id=user.id, look_id=str(uuid.uuid4()))
 
         response = self.client.open(
             "/looks",
@@ -363,18 +360,16 @@ class TestLooks(BaseTestCase):
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
         look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
-        attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
+        self.attendee_service.create_attendee(
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
         )
 
         # when
         look_data = fixtures.update_look_request(
             user_id=str(user.id),
-            email=user.email,
-            look_id=str(look.id),
+            id=str(look.id),
             event_id=str(event.id),
-            attendee_id=str(attendee.id),
             look_name=f"{str(uuid.uuid4())}-new_look_name",
         )
 

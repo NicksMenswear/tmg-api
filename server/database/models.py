@@ -72,13 +72,14 @@ class Attendee(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"), nullable=True)
+    look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"), nullable=True)
     style = Column(Integer, unique=False, index=True, nullable=False)
     invite = Column(Integer, unique=False, index=True, nullable=False)
     pay = Column(Integer, unique=False, index=True, nullable=False)
     size = Column(Integer, unique=False, index=True, nullable=False)
     ship = Column(Integer, unique=False, index=True, nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"), nullable=True)
 
     def to_dict(self):
         """Convert the model instance to a dictionary."""
@@ -86,13 +87,14 @@ class Attendee(Base):
             "id": self.id,
             "attendee_id": self.attendee_id,
             "event_id": str(self.event_id),
+            "role": self.role,
+            "look_id": self.look_id,
             "style": self.style,
             "invite": self.invite,
             "pay": self.pay,
             "size": self.size,
             "ship": self.ship,
             "is_active": self.is_active,
-            "role": self.role,
         }
         return result
 
@@ -223,10 +225,9 @@ class Role(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     role_name = Column(String, index=True, nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-    look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"), nullable=False)
 
     def to_dict(self):
-        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id, "look_id": self.look_id}
+        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id}
 
 
 class Cart(Base):

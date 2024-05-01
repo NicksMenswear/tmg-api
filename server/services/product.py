@@ -3,10 +3,9 @@ import uuid
 from server.database.database_manager import db
 from server.database.models import ProductItem
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.base import BaseService
 
 
-class ProductService(BaseService):
+class ProductService:
     def get_product_by_name(self, name):
         return ProductItem.query.filter_by(name=name).first()
 

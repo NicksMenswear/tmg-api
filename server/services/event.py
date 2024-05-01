@@ -1,12 +1,11 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Look, Attendee, Role
+from server.database.models import Event, User, Attendee
 from server.services import ServiceError, NotFoundError, DuplicateError
-from server.services.base import BaseService
 
 
-class EventService(BaseService):
+class EventService:
     def get_event_by_id(self, event_id):
         return Event.query.filter_by(id=event_id).first()
 
@@ -24,6 +23,10 @@ class EventService(BaseService):
         return [event.to_dict() for event in events]
 
     def get_events_with_attendees_by_user_email(self, email):
+        from server.services.look import LookService
+
+        look_service = LookService()
+
         user = User.query.filter_by(email=email).first()
 
         if not user:
@@ -31,7 +34,7 @@ class EventService(BaseService):
 
         attendees = Attendee.query.filter(Attendee.attendee_id == user.id).all()
 
-        formatted_data = []
+        response = []
 
         for attendee in attendees:
             event = Event.query.filter(Event.id == attendee.event_id, Event.is_active).first()
@@ -39,43 +42,23 @@ class EventService(BaseService):
             if event is None:
                 continue
 
-            role = Role.query.filter(Role.id == attendee.role).first()
+            enriched_attendee = {
+                "event_id": event.id,
+                "event_name": event.event_name,
+                "event_date": str(event.event_date),
+                "user_id": str(event.user_id),
+            }
 
-            if role:
-                look = Look.query.filter(Look.id == role.look_id).first()
+            if attendee.look_id:
+                look = look_service.get_look_by_id(attendee.look_id)
 
-                if look is None:
-                    look_data = {}
-                else:
-                    look_data = {
-                        "id": look.id,
-                        "look_name": look.look_name,
-                        "product_specs": look.product_specs,
-                        "product_final_image": look.product_final_image,
-                    }
-                data = {
-                    "event_id": event.id,
-                    "event_name": event.event_name,
-                    "event_date": str(event.event_date),
-                    "user_id": str(event.user_id),
-                    "look_data": look_data,
-                }
+                if look:
+                    enriched_attendee["look_id"] = look.id
+                    enriched_attendee["look_name"] = look.look_name
 
-                formatted_data.append(data)
-            else:
-                look_data = {}
+            response.append(enriched_attendee)
 
-                data = {
-                    "event_id": event.id,
-                    "event_name": event.event_name,
-                    "event_date": str(event.event_date),
-                    "user_id": str(event.user_id),
-                    "look_data": look_data,
-                }
-
-                formatted_data.append(data)
-
-        return formatted_data
+        return response
 
     def create_event(self, event_data):
         user = User.query.filter_by(email=event_data["email"]).first()

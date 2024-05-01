@@ -205,9 +205,9 @@ class TestEvents(BaseTestCase):
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
         look = self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
-        role = self.role_service.create_role(fixtures.role_request(event_id=event.id, look_id=look.id))
-        attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id)
+        role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+        self.attendee_service.create_attendee(
+            fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id, look_id=look.id)
         )
 
         # when
@@ -226,7 +226,5 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json[0]["event_name"], event.event_name)
         self.assertEqual(response.json[0]["event_date"], str(event.event_date))
         self.assertEqual(response.json[0]["user_id"], str(event.user_id))
-        self.assertEqual(response.json[0]["look_data"]["id"], str(look.id))
-        self.assertEqual(response.json[0]["look_data"]["look_name"], look.look_name)
-        self.assertEqual(response.json[0]["look_data"]["product_specs"], look.product_specs)
-        self.assertEqual(response.json[0]["look_data"]["product_final_image"], look.product_final_image)
+        self.assertEqual(response.json[0]["look_id"], str(look.id))
+        self.assertEqual(response.json[0]["look_name"], look.look_name)

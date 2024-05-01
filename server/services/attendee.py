@@ -2,15 +2,14 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event
-from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.base import BaseService
-from server.services.shopify import ShopifyService, FakeShopifyService
-from server.services.emails import EmailService, FakeEmailService
-from server.services.user import UserService
 from server.flask_app import FlaskApp
+from server.services import DuplicateError, ServiceError, NotFoundError
+from server.services.emails import EmailService, FakeEmailService
+from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.user import UserService
 
 
-class AttendeeService(BaseService):
+class AttendeeService:
     def __init__(self):
         super().__init__()
         self.user_service = UserService()
@@ -52,6 +51,7 @@ class AttendeeService(BaseService):
                     size=attendee_data.get("size"),
                     ship=attendee_data.get("ship"),
                     role=attendee_data.get("role"),
+                    look_id=attendee_data.get("look_id"),
                     is_active=attendee_data.get("is_active", True),
                 )
 
@@ -124,7 +124,14 @@ class AttendeeService(BaseService):
                 "ship": attendee.ship,
                 "is_Active": attendee.is_active,
                 "role": attendee.role,
+                "look_id": attendee.look_id,
             }
+
+            if attendee.look_id:
+                look = self.look_service.get_look_by_id(attendee.look_id)
+
+                if look:
+                    data["look_name"] = look.name
 
             enriched_attendees.append(data)
 
@@ -151,6 +158,7 @@ class AttendeeService(BaseService):
         attendee.size = attendee_data["size"]
         attendee.ship = attendee_data["ship"]
         attendee.role = attendee_data["role"]
+        attendee.look_id = attendee_data["look_id"]
 
         try:
             db.session.commit()

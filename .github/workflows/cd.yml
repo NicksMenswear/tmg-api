@@ -1,0 +1,79 @@
+name: CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment to deploy
+        options:
+        - dev
+        - stg
+
+concurrency:
+  group: cd-stg
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  sls-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get head commit message
+        id: get_head_commit_message
+        run: |
+          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+
+      - name: Notify slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *Serverless deployment has started for:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+
+      - name: Install Serverless
+        run: npm install -g serverless@3.38.*
+
+      - name: Install Serverless dependencies
+        run: npm install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
+
+      - name: Sls Deploy
+        run: sls deploy --stage ${{ github.event.inputs.environment || 'dev' }}
+
+      - name: Notify slack
+        if: ${{ always() }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *Serverless Deployment ${{ job.status == 'success' && 'Completed :rocket:' || 'Failed :hot_face:' }}*
+            *Repo:* ${{ github.repository }}
+            *Ref:* ${{ github.ref }}
+            *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            *Status:* ${{ job.status }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

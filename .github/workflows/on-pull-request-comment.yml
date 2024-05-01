@@ -1,0 +1,13 @@
+name: on-pull-request-comment
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # TODO run deploy + e2e
+  ci:
+    uses: ./.github/workflows/_unit_tests.yml
+    with:
+      ref: ${{ github.ref_name }}

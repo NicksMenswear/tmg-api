@@ -1,9 +1,6 @@
 name: on-pull-request-comment
 
-on:
-  pull_request:
-    branches:
-      - main
+on: {}
 
 jobs:
   # TODO run deploy + e2e

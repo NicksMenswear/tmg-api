@@ -25,7 +25,7 @@ jobs:
             echo stages='["${{ inputs.stage }}"]' >> $GITHUB_OUTPUT
           fi
 
-  test:
+  e2e:
     needs: setup
     uses: ./.github/workflows/_e2e_tests.yml
     with:

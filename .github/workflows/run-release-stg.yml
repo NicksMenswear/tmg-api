@@ -8,6 +8,10 @@ on:
         description: semver
         required: true
 
+concurrency:
+  group: ${{ github.workflow.name }}-stg
+  cancel-in-progress: false
+
 jobs:
   validate-semver:
     runs-on: ubuntu-latest

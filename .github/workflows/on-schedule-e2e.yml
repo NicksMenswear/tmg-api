@@ -15,5 +15,5 @@ jobs:
       fail-fast: false
       matrix:
         stage:
-          - dev
           - stg
+          # - prd

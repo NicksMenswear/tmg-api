@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [created]
 
+concurrency:
+  group: ${{ github.workflow.name }}
+  cancel-in-progress: false
+
 jobs:
   cd:
     if: ${{ contains(github.event.comment.body, '/e2e') }}

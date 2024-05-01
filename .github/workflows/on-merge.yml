@@ -16,6 +16,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    uses: ./.github/workflows/_unit_tests.yml
+    with:
+      ref: ${{ github.ref_name }}  
+
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
     with:

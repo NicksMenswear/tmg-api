@@ -34,6 +34,7 @@ jobs:
       ref: ${{ github.ref_name }}
       stage: stg
       notify: true
+      release_semver: ${{ inputs.semver }}
   
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml

@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  cd:
+  cd: # TODO do not download artifcats
     uses: ./.github/workflows/_sls_deploy.yml
     with:
       ref: ${{ github.ref }}

@@ -40,7 +40,7 @@ jobs:
     with:
       ref: ${{ github.ref_name }}
       stage: prd
-      # pass release name from stage
+      release_semver: ${{ inputs.semver }}
 
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml

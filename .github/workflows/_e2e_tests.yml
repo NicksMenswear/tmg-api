@@ -6,11 +6,13 @@ on:
       ref:
         required: true
         type: string
+        description: SHA, branch or tag to checkout
       stage:
         required: true
         type: string
         description: Stage to run tests against
       notify:
+        required: false
         type: boolean
         default: true
         description: Notify Slack

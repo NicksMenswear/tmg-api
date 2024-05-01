@@ -6,6 +6,7 @@ on:
       ref:
         required: true
         type: string
+        description: SHA, branch or tag to checkout
 
 jobs:
   lint:

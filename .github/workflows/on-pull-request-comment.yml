@@ -1,10 +1,22 @@
 name: on-pull-request-comment
 
-on: {}
+on:
+  issue_comment:
+    types: [created]
 
 jobs:
-  # TODO run deploy + e2e
-  ci:
-    uses: ./.github/workflows/_unit_tests.yml
+  cd:
+    if: ${{ contains(github.event.comment.body, '/e2e') }}
+    uses: ./.github/workflows/_sls_deploy.yml
     with:
       ref: ${{ github.ref_name }}
+      stage: dev
+      notify: false
+  
+  e2e:
+    if: ${{ contains(github.event.comment.body, '/e2e') }}
+    uses: ./.github/workflows/_e2e_tests.yml
+    with:
+      ref: ${{ github.ref_name }}
+      stage: dev
+      notify: false

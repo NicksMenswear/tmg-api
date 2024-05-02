@@ -70,7 +70,7 @@ jobs:
         uses: teamniteo/pull_request_status_action@v1.0.0
         with:
           pr_number: ${{ github.event.issue.number }}
-          state: ${{ job.status }}
+          state: ${{ needs.e2e.result == 'success' && 'success' || 'failure'}}
           repository: ${{ github.repository }}
           target_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           context: "on-pull-request-comment / e2e"

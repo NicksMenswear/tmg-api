@@ -37,6 +37,7 @@ jobs:
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
+    needs: validate-stg-release
     with:
       ref: ${{ github.ref_name }}
       stage: prd
@@ -44,6 +45,7 @@ jobs:
 
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
+    needs: cd
     with:
       ref: ${{ github.ref_name }}
       stage: prd

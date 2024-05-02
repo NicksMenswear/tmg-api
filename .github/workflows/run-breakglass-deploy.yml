@@ -9,7 +9,7 @@ on:
         description: Stage to deploy to
 
 concurrency:
-  group: ${{ github.workflow.name }}-${{ inputs.stage }}
+  group: ${{ github.workflow }}-${{ inputs.stage }}
   cancel-in-progress: false
 
 jobs:

@@ -12,7 +12,7 @@ on:
       - 'test-*'
 
 concurrency:
-  group: ${{ github.workflow.name }}
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:

@@ -10,8 +10,9 @@ concurrency:
 
 permissions: 
   id-token: write
-  contents: write
+  # contents: write
   checks: write
+  statuses: write
   pull-requests: write
 
 jobs:

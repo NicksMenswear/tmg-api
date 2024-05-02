@@ -1,0 +1,38 @@
+name: on-merge
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'README.md'
+      - 'test-*'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_unit_tests.yml
+    with:
+      ref: ${{ github.ref_name }}  
+
+  cd:
+    uses: ./.github/workflows/_sls_deploy.yml
+    needs: ci
+    with:
+      ref: ${{ github.ref_name }}
+      stage: dev
+      notify: true
+  
+  e2e:
+    uses: ./.github/workflows/_e2e_tests.yml
+    needs: cd
+    with:
+      ref: ${{ github.ref_name }}
+      stage: dev
+      notify: true

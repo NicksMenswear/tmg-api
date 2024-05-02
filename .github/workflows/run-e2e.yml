@@ -1,0 +1,38 @@
+name: run-e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        type: choice
+        description: Stage to run tests against
+        options:
+        - all
+        - dev
+        - stg
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      stages: ${{ steps.set-matrix.outputs.stages }}
+    steps:
+      - id: set-matrix
+        run: |
+          if [ "${{ inputs.stage }}" = "all" ]; then
+            echo stages='["dev","stg"]' >> $GITHUB_OUTPUT
+          else
+            echo stages='["${{ inputs.stage }}"]' >> $GITHUB_OUTPUT
+          fi
+
+  e2e:
+    uses: ./.github/workflows/_e2e_tests.yml
+    needs: setup
+    with:
+      ref: ${{ github.ref_name }}
+      stage: ${{ matrix.stage }}
+      notify: false
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: ${{fromJson(needs.setup.outputs.stages)}}

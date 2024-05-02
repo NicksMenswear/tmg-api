@@ -26,8 +26,8 @@ jobs:
           fi
 
   e2e:
-    needs: setup
     uses: ./.github/workflows/_e2e_tests.yml
+    needs: setup
     with:
       ref: ${{ github.ref_name }}
       stage: ${{ matrix.stage }}

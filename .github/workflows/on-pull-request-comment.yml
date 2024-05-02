@@ -20,6 +20,7 @@ jobs:
   e2e:
     if: ${{ contains(github.event.comment.body, '/e2e') }}
     uses: ./.github/workflows/_e2e_tests.yml
+    needs: cd
     with:
       ref: ${{ github.ref_name }}
       stage: dev

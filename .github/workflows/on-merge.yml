@@ -23,6 +23,7 @@ jobs:
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
+    needs: ci
     with:
       ref: ${{ github.ref_name }}
       stage: dev
@@ -30,6 +31,7 @@ jobs:
   
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
+    needs: cd
     with:
       ref: ${{ github.ref_name }}
       stage: dev

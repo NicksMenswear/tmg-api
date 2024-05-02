@@ -1,4 +1,4 @@
-name: sls-deploy
+name: _sls-deploy
 
 on:
   workflow_call:

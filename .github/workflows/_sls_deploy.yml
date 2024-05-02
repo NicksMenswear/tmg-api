@@ -22,7 +22,7 @@ on:
         description: Notify Slack
 
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.stage }}
+  group: sls-deploy-${{ inputs.stage }}
   cancel-in-progress: false
 
 permissions:

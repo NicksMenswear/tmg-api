@@ -12,8 +12,6 @@ from sentry_sdk.integrations.logging import ignore_logger
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
-from server.services.emails import FakeEmailService, EmailService
-from server.services.shopify import FakeShopifyService, ShopifyService
 
 
 def init_sentry():

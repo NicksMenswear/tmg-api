@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee
+from server.database.models import Event, User, Attendee, Look
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
@@ -12,15 +12,44 @@ class EventService:
     def get_event_by_user_id(self, user_id):
         return Event.query.filter_by(user_id=user_id).first()  # TODO: this is bug!
 
-    def list_events_for_user_by_email(self, email):
-        user = User.query.filter_by(email=email).first()
+    def get_events_for_user(self, email, include_attendees=False):
+        results = (
+            Event.query.join(Attendee, Event.id == Attendee.event_id)
+            .join(User, User.id == Attendee.attendee_id)
+            .filter(User.email == email, Event.is_active)
+            .all()
+        )
 
-        if not user:
-            raise NotFoundError("User not found.")
+        events = [event.to_dict() for event in results]
 
-        events = Event.query.filter(Event.user_id == user.id, Event.is_active).all()
+        if not include_attendees:
+            return events
 
-        return [event.to_dict() for event in events]
+        for event in events:
+            results = (
+                db.session.query(Attendee, User, Look)
+                .join(User, User.id == Attendee.attendee_id)
+                .outerjoin(Look, Look.id == Attendee.look_id)
+                .filter(Attendee.event_id == event["id"])
+                .all()
+            )
+
+            event["attendees"] = []
+
+            for attendee, user, look in results:
+                event["attendees"].append(
+                    {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                        "email": user.email,
+                        "look_id": attendee.look_id,
+                        "look_name": look.look_name if look else None,
+                        "role": attendee.role,
+                    }
+                )
+
+        return events
 
     def get_events_with_attendees_by_user_email(self, email):
         from server.services.look import LookService

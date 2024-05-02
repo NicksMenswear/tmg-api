@@ -307,7 +307,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{email}:
     get:
-      operationId: list_events_for_user_by_email
+      operationId: get_events_for_user
       parameters:
         - explode: false
           in: path
@@ -317,41 +317,10 @@ paths:
             type: string
           style: simple
         - in: query
-          name: logged_in_customer_id
+          name: include_attendees
           schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Successful response
-      summary: Get event by email
-      tags:
-        - Events
-      x-openapi-router-controller: server.controllers.events
-  /events_attendees/{email}:
-    get:
-      operationId: list_events_attendees
-      parameters:
+            type: boolean
+          required: false
         - in: query
           name: logged_in_customer_id
           schema:
@@ -377,12 +346,6 @@ paths:
           schema:
             type: string
           required: true
-        - in: path
-          name: email
-          required: true
-          schema:
-            type: string
-          style: simple
       responses:
         "200":
           description: Successful response

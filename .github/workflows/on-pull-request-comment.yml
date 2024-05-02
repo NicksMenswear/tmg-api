@@ -10,8 +10,7 @@ concurrency:
 
 permissions: 
   id-token: write
-  checks: write
-  contents: write
+  pull-requests: write
 
 jobs:
   report-start:
@@ -62,6 +61,7 @@ jobs:
   report-complete:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     runs-on: ubuntu-latest
+    needs: e2e
     steps:
       - name: Update PR status
         uses: teamniteo/pull_request_status_action@v1.0.0

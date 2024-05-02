@@ -9,8 +9,9 @@ concurrency:
   cancel-in-progress: false
 
 permissions: 
+  id-token: write
   checks: write
-  contents: read
+  contents: write
 
 jobs:
   report-start:

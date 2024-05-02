@@ -1,0 +1,19 @@
+name: on-schedule-e2e
+
+on:
+  schedule:
+    - cron: '30 15 * * *'
+
+jobs:
+  e2e:
+    uses: ./.github/workflows/_e2e_tests.yml
+    with:
+      ref: main
+      notify: true
+      stage: ${{ matrix.stage }}
+    strategy:
+      fail-fast: false
+      matrix:
+        stage:
+          - stg
+          # - prd

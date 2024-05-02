@@ -1,0 +1,28 @@
+name: run-breakglass-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        required: true
+        type: string
+        description: Stage to deploy to
+
+concurrency:
+  group: ${{ github.workflow.name }}-${{ inputs.stage }}
+  cancel-in-progress: false
+
+jobs:
+  cd: # TODO do not download artifcats
+    uses: ./.github/workflows/_sls_deploy.yml
+    with:
+      ref: ${{ github.ref }}
+      stage: ${{ inputs.stage }}
+      notify: true
+  
+  e2e:
+    uses: ./.github/workflows/_e2e_tests.yml
+    with:
+      ref: ${{ github.ref }}
+      stage: ${{ inputs.stage }}
+      notify: true

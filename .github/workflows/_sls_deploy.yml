@@ -1,0 +1,128 @@
+name: sls-deploy
+
+on:
+  workflow_call:
+    inputs: 
+      ref:
+        required: true
+        type: string
+        description: SHA, branch or tag to checkout
+      stage:
+        required: true
+        type: string
+        description: Stage to deploy to
+      release_semver:
+        required: false
+        type: string
+        description: Create GitHub release with semver
+      notify:
+        required: false
+        type: boolean
+        default: true
+        description: Notify Slack
+
+concurrency:
+  group: ${{ github.workflow.name }}-${{ inputs.stage }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.stage }}
+    timeout-minutes: 20
+    env:
+      SLS_ARGS: ""
+      SLS_PKG: "tmg-api.zip"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get head commit message
+        id: get_head_commit_message
+        run: |
+          echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
+
+      - name: Notify slack
+        if: ${{ inputs.notify }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *API "${{ inputs.stage }}" now deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          
+      - name: Determine sls deploy mode
+        run: |
+          if ! git diff --name-only "${{ inputs.ref }}" | grep -q "serverless.yaml"; then
+              echo "SLS_ARGS='${SLS_ARGS} function --function api'" >> $GITHUB_ENV
+          fi
+
+      - name: Reuse release artifact for prd
+        if: ${{ inputs.stage == 'prd' }}
+        run: |
+          curl -sSL -o .serverless/${{ env.SLS_PKG }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.SLS_PKG }}
+          echo "SLS_ARGS='${SLS_ARGS} --package .serverless/${{ env.SLS_PKG }}'" >> $GITHUB_ENV
+
+      - name: Setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+
+      - name: Install Serverless
+        run: npm install -g serverless@3.38.*
+
+      - name: Install Serverless dependencies
+        run: npm install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
+
+      - name: Sls Deploy
+        run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
+
+      - name: Get current time
+        id: time
+        run: |
+          echo "NOW=$(date)" >> ${GIHUB_OUTPUT}
+
+      - name: Create/Update GitHub release
+        if: ${{ inputs.release_semver != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_semver }}
+          target_commitish: ${{ inputs.ref }}
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            .serverless/${{ env.SLS_PKG }}
+          append_body: |
+
+            ---
+            **Deployed to ${{ inputs.stage }}:** ${{ steps.time.outputs.NOW }}. [Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Notify slack
+        if: ${{ always() && inputs.notify }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C06KT69EN30' # Notifications
+          slack-message: |
+            *API "${{ inputs.stage }}" deployment ${{ job.status == 'success' && 'Completed :large_green_circle:' || job.status == 'cancelled' && 'Cancelled :large_yellow_circle:' || 'Failed :red_circle:' }}*
+            *Repo:* ${{ github.repository }}
+            *Ref:* ${{ github.ref }}
+            *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            *Status:* ${{ job.status }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

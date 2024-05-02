@@ -22,7 +22,7 @@ on:
         description: Notify Slack
     secrets:
       SLACK_BOT_TOKEN:
-        required: true
+        required: false
 
 concurrency:
   group: sls-deploy-${{ inputs.stage }}

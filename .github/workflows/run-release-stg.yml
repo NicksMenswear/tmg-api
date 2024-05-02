@@ -37,6 +37,8 @@ jobs:
       stage: stg
       notify: true
       release_semver: ${{ inputs.semver }}
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
@@ -45,3 +47,5 @@ jobs:
       ref: ${{ github.ref_name }}
       stage: stg
       notify: true
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

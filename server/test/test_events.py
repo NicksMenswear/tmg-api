@@ -204,7 +204,7 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=event.id, user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(event_id=event.id, email=user.email, role=role.id, look_id=look.id)

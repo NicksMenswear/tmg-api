@@ -204,18 +204,14 @@ class Look(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     look_name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=True)
     product_specs = Column(JSON, nullable=True)
-    product_final_image = Column(String, nullable=True)
 
     def to_dict(self):
         return {
             "id": self.id,
             "look_name": self.look_name,
-            "event_id": self.event_id,
             "user_id": self.user_id,
             "product_specs": self.product_specs,
-            "product_final_image": self.product_final_image,
         }
 
 

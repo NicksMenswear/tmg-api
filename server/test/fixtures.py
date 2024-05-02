@@ -66,9 +66,7 @@ def look_request(**look_data):
     return {
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "event_id": look_data.get("event_id", None),
         "product_specs": look_data.get("product_specs", {}),
-        "product_final_image": look_data.get("product_final_image", ""),
     }
 
 
@@ -77,9 +75,7 @@ def update_look_request(**look_data):
         "id": look_data.get("id"),
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "event_id": look_data.get("event_id", None),
         "product_specs": look_data.get("product_specs", {}),
-        "product_final_image": look_data.get("product_final_image", ""),
     }
 
 

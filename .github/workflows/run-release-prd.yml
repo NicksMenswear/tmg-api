@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/_sls_deploy.yml
     needs: validate-stg-release
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ github.sha }}
       stage: prd
       release_semver: ${{ inputs.semver }}
       notify: true

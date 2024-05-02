@@ -19,13 +19,13 @@ jobs:
   ci:
     uses: ./.github/workflows/_unit_tests.yml
     with:
-      ref: ${{ github.ref_name }}  
+      ref: ${{ github.sha }}  
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
     needs: ci
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ github.sha }}
       stage: dev
       notify: true
     secrets:

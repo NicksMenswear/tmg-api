@@ -2,7 +2,8 @@ name: on-pull-request-comment
 
 on:
   issue_comment:
-    types: [created]
+    types:
+      - created
 
 concurrency:
   group: ${{ github.workflow }}
@@ -34,7 +35,6 @@ jobs:
   await-ci:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     runs-on: ubuntu-latest
-    needs: report-start
     steps:
       - name: Wait for CI gate to succeed
         uses: fountainhead/action-wait-for-check@v1.2.0

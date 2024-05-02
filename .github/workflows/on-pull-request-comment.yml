@@ -8,20 +8,61 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
+permissions: 
+  checks: write
+  contents: read
+
 jobs:
+  report-start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "on-pull-request-comment / e2e"
+          status: in_progress
+          details_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  wait-for-ci:
+    runs-on: ubuntu-latest
+    needs: report-start
+    steps:
+      - name: Wait for CI gate to succeed
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.sha }}
+          checkName: gate
+
   cd:
-    if: ${{ contains(github.event.comment.body, '/e2e') }}
+    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     uses: ./.github/workflows/_sls_deploy.yml
+    needs: wait-for-ci
     with:
       ref: ${{ github.head_ref }}
       stage: dev
       notify: false
   
   e2e:
-    if: ${{ contains(github.event.comment.body, '/e2e') }}
+    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
       ref: ${{ github.head_ref }}
       stage: dev
       notify: false
+
+  report-complete:
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: ${{ always() }}
+    steps:
+      - uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "on-pull-request-comment / e2e"
+          status: completed
+          conclusion: ${{ job.status }}
+          details_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+

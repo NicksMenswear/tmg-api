@@ -1,15 +1,14 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import User
-from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.base import BaseService
-from server.services.shopify import ShopifyService, FakeShopifyService
-from server.services.emails import EmailService, FakeEmailService
+from server.database.models import User, Attendee, Event
 from server.flask_app import FlaskApp
+from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services.emails import EmailService, FakeEmailService
+from server.services.shopify import ShopifyService, FakeShopifyService
 
 
-class UserService(BaseService):
+class UserService:
     def __init__(self):
         super().__init__()
         if FlaskApp.current().config["TMG_APP_TESTING"]:
@@ -63,6 +62,14 @@ class UserService(BaseService):
 
     def get_all_users(self):
         return User.query.all()
+
+    def get_user_events(self, email):
+        return (
+            Event.query.join(Attendee, Event.id == Attendee.event_id)
+            .join(User, User.id == Attendee.attendee_id)
+            .filter(User.email == email)
+            .all()
+        )
 
     def update_user(self, user_data):
         user = User.query.filter_by(email=user_data["email"]).first()

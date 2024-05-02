@@ -40,10 +40,10 @@ class TestCarts(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
 
         # when
@@ -71,10 +71,10 @@ class TestCarts(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
 
         # when
@@ -104,10 +104,10 @@ class TestCarts(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
 
         # when
@@ -147,10 +147,10 @@ class TestCarts(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
         cart = self.cart_service.create_cart(
             dict(
@@ -201,10 +201,10 @@ class TestCarts(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
         cart = self.cart_service.create_cart(
             dict(
@@ -252,10 +252,10 @@ class TestCarts(BaseTestCase):
         # when
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(event_id=str(event.id), user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id), look_id=str(look.id)))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id))
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=str(look.id))
         )
         cart = self.cart_service.create_cart(
             dict(

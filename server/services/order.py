@@ -3,15 +3,13 @@ import uuid
 from server.database.database_manager import db
 from server.database.models import Order, OrderItem
 from server.services import NotFoundError, ServiceError
-from server.services.base import BaseService
 from server.services.event import EventService
 from server.services.product import ProductService
 from server.services.user import UserService
 
 
-class OrderService(BaseService):
+class OrderService:
     def __init__(self):
-        super().__init__()
         self.user_service = UserService()
         self.event_service = EventService()
         self.product_service = ProductService()

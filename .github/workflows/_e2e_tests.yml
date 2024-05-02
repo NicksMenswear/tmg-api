@@ -52,7 +52,7 @@ jobs:
         with:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
-            *E2E Tests "${{ inputs.stage }}" failed* :red_circle:
+            *E2E "${{ inputs.stage }}" Failed* :red_circle:
             *Ref:* "${{ inputs.ref }}"
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:

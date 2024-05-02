@@ -63,7 +63,7 @@ jobs:
         if: always()
         run: docker-compose down
 
-  gate:
+  gate:  # name dependency in "on-pull-reqest-comment.yml"
     runs-on: ubuntu-latest
     needs: [ lint, unit-test, smoke-test ]
     if: ${{ always() }}

@@ -22,6 +22,8 @@ jobs:
       ref: ${{ github.sha }}
       stage: ${{ inputs.stage }}
       notify: true
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
@@ -30,3 +32,5 @@ jobs:
       ref: ${{ github.sha }}
       stage: ${{ inputs.stage }}
       notify: true
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

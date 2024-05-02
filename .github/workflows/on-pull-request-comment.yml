@@ -25,6 +25,7 @@ jobs:
 
   wait-for-ci:
     runs-on: ubuntu-latest
+    needs: report-start
     steps:
       - name: Wait for CI gate to succeed
         uses: fountainhead/action-wait-for-check@v1.2.0
@@ -53,6 +54,7 @@ jobs:
 
   report-complete:
     runs-on: ubuntu-latest
+    needs: e2e
     if: ${{ always() }}
     steps:
       - uses: LouisBrunner/checks-action@v2.0.0

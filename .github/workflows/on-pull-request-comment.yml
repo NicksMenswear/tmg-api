@@ -13,7 +13,7 @@ jobs:
     if: ${{ contains(github.event.comment.body, '/e2e') }}
     uses: ./.github/workflows/_sls_deploy.yml
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ github.head_ref }}
       stage: dev
       notify: false
   
@@ -22,6 +22,6 @@ jobs:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ github.head_ref }}
       stage: dev
       notify: false

@@ -76,6 +76,15 @@ def list_looks():
 
 
 @hmac_verification
+def get_events_for_look(look_id):
+    look_service = LookService()
+
+    events = look_service.get_events_for_look(look_id)
+
+    return [event.to_dict() for event in events], 200
+
+
+@hmac_verification
 def update_look(look_data):
     look_service = LookService()
 

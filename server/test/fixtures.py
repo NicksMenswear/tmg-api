@@ -66,23 +66,16 @@ def look_request(**look_data):
     return {
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "event_id": look_data.get("event_id", None),
         "product_specs": look_data.get("product_specs", {}),
-        "product_final_image": look_data.get("product_final_image", ""),
     }
 
 
 def update_look_request(**look_data):
     return {
-        "look_id": look_data.get("look_id", str(uuid.uuid4())),
+        "id": look_data.get("id"),
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "email": look_data.get("email", f"{str(uuid.uuid4())}@example.com"),
-        "attendee_id": look_data.get("attendee_id", str(uuid.uuid4())),
-        "event_id": look_data.get("event_id", None),
-        "flag": look_data.get("flag", False),
         "product_specs": look_data.get("product_specs", {}),
-        "product_final_image": look_data.get("product_final_image", ""),
     }
 
 
@@ -90,7 +83,6 @@ def role_request(**look_data):
     return {
         "role_name": look_data.get("role_name", str(uuid.uuid4())),
         "event_id": look_data.get("event_id", str(uuid.uuid4())),
-        "look_id": look_data.get("look_id", str(uuid.uuid4())),
     }
 
 
@@ -101,6 +93,7 @@ def attendee_request(**attendee_data):
         "first_name": attendee_data.get("first_name", str(uuid.uuid4())),
         "last_name": attendee_data.get("last_name", str(uuid.uuid4())),
         "role": attendee_data.get("role"),
+        "look_id": attendee_data.get("look_id"),
         "style": attendee_data.get("style", random.randint(1, 100)),
         "invite": attendee_data.get("invite", random.randint(1, 100)),
         "pay": attendee_data.get("pay", random.randint(1, 100)),

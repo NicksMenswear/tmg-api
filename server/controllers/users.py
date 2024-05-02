@@ -38,6 +38,15 @@ def get_user_by_id(email):
 
 
 @hmac_verification
+def get_user_events(email):
+    user_service = UserService()
+
+    events = user_service.get_user_events(email)
+
+    return [event.to_dict() for event in events], 200
+
+
+@hmac_verification
 def get_all_users():
     user_service = UserService()
 

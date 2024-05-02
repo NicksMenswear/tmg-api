@@ -3,14 +3,14 @@ import uuid
 from server.database.database_manager import db
 from server.database.models import Cart, CartProduct
 from server.services import NotFoundError, ServiceError
-from server.services.base import BaseService
 from server.services.shopify import ShopifyService, FakeShopifyService
 from server.flask_app import FlaskApp
 
 
-class CartService(BaseService):
+class CartService:
     def __init__(self):
         super().__init__()
+
         if FlaskApp.current().config["TMG_APP_TESTING"]:
             self.shopify_service = FakeShopifyService()
         else:

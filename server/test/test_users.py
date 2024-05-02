@@ -7,6 +7,8 @@ import uuid
 
 from server import encoder
 from server.database.models import User
+from server.services.attendee import AttendeeService
+from server.services.event import EventService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
@@ -16,6 +18,8 @@ class TestUsers(BaseTestCase):
         super().setUp()
 
         self.user_service = UserService()
+        self.event_service = EventService()
+        self.attendee_service = AttendeeService()
 
     def assert_equal_response_user_with_db_user(self, user: User, response_user: dict):
         self.assertEqual(response_user["id"], str(user.id))
@@ -186,3 +190,59 @@ class TestUsers(BaseTestCase):
 
         # then
         self.assert400(response)
+
+    def test_get_all_events_for_non_existing_user(self):
+        # when
+        response = self.client.open(
+            f"/users/{str(uuid.uuid4())}@example.com/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(response.json, [])
+
+    def test_get_all_events_for_user_without_events(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
+        # when
+        response = self.client.open(
+            f"/users/{user.email}/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(response.json, [])
+
+    def test_get_all_events_for_user(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event1 = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event2 = self.event_service.create_event(fixtures.event_request(email=user.email))
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=user.email))
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=user.email))
+
+        # when
+        response = self.client.open(
+            f"/users/{user.email}/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+        self.assertEqual(response.json[0]["id"], str(event1.id))
+        self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
+        self.assertEqual(response.json[1]["id"], str(event2.id))
+        self.assertEqual(response.json[1]["event_name"], str(event2.event_name))

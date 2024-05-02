@@ -1,5 +1,7 @@
 import uuid
 
+from sqlalchemy import or_
+
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look
 from server.services import ServiceError, NotFoundError, DuplicateError
@@ -16,7 +18,7 @@ class EventService:
         results = (
             Event.query.join(Attendee, Event.id == Attendee.event_id)
             .join(User, User.id == Attendee.attendee_id)
-            .filter(User.email == email, Event.is_active)
+            .filter(or_(User.email == email, User.id == Event.user_id), Event.is_active)
             .all()
         )
 

@@ -11,6 +11,7 @@ concurrency:
 permissions: 
   id-token: write
   contents: write
+  pull-requests: write
   statuses: write
 
 jobs:
@@ -59,7 +60,7 @@ jobs:
       stage: dev
       notify: false
 
-  report-complete:
+  report-finish:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     runs-on: ubuntu-latest
     needs: e2e

@@ -67,7 +67,7 @@ jobs:
           fi
 
       - name: Reuse release artifact for prd
-        if: ${{ inputs.stage == 'prd' }}
+        if: ${{ inputs.stage == 'prd' && inputs.release_semver }}
         run: |
           curl -sSL -o .serverless/${{ env.SLS_PKG }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.SLS_PKG }}
           echo "SLS_ARGS='${SLS_ARGS} --package .serverless/${{ env.SLS_PKG }}'" >> $GITHUB_ENV
@@ -90,7 +90,7 @@ jobs:
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
       - name: Sls Deploy
-        run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
+        run: sls deploy $SLS_ARGS --stage ${{ inputs.stage }}
 
       - name: Get current time
         id: time

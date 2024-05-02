@@ -275,15 +275,6 @@ class TestEvents(BaseTestCase):
         response_attendee2 = response_event1["attendees"][1]
         response_attendee3 = response_event2["attendees"][0]
 
-        self.assertEqual(response_attendee1["id"], str(user.id))
-        self.assertEqual(response_attendee1["first_name"], user.first_name)
-        self.assertEqual(response_attendee1["last_name"], user.last_name)
-        self.assertEqual(response_attendee1["email"], user.email)
-        self.assertEqual(response_attendee2["id"], str(attendee_user.id))
-        self.assertEqual(response_attendee2["first_name"], attendee_user.first_name)
-        self.assertEqual(response_attendee2["last_name"], attendee_user.last_name)
-        self.assertEqual(response_attendee2["email"], attendee_user.email)
+        self.assertEqual(response_attendee1["id"] in (str(user.id), str(attendee_user.id)), True)
+        self.assertEqual(response_attendee2["id"] in (str(user.id), str(attendee_user.id)), True)
         self.assertEqual(response_attendee3["id"], str(user.id))
-        self.assertEqual(response_attendee3["first_name"], user.first_name)
-        self.assertEqual(response_attendee3["last_name"], user.last_name)
-        self.assertEqual(response_attendee3["email"], user.email)

@@ -64,12 +64,7 @@ class UserService:
         return User.query.all()
 
     def get_user_events(self, email):
-        return (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .join(User, User.id == Attendee.attendee_id)
-            .filter(User.email == email)
-            .all()
-        )
+        return Event.query.join(User, User.id == Event.user_id).filter(User.email == email).all()
 
     def update_user(self, user_data):
         user = User.query.filter_by(email=user_data["email"]).first()

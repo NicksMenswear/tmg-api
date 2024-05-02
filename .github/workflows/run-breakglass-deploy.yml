@@ -4,19 +4,22 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        required: true
-        type: string
+        type: choice
         description: Stage to deploy to
+        options:
+        - dev
+        - stg
+        - prd
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.stage }}
   cancel-in-progress: false
 
 jobs:
-  cd: # TODO do not download artifcats
+  cd:
     uses: ./.github/workflows/_sls_deploy.yml
     with:
-      ref: ${{ github.ref }}
+      ref: ${{ github.sha }}
       stage: ${{ inputs.stage }}
       notify: true
   
@@ -24,6 +27,6 @@ jobs:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
-      ref: ${{ github.ref }}
+      ref: ${{ github.sha }}
       stage: ${{ inputs.stage }}
       notify: true

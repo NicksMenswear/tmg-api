@@ -27,7 +27,7 @@ jobs:
           state: pending
           repository: ${{ github.repository }}
           target_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          context: "on-pull-request / e2e"
+          context: "on-pull-request-comment / e2e"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -41,7 +41,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.sha }}
-          checkName: "on-pull-request / ci / gate"
+          checkName: "ci / gate"
 
   cd:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
@@ -73,7 +73,7 @@ jobs:
           state: ${{ job.status }}
           repository: ${{ github.repository }}
           target_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          description: "An example description"
+          context: "on-pull-request-comment / e2e"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -25,3 +25,6 @@ def lambda_handler(event, context):
 
 # Handle lambda termination gracefully
 signal.signal(signal.SIGTERM, lambda_teardown)
+
+
+# Testing

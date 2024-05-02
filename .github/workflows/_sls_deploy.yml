@@ -20,6 +20,9 @@ on:
         type: boolean
         default: true
         description: Notify Slack
+    secrets:
+      SLACK_BOT_TOKEN:
+        required: true
 
 concurrency:
   group: sls-deploy-${{ inputs.stage }}

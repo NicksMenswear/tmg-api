@@ -16,6 +16,9 @@ on:
         type: boolean
         default: true
         description: Notify Slack
+    secrets:
+      SLACK_BOT_TOKEN:
+        required: true
 
 jobs:
   e2e-test:

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look
@@ -53,39 +53,46 @@ class EventService:
 
         return events
 
+    # TODO: This method is a bug, it should be removed. It fetches all attendees for all events. UI is not ready so fixed it as is!
     def get_events_with_attendees_by_user_email(self, email):
+        results = (
+            db.session.query(Attendee, User, Event)
+            .join(Event, Event.id == Attendee.event_id)
+            .filter(and_(User.email == email, Event.is_active, Event.user_id == User.id))
+            .all()
+        )
+
         from server.services.look import LookService
 
         look_service = LookService()
 
-        user = User.query.filter_by(email=email).first()
-
-        if not user:
-            raise NotFoundError("User not found.")
-
-        attendees = Attendee.query.filter(Attendee.attendee_id == user.id).all()
-
         response = []
 
-        for attendee in attendees:
-            event = Event.query.filter(Event.id == attendee.event_id, Event.is_active).first()
-
-            if event is None:
-                continue
-
+        for attendee, user, event in results:
             enriched_attendee = {
                 "event_id": event.id,
                 "event_name": event.event_name,
                 "event_date": str(event.event_date),
                 "user_id": str(event.user_id),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "id": attendee.id,
+                "invite": attendee.invite,
+                "pay": attendee.pay,
+                "ship": attendee.ship,
+                "size": attendee.size,
+                "style": attendee.style,
             }
 
             if attendee.look_id:
                 look = look_service.get_look_by_id(attendee.look_id)
 
                 if look:
-                    enriched_attendee["look_id"] = look.id
-                    enriched_attendee["look_name"] = look.look_name
+                    enriched_attendee["look_data"] = {
+                        "look_id": look.id,
+                        "look_name": look.look_name,
+                    }
 
             response.append(enriched_attendee)
 

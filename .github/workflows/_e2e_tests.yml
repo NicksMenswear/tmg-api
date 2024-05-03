@@ -11,6 +11,11 @@ on:
         required: true
         type: string
         description: Stage to run tests against
+      browser:
+        required: false
+        type: string
+        default: chromium
+        description: Browser to run tests on
       notify:
         required: false
         type: boolean
@@ -25,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Echo Environment
-        run: echo "Running tests on ${{ inputs.stage }}"
+        run: echo "Running tests on ${{ inputs.stage }} in ${{ inputs.browser }} browser"
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,6 +46,7 @@ jobs:
         run: ./test-end-to-end.sh
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
+          BROWSER: ${{ inputs.browser }}
 
       - name: Clean up
         if: always()

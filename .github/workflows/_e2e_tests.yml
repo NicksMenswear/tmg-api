@@ -45,6 +45,7 @@ jobs:
         run: ./test-end-to-end.sh
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
+          BROWSER: ${{ inputs.browser }}
 
       - name: Clean up
         if: always()

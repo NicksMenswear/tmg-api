@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 20
     env:
       SLS_ARGS: ""
-      SLS_PKG: "tmg-api.zip"
+      API_ZIP: "tmg-api.zip"
 
     steps:
       - name: Checkout code
@@ -75,8 +75,8 @@ jobs:
       - name: Reuse release artifact for prd
         if: ${{ inputs.stage == 'prd' && inputs.release_semver }}
         run: |
-          curl -sSL -o .serverless/${{ env.SLS_PKG }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.SLS_PKG }}
-          echo "SLS_ARGS=${SLS_ARGS} --package .serverless/${{ env.SLS_PKG }}" >> $GITHUB_ENV
+          curl -sSL -o .serverless/${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
+          echo "SLS_ARGS=${SLS_ARGS} --package .serverless/${{ env.API_ZIP }}" >> $GITHUB_ENV
 
       - name: Setup node.js
         uses: actions/setup-node@v4
@@ -99,7 +99,8 @@ jobs:
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
 
       - name: Create GitHub release
-        if: ${{ inputs.release_semver != '' && inputs.stage == 'stg' }}
+        if: ${{ inputs.release_semver != '' }} 
+        # # && inputs.stage == 'stg' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.release_semver }}
@@ -107,7 +108,7 @@ jobs:
           generate_release_notes: true
           make_latest: true
           files: |
-            .serverless/${{ env.SLS_PKG }}
+            .serverless/${{ env.API_ZIP }}
           fail_on_unmatched_files: true
 
       - name: Get release deployment timestamp
@@ -126,7 +127,7 @@ jobs:
           body: |
           
             ---
-            **Deployed to ${{ inputs.stage }}:** ${{ steps.time.outputs.NOW }}. [Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **Deployed to "${{ inputs.stage }}"":** ${{ steps.time.outputs.NOW }}. [Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Create Sentry release
         if: ${{ inputs.release_semver != '' }}

@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         description: Stage to run tests against
+      browser:
+        required: true
+        type: string
+        description: Browser to run tests on
       notify:
         required: false
         type: boolean

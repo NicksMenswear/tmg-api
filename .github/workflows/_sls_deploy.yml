@@ -98,13 +98,8 @@ jobs:
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
 
-      - name: Get current time
-        id: time
-        run: |
-          echo "NOW=$(date)" >> $GITHUB_OUTPUT
-
-      - name: Create/Update GitHub release
-        if: ${{ inputs.release_semver != '' }}
+      - name: Create GitHub release
+        if: ${{ inputs.release_semver != '' && inputs.stage == 'stg' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.release_semver }}
@@ -113,8 +108,23 @@ jobs:
           make_latest: true
           files: |
             .serverless/${{ env.SLS_PKG }}
-          append_body: |
+          fail_on_unmatched_files: true
 
+      - name: Get release time
+        if: ${{ inputs.release_semver != '' }}
+        id: time
+        run: |
+          echo "NOW=$(date)" >> $GITHUB_OUTPUT
+  
+      - name: Append deployment log to GitHub release
+        if: ${{ inputs.release_semver != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_semver }}
+          target_commitish: ${{ inputs.ref }}
+          append_body: true
+          body: |
+          
             ---
             **Deployed to ${{ inputs.stage }}:** ${{ steps.time.outputs.NOW }}. [Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 

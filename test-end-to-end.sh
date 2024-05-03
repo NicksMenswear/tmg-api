@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export ACTIVE_ENV=${ACTIVE_ENV:-stg}
-export BROWSER=${BROWSER:-webkit}
+export BROWSER=${BROWSER:-chromium}
 
 echo "Running e2e against '${ACTIVE_ENV}' environment in '${BROWSER}' browser."
 

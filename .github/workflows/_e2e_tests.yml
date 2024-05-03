@@ -14,7 +14,7 @@ on:
       browser:
         required: false
         type: string
-        default: webkit
+        default: chromium
         description: Browser to run tests on
       notify:
         required: false

@@ -78,7 +78,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
-      BROWSER: ${BROWSER:-webkit}
+      BROWSER: ${BROWSER:-chromium}
     command: >
       bash -c "pip install pytest pytest-playwright &&
       pytest --verbose --browser $BROWSER"

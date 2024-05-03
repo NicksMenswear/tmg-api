@@ -98,9 +98,6 @@ jobs:
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Create GitHub release
         if: ${{ inputs.release_semver != '' }} 
         # # && inputs.stage == 'stg' }}

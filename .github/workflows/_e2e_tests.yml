@@ -12,8 +12,9 @@ on:
         type: string
         description: Stage to run tests against
       browser:
-        required: true
+        required: false
         type: string
+        default: webkit
         description: Browser to run tests on
       notify:
         required: false

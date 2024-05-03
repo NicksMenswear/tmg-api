@@ -14,9 +14,9 @@ on:
         type: choice
         description: Browser to run tests on
         options:
-        - chromium
+        - webkit     # safari
+        - chromium   # chrome
         - firefox
-        - webkit
 
 jobs:
   setup:

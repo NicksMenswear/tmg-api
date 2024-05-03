@@ -22,6 +22,14 @@ jobs:
             echo "Invalid semver: ${{ inputs.semver }}"
             exit 1
           fi
+      
+      - name: Ensure tag does not exist
+        run: |
+          release=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.semver }})
+          if [[ $release_code == "200" ]]; then
+            echo "Tag ${{ inputs.semver }} already exists."
+            exit 1
+          fi
 
   ci:
     uses: ./.github/workflows/_unit_tests.yml

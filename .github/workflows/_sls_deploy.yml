@@ -23,6 +23,8 @@ on:
     secrets:
       SLACK_BOT_TOKEN:
         required: false  # required when notify is true
+      SENTRY_AUTH_TOKEN:
+        required: false  # required when release_semver is true
 
 concurrency:
   group: sls-deploy-${{ inputs.stage }}
@@ -115,6 +117,16 @@ jobs:
 
             ---
             **Deployed to ${{ inputs.stage }}:** ${{ steps.time.outputs.NOW }}. [Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Create Sentry release
+        if: ${{ inputs.release_semver != '' }}
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: the-modern-groom
+          SENTRY_PROJECT: tmg-api
+        with:
+          environment: ${{ inputs.stage }}
 
       - name: Notify slack
         if: ${{ always() && inputs.notify }}

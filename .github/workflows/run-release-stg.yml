@@ -39,7 +39,8 @@ jobs:
       release_semver: ${{ inputs.semver }}
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-  
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd

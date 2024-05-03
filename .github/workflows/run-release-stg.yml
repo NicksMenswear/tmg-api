@@ -34,7 +34,7 @@ jobs:
     needs: ci 
     with:
       ref: ${{ github.sha }}
-      stage: stg
+      stage: dev
       notify: true
       release_semver: ${{ inputs.semver }}
     secrets:
@@ -45,7 +45,7 @@ jobs:
     needs: cd
     with:
       ref: ${{ github.ref_name }}
-      stage: stg
+      stage: dev
       notify: true
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

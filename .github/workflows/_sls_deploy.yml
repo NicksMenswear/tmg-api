@@ -123,11 +123,8 @@ jobs:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
             *API "${{ inputs.stage }}" Deployment ${{ job.status == 'success' && 'Completed :large_green_circle:' || job.status == 'cancelled' && 'Cancelled :large_yellow_circle:' || 'Failed :red_circle:' }}*
-            *Repo:* ${{ github.repository }}
-            *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
-            *Ref:* ${{ github.ref }}
             *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            *Status:* ${{ job.status }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

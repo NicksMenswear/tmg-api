@@ -321,6 +321,16 @@ class User(Base):
     account_status = Column(Boolean)
     addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "shopify_id": str(self.shopify_id),
+            "account_status": self.account_status,
+        }
+
 
 class Order(Base):
     __tablename__ = "orders"

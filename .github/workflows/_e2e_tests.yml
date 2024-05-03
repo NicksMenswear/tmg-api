@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Echo Environment
-        run: echo "Running tests on ${{ inputs.stage }}"
+        run: echo "Running tests on ${{ inputs.stage }} in ${{ inputs.browser }} browser"
 
       - name: Checkout code
         uses: actions/checkout@v4

@@ -20,11 +20,14 @@ To run the server, please execute the following from the root directory:
 ### Create virtual environment 
 
 ```bash
-# Create venv
+# Create virtual envs
 tox
 
-# Activate venv
-source .tox/py312/bin/activate
+# Activate "tmg-dev" venv
+source .tox/tmg-dev/bin/activate
+
+# Activate "tmg-migrations" venv
+source .tox/tmg-migrations/bin/activate
 ```
 
 Note that pre-commit git hook will be installed as well
@@ -51,6 +54,52 @@ http://localhost:8080/openapi.json
 
 ```sh
 tox
+```
+
+## Migrations with "alembic"
+
+### Select migration environment
+
+```shell
+source .tox/tmg-migrations/bin/activate
+```
+
+### Define DB_URI for migrations
+
+```shell
+export DB_URI="postgresql+psycopg2://<USER>:<PASSWORD>@DB_URI:5432/tmg"
+
+# Example
+
+export DB_URI=postgresql+psycopg2://postgres:xxxxxxxxxx@tmg-db-dev-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com:5432/tmg
+```
+
+### Get List Of Migrations:
+
+```shell
+alembic history
+```
+
+### Get Current DB Version:
+
+```shell
+alembic current
+```
+
+### Generate new migration
+
+Create the new migration based on the models change
+
+```
+alembic revision --autogenerate -m "My new migration"
+```
+
+### Apply migrations
+
+Apply migration using `alembic upgrade head`
+
+```shell
+alembic upgrade head
 ```
 
 ## Scripts

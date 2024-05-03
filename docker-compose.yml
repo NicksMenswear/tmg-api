@@ -27,7 +27,7 @@ services:
       bash -c "pip install tox &&
       git config --global --add safe.directory /usr/src/app &&
       tox &&
-      . .tox/py312/bin/activate && 
+      . .tox/tmg-dev/bin/activate && 
       pip install --upgrade psycopg2 &&
       ./scripts/reset_db.sh &&
       cd server/ &&

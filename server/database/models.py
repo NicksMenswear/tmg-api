@@ -1,131 +1,434 @@
+import enum
 import uuid
 from datetime import datetime
 
 from sqlalchemy import (
     Column,
     Integer,
+    Float,
     String,
     DateTime,
     ForeignKey,
-    Float,
-    UUID,
-    Boolean,
-    BigInteger,
-    JSON,
-    ARRAY,
-    VARCHAR,
     Numeric,
+    Boolean,
+    Enum,
+    text,
+    ARRAY,
+    JSON,
+    BigInteger,
+    VARCHAR,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from server.database.database_manager import db
+try:
+    from flask_sqlalchemy import SQLAlchemy
+    from server.database.database_manager import db
 
-Base = db.Model
+    Base = db.Model
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
+
+    Base = declarative_base()
 
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    first_name = Column(String, unique=False, index=True, nullable=True)
-    last_name = Column(String, unique=False, index=True, nullable=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    shopify_id = Column(String, unique=True, index=True, nullable=True)
-    account_status = Column(Boolean, unique=False, index=True, nullable=True)
+@enum.unique
+class ActivityType(enum.Enum):
+    USER_UPDATE = "user_update"
+    EVENT_UPDATE = "event_update"
+    ORDER_UPDATE = "order_update"
+    RMA_UPDATE = "rma_update"
 
-    def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
-            "id": self.id,
-            "email": self.email,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "shopify_id": str(self.shopify_id),
-            "account_status": self.account_status,
-        }
-        return result
+
+@enum.unique
+class SourceType(enum.Enum):
+    NM = "NM"
+    TMG = "TMG"
+
+
+@enum.unique
+class ItemStatus(enum.Enum):
+    ORDERED = "Ordered"
+    FULFILLED = "Fulfilled"
+    SHIPPED = "Shipped"
+    RETURNED = "Returned"
+    REFUNDED = "Refunded"
+    BACKORDER = "Backorder"
+
+
+@enum.unique
+class StoreLocation(enum.Enum):
+    ARROWHEAD = "Arrowhead"
+    CHANDLER = "Chandler"
+    AZ_MILLS = "AZ Mills"
+    PARK_PLACE = "Park Place"
+    SCOTTSDALE = "Scottsdale"
+    ONLINE = "Online"
+
+
+@enum.unique
+class OrderType(enum.Enum):
+    NEW_ORDER = "New Order"
+    FIRST_SUIT = "First Suit"
+    RESIZE = "Resize"
+    GROOM_RESIZE = "Groom Resize"
+    SINGLE_SUIT = "Single Suit"
+    SWATCH = "Swatch"
+    LOST = "Lost"
+    DAMAGED = "Damaged"
+    MISSED_ORDER = "Missed Order"
+    MISSED_ITEM = "Missed Item"
+    ADDRESS_ERROR = "Address Error"
+    ADD_ON_ITEM = "Add-On Item"
+
+
+@enum.unique
+class RMAStatus(enum.Enum):
+    PENDING = "Pending"
+    RECEIVED = "Received"
+    RESTOCKED = "Restocked"
+    CLOSED = "Closed"
+
+
+@enum.unique
+class RMAType(enum.Enum):
+    RESIZE = "Resize"
+    DAMAGED = "Damaged"
+    CANCELLATION = "Cancellation"
+    EXCHANGE = "Exchange"
+
+
+@enum.unique
+class RMAItemType(enum.Enum):
+    DISLIKED = "Disliked"
+    TOO_BIG = "Too big"
+    TOO_SMALL = "Too small"
+    DAMAGED = "Damaged"
+    WRONG_ITEM = "Wrong Item"
 
 
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    event_name = Column(String, index=True, nullable=False)
-    event_date = Column(DateTime, nullable=True)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        unique=True,
+        nullable=False,
+    )
+    event_name = Column(String, nullable=False)
+    event_date = Column(DateTime)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
+        return {
             "id": self.id,
             "event_name": self.event_name,
             "event_date": str(self.event_date),
             "user_id": str(self.user_id),
             "is_active": self.is_active,
         }
-        return result
+
+
+class Look(Base):
+    __tablename__ = "looks"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        unique=True,
+        nullable=False,
+    )
+    look_name = Column(String, index=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    product_specs = Column(JSON)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "look_name": self.look_name,
+            "user_id": self.user_id,
+            "product_specs": self.product_specs,
+        }
+
+
+class Role(Base):
+    __tablename__ = "roles"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        unique=True,
+        nullable=False,
+    )
+    role_name = Column(String, index=True, nullable=False)
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+
+    def to_dict(self):
+        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id}
 
 
 class Attendee(Base):
     __tablename__ = "attendees"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        unique=True,
+        nullable=False,
+    )
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"), nullable=True)
-    look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"), nullable=True)
-    style = Column(Integer, unique=False, index=True, nullable=False)
-    invite = Column(Integer, unique=False, index=True, nullable=False)
-    pay = Column(Integer, unique=False, index=True, nullable=False)
-    size = Column(Integer, unique=False, index=True, nullable=False)
-    ship = Column(Integer, unique=False, index=True, nullable=False)
-    is_active = Column(Boolean, index=True, default=True, nullable=False)
+    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
+    look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"))
+    style = Column(Integer, nullable=False)
+    invite = Column(Integer, nullable=False)
+    pay = Column(Integer, nullable=False)
+    size = Column(Integer, nullable=False)
+    ship = Column(Integer, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
+        return {
             "id": self.id,
             "attendee_id": self.attendee_id,
             "event_id": str(self.event_id),
-            "role": self.role,
-            "look_id": self.look_id,
             "style": self.style,
             "invite": self.invite,
             "pay": self.pay,
             "size": self.size,
             "ship": self.ship,
             "is_active": self.is_active,
+            "role": self.role,
+            "look_id": self.look_id,
         }
-        return result
+
+
+# class CurrentSize(Base):
+#     __tablename__ = 'current_sizes'
+# id = Column(UUID(as_uuid=True),
+#     primary_key=True,
+#     default=uuid.uuid4,
+#     server_default=text("uuid_generate_v4()"),
+#     nullable=False)
+#     age = Column(String)
+#     height = Column(String)
+#     weight = Column(Integer)
+#     inch = Column(String)
+#     chest_structure = Column(String)
+#     stomach_structure = Column(String)
+#     jean_waist_size = Column(Integer)
+#     waist = Column(Integer)
+#     suit_size = Column(String)  # Assuming "-" in the image represents a nullable field
+#     dress_shirt_size = Column(Integer)
+#     chest_size = Column(Integer)
+#     neck_size = Column(Numeric)
+#     sleeve_size = Column(Integer)
+#     t_shirt_size = Column(String)
+#     shoes_size = Column(Integer)
+#     seat = Column(Integer)
+#     jacket_waist = Column(Integer)
+#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))  # Link to the User model
+
+#     # Relationship back to the User model
+#     user = relationship('User', back_populates='current_size')
+
+# class HistoricalSize(Base):
+#     __tablename__ = 'historical_sizes'
+# id = Column(UUID(as_uuid=True),
+#     primary_key=True,
+#     default=uuid.uuid4,
+#     server_default=text("uuid_generate_v4()"),
+#     nullable=False)
+#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+#     measurement_date = Column(DateTime, default=datetime.utcnow)
+#     suit_size_sent = Column(String)
+#     event_completed = Column(DateTime)
+#     age = Column(String)
+#     height = Column(String)
+#     weight = Column(Integer)
+#     inch = Column(String)
+#     chest_structure = Column(String)
+#     stomach_structure = Column(String)
+#     jean_waist_size = Column(Integer)
+#     waist = Column(Integer)
+#     suit_size = Column(String)  # Assuming "-" in the image represents a nullable field
+#     dress_shirt_size = Column(Integer)
+#     chest_size = Column(Integer)
+#     neck_size = Column(Numeric)
+#     sleeve_size = Column(Integer)
+#     t_shirt_size = Column(String)
+#     shoes_size = Column(Integer)
+#     seat = Column(Integer)
+#     jacket_waist = Column(Integer)
+#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))  # Link to the User model
+
+#     # Relationship back to the User model
+#     # user = relationship('User', back_populates='current_size')
+#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+
+#     user = relationship('User', back_populates='historical_sizes')
+
+
+# # Define the Address model
+class Address(Base):
+    __tablename__ = "addresses"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # user_id = Column(Integer, ForeignKey('users.id'))
+    address_type = Column(String)  # e.g., 'shipping' or 'billing'
+    address_line1 = Column(String)  # Primary address line (e.g., street address, P.O. box)
+    address_line2 = Column(String)  # Secondary address line (e.g., apartment, suite number)
+    city = Column(String)
+    state = Column(String)
+    zip_code = Column(String)
+    country = Column(String, default="US")  # Default set to 'US', change as needed
+    # Relationship back to the User model
+    user = relationship("User", back_populates="addresses")
+
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    legacy_id = Column(String, unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String, unique=True, index=True, nullable=False)
+    phone_number = Column(String)
+    shopify_id = Column(String, unique=True)
+    orders = relationship("Order", backref="user")
+    account_status = Column(Boolean)
+    addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+
+    legacy_id = Column(String, unique=True)  # for consistency checking with legacy db
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
+    order_number = Column(String, unique=True)
+    order_origin = Column(Enum(SourceType))
+    order_date = Column(DateTime, default=datetime.utcnow)
+    status = Column(String)
+    shipped_date = Column(DateTime)
+    received_date = Column(DateTime)
+    ship_by_date = Column(DateTime)
+    shipping_method = Column(String)
+    outbound_tracking = Column(String)
+    store_location = Column(Enum(StoreLocation))
+    order_type = Column(ARRAY(Enum(OrderType)), default=[OrderType.NEW_ORDER])
+
+    # Shipping address snapshot
+    shipping_address_line1 = Column(String)  # Snapshot of address line 1
+    shipping_address_line2 = Column(String)  # Snapshot of address line 2
+    shipping_city = Column(String)
+    shipping_state = Column(String)
+    shipping_zip_code = Column(String)
+    shipping_country = Column(String, default="US")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "event_id": str(self.event_id),
+            "order_date": self.order_date,
+            "shipped_date": self.shipped_date,
+            "received_date": self.received_date,
+        }
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
+    purchased_price = Column(Numeric)
+    quantity = Column(Integer)
+    item_status = Column(Enum(ItemStatus), default=ItemStatus.ORDERED)
+    order = relationship("Order", backref="order_items")
+    product = relationship("Product", backref="order_items")
+    price = Column(Float)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "price": self.price,
+        }
 
 
 class ProductItem(Base):
     __tablename__ = "product_items"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-    name = Column(String, nullable=True)
-    sku = Column(String, nullable=True)
-    weight_lb = Column(Float, nullable=True)
-    height_in = Column(Float, nullable=True)
-    width_in = Column(Float, nullable=True)
-    length_in = Column(Float, nullable=True)
-    value = Column(Float, nullable=True)
-    price = Column(Float, nullable=True)
-    on_hand = Column(Integer, nullable=True)
-    allocated = Column(Integer, nullable=True)
-    reserve = Column(Integer, nullable=True)
-    non_sellable_total = Column(Integer, nullable=True)
-    reorder_level = Column(Integer, nullable=True)
-    reorder_amount = Column(Integer, nullable=True)
-    replenishment_level = Column(Integer, nullable=True)
-    available = Column(Integer, nullable=True)
-    backorder = Column(Integer, nullable=True)
-    barcode = Column(Numeric, nullable=True)
-    tags = Column(ARRAY(VARCHAR), nullable=True)
+    name = Column(String)
+    sku = Column(String)
+    weight_lb = Column(Float)
+    height_in = Column(Float)
+    width_in = Column(Float)
+    length_in = Column(Float)
+    value = Column(Float)
+    price = Column(Float)
+    on_hand = Column(Integer)
+    allocated = Column(Integer)
+    reserve = Column(Integer)
+    non_sellable_total = Column(Integer)
+    reorder_level = Column(Integer)
+    reorder_amount = Column(Integer)
+    replenishment_level = Column(Integer)
+    available = Column(Integer)
+    backorder = Column(Integer)
+    barcode = Column(Numeric)
+    tags = Column(ARRAY(VARCHAR))
 
     def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
+        return {
             "id": self.id,
             "is_active": self.is_active,
             "name": self.name,
@@ -148,92 +451,87 @@ class ProductItem(Base):
             "barcode": self.barcode,
             "tags": self.tags,
         }
-        return result
 
 
-class Order(Base):
-    __tablename__ = "orders"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=True)
-    order_date = Column(DateTime, default=datetime.utcnow)
-    shipped_date = Column(DateTime, nullable=True)
-    received_date = Column(DateTime, nullable=True)
-
-    def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
-            "id": str(self.id),
-            "user_id": str(self.user_id),
-            "event_id": str(self.event_id),
-            "order_date": self.order_date,
-            "shipped_date": self.shipped_date,
-            "received_date": self.received_date,
-        }
-        return result
+class Product(Base):
+    __tablename__ = "products"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    sku = Column(String)
+    name = Column(String)
+    price = Column(Numeric)
+    on_hand = Column(Integer, nullable=False, default=0)
+    reserve_inventory = Column(Integer, nullable=False, default=0)
 
 
-class OrderItem(Base):
-    __tablename__ = "order_items"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"), nullable=False)
-    product_id = Column(UUID(as_uuid=True), ForeignKey("product_items.id"), nullable=False)
+class RMA(Base):
+    __tablename__ = "rmas"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    rma_date = Column(DateTime)  # Date the RMA was created
+    updated_at = Column(
+        DateTime
+    )  # Date the RMA record was last updated # Can this come from and be recorded in History somehow
+    rma_number = Column(String)  # Unique identifier for the RMA
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"))  # Associated order's primary key
+    total_items_expected = Column(Integer)  # Total number of items expected to be returned
+    total_items_received = Column(Integer)  # Total number of items actually received
+    label_type = Column(String)  # Type of label used for return, e.g., 'Free Label'
+    return_tracking = Column(String)  # Tracking number for the return shipment
+    internal_return_note = Column(String)  # Internal note for the return
+    customer_return_types = Column(String)  # Type of customer return, e.g., 'Refund'
+    status = Column(Enum(RMAStatus), default=RMAStatus.PENDING, nullable=False)
+    type = Column(ARRAY(Enum(RMAType)), nullable=False)
+    reason = Column(String)  # Reason for the return
+    is_returned = Column(Boolean)
+    is_refunded = Column(Boolean)
+
+    # Relationship to Order model, assuming that Order has a backref to RMADetail
+    order = relationship("Order", backref="rmas")
+
+
+class RMAItem(Base):
+    __tablename__ = "rma_items"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    rma_id = Column(UUID(as_uuid=True), ForeignKey("rmas.id"))
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
+    purchased_price = Column(Numeric)
     quantity = Column(Integer)
-    price = Column(Float)
-
-    def to_dict(self):
-        """Convert the model instance to a dictionary."""
-        result = {
-            "id": self.id,
-            "order_id": self.order_id,
-            "product_id": self.product_id,
-            "quantity": self.quantity,
-            "price": self.price,
-        }
-        return result
-
-
-class AuditLog(Base):
-    __tablename__ = "audit_log"
-    id = Column(Integer, primary_key=True)
-
-
-class Look(Base):
-    __tablename__ = "looks"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    look_name = Column(String, index=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    product_specs = Column(JSON, nullable=True)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "look_name": self.look_name,
-            "user_id": self.user_id,
-            "product_specs": self.product_specs,
-        }
-
-
-class Role(Base):
-    __tablename__ = "roles"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    role_name = Column(String, index=True, nullable=False)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-
-    def to_dict(self):
-        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id}
+    type = Column(Enum(RMAItemType), nullable=False)
+    reason = Column(String)
+    rma = relationship("RMA", backref="rma_items")
 
 
 class Cart(Base):
     __tablename__ = "carts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=True)
-    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"), nullable=True)
-
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
     cart_products = relationship("CartProduct", back_populates="cart", lazy="dynamic")
 
     def to_dict(self):
@@ -243,12 +541,18 @@ class Cart(Base):
 class CartProduct(Base):
     __tablename__ = "cartproducts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
     cart_id = Column(UUID(as_uuid=True), ForeignKey("carts.id"), nullable=False)
-    product_id = Column(BigInteger, index=True, nullable=True)
-    variation_id = Column(BigInteger, index=True, nullable=True)
-    category = Column(String, index=True, nullable=True)
-    quantity = Column(Integer, index=True, nullable=True)
+    product_id = Column(BigInteger)
+    variation_id = Column(BigInteger)
+    category = Column(String)
+    quantity = Column(Integer)
     cart = relationship("Cart", back_populates="cart_products")
 
     def to_dict(self):

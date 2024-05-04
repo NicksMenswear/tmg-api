@@ -25,18 +25,12 @@ def get_look(look_id):
 @hmac_verification
 def create_look(look_data):
     look_service = LookService()
-    user_service = UserService()
-
-    user = user_service.get_user_by_email(look_data["email"])
-
-    if not user:
-        return jsonify({"errors": "User not found"}), 404
 
     try:
-        del look_data["email"]
-        enriched_look_data = {**look_data, "user_id": user.id}
-
-        look = look_service.create_look(enriched_look_data)
+        look = look_service.create_look(look_data)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 409
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 409

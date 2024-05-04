@@ -2344,15 +2344,15 @@ components:
         look_name:
           title: look_name
           type: string
-        email:
-          title: email
+        user_id:
+          title: user_id
           type: string
         product_specs:
           title: product_specs
           type: object
       required:
         - look_name
-        - email
+        - user_id
       title: Look
       type: object
     UpdateLook:

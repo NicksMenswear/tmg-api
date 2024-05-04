@@ -31,7 +31,7 @@ class LookService:
         try:
             look = Look(
                 id=uuid.uuid4(),
-                look_name=look_data["look_name"],
+                look_name=look_data.get("look_name"),
                 user_id=look_data.get("user_id"),
                 product_specs=look_data.get("product_specs"),
             )

@@ -29,6 +29,48 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response_look["user_id"], str(look.user_id))
         self.assertEqual(response_look["product_specs"], look.product_specs)
 
+    def test_create_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
+        # when
+        look_data = fixtures.look_request(user_id=user.id)
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assert_equal_response_look_with_db_look(
+            self.look_service.get_look_by_id(response.json["id"]), response.json
+        )
+
+    def test_create_look_duplicate(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+
+        # when
+        look_data = fixtures.look_request(user_id=user.id, look_name=look.look_name)
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 409)
+
     def test_get_empty_list_of_looks_user(self):
         query_params = {**self.hmac_query_params.copy(), "user_id": str(uuid.uuid4())}
 
@@ -150,24 +192,6 @@ class TestLooks(BaseTestCase):
             "/looks_with_lookid_userid",
             query_string=query_params,
             method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_create_look_without_user(self):
-        # when
-        look_request = fixtures.look_request()
-        look_request["email"] = f"{str(uuid.uuid4())}@example.com"
-        del look_request["user_id"]
-
-        response = self.client.open(
-            "/looks",
-            query_string=self.hmac_query_params,
-            data=json.dumps(look_request, cls=encoder.CustomJSONEncoder),
-            method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
         )

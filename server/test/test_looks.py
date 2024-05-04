@@ -221,13 +221,13 @@ class TestLooks(BaseTestCase):
     def test_update_look_for_invalid_user(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        self.look_service.create_look(fixtures.look_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
-        look_data = fixtures.update_look_request(user_id=user.id, email=f"{str(uuid.uuid4())}@example.com")
+        look_data = fixtures.update_look_request(user_id=str(uuid.uuid4()))
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{look.id}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -243,10 +243,10 @@ class TestLooks(BaseTestCase):
         user = self.user_service.create_user(fixtures.user_request())
 
         # when
-        look_data = fixtures.update_look_request(user_id=user.id, look_id=str(uuid.uuid4()))
+        look_data = fixtures.update_look_request(user_id=user.id)
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -270,12 +270,11 @@ class TestLooks(BaseTestCase):
         # when
         look_data = fixtures.update_look_request(
             user_id=str(user.id),
-            id=str(look.id),
             look_name=f"{str(uuid.uuid4())}-new_look_name",
         )
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{str(look.id)}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -285,7 +284,7 @@ class TestLooks(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertNotEqual(response.json["id"], str(look.id))
+        self.assertEqual(response.json["id"], str(look.id))
 
     def test_get_empty_set_of_events_for_look(self):
         # when
@@ -330,3 +329,35 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
         self.assertEqual(response.json[1]["id"], str(event2.id))
         self.assertEqual(response.json[1]["event_name"], str(event2.event_name))
+
+    def test_delete_look_non_existing(self):
+        # when
+        response = self.client.open(
+            f"/looks/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_delete_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/looks/{look.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 204)
+        look_in_db = self.look_service.get_look_by_id(look.id)
+        self.assertIsNone(look_in_db)

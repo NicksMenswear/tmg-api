@@ -75,7 +75,6 @@ def look_request(**look_data):
 
 def update_look_request(**look_data):
     return {
-        "id": look_data.get("id"),
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
         "product_specs": look_data.get("product_specs", {}),

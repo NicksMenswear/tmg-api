@@ -44,8 +44,8 @@ class LookService:
 
         return look
 
-    def update_look(self, look_data):
-        look = Look.query.filter(Look.id == look_data["id"]).first()
+    def update_look(self, look_id, look_data):
+        look = Look.query.filter(Look.id == look_id).first()
 
         if not look:
             raise NotFoundError("Look not found")
@@ -56,17 +56,24 @@ class LookService:
             raise NotFoundError("User not found")
 
         try:
-            new_look = self.create_look(
-                look_data=dict(
-                    id=uuid.uuid4(),
-                    look_name=look_data["look_name"],
-                    user_id=look_data.get("user_id"),
-                    product_specs=look_data.get("product_specs"),
-                )
-            )
+            look.look_name = look_data.get("look_name")
+            look.product_specs = look_data.get("product_specs")
 
             db.session.commit()
+            db.session.refresh(look)
         except Exception as e:
             raise ServiceError("Failed to update look.", e)
 
-        return new_look
+        return look
+
+    def delete_look(self, look_id):
+        look = Look.query.filter(Look.id == look_id).first()
+
+        if not look:
+            raise NotFoundError("Look not found")
+
+        try:
+            db.session.delete(look)
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to delete look.", e)

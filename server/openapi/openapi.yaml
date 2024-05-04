@@ -491,7 +491,6 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: server.controllers.events
-
   /looks:
     post:
       operationId: create_look
@@ -535,9 +534,60 @@ paths:
       tags:
         - Looks
       x-openapi-router-controller: server.controllers.looks
+  /looks/{look_id}:
+    get:
+      operationId: get_look
+      parameters:
+        - explode: false
+          in: path
+          name: look_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Single look by id
+      summary: Get single look by id
+      tags:
+        - Looks
+      x-openapi-router-controller: server.controllers.looks
     put:
       operationId: update_look
       parameters:
+        - description: Unique ID of the event to retrieve
+          explode: false
+          in: path
+          name: look_id
+          required: true
+          schema:
+            type: string
+          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -576,6 +626,49 @@ paths:
         "404":
           description: Look not found
       summary: Update a Look by name
+      tags:
+        - Looks
+      x-openapi-router-controller: server.controllers.looks
+    delete:
+      operationId: delete_look
+      parameters:
+        - description: Unique ID of the look to delete
+          explode: false
+          in: path
+          name: look_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Look Deleted Successfully
+      summary: Delete look
       tags:
         - Looks
       x-openapi-router-controller: server.controllers.looks
@@ -735,50 +828,6 @@ paths:
         - Looks
         - Events
       x-openapi-router-controller: server.controllers.looks
-  /looks/{look_id}:
-    get:
-      operationId: get_look
-      parameters:
-        - explode: false
-          in: path
-          name: look_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Single look by id
-      summary: Get single look by id
-      tags:
-        - Looks
-      x-openapi-router-controller: server.controllers.looks
-
   /event_attendees:
     post:
       operationId: add_attendee
@@ -2359,9 +2408,6 @@ components:
       properties:
         look_name:
           title: look_name
-          type: string
-        user_id:
-          title: user_id
           type: string
         product_specs:
           title: product_specs

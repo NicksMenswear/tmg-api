@@ -5,7 +5,6 @@ from flask import jsonify
 from server.controllers.util import hmac_verification
 from server.services import NotFoundError, ServiceError, DuplicateError
 from server.services.look import LookService
-from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -72,11 +71,11 @@ def get_events_for_look(look_id):
 
 
 @hmac_verification
-def update_look(look_data):
+def update_look(look_id, look_data):
     look_service = LookService()
 
     try:
-        look = look_service.update_look(look_data)
+        look = look_service.update_look(look_id, look_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
@@ -85,3 +84,19 @@ def update_look(look_data):
         return jsonify({"errors": e.message}), 500
 
     return look.to_dict(), 200
+
+
+@hmac_verification
+def delete_look(look_id):
+    look_service = LookService()
+
+    try:
+        look_service.delete_look(look_id)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
+    except ServiceError as e:
+        logger.exception(e)
+        return jsonify({"errors": e.message}), 500
+
+    return jsonify({}), 204

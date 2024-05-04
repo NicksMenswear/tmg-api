@@ -136,6 +136,7 @@ class EventService:
 
         try:
             event.event_date = event_data.get("event_date", event.event_date)
+            event.event_name = event_data.get("event_name", event.event_name)
 
             db.session.commit()
             db.session.refresh(event)

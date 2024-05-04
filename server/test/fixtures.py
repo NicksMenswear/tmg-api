@@ -12,6 +12,15 @@ def user_request(**user_data):
     }
 
 
+def update_user_request(**user_data):
+    return {
+        "first_name": user_data.get("first_name", str(uuid.uuid4())),
+        "last_name": user_data.get("last_name", str(uuid.uuid4())),
+        "shopify_id": user_data.get("shopify_id", str(random.randint(1000, 100000))),
+        "account_status": user_data.get("account_status", True),
+    }
+
+
 def product_request(**product_data):
     return {
         "name": product_data.get("name", str(uuid.uuid4())),

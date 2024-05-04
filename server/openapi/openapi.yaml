@@ -899,47 +899,6 @@ paths:
         - Orders
       x-openapi-router-controller: server.controllers.orders
   /users:
-    get:
-      operationId: get_all_users
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/User"
-                type: array
-          description: An array of users
-      summary: Lists all users
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
     post:
       operationId: create_user
       parameters:
@@ -982,53 +941,9 @@ paths:
       tags:
         - Users
       x-openapi-router-controller: server.controllers.users
-    put:
-      operationId: update_user
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-        required: true
-        x-body-name: user_data
-      responses:
-        "200":
-          description: User updated
-        "404":
-          description: User not found
-      summary: Update a user by ID
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
   /users/{email}:
     get:
-      operationId: get_user_by_id
+      operationId: get_user_by_email
       parameters:
         - description: Unique ID of the user to retrieve
           explode: false
@@ -1076,15 +991,72 @@ paths:
       tags:
         - Users
       x-openapi-router-controller: server.controllers.users
+  /users/{user_id}:
+    put:
+      operationId: update_user
+      parameters:
+        - description: Unique ID of the user to retrieve
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUser"
+        required: true
+        x-body-name: user_data
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Details of the user
+        "404":
+          description: User not found
+      summary: Update single user by ID
+      tags:
+        - Users
+      x-openapi-router-controller: server.controllers.users
 
-  /users/{email}/events:
+  /users/{user_id}/events:
     get:
       operationId: get_user_events
       parameters:
         - description: Unique ID of the user to retrieve
           explode: false
           in: path
-          name: email
+          name: user_id
           required: true
           schema:
             type: string
@@ -2114,13 +2086,27 @@ components:
         account_status:
           title: account_status
           type: boolean
-        role:
-          title: role
-          type: string
       required:
         - email
       title: User
       type: object
+    UpdateUser:
+      properties:
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        shopify_id:
+          title: shopify_id
+          type: string
+        account_status:
+          title: account_status
+          type: boolean
+      title: UpdateUser
+      type: object
+
     Event:
       properties:
         id:

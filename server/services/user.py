@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import User, Attendee, Event
+from server.database.models import User, Event
 from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -60,23 +60,20 @@ class UserService:
     def get_user_by_email(self, email):
         return User.query.filter_by(email=email).first()
 
-    def get_all_users(self):
-        return User.query.all()
+    def get_user_events(self, user_id):
+        return Event.query.filter_by(user_id=user_id).all()
 
-    def get_user_events(self, email):
-        return Event.query.join(User, User.id == Event.user_id).filter(User.email == email).all()
-
-    def update_user(self, user_data):
-        user = User.query.filter_by(email=user_data["email"]).first()
+    def update_user(self, user_id, user_data):
+        user = User.query.filter_by(id=user_id).first()
 
         if not user:
             raise NotFoundError("User not found.")
 
         try:
-            user.first_name = user_data.get("first_name")
-            user.last_name = user_data.get("last_name")
-            user.account_status = user_data.get("account_status")
-            user.shopify_id = user_data.get("shopify_id")
+            user.first_name = user_data.get("first_name", user.first_name)
+            user.last_name = user_data.get("last_name", user.last_name)
+            user.account_status = user_data.get("account_status", user.account_status)
+            user.shopify_id = user_data.get("shopify_id", user.shopify_id)
 
             db.session.commit()
             db.session.refresh(user)

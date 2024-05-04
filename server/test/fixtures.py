@@ -47,10 +47,13 @@ def product_request(**product_data):
 
 
 def event_request(**event_data):
+    if "email" in event_data:
+        raise ValueError("email is not a valid key for event_request")
+
     return {
         "event_name": event_data.get("event_name", str(uuid.uuid4())),
         "event_date": event_data.get("event_date", datetime.now().isoformat()),
-        "email": event_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        "user_id": event_data.get("user_id", str(uuid.uuid4())),
         "is_active": event_data.get("is_active", True),
     }
 

@@ -65,7 +65,7 @@ class EventService:
         return event
 
     def create_event(self, event_data):
-        user = User.query.filter_by(email=event_data["email"]).first()
+        user = User.query.filter_by(id=event_data["user_id"]).first()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -75,7 +75,7 @@ class EventService:
         ).first()
 
         if event:
-            raise DuplicateError("Event with the same detail already exists.")
+            raise DuplicateError("Event with the same details already exists.")
 
         try:
             event = Event(

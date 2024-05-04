@@ -274,7 +274,7 @@ class TestLooks(BaseTestCase):
     def test_update_look(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
@@ -318,8 +318,8 @@ class TestLooks(BaseTestCase):
     def test_get_events_for_look(self):
         user1 = self.user_service.create_user(fixtures.user_request())
         user2 = self.user_service.create_user(fixtures.user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(email=user1.email))
-        event2 = self.event_service.create_event(fixtures.event_request(email=user2.email))
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user1.id)))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)

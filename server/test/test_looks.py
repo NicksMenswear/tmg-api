@@ -29,44 +29,6 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response_look["user_id"], str(look.user_id))
         self.assertEqual(response_look["product_specs"], look.product_specs)
 
-    def test_get_list_of_all_looks_from_empty_db(self):
-        # when
-        response = self.client.open(
-            "/looks",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
-
-    def test_get_list_of_all_looks(self):
-        # given
-        user1 = self.user_service.create_user(fixtures.user_request())
-        user2 = self.user_service.create_user(fixtures.user_request())
-        look11 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look21 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look22 = self.look_service.create_look(fixtures.look_request(user_id=user2.id))
-
-        # when
-        response = self.client.open(
-            "/looks",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 3)
-        self.assert_equal_response_look_with_db_look(look11, response.json[0])
-        self.assert_equal_response_look_with_db_look(look21, response.json[1])
-        self.assert_equal_response_look_with_db_look(look22, response.json[2])
-
     def test_get_empty_list_of_looks_user(self):
         query_params = {**self.hmac_query_params.copy(), "user_id": str(uuid.uuid4())}
 

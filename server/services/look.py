@@ -10,9 +10,6 @@ class LookService:
     def __init__(self):
         self.user_service = UserService()
 
-    def get_all_looks(self):
-        return Look.query.all()
-
     def get_look_by_id(self, look_id):
         return Look.query.filter(Look.id == look_id).first()
 

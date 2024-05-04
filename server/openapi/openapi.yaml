@@ -49,137 +49,9 @@ paths:
       tags:
         - Health
       x-openapi-router-controller: server.controllers.health
-  /audit:
-    get:
-      operationId: list_audit_entries
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/AuditLog"
-                type: array
-          description: An array of audit log entries
-      summary: Lists all audit entries
-      tags:
-        - Audit
-      x-openapi-router-controller: server.controllers.audit
-
-  /login:
-    get:
-      operationId: login_val
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: email
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Successful response
-        "404":
-          description: User not found
-      summary: User Verfication
-      tags:
-        - Login
-      x-openapi-router-controller: server.controllers.login
-
-  /products:
-    get:
-      operationId: list_product_items
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/ProductItem"
-                type: array
-          description: An array of product items
-      summary: Lists all product items
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.product
+  /users:
     post:
-      operationId: create_product_item
+      operationId: create_user
       parameters:
         - in: query
           name: logged_in_customer_id
@@ -210,17 +82,224 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductItem"
+              $ref: "#/components/schemas/User"
         required: true
-        x-body-name: product_item
+        x-body-name: user_data
       responses:
         "201":
-          description: Product item created
-      summary: Create product item
+          description: User created
+      summary: Create user
       tags:
-        - Product
-      x-openapi-router-controller: server.controllers.product
-
+        - Users
+      x-openapi-router-controller: server.controllers.users
+  /users/{email}:
+    get:
+      operationId: get_user_by_email
+      parameters:
+        - description: Unique ID of the user to retrieve
+          explode: false
+          in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Details of the user
+        "404":
+          description: User not found
+      summary: Get a single user by ID
+      tags:
+        - Users
+      x-openapi-router-controller: server.controllers.users
+  /users/{user_id}:
+    put:
+      operationId: update_user
+      parameters:
+        - description: Unique ID of the user to retrieve
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUser"
+        required: true
+        x-body-name: user_data
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Details of the user
+        "404":
+          description: User not found
+      summary: Update single user by ID
+      tags:
+        - Users
+      x-openapi-router-controller: server.controllers.users
+  /users/{user_id}/events:
+    get:
+      operationId: get_user_events
+      parameters:
+        - description: Unique ID of the user to retrieve
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Event"
+                type: array
+          description: Collection of user events
+      summary: Get a single user by ID
+      tags:
+        - Users
+      x-openapi-router-controller: server.controllers.users
+  /users/{user_id}/invites:
+    get:
+      operationId: get_user_invites
+      parameters:
+        - description: Gets list of invites for a user
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Event"
+                type: array
+          description: Collection of events that user is invited to
+      summary: Collection of events that user is invited to
+      tags:
+        - Users
+        - Events
+      x-openapi-router-controller: server.controllers.users
   /events:
     post:
       operationId: create_event
@@ -413,838 +492,7 @@ paths:
         - Events
       x-openapi-router-controller: server.controllers.events
 
-  /event_attendees:
-    post:
-      operationId: add_attendee
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/Attendee'
-        required: true
-        x-body-name: attendee_data
-      responses:
-        "201":
-          description: Attendee added
-      summary: Attendee added
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-    put:
-      operationId: update_attendee
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/UpdateAttendee'
-        required: true
-        x-body-name: attendee_data
-      responses:
-        "201":
-          description: Attendee Updated Success
-      summary: Attendee Update
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-    get:
-      operationId: get_attendee_event
-      parameters:
-        - in: query
-          name: email
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: event_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-
-      responses:
-        "200":
-          description: Attendee Get Success
-      summary: Attendee List
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-  /event_attendees_by_eventid:
-    get:
-      operationId: get_attendees_for_event
-      parameters:
-        - description: Unique identifier of the event to retrieve attendees
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the specific event
-        "404":
-          description: Event not found
-      summary: Retrieve a specific Event Attendees by Event ID
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-  /delete_event_attendee:
-    put:
-      operationId: soft_delete_attendee
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/DeleteAttendee'
-        required: true
-        x-body-name: attendee_data
-      responses:
-        "200":
-          description: Attendee Deleted Success
-      summary: Attendee Delete
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-
-  /orders:
-    delete:
-      operationId: delete_order
-      parameters:
-        - name: order_id
-          in: query
-          description: Unique identifier of the order to delete
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "204":
-          description: Order deleted successfully
-        "404":
-          description: Order not found
-      summary: Delete order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.orders
-    get:
-      operationId: get_orders
-      parameters:
-        - description: Optional user ID to filter orders
-          explode: true
-          in: query
-          name: user_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - description: Optional event ID to filter orders
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Retrieve all orders by user ID or event ID
-      summary: Retrieve all orders, optionally filtered by user ID or event ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.orders
-    post:
-      operationId: create_order
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Order"
-        required: true
-        x-body-name: order
-      responses:
-        "201":
-          description: Order created
-      summary: Create order
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.orders
-    put:
-      operationId: update_order
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateOrder"
-        required: true
-        x-body-name: order
-      responses:
-        "200":
-          description: Order updated successfully
-        "404":
-          description: Order not found
-        "400":
-          description: Bad Request. Invalid input or missing required fields in the request.
-      summary: Update an existing order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.orders
-  /orders/{order_id}:
-    get:
-      operationId: get_order_by_id
-      parameters:
-        - description: Unique identifier of the order to retrieve
-          explode: false
-          in: path
-          name: order_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the specific order
-        "404":
-          description: Order not found
-      summary: Retrieve a specific order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.orders
-  /users:
-    post:
-      operationId: create_user
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-        required: true
-        x-body-name: user_data
-      responses:
-        "201":
-          description: User created
-      summary: Create user
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
-  /users/{email}:
-    get:
-      operationId: get_user_by_email
-      parameters:
-        - description: Unique ID of the user to retrieve
-          explode: false
-          in: path
-          name: email
-          required: true
-          schema:
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-          description: Details of the user
-        "404":
-          description: User not found
-      summary: Get a single user by ID
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
-  /users/{user_id}:
-    put:
-      operationId: update_user
-      parameters:
-        - description: Unique ID of the user to retrieve
-          explode: false
-          in: path
-          name: user_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateUser"
-        required: true
-        x-body-name: user_data
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-          description: Details of the user
-        "404":
-          description: User not found
-      summary: Update single user by ID
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
-
-  /users/{user_id}/events:
-    get:
-      operationId: get_user_events
-      parameters:
-        - description: Unique ID of the user to retrieve
-          explode: false
-          in: path
-          name: user_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/Event"
-                type: array
-          description: Collection of user events
-      summary: Get a single user by ID
-      tags:
-        - Users
-      x-openapi-router-controller: server.controllers.users
-
-  /users/{user_id}/invites:
-    get:
-      operationId: get_user_invites
-      parameters:
-        - description: Gets list of invites for a user
-          explode: false
-          in: path
-          name: user_id
-          required: true
-          schema:
-            type: string
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/Event"
-                type: array
-          description: Collection of events that user is invited to
-      summary: Collection of events that user is invited to
-      tags:
-        - Users
-        - Events
-      x-openapi-router-controller: server.controllers.users
-
-  /shopify_customer:
-    get:
-      operationId: list_customer
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json: { }
-      summary: List Shopify customer
-      tags:
-        - Shopify
-      x-openapi-router-controller: server.controllers.shopify
-
-
-  /invite:
-    post:
-      operationId: send_invite
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Invite'
-        required: true
-        x-body-name: invite_data
-      responses:
-        "201":
-          description: Invite created
-      summary: Create Invite
-      tags:
-        - Invites
-      x-openapi-router-controller: server.controllers.invites
-
   /looks:
-    get:
-      operationId: list_looks
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: An array of looks
-      summary: Lists all looks
-      tags:
-        - Looks
-      x-openapi-router-controller: server.controllers.looks
     post:
       operationId: create_look
       parameters:
@@ -1531,6 +779,713 @@ paths:
         - Looks
       x-openapi-router-controller: server.controllers.looks
 
+  /event_attendees:
+    post:
+      operationId: add_attendee
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Attendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "201":
+          description: Attendee added
+      summary: Attendee added
+      tags:
+        - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+    put:
+      operationId: update_attendee
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/UpdateAttendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "201":
+          description: Attendee Updated Success
+      summary: Attendee Update
+      tags:
+        - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+    get:
+      operationId: get_attendee_event
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: event_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+
+      responses:
+        "200":
+          description: Attendee Get Success
+      summary: Attendee List
+      tags:
+        - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+  /event_attendees_by_eventid:
+    get:
+      operationId: get_attendees_for_event
+      parameters:
+        - description: Unique identifier of the event to retrieve attendees
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Details of the specific event
+        "404":
+          description: Event not found
+      summary: Retrieve a specific Event Attendees by Event ID
+      tags:
+        - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+  /delete_event_attendee:
+    put:
+      operationId: soft_delete_attendee
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/DeleteAttendee'
+        required: true
+        x-body-name: attendee_data
+      responses:
+        "200":
+          description: Attendee Deleted Success
+      summary: Attendee Delete
+      tags:
+        - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+  /audit:
+    get:
+      operationId: list_audit_entries
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+                type: array
+          description: An array of audit log entries
+      summary: Lists all audit entries
+      tags:
+        - Audit
+      x-openapi-router-controller: server.controllers.audit
+  /login:
+    get:
+      operationId: login_val
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Successful response
+        "404":
+          description: User not found
+      summary: User Verfication
+      tags:
+        - Login
+      x-openapi-router-controller: server.controllers.login
+  /products:
+    get:
+      operationId: list_product_items
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ProductItem"
+                type: array
+          description: An array of product items
+      summary: Lists all product items
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+    post:
+      operationId: create_product_item
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductItem"
+        required: true
+        x-body-name: product_item
+      responses:
+        "201":
+          description: Product item created
+      summary: Create product item
+      tags:
+        - Product
+      x-openapi-router-controller: server.controllers.product
+  /orders:
+    delete:
+      operationId: delete_order
+      parameters:
+        - name: order_id
+          in: query
+          description: Unique identifier of the order to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Order deleted successfully
+        "404":
+          description: Order not found
+      summary: Delete order by ID
+      tags:
+        - Orders
+      x-openapi-router-controller: server.controllers.orders
+    get:
+      operationId: get_orders
+      parameters:
+        - description: Optional user ID to filter orders
+          explode: true
+          in: query
+          name: user_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - description: Optional event ID to filter orders
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Retrieve all orders by user ID or event ID
+      summary: Retrieve all orders, optionally filtered by user ID or event ID
+      tags:
+        - Orders
+      x-openapi-router-controller: server.controllers.orders
+    post:
+      operationId: create_order
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+        required: true
+        x-body-name: order
+      responses:
+        "201":
+          description: Order created
+      summary: Create order
+      tags:
+        - Orders
+      x-openapi-router-controller: server.controllers.orders
+    put:
+      operationId: update_order
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrder"
+        required: true
+        x-body-name: order
+      responses:
+        "200":
+          description: Order updated successfully
+        "404":
+          description: Order not found
+        "400":
+          description: Bad Request. Invalid input or missing required fields in the request.
+      summary: Update an existing order by ID
+      tags:
+        - Orders
+      x-openapi-router-controller: server.controllers.orders
+  /orders/{order_id}:
+    get:
+      operationId: get_order_by_id
+      parameters:
+        - description: Unique identifier of the order to retrieve
+          explode: false
+          in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Details of the specific order
+        "404":
+          description: Order not found
+      summary: Retrieve a specific order by ID
+      tags:
+        - Orders
+      x-openapi-router-controller: server.controllers.orders
+  /shopify_customer:
+    get:
+      operationId: list_customer
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: { }
+      summary: List Shopify customer
+      tags:
+        - Shopify
+      x-openapi-router-controller: server.controllers.shopify
+  /invite:
+    post:
+      operationId: send_invite
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+        x-body-name: invite_data
+      responses:
+        "201":
+          description: Invite created
+      summary: Create Invite
+      tags:
+        - Invites
+      x-openapi-router-controller: server.controllers.invites
   /roles:
     get:
       operationId: list_roles
@@ -2034,7 +1989,6 @@ paths:
       tags:
         - Product
       x-openapi-router-controller: server.controllers.product
-
   /delete_product:
     put:
       operationId: soft_delete_product

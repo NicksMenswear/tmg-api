@@ -1095,11 +1095,61 @@ paths:
                   $ref: "#/components/schemas/Event"
                 type: array
           description: Collection of user events
-        "404":
-          description: User not found
       summary: Get a single user by ID
       tags:
         - Users
+      x-openapi-router-controller: server.controllers.users
+
+  /users/{user_id}/invites:
+    get:
+      operationId: get_user_invites
+      parameters:
+        - description: Gets list of invites for a user
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Event"
+                type: array
+          description: Collection of events that user is invited to
+      summary: Collection of events that user is invited to
+      tags:
+        - Users
+        - Events
       x-openapi-router-controller: server.controllers.users
 
   /shopify_customer:

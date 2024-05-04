@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import User, Event
+from server.database.models import User, Event, Attendee
 from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -61,7 +61,14 @@ class UserService:
         return User.query.filter_by(email=email).first()
 
     def get_user_events(self, user_id):
-        return Event.query.filter_by(user_id=user_id).all()
+        return Event.query.filter_by(user_id=user_id, is_active=True).all()
+
+    def get_user_invites(self, user_id):
+        return (
+            Event.query.join(Attendee, Event.id == Attendee.event_id)
+            .filter(Attendee.attendee_id == user_id, Event.is_active)
+            .all()
+        )
 
     def update_user(self, user_id, user_data):
         user = User.query.filter_by(id=user_id).first()

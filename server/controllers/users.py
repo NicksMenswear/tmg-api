@@ -47,6 +47,15 @@ def get_user_events(user_id):
 
 
 @hmac_verification
+def get_user_invites(user_id):
+    user_service = UserService()
+
+    events = user_service.get_user_invites(user_id)
+
+    return [event.to_dict() for event in events], 200
+
+
+@hmac_verification
 def update_user(user_id, user_data):
     user_service = UserService()
 

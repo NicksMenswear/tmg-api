@@ -1,9 +1,7 @@
 import uuid
 
-from sqlalchemy import or_, and_
-
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look
+from server.database.models import Event, User
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
@@ -14,89 +12,50 @@ class EventService:
     def get_event_by_user_id(self, user_id):
         return Event.query.filter_by(user_id=user_id).first()  # TODO: this is bug!
 
-    def get_events_for_user(self, email, include_attendees=False):
-        results = (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .join(User, User.id == Attendee.attendee_id)
-            .filter(or_(User.email == email, User.id == Event.user_id), Event.is_active)
-            .all()
-        )
-
-        events = [event.to_dict() for event in results]
-
-        if not include_attendees:
-            return events
-
-        for event in events:
-            results = (
-                db.session.query(Attendee, User, Look)
-                .join(User, User.id == Attendee.attendee_id)
-                .outerjoin(Look, Look.id == Attendee.look_id)
-                .filter(Attendee.event_id == event["id"])
-                .all()
-            )
-
-            event["attendees"] = []
-
-            for attendee, user, look in results:
-                event["attendees"].append(
-                    {
-                        "id": user.id,
-                        "first_name": user.first_name,
-                        "last_name": user.last_name,
-                        "email": user.email,
-                        "look_id": attendee.look_id,
-                        "look_name": look.look_name if look else None,
-                        "role": attendee.role,
-                    }
-                )
-
-        return events
-
-    # TODO: This method is a bug, it should be removed. It fetches all attendees for all events. UI is not ready so fixed it as is!
-    def get_events_with_attendees_by_user_email(self, email):
-        results = (
-            db.session.query(Attendee, User, Event)
-            .join(Event, Event.id == Attendee.event_id)
-            .filter(and_(User.email == email, Event.is_active, Event.user_id == User.id))
-            .all()
-        )
-
-        from server.services.look import LookService
-
-        look_service = LookService()
-
-        response = []
-
-        for attendee, user, event in results:
-            enriched_attendee = {
-                "event_id": event.id,
-                "event_name": event.event_name,
-                "event_date": str(event.event_date),
-                "user_id": str(event.user_id),
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-                "id": attendee.id,
-                "invite": attendee.invite,
-                "pay": attendee.pay,
-                "ship": attendee.ship,
-                "size": attendee.size,
-                "style": attendee.style,
-            }
-
-            if attendee.look_id:
-                look = look_service.get_look_by_id(attendee.look_id)
-
-                if look:
-                    enriched_attendee["look_data"] = {
-                        "look_id": look.id,
-                        "look_name": look.look_name,
-                    }
-
-            response.append(enriched_attendee)
-
-        return response
+    # # TODO: This method is a bug, it should be removed. It fetches all attendees for all events. UI is not ready so fixed it as is!
+    # def get_events_with_attendees_by_user_email(self, email):
+    #     results = (
+    #         db.session.query(Attendee, User, Event)
+    #         .join(Event, Event.id == Attendee.event_id)
+    #         .filter(and_(User.email == email, Event.is_active, Event.user_id == User.id))
+    #         .all()
+    #     )
+    #
+    #     from server.services.look import LookService
+    #
+    #     look_service = LookService()
+    #
+    #     response = []
+    #
+    #     for attendee, user, event in results:
+    #         enriched_attendee = {
+    #             "event_id": event.id,
+    #             "event_name": event.event_name,
+    #             "event_date": str(event.event_date),
+    #             "user_id": str(event.user_id),
+    #             "first_name": user.first_name,
+    #             "last_name": user.last_name,
+    #             "email": user.email,
+    #             "id": attendee.id,
+    #             "invite": attendee.invite,
+    #             "pay": attendee.pay,
+    #             "ship": attendee.ship,
+    #             "size": attendee.size,
+    #             "style": attendee.style,
+    #         }
+    #
+    #         if attendee.look_id:
+    #             look = look_service.get_look_by_id(attendee.look_id)
+    #
+    #             if look:
+    #                 enriched_attendee["look_data"] = {
+    #                     "look_id": look.id,
+    #                     "look_name": look.look_name,
+    #                 }
+    #
+    #         response.append(enriched_attendee)
+    #
+    #     return response
 
     def create_event(self, event_data):
         user = User.query.filter_by(email=event_data["email"]).first()

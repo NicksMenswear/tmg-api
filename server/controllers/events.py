@@ -9,6 +9,22 @@ from server.services.event import EventService
 logger = logging.getLogger(__name__)
 
 
+# @hmac_verification
+# def get_event(event_id):
+#     event_service = EventService()
+#
+#     try:
+#         event = event_service.get_event(event_id)
+#     except NotFoundError as e:
+#         logger.debug(e)
+#         return jsonify({"errors": e.message}), 404
+#     except ServiceError as e:
+#         logger.exception(e)
+#         return jsonify({"errors": e.message}), 500
+#
+#     return event.to_dict(), 200
+
+
 @hmac_verification
 def create_event(event):
     event_service = EventService()
@@ -26,28 +42,6 @@ def create_event(event):
         return jsonify({"errors": e.message}), 500
 
     return event.to_dict(), 201
-
-
-@hmac_verification
-def list_events_attendees(email):
-    event_service = EventService()
-
-    try:
-        events = event_service.get_events_with_attendees_by_user_email(email)
-    except NotFoundError as e:
-        logger.debug(e.message, e)
-        return jsonify({"errors": e.message}), 404
-
-    return events, 200
-
-
-@hmac_verification
-def get_events_for_user(email, include_attendees=False):
-    event_service = EventService()
-
-    events = event_service.get_events_for_user(email, include_attendees)
-
-    return events, 200
 
 
 @hmac_verification

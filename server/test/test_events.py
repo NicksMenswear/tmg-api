@@ -253,27 +253,62 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_attendee_user["first_name"], attendee_user.first_name)
         self.assertEqual(response_attendee_user["last_name"], attendee_user.last_name)
 
+    def test_update_event_non_existed(self):
+        # when
+        response = self.client.open(
+            f"/events/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(
+                fixtures.update_event_request(event_name=str(uuid.uuid4()), event_date=datetime.now().isoformat()),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assert404(response)
+
     def test_update_event(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
         event = self.event_service.create_event(fixtures.event_request(email=user.email))
 
         # when
+        updated_event_name = str(uuid.uuid4())
+        updated_event_date = datetime.now().isoformat()
+
         response = self.client.open(
-            "/events",
+            f"/events/{str(event.id)}",
             query_string=self.hmac_query_params,
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                fixtures.update_event_request(id=event.id, user_id=user.id, event_date=datetime.now().isoformat()),
+                fixtures.update_event_request(event_name=updated_event_name, event_date=updated_event_date),
                 cls=encoder.CustomJSONEncoder,
             ),
         )
 
         # then
         self.assert200(response)
-        self.assert_equal_response_event_with_db_event(self.event_service.get_event_by_id(event.id), response.json)
+        response_event = response.json
+        self.assertEqual(response_event["event_name"], updated_event_name)
+        self.assertEqual(response_event["event_date"], updated_event_date.replace("T", " "))
+
+    def test_soft_delete_event_non_existing(self):
+        # when
+        response = self.client.open(
+            f"/events/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 404)
 
     def test_soft_delete_event(self):
         # given
@@ -282,16 +317,15 @@ class TestEvents(BaseTestCase):
 
         # when
         response = self.client.open(
-            "/delete_events",
+            f"/events/{event.id}",
             query_string=self.hmac_query_params,
-            method="PUT",
+            method="DELETE",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=json.dumps(
-                fixtures.delete_event_request(event_id=event.id, user_id=user.id),
-                cls=encoder.CustomJSONEncoder,
-            ),
         )
 
         # then
         self.assertStatus(response, 204)
+
+        looked_up_event = self.event_service.get_event_by_id(event.id)
+        self.assertEqual(looked_up_event.get("is_active"), False)

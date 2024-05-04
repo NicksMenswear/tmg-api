@@ -94,15 +94,15 @@ class EventService:
 
         return event
 
-    def update_event(self, event_data):
-        event = Event.query.filter(Event.id == event_data["id"], Event.user_id == event_data["user_id"]).first()
+    def update_event(self, event_id, event_data):
+        event = Event.query.filter(Event.id == event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
         try:
-            event.event_date = event_data.get("event_date", event.event_date)
-            event.event_name = event_data.get("event_name", event.event_name)
+            event.event_date = event_data.get("event_date")
+            event.event_name = event_data.get("event_name")
 
             db.session.commit()
             db.session.refresh(event)
@@ -111,16 +111,16 @@ class EventService:
 
         return event
 
-    def soft_delete_event(self, event_data):
-        event = Event.query.filter(Event.id == event_data["event_id"], Event.user_id == event_data["user_id"]).first()
+    def soft_delete_event(self, event_id):
+        event = Event.query.filter(Event.id == event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
         try:
-            event.is_active = event_data.get("is_active", False)  # TODO: this is bug! it should always be false
+            event.is_active = False
 
             db.session.commit()
             db.session.refresh(event)
         except Exception as e:
-            raise ServiceError("Failed to delete event.", e)
+            raise ServiceError("Failed to deactivate event.", e)

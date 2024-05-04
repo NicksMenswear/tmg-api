@@ -57,17 +57,8 @@ def event_request(**event_data):
 
 def update_event_request(**event_data):
     return {
-        "id": event_data.get("id", str(uuid.uuid4())),
+        "event_name": event_data.get("event_name", str(uuid.uuid4())),
         "event_date": event_data.get("event_date", datetime.now().isoformat()),
-        "user_id": event_data.get("user_id", str(uuid.uuid4())),
-    }
-
-
-def delete_event_request(**event_data):
-    return {
-        "event_id": event_data.get("event_id", str(uuid.uuid4())),
-        "user_id": event_data.get("user_id", str(uuid.uuid4())),
-        "is_active": event_data.get("is_active", False),
     }
 
 

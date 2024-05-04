@@ -45,11 +45,11 @@ def create_event(event):
 
 
 @hmac_verification
-def update_event(event):
+def update_event(event_id, event_data):
     event_service = EventService()
 
     try:
-        event = event_service.update_event(event)
+        event = event_service.update_event(event_id, event_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
@@ -61,11 +61,11 @@ def update_event(event):
 
 
 @hmac_verification
-def soft_delete_event(event):
+def soft_delete_event(event_id):
     event_service = EventService()
 
     try:
-        event_service.soft_delete_event(event)
+        event_service.soft_delete_event(event_id)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

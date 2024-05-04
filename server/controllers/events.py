@@ -9,20 +9,20 @@ from server.services.event import EventService
 logger = logging.getLogger(__name__)
 
 
-# @hmac_verification
-# def get_event(event_id):
-#     event_service = EventService()
-#
-#     try:
-#         event = event_service.get_event(event_id)
-#     except NotFoundError as e:
-#         logger.debug(e)
-#         return jsonify({"errors": e.message}), 404
-#     except ServiceError as e:
-#         logger.exception(e)
-#         return jsonify({"errors": e.message}), 500
-#
-#     return event.to_dict(), 200
+@hmac_verification
+def get_event(event_id, enriched=False):
+    event_service = EventService()
+
+    try:
+        event = event_service.get_event_by_id(event_id, enriched)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
+    except ServiceError as e:
+        logger.exception(e)
+        return jsonify({"errors": e.message}), 500
+
+    return event, 200
 
 
 @hmac_verification

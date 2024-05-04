@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Order, OrderItem
+from server.database.models import Order, OrderItem, Event
 from server.services import NotFoundError, ServiceError
 from server.services.event import EventService
 from server.services.product import ProductService
@@ -46,7 +46,8 @@ class OrderService:
         if not user:
             raise NotFoundError("User not found")
 
-        event = self.event_service.get_event_by_user_id(user.id)
+        # TODO: this is bug! because multiple events can be created by the same user. Debug later.
+        event = Event.query.filter_by(user_id=user.id).first()
 
         if not event:
             raise NotFoundError("Event not found")

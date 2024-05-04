@@ -4,7 +4,6 @@ from flask import jsonify
 
 from server.controllers.util import hmac_verification
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.event import EventService
 from server.services.role import RoleService
 
 logger = logging.getLogger(__name__)
@@ -13,13 +12,12 @@ logger = logging.getLogger(__name__)
 @hmac_verification
 def create_role(role_data):
     role_service = RoleService()
-    event_service = EventService()
-
-    if event_service.get_event_by_id(role_data["event_id"]) is None:
-        return jsonify({"errors": "Event not found"}), 404
 
     try:
         role = role_service.create_role(role_data)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 409
@@ -45,10 +43,6 @@ def get_role(role_id, event_id):
 @hmac_verification
 def get_event_roles(event_id):
     role_service = RoleService()
-    event_service = EventService()
-
-    if not event_service.get_event_by_id(event_id):
-        return jsonify({"errors": "Event not found"}), 404
 
     roles = role_service.get_roles_by_event_id(event_id)
 

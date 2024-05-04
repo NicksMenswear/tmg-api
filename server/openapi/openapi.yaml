@@ -220,6 +220,61 @@ paths:
       tags:
         - Product
       x-openapi-router-controller: server.controllers.product
+  /events/{event_id}:
+    get:
+      operationId: get_event
+      parameters:
+        - description: Unique ID of the event to retrieve
+          explode: false
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: enriched
+          schema:
+            type: boolean
+          required: false
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+          description: Details of the event
+        "404":
+          description: Event not found
+      summary: Get a single event by ID
+      tags:
+        - Event
+      x-openapi-router-controller: server.controllers.events
   /events:
     post:
       operationId: create_event

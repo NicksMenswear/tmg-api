@@ -197,7 +197,8 @@ class TestRoles(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 404)
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)
 
     def test_get_roles_for_event_without_roles(self):
         # given

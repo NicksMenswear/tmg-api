@@ -858,28 +858,17 @@ paths:
       tags:
         - Roles
       x-openapi-router-controller: server.controllers.roles
-  /roles_with_roleid_eventid:
+  /roles/{role_id}:
     get:
       operationId: get_role
       parameters:
-        - description: Unique role_id to retrieve
-          explode: true
-          in: query
+        - explode: false
+          in: path
           name: role_id
           required: true
           schema:
-            format: uuid
             type: string
-          style: form
-        - description: Unique event_id for role to retrieve
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
+          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -907,10 +896,8 @@ paths:
           required: true
       responses:
         "200":
-          description: Details of the Role
-        "404":
-          description: Role not found
-      summary: Get a single role by name
+          description: Single role by id
+      summary: Get single role by id
       tags:
         - Roles
       x-openapi-router-controller: server.controllers.roles

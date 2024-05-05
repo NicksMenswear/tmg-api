@@ -2,7 +2,7 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Role, Event
-from server.services import ServiceError, NotFoundError
+from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 class RoleService:
@@ -14,6 +14,13 @@ class RoleService:
 
         if not event:
             raise NotFoundError("Event not found.")
+
+        existing_role = Role.query.filter(
+            Role.role_name == role_data["role_name"], Role.event_id == role_data["event_id"]
+        ).first()
+
+        if existing_role:
+            raise DuplicateError("Role already exists.")
 
         try:
             role = Role(id=uuid.uuid4(), role_name=role_data["role_name"], event_id=role_data["event_id"])
@@ -27,7 +34,12 @@ class RoleService:
         return role
 
     def get_role_by_id(self, role_id):
-        return Role.query.filter(Role.id == role_id).first()
+        role = Role.query.filter(Role.id == role_id).first()
+
+        if not role:
+            raise NotFoundError("Role not found.")
+
+        return role
 
     def get_roles_by_event_id(self, event_id):
         return Role.query.filter(Role.event_id == event_id).all()

@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import json
-import unittest
 import uuid
 
 from server import encoder
@@ -62,7 +61,6 @@ class TestRoles(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    @unittest.skip("Review this later")
     def test_create_role_with_same_name_as_existing(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
@@ -91,11 +89,9 @@ class TestRoles(BaseTestCase):
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
-        query_params = {**self.hmac_query_params, "role_id": str(role.id), "event_id": str(event.id)}
-
         response = self.client.open(
-            f"/roles_with_roleid_eventid",
-            query_string=query_params,
+            f"/roles/{role.id}",
+            query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -107,11 +103,9 @@ class TestRoles(BaseTestCase):
 
     def test_get_role_by_id_not_found(self):
         # when
-        query_params = {**self.hmac_query_params, "role_id": str(uuid.uuid4()), "event_id": str(uuid.uuid4())}
-
         response = self.client.open(
-            f"/roles_with_roleid_eventid",
-            query_string=query_params,
+            f"/roles/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,

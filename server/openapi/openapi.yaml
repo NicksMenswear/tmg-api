@@ -602,6 +602,59 @@ paths:
         - Event
         - Role
       x-openapi-router-controller: server.controllers.events
+  /events/{event_id}/attendees:
+    get:
+      operationId: get_event_attendees
+      parameters:
+        - description: ID of the event
+          explode: false
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Attendee"
+                type: array
+          description: Collection of attendees for event
+        "404":
+          description: Event not found
+      summary: Get a collection of attendees by event id
+      tags:
+        - Event
+        - Attendee
+      x-openapi-router-controller: server.controllers.events
 
   /looks:
     post:
@@ -1146,53 +1199,6 @@ paths:
       tags:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
-  /event_attendees_by_eventid:
-    get:
-      operationId: get_attendees_for_event
-      parameters:
-        - description: Unique identifier of the event to retrieve attendees
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the specific event
-        "404":
-          description: Event not found
-      summary: Retrieve a specific Event Attendees by Event ID
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
   /delete_event_attendee:
     put:
       operationId: soft_delete_attendee
@@ -1237,6 +1243,7 @@ paths:
       tags:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
+
   /audit:
     get:
       operationId: list_audit_entries
@@ -2092,7 +2099,6 @@ components:
           type: boolean
       title: UpdateUser
       type: object
-
     Event:
       properties:
         id:
@@ -2243,7 +2249,6 @@ components:
         - email
       title: ListAttendee
       type: object
-
     OrderItem:
       example:
         product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4

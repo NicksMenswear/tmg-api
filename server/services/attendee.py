@@ -94,54 +94,6 @@ class AttendeeService:
 
         return event
 
-    def get_attendees_for_event_by_id(self, event_id):
-        from server.services.look import LookService
-
-        look_service = LookService()
-
-        event = Event.query.filter(Event.id == event_id).first()
-
-        if not event:
-            raise NotFoundError("Event not found.")
-
-        attendees = (
-            Attendee.query.join(Event, Attendee.event_id == Event.id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active, Event.is_active)
-            .all()
-        )
-
-        enriched_attendees = []
-
-        for attendee in attendees:
-            attendee_user = self.user_service.get_user_by_id(attendee.attendee_id)
-
-            data = {
-                "id": attendee.id,
-                "first_name": attendee_user.first_name,
-                "last_name": attendee_user.last_name,
-                "email": attendee_user.email,
-                "account_status": attendee_user.account_status,
-                "event_id": attendee.event_id,
-                "style": attendee.style,
-                "invite": attendee.invite,
-                "pay": attendee.pay,
-                "size": attendee.size,
-                "ship": attendee.ship,
-                "is_Active": attendee.is_active,
-                "role": attendee.role,
-                "look_id": attendee.look_id,
-            }
-
-            if attendee.look_id:
-                look = look_service.get_look_by_id(attendee.look_id)
-
-                if look:
-                    data["look_name"] = look.name
-
-            enriched_attendees.append(data)
-
-        return enriched_attendees
-
     def update_attendee(self, attendee_data):
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 

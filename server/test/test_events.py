@@ -310,6 +310,56 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(response.json, [])
 
+    def test_get_attendees_for_event(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+        role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+        attendee_user1 = self.user_service.create_user(fixtures.user_request())
+        attendee_user2 = self.user_service.create_user(fixtures.user_request())
+        attendee_user3 = self.user_service.create_user(fixtures.user_request())
+        attendee_request1 = fixtures.attendee_request(event_id=event.id, email=attendee_user1.email, role=str(role.id))
+        attendee_request2 = fixtures.attendee_request(event_id=event.id, email=attendee_user2.email, role=str(role.id))
+        attendee1 = self.attendee_service.create_attendee(attendee_request1)
+        attendee2 = self.attendee_service.create_attendee(attendee_request2)
+
+        self.attendee_service.create_attendee(
+            fixtures.attendee_request(
+                event_id=event.id, email=attendee_user3.email, role=str(role.id), look_id=look.id, is_active=False
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{str(event.id)}/attendees",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+        response_attendee1 = response.json[0]
+        response_attendee2 = response.json[1]
+        self.assertEqual(str(attendee1.id), response_attendee1["id"])
+        self.assertEqual(str(attendee2.id), response_attendee2["id"])
+
+    def test_get_all_attendees_for_non_existing_event(self):
+        # when
+        response = self.client.open(
+            f"/events/{str(uuid.uuid4())}/attendees",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
     def test_update_event_non_existed(self):
         # when
         response = self.client.open(

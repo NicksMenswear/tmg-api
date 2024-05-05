@@ -62,19 +62,6 @@ def update_attendee(attendee_data):
 
 
 @hmac_verification
-def get_attendees_for_event(event_id):
-    attendee_service = AttendeeService()
-
-    try:
-        attendees = attendee_service.get_attendees_for_event_by_id(event_id)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
-
-    return attendees, 200
-
-
-@hmac_verification
 def soft_delete_attendee(attendee_data):
     attendee_service = AttendeeService()
 

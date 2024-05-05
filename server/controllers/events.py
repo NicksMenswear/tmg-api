@@ -87,3 +87,16 @@ def get_event_roles(event_id):
         return jsonify({"errors": e.message}), 404
 
     return jsonify([role.to_dict() for role in roles]), 200
+
+
+@hmac_verification
+def get_event_attendees(event_id):
+    event_service = EventService()
+
+    try:
+        attendees = event_service.get_attendees_for_event(event_id)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
+
+    return attendees, 200

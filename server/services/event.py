@@ -72,6 +72,14 @@ class EventService:
 
         return Role.query.filter_by(event_id=event_id).all()
 
+    def get_attendees_for_event(self, event_id):
+        event = Event.query.filter_by(id=event_id).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        return self.get_event_by_id(event_id, enriched=True)["attendees"]
+
     def create_event(self, event_data):
         user = User.query.filter_by(id=event_data["user_id"]).first()
 

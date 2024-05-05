@@ -6,9 +6,6 @@ from server.services import ServiceError, NotFoundError
 
 
 class RoleService:
-    def get_all_roles(self):
-        return Role.query.all()
-
     def get_role_by_name(self, role_name):
         return Role.query.filter(Role.role_name == role_name).first()
 

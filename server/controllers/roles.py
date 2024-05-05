@@ -50,13 +50,6 @@ def get_event_roles(event_id):
 
 
 @hmac_verification
-def list_roles():
-    role_service = RoleService()
-
-    return [role.to_dict() for role in role_service.get_all_roles()], 200
-
-
-@hmac_verification
 def update_role(role_data):
     role_service = RoleService()
 

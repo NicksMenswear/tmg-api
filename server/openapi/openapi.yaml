@@ -49,6 +49,7 @@ paths:
       tags:
         - Health
       x-openapi-router-controller: server.controllers.health
+
   /users:
     post:
       operationId: create_user
@@ -351,6 +352,7 @@ paths:
         - Users
         - Looks
       x-openapi-router-controller: server.controllers.users
+
   /events:
     post:
       operationId: create_event
@@ -542,6 +544,7 @@ paths:
       tags:
         - Events
       x-openapi-router-controller: server.controllers.events
+
   /looks:
     post:
       operationId: create_look
@@ -767,6 +770,198 @@ paths:
         - Looks
         - Events
       x-openapi-router-controller: server.controllers.looks
+
+  /roles:
+    post:
+      operationId: create_role
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+        x-body-name: role_data
+      responses:
+        "201":
+          description: role created
+      summary: Create role
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+    put:
+      operationId: update_role
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRole'
+        required: true
+        x-body-name: role_data
+      responses:
+        "200":
+          description: Role updated
+        "404":
+          description: Role not found
+      summary: Update a Role by name
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+  /roles_with_roleid_eventid:
+    get:
+      operationId: get_role
+      parameters:
+        - description: Unique role_id to retrieve
+          explode: true
+          in: query
+          name: role_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - description: Unique event_id for role to retrieve
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+          style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+  /roles_with_eventid:
+    get:
+      operationId: get_event_roles
+      parameters:
+        - description: Retrieve roles of event
+          explode: true
+          in: query
+          name: event_id
+          required: true
+          schema:
+            format: str
+            type: string
+          style: form
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Details of the Role
+        "404":
+          description: Role not found
+      summary: Get a single role by name
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+
   /event_attendees:
     post:
       operationId: add_attendee
@@ -1474,231 +1669,6 @@ paths:
       tags:
         - Invites
       x-openapi-router-controller: server.controllers.invites
-  /roles:
-    get:
-      operationId: list_roles
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: An array of roles
-      summary: Lists all roles
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
-    post:
-      operationId: create_role
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
-        required: true
-        x-body-name: role_data
-      responses:
-        "201":
-          description: role created
-      summary: Create role
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
-    put:
-      operationId: update_role
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRole'
-        required: true
-        x-body-name: role_data
-      responses:
-        "200":
-          description: Role updated
-        "404":
-          description: Role not found
-      summary: Update a Role by name
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
-  /roles_with_roleid_eventid:
-    get:
-      operationId: get_role
-      parameters:
-        - description: Unique role_id to retrieve
-          explode: true
-          in: query
-          name: role_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - description: Unique event_id for role to retrieve
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the Role
-        "404":
-          description: Role not found
-      summary: Get a single role by name
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
-  /roles_with_eventid:
-    get:
-      operationId: get_event_roles
-      parameters:
-        - description: Retrieve roles of event
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            format: str
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the Role
-        "404":
-          description: Role not found
-      summary: Get a single role by name
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
   /carts:
     post:
       operationId: create_cart

@@ -6,9 +6,6 @@ from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 class RoleService:
-    def get_role_by_name(self, role_name):
-        return Role.query.filter(Role.role_name == role_name).first()
-
     def create_role(self, role_data):
         event = Event.query.filter(Event.id == role_data["event_id"]).first()
 
@@ -34,24 +31,39 @@ class RoleService:
         return role
 
     def get_role_by_id(self, role_id):
+        return Role.query.filter(Role.id == role_id).first()
+
+    def update_role(self, role_id, role_data):
         role = Role.query.filter(Role.id == role_id).first()
 
         if not role:
             raise NotFoundError("Role not found.")
 
-        return role
+        existing_role_by_name = Role.query.filter(
+            Role.role_name == role_data["role_name"], Role.event_id == role.event_id
+        ).first()
 
-    def update_role(self, role_data):
-        role = Role.query.filter(Role.role_name == role_data["role_name"]).first()
-
-        if not role:
-            raise NotFoundError("Role not found.")
+        if existing_role_by_name:
+            raise DuplicateError("Role with this name already exists.")
 
         try:
-            role.role_name = role_data["new_role_name"]
+            role.role_name = role_data["role_name"]
+
             db.session.commit()
             db.session.refresh(role)
         except Exception as e:
             raise ServiceError("Failed to update role.", e)
 
         return role
+
+    def delete_role(self, role_id):
+        role = Role.query.filter(Role.id == role_id).first()
+
+        if not role:
+            raise NotFoundError("Role not found.")
+
+        try:
+            db.session.delete(role)
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to delete role.", e)

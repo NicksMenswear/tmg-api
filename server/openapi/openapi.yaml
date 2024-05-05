@@ -872,50 +872,6 @@ paths:
       tags:
         - Roles
       x-openapi-router-controller: server.controllers.roles
-    put:
-      operationId: update_role
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRole'
-        required: true
-        x-body-name: role_data
-      responses:
-        "200":
-          description: Role updated
-        "404":
-          description: Role not found
-      summary: Update a Role by name
-      tags:
-        - Roles
-      x-openapi-router-controller: server.controllers.roles
   /roles/{role_id}:
     get:
       operationId: get_role
@@ -956,6 +912,103 @@ paths:
         "200":
           description: Single role by id
       summary: Get single role by id
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+    put:
+      operationId: update_role
+      parameters:
+        - description: Unique ID of the event to retrieve
+          explode: false
+          in: path
+          name: role_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRole'
+        required: true
+        x-body-name: role_data
+      responses:
+        "200":
+          description: Role updated
+        "404":
+          description: Role not found
+        "409":
+          description: Duplicate role name
+      summary: Update a Role by name
+      tags:
+        - Roles
+      x-openapi-router-controller: server.controllers.roles
+    delete:
+      operationId: delete_role
+      parameters:
+        - description: Id of the role to delete
+          explode: false
+          in: path
+          name: role_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Role deleted successfully
+      summary: Delete role
       tags:
         - Roles
       x-openapi-router-controller: server.controllers.roles
@@ -2345,18 +2398,8 @@ components:
         role_name:
           title: role_name
           type: string
-        new_role_name:
-          title: new_role_name
-          type: string
-        event_id:
-          title: event_id
-          type: string
-        look_id:
-          title: look_id
-          type: string
       required:
         - role_name
-        - new_role_name
       title: Role
       type: object
     Invite:

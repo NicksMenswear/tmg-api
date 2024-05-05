@@ -56,6 +56,15 @@ def get_user_invites(user_id):
 
 
 @hmac_verification
+def get_user_looks(user_id):
+    user_service = UserService()
+
+    looks = user_service.get_user_looks(user_id)
+
+    return [look.to_dict() for look in looks]
+
+
+@hmac_verification
 def update_user(user_id, user_data):
     user_service = UserService()
 

@@ -13,9 +13,6 @@ class LookService:
     def get_look_by_id(self, look_id):
         return Look.query.filter(Look.id == look_id).first()
 
-    def get_looks_for_user(self, user_id):
-        return Look.query.filter(Look.user_id == user_id).all()
-
     def get_events_for_look(self, look_id):
         return Event.query.join(Attendee, Event.id == Attendee.event_id).filter(Attendee.look_id == look_id).all()
 

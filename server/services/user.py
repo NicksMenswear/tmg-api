@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee
+from server.database.models import User, Event, Attendee, Look
 from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -69,6 +69,9 @@ class UserService:
             .filter(Attendee.attendee_id == user_id, Event.is_active)
             .all()
         )
+
+    def get_user_looks(self, user_id):
+        return Look.query.filter(Look.user_id == user_id).all()
 
     def update_user(self, user_id, user_data):
         user = User.query.filter_by(id=user_id).first()

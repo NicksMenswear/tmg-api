@@ -41,15 +41,6 @@ def create_look(look_data):
 
 
 @hmac_verification
-def get_user_looks(user_id):
-    look_service = LookService()
-
-    looks = look_service.get_looks_for_user(user_id)
-
-    return [look.to_dict() for look in looks]
-
-
-@hmac_verification
 def get_events_for_look(look_id):
     look_service = LookService()
 

@@ -7,6 +7,7 @@ from server import encoder
 from server.database.models import User
 from server.services.attendee import AttendeeService
 from server.services.event import EventService
+from server.services.look import LookService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
@@ -17,6 +18,7 @@ class TestUsers(BaseTestCase):
 
         self.user_service = UserService()
         self.event_service = EventService()
+        self.look_service = LookService()
         self.attendee_service = AttendeeService()
 
     def assert_equal_response_user_with_db_user(self, user: User, response_user: dict):
@@ -270,3 +272,63 @@ class TestUsers(BaseTestCase):
         response_event2 = response.json[1]
         self.assertEqual(response_event1["id"], str(event1.id))
         self.assertEqual(response_event2["id"], str(event2.id))
+
+    def test_get_user_looks_for_non_existing_user(self):
+        # when
+        response = self.client.open(
+            f"/users/{str(uuid.uuid4())}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_user_looks_empty_list(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user.id)}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_list_of_looks_for_user_by_id(self):
+        # given
+        user1 = self.user_service.create_user(fixtures.user_request())
+        user2 = self.user_service.create_user(fixtures.user_request())
+        look1 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
+        look2 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
+        self.look_service.create_look(fixtures.look_request(user_id=user2.id))
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user1.id)}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+
+        response_look1 = response.json[0]
+        response_look2 = response.json[1]
+
+        self.assertEqual(response_look1["id"], str(look1.id))
+        self.assertEqual(response_look1["look_name"], str(look1.look_name))
+        self.assertEqual(response_look2["id"], str(look2.id))
+        self.assertEqual(response_look2["look_name"], str(look2.look_name))

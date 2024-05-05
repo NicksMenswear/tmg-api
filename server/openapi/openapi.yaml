@@ -300,6 +300,57 @@ paths:
         - Users
         - Events
       x-openapi-router-controller: server.controllers.users
+  /users/{user_id}/looks:
+    get:
+      operationId: get_user_looks
+      parameters:
+        - description: Gets list of looks for a user
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Event"
+                type: array
+          description: Collection of looks that user has
+      summary: Collection of looks that user has
+      tags:
+        - Users
+        - Looks
+      x-openapi-router-controller: server.controllers.users
   /events:
     post:
       operationId: create_event
@@ -669,62 +720,6 @@ paths:
         "204":
           description: Look Deleted Successfully
       summary: Delete look
-      tags:
-        - Looks
-      x-openapi-router-controller: server.controllers.looks
-  /looks_with_userid:
-    get:
-      operationId: get_user_looks
-      parameters:
-        - description: Retrieve look by user_id
-          explode: true
-          in: query
-          name: user_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-          style: form
-        - description: Key for validation
-          explode: true
-          in: query
-          name: key
-          required: false
-          schema:
-            format: str
-            type: string
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-      responses:
-        "200":
-          description: Details of the Look
-        "404":
-          description: Look not found
-      summary: Get a single look by name
       tags:
         - Looks
       x-openapi-router-controller: server.controllers.looks

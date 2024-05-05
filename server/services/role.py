@@ -41,9 +41,6 @@ class RoleService:
 
         return role
 
-    def get_roles_by_event_id(self, event_id):
-        return Role.query.filter(Role.event_id == event_id).all()
-
     def update_role(self, role_data):
         role = Role.query.filter(Role.role_name == role_data["role_name"]).first()
 

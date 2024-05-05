@@ -74,3 +74,16 @@ def soft_delete_event(event_id):
         return jsonify({"errors": e.message}), 500
 
     return None, 204
+
+
+@hmac_verification
+def get_event_roles(event_id):
+    event_service = EventService()
+
+    try:
+        roles = event_service.get_roles_for_event(event_id)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
+
+    return jsonify([role.to_dict() for role in roles]), 200

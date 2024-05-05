@@ -253,6 +253,63 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_attendee_user["first_name"], attendee_user.first_name)
         self.assertEqual(response_attendee_user["last_name"], attendee_user.last_name)
 
+    def test_get_roles_by_event_id(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+        role2 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/roles",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+        response_role1 = response.json[0]
+        response_role2 = response.json[1]
+        self.assertEqual(response_role1.get("id"), str(role1.id))
+        self.assertEqual(response_role1.get("role_name"), role1.role_name)
+        self.assertEqual(response_role2.get("id"), str(role2.id))
+        self.assertEqual(response_role2.get("role_name"), role2.role_name)
+
+    def test_get_roles_by_non_existing_event_id(self):
+        # when
+        response = self.client.open(
+            f"/events/{str(uuid.uuid4())}/roles",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_get_roles_for_event_without_roles(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/events/{str(event.id)}/roles",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
     def test_update_event_non_existed(self):
         # when
         response = self.client.open(

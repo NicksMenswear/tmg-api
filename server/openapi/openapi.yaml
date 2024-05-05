@@ -1066,9 +1066,9 @@ paths:
         - Roles
       x-openapi-router-controller: server.controllers.roles
 
-  /event_attendees:
+  /attendees:
     post:
-      operationId: add_attendee
+      operationId: create_attendee
       parameters:
         - in: query
           name: logged_in_customer_id
@@ -1099,20 +1099,70 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/Attendee'
+              $ref: '#/components/schemas/Attendee'
         required: true
         x-body-name: attendee_data
       responses:
         "201":
-          description: Attendee added
-      summary: Attendee added
+          description: Attendee created
+      summary: Create attendee
       tags:
         - Attendees
+      x-openapi-router-controller: server.controllers.attendees
+  /attendees/{attendee_id}:
+    get:
+      operationId: get_attendee
+      parameters:
+        - explode: false
+          in: path
+          name: attendee_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Single attendee by id
+      summary: Get single attendee by id
+      tags:
+        - Attendee
       x-openapi-router-controller: server.controllers.attendees
     put:
       operationId: update_attendee
       parameters:
+        - description: Unique ID of the event to retrieve
+          explode: false
+          in: path
+          name: attendee_id
+          required: true
+          schema:
+            type: string
+          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1142,67 +1192,29 @@ paths:
         content:
           application/json:
             schema:
-              items:
-                $ref: '#/components/schemas/UpdateAttendee'
+              $ref: '#/components/schemas/UpdateAttendee'
         required: true
         x-body-name: attendee_data
       responses:
-        "201":
-          description: Attendee Updated Success
-      summary: Attendee Update
-      tags:
-        - Attendees
-      x-openapi-router-controller: server.controllers.attendees
-    get:
-      operationId: get_attendee_event
-      parameters:
-        - in: query
-          name: email
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: event_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: true
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: true
-
-      responses:
         "200":
-          description: Attendee Get Success
-      summary: Attendee List
+          description: Attendee updated
+        "404":
+          description: Attendee not found
+      summary: Update a Attendee by name
       tags:
-        - Attendees
+        - Attendee
       x-openapi-router-controller: server.controllers.attendees
-  /delete_event_attendee:
-    put:
+    delete:
       operationId: soft_delete_attendee
       parameters:
+        - description: Unique ID of the attendee to delete
+          explode: false
+          in: path
+          name: attendee_id
+          required: true
+          schema:
+            type: string
+          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1228,17 +1240,9 @@ paths:
           schema:
             type: string
           required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/DeleteAttendee'
-        required: true
-        x-body-name: attendee_data
       responses:
-        "200":
-          description: Attendee Deleted Success
+        "204":
+          description: Attendee Deleted Successfully
       summary: Attendee Delete
       tags:
         - Attendees
@@ -2153,9 +2157,6 @@ components:
         last_name:
           title: last_name
           type: string
-        role:
-          title: role
-          type: string
         style:
           title: style
           type: integer
@@ -2171,22 +2172,23 @@ components:
         ship:
           title: ship
           type: integer
+        role:
+          title: role
+          type: string
+          nullable: true
+        look_id:
+          title: role
+          type: string
+          nullable: true
       required:
-        - email
         - event_id
+        - email
         - first_name
+        - last_name
       title: Attendee
       type: object
     UpdateAttendee:
       properties:
-        event_id:
-          format: uuid
-          title: event_id
-          type: string
-        email:
-          format: string
-          title: email
-          type: string
         style:
           format: int64
           title: style
@@ -2207,47 +2209,15 @@ components:
           format: int64
           title: ship
           type: integer
-      required:
-        - event_id
-        - email
+        role:
+          title: role
+          type: string
+          nullable: true
+        look_id:
+          title: role
+          type: string
+          nullable: true
       title: UpdateAttendee
-      type: object
-    DeleteAttendee:
-      properties:
-        email:
-          format: string
-          title: email
-          type: string
-        event_id:
-          format: uuid
-          title: event_id
-          type: string
-        attendee_id:
-          format: uuid
-          title: attendee_id
-          type: string
-        is_active:
-          title: is_active
-          type: boolean
-      required:
-        - attendee_id
-        - email
-      title: DeleteAttendee
-      type: object
-    ListAttendee:
-      properties:
-        event_id:
-          format: uuid
-          title: event_id
-          type: string
-        email:
-          format: string
-          title: email
-          type: string
-      required:
-        - event_id
-        - email
-      title: ListAttendee
       type: object
     OrderItem:
       example:

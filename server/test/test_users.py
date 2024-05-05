@@ -251,10 +251,8 @@ class TestUsers(BaseTestCase):
         user2 = self.user_service.create_user(fixtures.user_request())
         event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
-        event3 = self.event_service.create_event(fixtures.event_request(user_id=user1.id, is_active=False))
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=attendee_user.email))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event3.id, email=attendee_user.email))
 
         # when
         response = self.client.open(

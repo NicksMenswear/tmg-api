@@ -41,18 +41,6 @@ def create_look(look_data):
 
 
 @hmac_verification
-def get_look_for_user(look_id, user_id):
-    look_service = LookService()
-
-    look = look_service.get_look_by_id_and_user(look_id, user_id)
-
-    if not look:
-        return jsonify({"errors": NotFoundError.MESSAGE}), 404
-
-    return look.to_dict(), 200
-
-
-@hmac_verification
 def get_user_looks(user_id):
     look_service = LookService()
 

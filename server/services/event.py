@@ -111,10 +111,21 @@ class EventService:
         return event
 
     def update_event(self, event_id, event_data):
-        event = Event.query.filter(Event.id == event_id).first()
+        event = Event.query.filter(Event.id == event_id, Event.is_active).first()
 
         if not event:
             raise NotFoundError("Event not found.")
+
+        existing_event = Event.query.filter(
+            Event.event_name == event_data["event_name"],
+            Event.is_active,
+            Event.user_id == event.user_id,
+            Event.event_date == event_data["event_date"],
+            Event.id != event_id,
+        ).first()
+
+        if existing_event:
+            raise DuplicateError("Event with the same details already exists.")
 
         try:
             event.event_date = event_data.get("event_date")

@@ -404,6 +404,28 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_event["event_name"], updated_event_name)
         self.assertEqual(response_event["event_date"], updated_event_date.replace("T", " "))
 
+    def test_update_event_existing(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/events/{str(event.id)}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(
+                fixtures.update_event_request(event_name=event2.event_name, event_date=event2.event_date),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 409)
+
     def test_soft_delete_event_non_existing(self):
         # when
         response = self.client.open(

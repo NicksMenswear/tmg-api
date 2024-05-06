@@ -170,6 +170,35 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(response.json["id"], str(look.id))
 
+    def test_update_look_existing(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        look2 = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
+        self.attendee_service.create_attendee(
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
+        )
+
+        # when
+        look_data = fixtures.update_look_request(
+            user_id=str(user.id),
+            look_name=look2.look_name,
+        )
+
+        response = self.client.open(
+            f"/looks/{str(look.id)}",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 409)
+
     def test_get_empty_set_of_events_for_look(self):
         # when
         response = self.client.open(

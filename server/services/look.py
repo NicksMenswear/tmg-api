@@ -49,6 +49,13 @@ class LookService:
         if not user:
             raise NotFoundError("User not found")
 
+        existing_look = Look.query.filter(
+            Look.look_name == look_data["look_name"], Look.user_id == user.id, Look.id != look_id
+        ).first()
+
+        if existing_look:
+            raise DuplicateError("Look already exists with that name.")
+
         try:
             look.look_name = look_data.get("look_name")
             look.product_specs = look_data.get("product_specs")

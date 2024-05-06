@@ -58,6 +58,9 @@ def update_look(look_id, look_data):
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404
+    except DuplicateError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 409
     except ServiceError as e:
         logger.exception(e)
         return jsonify({"errors": e.message}), 500

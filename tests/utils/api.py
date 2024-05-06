@@ -25,7 +25,10 @@ def create_user(first_name, last_name, email, account_status=True):
 
 
 def get_all_events_by_email(email):
-    response = requests.get(f"{BASE_API_URL}/events/{email}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
+    response = requests.get(f"{BASE_API_URL}/users/{email}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
+    user_id = response.json().get("id")
+
+    response = requests.get(f"{BASE_API_URL}/users/{user_id}/events", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
 
     if response.status_code == 200:
         return response.json()
@@ -33,22 +36,17 @@ def get_all_events_by_email(email):
     raise Exception(f"Failed to get events by email: {email}")
 
 
-def delete_event(event_id, user_id):
-    response = requests.put(
-        f"{BASE_API_URL}/delete_events",
-        params=API_HMAC_QUERY_PARAMS,
-        headers=API_HEADERS,
-        data=json.dumps({"event_id": event_id, "user_id": user_id, "is_active": False}),
-    )
+def delete_event(event_id):
+    response = requests.delete(f"{BASE_API_URL}/events/{event_id}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
 
     if response.status_code == 204:
         return
 
-    raise Exception(f"Failed to delete event by event_id/user_id: {event_id}/{user_id}")
+    raise Exception(f"Failed to delete event by event_id: {event_id}")
 
 
 def delete_all_events(email):
     events = get_all_events_by_email(email)
 
     for event in events:
-        delete_event(event["id"], event["user_id"])
+        delete_event(event["id"])

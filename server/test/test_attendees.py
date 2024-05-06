@@ -33,17 +33,49 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(str(attendee_request["look_id"]), str(attendee_response["look_id"]))
         self.assertIsNotNone(attendee_response["id"])
 
+    def test_create_attendee_without_role_and_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+
+        # when
+        attendee = fixtures.attendee_request(event_id=event.id, role=None, look_id=None)
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertIsNone(response.json["role"])
+        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assert_equal_attendee(attendee, response.json)
+        attendee_user = self.user_service.get_user_by_email(attendee["email"])
+        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
+        self.assertEqual(attendee_user.first_name, attendee["first_name"])
+        self.assertEqual(attendee_user.last_name, attendee["last_name"])
+        self.assertEqual(attendee_user.email, attendee["email"])
+        self.assertIsNone(response.json.get("look_id"))
+        self.assertFalse(attendee_user.account_status)
+        self.assertTrue(response.json["is_active"])
+        self.assertIsNone(response.json.get("role"))
+
     def test_create_attendee_without_role(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
         attendee = fixtures.attendee_request(event_id=event.id, role=None, look_id=look.id)
 
         response = self.client.open(
-            "/event_attendees",
+            "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
@@ -64,19 +96,19 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(response.json["look_id"], str(look.id))
         self.assertFalse(attendee_user.account_status)
         self.assertTrue(response.json["is_active"])
-        self.assertIsNone(response.json.get("role_id"))
+        self.assertIsNone(response.json.get("role"))
 
     def test_create_attendee_without_look(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
         attendee = fixtures.attendee_request(event_id=event.id, role=role.id)
 
         response = self.client.open(
-            "/event_attendees",
+            "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
@@ -101,7 +133,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_with_role_and_look(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
@@ -109,7 +141,7 @@ class TestAttendees(BaseTestCase):
         attendee = fixtures.attendee_request(event_id=event.id, role=role.id, look_id=look.id)
 
         response = self.client.open(
-            "/event_attendees",
+            "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
@@ -133,7 +165,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_for_existing_attendee_user(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee_user = self.user_service.create_user(fixtures.user_request())
@@ -149,7 +181,7 @@ class TestAttendees(BaseTestCase):
         )
 
         response = self.client.open(
-            "/event_attendees",
+            "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
@@ -170,7 +202,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_but_it_already_exist_and_associated(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.user_service.create_user(fixtures.user_request())
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event.id, email=attendee_user.email))
 
@@ -183,7 +215,7 @@ class TestAttendees(BaseTestCase):
         )
 
         response = self.client.open(
-            "/event_attendees",
+            "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(new_attendee, cls=encoder.CustomJSONEncoder),
@@ -213,74 +245,10 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    def test_get_attendee_event(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        attendee = self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event.id, email=user.email))
-
-        # when
-        query_params = {**self.hmac_query_params, "email": user.email, "event_id": event.id}
-
-        response = self.client.open(
-            "/event_attendees",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(str(event.id), response.json["id"])
-        self.assertEqual(str(attendee.attendee_id), response.json["user_id"])
-
-    def test_get_attendee_event_for_not_active_event(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email, is_active=False))
-        attendee = self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event.id, email=user.email))
-
-        # when
-        query_params = {**self.hmac_query_params, "email": user.email, "event_id": event.id}
-
-        response = self.client.open(
-            "/event_attendees",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_get_attendee_event_for_not_active_attendee(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(event_id=event.id, email=user.email, is_active=False)
-        )
-
-        # when
-        query_params = {**self.hmac_query_params, "email": user.email, "event_id": event.id}
-
-        response = self.client.open(
-            "/event_attendees",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
     def test_update_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look1 = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         look2 = self.look_service.create_look(fixtures.look_request(user_id=user.id))
@@ -313,7 +281,7 @@ class TestAttendees(BaseTestCase):
         }
 
         response = self.client.open(
-            "/event_attendees",
+            f"/attendees/{attendee.id}",
             query_string=self.hmac_query_params,
             method="PUT",
             data=json.dumps(updated_attendee_data, cls=encoder.CustomJSONEncoder),
@@ -337,42 +305,10 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(str(role2.id), str(updated_attendee.role))
         self.assertEqual(str(look2.id), str(updated_attendee.look_id))
 
-    def test_update_attendee_user_invalid(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
-
+    def test_update_attendee_non_existing(self):
         # when
         updated_attendee_data = {
             "email": f"{str(uuid.uuid4())}@example.com",
-            "event_id": str(event.id),
-            "style": 1,
-            "invite": 2,
-            "pay": 3,
-            "size": 4,
-            "ship": 5,
-            "role": None,
-        }
-
-        response = self.client.open(
-            "/event_attendees",
-            query_string=self.hmac_query_params,
-            method="PUT",
-            data=json.dumps(updated_attendee_data, cls=encoder.CustomJSONEncoder),
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_update_attendee_invalid_event(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-
-        # when
-        updated_attendee_data = {
-            "email": user.email,
             "event_id": str(uuid.uuid4()),
             "style": 1,
             "invite": 2,
@@ -383,7 +319,7 @@ class TestAttendees(BaseTestCase):
         }
 
         response = self.client.open(
-            "/event_attendees",
+            f"/attendees/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             method="PUT",
             data=json.dumps(updated_attendee_data, cls=encoder.CustomJSONEncoder),
@@ -394,64 +330,10 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    def test_get_all_attendees_for_event(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
-        role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
-        attendee_user1 = self.user_service.create_user(fixtures.user_request())
-        attendee_user2 = self.user_service.create_user(fixtures.user_request())
-        attendee_user3 = self.user_service.create_user(fixtures.user_request())
-        attendee_request1 = fixtures.attendee_request(event_id=event.id, email=attendee_user1.email, role=str(role.id))
-        attendee_request2 = fixtures.attendee_request(event_id=event.id, email=attendee_user2.email, role=str(role.id))
-        attendee1 = self.attendee_service.create_attendee(attendee_request1)
-        attendee2 = self.attendee_service.create_attendee(attendee_request2)
-
-        self.attendee_service.create_attendee(
-            fixtures.attendee_request(
-                event_id=event.id, email=attendee_user3.email, role=str(role.id), look_id=look.id, is_active=False
-            )
-        )
-
-        # when
-        query_params = {**self.hmac_query_params, "event_id": event.id}
-
-        response = self.client.open(
-            "/event_attendees_by_eventid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 2)
-        self.assertEqual(str(attendee1.id), response.json[0]["id"])
-        self.assertEqual(str(attendee2.id), response.json[1]["id"])
-        self.assert_equal_attendee(attendee_request1, response.json[0])
-        self.assert_equal_attendee(attendee_request2, response.json[1])
-
-    def test_get_all_attendees_for_invalid_event(self):
-        # when
-        query_params = {**self.hmac_query_params, "event_id": str(uuid.uuid4())}
-
-        response = self.client.open(
-            "/event_attendees_by_eventid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
     def test_deactivate_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
@@ -460,20 +342,11 @@ class TestAttendees(BaseTestCase):
 
         # when
         response = self.client.open(
-            "/delete_event_attendee",
+            f"/attendees/{attendee.id}",
             query_string=self.hmac_query_params,
-            method="PUT",
+            method="DELETE",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(
-                {
-                    "email": user.email,
-                    "event_id": event.id,
-                    "attendee_id": attendee.id,
-                    "is_active": False,
-                },  # TODO: we have bug here, likely in UI as well
-                cls=encoder.CustomJSONEncoder,
-            ),
         )
 
         # then
@@ -482,3 +355,16 @@ class TestAttendees(BaseTestCase):
         # checking db
         soft_deleted_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertEqual(False, soft_deleted_attendee.is_active)
+
+    def test_deactivate_attendee_with_invalid_id(self):
+        # when
+        response = self.client.open(
+            f"/attendees/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)

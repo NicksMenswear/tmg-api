@@ -12,6 +12,15 @@ def user_request(**user_data):
     }
 
 
+def update_user_request(**user_data):
+    return {
+        "first_name": user_data.get("first_name", str(uuid.uuid4())),
+        "last_name": user_data.get("last_name", str(uuid.uuid4())),
+        "shopify_id": user_data.get("shopify_id", str(random.randint(1000, 100000))),
+        "account_status": user_data.get("account_status", True),
+    }
+
+
 def product_request(**product_data):
     return {
         "name": product_data.get("name", str(uuid.uuid4())),
@@ -38,27 +47,21 @@ def product_request(**product_data):
 
 
 def event_request(**event_data):
+    if "email" in event_data:
+        raise ValueError("email is not a valid key for event_request")
+
     return {
         "event_name": event_data.get("event_name", str(uuid.uuid4())),
         "event_date": event_data.get("event_date", datetime.now().isoformat()),
-        "email": event_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        "user_id": event_data.get("user_id", str(uuid.uuid4())),
         "is_active": event_data.get("is_active", True),
     }
 
 
 def update_event_request(**event_data):
     return {
-        "id": event_data.get("id", str(uuid.uuid4())),
+        "event_name": event_data.get("event_name", str(uuid.uuid4())),
         "event_date": event_data.get("event_date", datetime.now().isoformat()),
-        "user_id": event_data.get("user_id", str(uuid.uuid4())),
-    }
-
-
-def delete_event_request(**event_data):
-    return {
-        "event_id": event_data.get("event_id", str(uuid.uuid4())),
-        "user_id": event_data.get("user_id", str(uuid.uuid4())),
-        "is_active": event_data.get("is_active", False),
     }
 
 
@@ -72,7 +75,6 @@ def look_request(**look_data):
 
 def update_look_request(**look_data):
     return {
-        "id": look_data.get("id"),
         "look_name": look_data.get("look_name", str(uuid.uuid4())),
         "user_id": look_data.get("user_id", str(uuid.uuid4())),
         "product_specs": look_data.get("product_specs", {}),

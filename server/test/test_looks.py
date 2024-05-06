@@ -29,83 +29,47 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response_look["user_id"], str(look.user_id))
         self.assertEqual(response_look["product_specs"], look.product_specs)
 
-    def test_get_list_of_all_looks_from_empty_db(self):
+    def test_create_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
         # when
+        look_data = fixtures.look_request(user_id=user.id)
+
         response = self.client.open(
             "/looks",
             query_string=self.hmac_query_params,
-            method="GET",
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
         )
 
         # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
+        self.assertStatus(response, 201)
+        self.assert_equal_response_look_with_db_look(
+            self.look_service.get_look_by_id(response.json["id"]), response.json
+        )
 
-    def test_get_list_of_all_looks(self):
+    def test_create_look_duplicate(self):
         # given
-        user1 = self.user_service.create_user(fixtures.user_request())
-        user2 = self.user_service.create_user(fixtures.user_request())
-        look11 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look21 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look22 = self.look_service.create_look(fixtures.look_request(user_id=user2.id))
+        user = self.user_service.create_user(fixtures.user_request())
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
+        look_data = fixtures.look_request(user_id=user.id, look_name=look.look_name)
+
         response = self.client.open(
             "/looks",
             query_string=self.hmac_query_params,
-            method="GET",
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
         )
 
         # then
-        self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 3)
-        self.assert_equal_response_look_with_db_look(look11, response.json[0])
-        self.assert_equal_response_look_with_db_look(look21, response.json[1])
-        self.assert_equal_response_look_with_db_look(look22, response.json[2])
-
-    def test_get_empty_list_of_looks_user(self):
-        query_params = {**self.hmac_query_params.copy(), "user_id": str(uuid.uuid4())}
-
-        response = self.client.open(
-            "/looks_with_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
-
-    def test_get_list_of_looks_for_user_by_id(self):
-        # given
-        user1 = self.user_service.create_user(fixtures.user_request())
-        user2 = self.user_service.create_user(fixtures.user_request())
-        look11 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look21 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        self.look_service.create_look(fixtures.look_request(user_id=user2.id))
-
-        # when
-        query_params = {**self.hmac_query_params.copy(), "user_id": str(user1.id)}
-
-        response = self.client.open(
-            "/looks_with_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 2)
-        self.assert_equal_response_look_with_db_look(look11, response.json[0])
-        self.assert_equal_response_look_with_db_look(look21, response.json[1])
+        self.assertStatus(response, 409)
 
     def test_get_non_existing_look_by_id(self):
         # when
@@ -138,110 +102,16 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assert_equal_response_look_with_db_look(look, response.json)
 
-    def test_get_look_by_id_and_user(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
-
-        # when
-        query_params = {**self.hmac_query_params.copy(), "look_id": str(look.id), "user_id": str(user.id)}
-
-        response = self.client.open(
-            "/looks_with_lookid_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assert_equal_response_look_with_db_look(look, response.json)
-
-    def test_get_look_by_id_and_non_existing_user(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
-
-        # when
-        query_params = {**self.hmac_query_params.copy(), "look_id": str(look.id), "user_id": str(uuid.uuid4())}
-
-        response = self.client.open(
-            "/looks_with_lookid_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_get_look_non_existing_look_id(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-
-        # when
-        query_params = {**self.hmac_query_params.copy(), "look_id": str(uuid.uuid4()), "user_id": str(user.id)}
-
-        response = self.client.open(
-            "/looks_with_lookid_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_create_look_without_user(self):
-        # when
-        look_request = fixtures.look_request()
-        look_request["email"] = f"{str(uuid.uuid4())}@example.com"
-        del look_request["user_id"]
-
-        response = self.client.open(
-            "/looks",
-            query_string=self.hmac_query_params,
-            data=json.dumps(look_request, cls=encoder.CustomJSONEncoder),
-            method="POST",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
-    def test_get_look_by_id_and_non_existed_user_id(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
-
-        # when
-        query_params = {**self.hmac_query_params.copy(), "look_id": str(look.id), "user_id": str(uuid.uuid4())}
-
-        response = self.client.open(
-            "/looks_with_lookid_userid",
-            query_string=query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
     def test_update_look_for_invalid_user(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        self.look_service.create_look(fixtures.look_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
-        look_data = fixtures.update_look_request(user_id=user.id, email=f"{str(uuid.uuid4())}@example.com")
+        look_data = fixtures.update_look_request(user_id=str(uuid.uuid4()))
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{look.id}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -257,10 +127,10 @@ class TestLooks(BaseTestCase):
         user = self.user_service.create_user(fixtures.user_request())
 
         # when
-        look_data = fixtures.update_look_request(user_id=user.id, look_id=str(uuid.uuid4()))
+        look_data = fixtures.update_look_request(user_id=user.id)
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -274,7 +144,7 @@ class TestLooks(BaseTestCase):
     def test_update_look(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event = self.event_service.create_event(fixtures.event_request(email=user.email))
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
@@ -284,12 +154,11 @@ class TestLooks(BaseTestCase):
         # when
         look_data = fixtures.update_look_request(
             user_id=str(user.id),
-            id=str(look.id),
             look_name=f"{str(uuid.uuid4())}-new_look_name",
         )
 
         response = self.client.open(
-            "/looks",
+            f"/looks/{str(look.id)}",
             query_string=self.hmac_query_params,
             data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
             method="PUT",
@@ -299,7 +168,36 @@ class TestLooks(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertNotEqual(response.json["id"], str(look.id))
+        self.assertEqual(response.json["id"], str(look.id))
+
+    def test_update_look_existing(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        look2 = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
+        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
+        self.attendee_service.create_attendee(
+            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
+        )
+
+        # when
+        look_data = fixtures.update_look_request(
+            user_id=str(user.id),
+            look_name=look2.look_name,
+        )
+
+        response = self.client.open(
+            f"/looks/{str(look.id)}",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="PUT",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 409)
 
     def test_get_empty_set_of_events_for_look(self):
         # when
@@ -318,8 +216,8 @@ class TestLooks(BaseTestCase):
     def test_get_events_for_look(self):
         user1 = self.user_service.create_user(fixtures.user_request())
         user2 = self.user_service.create_user(fixtures.user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(email=user1.email))
-        event2 = self.event_service.create_event(fixtures.event_request(email=user2.email))
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user1.id)))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)
@@ -344,3 +242,35 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
         self.assertEqual(response.json[1]["id"], str(event2.id))
         self.assertEqual(response.json[1]["event_name"], str(event2.event_name))
+
+    def test_delete_look_non_existing(self):
+        # when
+        response = self.client.open(
+            f"/looks/{str(uuid.uuid4())}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 404)
+
+    def test_delete_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/looks/{look.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 204)
+        look_in_db = self.look_service.get_look_by_id(look.id)
+        self.assertIsNone(look_in_db)

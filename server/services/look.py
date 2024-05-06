@@ -10,17 +10,8 @@ class LookService:
     def __init__(self):
         self.user_service = UserService()
 
-    def get_all_looks(self):
-        return Look.query.all()
-
     def get_look_by_id(self, look_id):
         return Look.query.filter(Look.id == look_id).first()
-
-    def get_looks_for_user(self, user_id):
-        return Look.query.filter(Look.user_id == user_id).all()
-
-    def get_look_by_id_and_user(self, look_id, user_id):
-        return Look.query.filter(Look.id == look_id, Look.user_id == user_id).first()
 
     def get_events_for_look(self, look_id):
         return Event.query.join(Attendee, Event.id == Attendee.event_id).filter(Attendee.look_id == look_id).all()
@@ -34,7 +25,7 @@ class LookService:
         try:
             look = Look(
                 id=uuid.uuid4(),
-                look_name=look_data["look_name"],
+                look_name=look_data.get("look_name"),
                 user_id=look_data.get("user_id"),
                 product_specs=look_data.get("product_specs"),
             )
@@ -47,8 +38,8 @@ class LookService:
 
         return look
 
-    def update_look(self, look_data):
-        look = Look.query.filter(Look.id == look_data["id"]).first()
+    def update_look(self, look_id, look_data):
+        look = Look.query.filter(Look.id == look_id).first()
 
         if not look:
             raise NotFoundError("Look not found")
@@ -58,18 +49,32 @@ class LookService:
         if not user:
             raise NotFoundError("User not found")
 
+        existing_look = Look.query.filter(
+            Look.look_name == look_data["look_name"], Look.user_id == user.id, Look.id != look_id
+        ).first()
+
+        if existing_look:
+            raise DuplicateError("Look already exists with that name.")
+
         try:
-            new_look = self.create_look(
-                look_data=dict(
-                    id=uuid.uuid4(),
-                    look_name=look_data["look_name"],
-                    user_id=look_data.get("user_id"),
-                    product_specs=look_data.get("product_specs"),
-                )
-            )
+            look.look_name = look_data.get("look_name")
+            look.product_specs = look_data.get("product_specs")
 
             db.session.commit()
+            db.session.refresh(look)
         except Exception as e:
             raise ServiceError("Failed to update look.", e)
 
-        return new_look
+        return look
+
+    def delete_look(self, look_id):
+        look = Look.query.filter(Look.id == look_id).first()
+
+        if not look:
+            raise NotFoundError("Look not found")
+
+        try:
+            db.session.delete(look)
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to delete look.", e)

@@ -1,105 +1,87 @@
 import uuid
 
-from sqlalchemy import or_, and_
-
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look
+from server.database.models import Event, User, Attendee, Look, Role
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 class EventService:
-    def get_event_by_id(self, event_id):
-        return Event.query.filter_by(id=event_id).first()
+    def get_event_by_id(self, event_id, enriched=False):
+        event = Event.query.filter_by(id=event_id).first()
 
-    def get_event_by_user_id(self, user_id):
-        return Event.query.filter_by(user_id=user_id).first()  # TODO: this is bug!
+        if not event:
+            raise NotFoundError("Event not found.")
 
-    def get_events_for_user(self, email, include_attendees=False):
+        event = event.to_dict()
+
+        if not enriched:
+            return event
+
+        event["attendees"] = []
+
         results = (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .join(User, User.id == Attendee.attendee_id)
-            .filter(or_(User.email == email, User.id == Event.user_id), Event.is_active)
-            .all()
-        )
-
-        events = [event.to_dict() for event in results]
-
-        if not include_attendees:
-            return events
-
-        for event in events:
-            results = (
-                db.session.query(Attendee, User, Look)
-                .join(User, User.id == Attendee.attendee_id)
-                .outerjoin(Look, Look.id == Attendee.look_id)
-                .filter(Attendee.event_id == event["id"])
-                .all()
-            )
-
-            event["attendees"] = []
-
-            for attendee, user, look in results:
-                event["attendees"].append(
-                    {
-                        "id": user.id,
-                        "first_name": user.first_name,
-                        "last_name": user.last_name,
-                        "email": user.email,
-                        "look_id": attendee.look_id,
-                        "look_name": look.look_name if look else None,
-                        "role": attendee.role,
-                    }
-                )
-
-        return events
-
-    # TODO: This method is a bug, it should be removed. It fetches all attendees for all events. UI is not ready so fixed it as is!
-    def get_events_with_attendees_by_user_email(self, email):
-        results = (
-            db.session.query(Attendee, User, Event)
+            db.session.query(Attendee, User, Look, Role)
             .join(Event, Event.id == Attendee.event_id)
-            .filter(and_(User.email == email, Event.is_active, Event.user_id == User.id))
+            .join(User, User.id == Attendee.attendee_id)
+            .outerjoin(Look, Look.id == Attendee.look_id)
+            .outerjoin(Role, Role.id == Attendee.role)
+            .filter(Event.id == event_id, Attendee.is_active)
             .all()
         )
 
-        from server.services.look import LookService
-
-        look_service = LookService()
-
-        response = []
-
-        for attendee, user, event in results:
-            enriched_attendee = {
-                "event_id": event.id,
-                "event_name": event.event_name,
-                "event_date": str(event.event_date),
-                "user_id": str(event.user_id),
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
+        for attendee, user, look, role in results:
+            attendee = {
                 "id": attendee.id,
                 "invite": attendee.invite,
                 "pay": attendee.pay,
                 "ship": attendee.ship,
                 "size": attendee.size,
                 "style": attendee.style,
+                "user": {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                },
+                "look": None,
+                "role": None,
             }
 
-            if attendee.look_id:
-                look = look_service.get_look_by_id(attendee.look_id)
+            if look:
+                attendee["look"] = {
+                    "id": look.id,
+                    "look_name": look.look_name,
+                    "product_specs": look.product_specs,
+                }
 
-                if look:
-                    enriched_attendee["look_data"] = {
-                        "look_id": look.id,
-                        "look_name": look.look_name,
-                    }
+            if role:
+                attendee["role"] = {
+                    "id": role.id,
+                    "role_name": role.role_name,
+                }
 
-            response.append(enriched_attendee)
+            event["attendees"].append(attendee)
 
-        return response
+        return event
+
+    def get_roles_for_event(self, event_id):
+        event = Event.query.filter_by(id=event_id).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        return Role.query.filter_by(event_id=event_id).all()
+
+    def get_attendees_for_event(self, event_id):
+        event = Event.query.filter_by(id=event_id).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        return self.get_event_by_id(event_id, enriched=True)["attendees"]
 
     def create_event(self, event_data):
-        user = User.query.filter_by(email=event_data["email"]).first()
+        user = User.query.filter_by(id=event_data["user_id"]).first()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -109,7 +91,7 @@ class EventService:
         ).first()
 
         if event:
-            raise DuplicateError("Event with the same detail already exists.")
+            raise DuplicateError("Event with the same details already exists.")
 
         try:
             event = Event(
@@ -128,14 +110,26 @@ class EventService:
 
         return event
 
-    def update_event(self, event_data):
-        event = Event.query.filter(Event.id == event_data["id"], Event.user_id == event_data["user_id"]).first()
+    def update_event(self, event_id, event_data):
+        event = Event.query.filter(Event.id == event_id, Event.is_active).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
+        existing_event = Event.query.filter(
+            Event.event_name == event_data["event_name"],
+            Event.is_active,
+            Event.user_id == event.user_id,
+            Event.event_date == event_data["event_date"],
+            Event.id != event_id,
+        ).first()
+
+        if existing_event:
+            raise DuplicateError("Event with the same details already exists.")
+
         try:
-            event.event_date = event_data.get("event_date", event.event_date)
+            event.event_date = event_data.get("event_date")
+            event.event_name = event_data.get("event_name")
 
             db.session.commit()
             db.session.refresh(event)
@@ -144,16 +138,16 @@ class EventService:
 
         return event
 
-    def soft_delete_event(self, event_data):
-        event = Event.query.filter(Event.id == event_data["event_id"], Event.user_id == event_data["user_id"]).first()
+    def soft_delete_event(self, event_id):
+        event = Event.query.filter(Event.id == event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
         try:
-            event.is_active = event_data.get("is_active", False)  # TODO: this is bug! it should always be false
+            event.is_active = False
 
             db.session.commit()
             db.session.refresh(event)
         except Exception as e:
-            raise ServiceError("Failed to delete event.", e)
+            raise ServiceError("Failed to deactivate event.", e)

@@ -26,7 +26,7 @@ def create_user(user_data):
 
 
 @hmac_verification
-def get_user_by_id(email):
+def get_user_by_email(email):
     user_service = UserService()
 
     user = user_service.get_user_by_email(email)
@@ -38,27 +38,38 @@ def get_user_by_id(email):
 
 
 @hmac_verification
-def get_user_events(email):
+def get_user_events(user_id):
     user_service = UserService()
 
-    events = user_service.get_user_events(email)
+    events = user_service.get_user_events(user_id)
 
     return [event.to_dict() for event in events], 200
 
 
 @hmac_verification
-def get_all_users():
+def get_user_invites(user_id):
     user_service = UserService()
 
-    return [user.to_dict() for user in user_service.get_all_users()], 200
+    events = user_service.get_user_invites(user_id)
+
+    return [event.to_dict() for event in events], 200
 
 
 @hmac_verification
-def update_user(user_data):
+def get_user_looks(user_id):
+    user_service = UserService()
+
+    looks = user_service.get_user_looks(user_id)
+
+    return [look.to_dict() for look in looks]
+
+
+@hmac_verification
+def update_user(user_id, user_data):
     user_service = UserService()
 
     try:
-        user = user_service.update_user(user_data)
+        user = user_service.update_user(user_id, user_data)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

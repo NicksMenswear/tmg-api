@@ -1,14 +1,13 @@
 from __future__ import absolute_import
 
 import json
-import random
-import unittest
 import uuid
 
 from server import encoder
 from server.database.models import User
 from server.services.attendee import AttendeeService
 from server.services.event import EventService
+from server.services.look import LookService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
@@ -19,6 +18,7 @@ class TestUsers(BaseTestCase):
 
         self.user_service = UserService()
         self.event_service = EventService()
+        self.look_service = LookService()
         self.attendee_service = AttendeeService()
 
     def assert_equal_response_user_with_db_user(self, user: User, response_user: dict):
@@ -40,16 +40,6 @@ class TestUsers(BaseTestCase):
 
         # then
         self.assert404(response)
-
-    @unittest.skip("this should fail on validation phase")
-    def test_get_user_not_an_email_id(self):
-        # when
-        response = self.client.open(
-            "/users/{email}".format(email="not-an-email"), query_string=self.hmac_query_params, method="GET"
-        )
-
-        # then
-        self.assert400(response)
 
     def test_get_existing_user_by_email(self):
         # given
@@ -101,46 +91,12 @@ class TestUsers(BaseTestCase):
         # then
         self.assertStatus(response, 400)
 
-    def test_get_list_of_users_from_empty_db(self):
-        # when
-        response = self.client.open(
-            "/users",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
-
-    def test_get_list_of_users(self):
-        # given
-        user1 = self.user_service.create_user(fixtures.user_request())
-        user2 = self.user_service.create_user(fixtures.user_request())
-
-        # when
-        response = self.client.open(
-            "/users",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 2)
-        self.assert_equal_response_user_with_db_user(user1, response.json[0])
-        self.assert_equal_response_user_with_db_user(user2, response.json[1])
-
-    def test_update_user_with_non_existing_email(self):
+    def test_update_non_existing_user(self):
         # when
         user = fixtures.user_request()
 
         response = self.client.open(
-            "/users",
+            f"/users/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             method="PUT",
             data=json.dumps(user, cls=encoder.CustomJSONEncoder),
@@ -156,16 +112,13 @@ class TestUsers(BaseTestCase):
         user = self.user_service.create_user(fixtures.user_request())
 
         # when
-        updated_user = fixtures.user_request(
-            first_name=user.first_name + "-updated",
-            last_name=user.last_name + "-updated",
-            email=user.email,
+        updated_user = fixtures.update_user_request(
             account_status=not user.account_status,
         )
-        updated_user["shopify_id"] = str(random.randint(1000, 100000))
+        updated_user["email"] = str(uuid.uuid4()) + "@example.com"
 
         response = self.client.open(
-            "/users",
+            f"/users/{str(user.id)}",
             query_string=self.hmac_query_params,
             method="PUT",
             data=json.dumps(updated_user, cls=encoder.CustomJSONEncoder),
@@ -175,26 +128,17 @@ class TestUsers(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assert_equal_left(updated_user, response.json)
-
-    def test_update_user_missing_required_fields(self):
-        # when
-        response = self.client.open(
-            "/users",
-            query_string=self.hmac_query_params,
-            method="PUT",
-            data=json.dumps({}, cls=encoder.CustomJSONEncoder),
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assert400(response)
+        self.assertEqual(str(user.id), response.json["id"])
+        self.assertEqual(user.email, response.json["email"])
+        self.assertEqual(updated_user.get("first_name"), response.json["first_name"])
+        self.assertEqual(updated_user.get("last_name"), response.json["last_name"])
+        self.assertEqual(updated_user.get("account_status"), response.json["account_status"])
+        self.assertEqual(updated_user.get("shopify_id"), response.json["shopify_id"])
 
     def test_get_all_events_for_non_existing_user(self):
         # when
         response = self.client.open(
-            f"/users/{str(uuid.uuid4())}@example.com/events",
+            f"/users/{str(uuid.uuid4())}/events",
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
@@ -211,7 +155,7 @@ class TestUsers(BaseTestCase):
 
         # when
         response = self.client.open(
-            f"/users/{user.email}/events",
+            f"/users/{user.id}/events",
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
@@ -222,17 +166,16 @@ class TestUsers(BaseTestCase):
         self.assert200(response)
         self.assertEqual(response.json, [])
 
-    def test_get_all_events_for_user(self):
+    def test_get_all_active_events_for_user(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(email=user.email))
-        event2 = self.event_service.create_event(fixtures.event_request(email=user.email))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=user.email))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=user.email))
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        self.event_service.create_event(fixtures.event_request(user_id=user.id, is_active=False))
 
         # when
         response = self.client.open(
-            f"/users/{user.email}/events",
+            f"/users/{user.id}/events",
             query_string=self.hmac_query_params,
             method="GET",
             headers=self.request_headers,
@@ -246,3 +189,144 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
         self.assertEqual(response.json[1]["id"], str(event2.id))
         self.assertEqual(response.json[1]["event_name"], str(event2.event_name))
+
+    def test_get_invites_for_non_existing_user(self):
+        # when
+        response = self.client.open(
+            f"/users/{str(uuid.uuid4())}/invites",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 0)
+
+    def test_get_invites_for_existing_user_but_without_events(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user.id)}/invites",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 0)
+
+    def test_get_invites_for_one_event(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+        attendee_user = self.user_service.create_user(fixtures.user_request())
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
+        self.event_service.create_event(fixtures.event_request(user_id=attendee_user.id))
+
+        # when
+        response = self.client.open(
+            f"/users/{str(attendee_user.id)}/invites",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        response_event = response.json[0]
+        self.assertEqual(response_event["id"], str(event1.id))
+
+    def test_get_invites_for_multiple_events(self):
+        # given
+        attendee_user = self.user_service.create_user(fixtures.user_request())
+        user1 = self.user_service.create_user(fixtures.user_request())
+        user2 = self.user_service.create_user(fixtures.user_request())
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=attendee_user.email))
+
+        # when
+        response = self.client.open(
+            f"/users/{str(attendee_user.id)}/invites",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+        response_event1 = response.json[0]
+        response_event2 = response.json[1]
+        self.assertEqual(response_event1["id"], str(event1.id))
+        self.assertEqual(response_event2["id"], str(event2.id))
+
+    def test_get_user_looks_for_non_existing_user(self):
+        # when
+        response = self.client.open(
+            f"/users/{str(uuid.uuid4())}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_user_looks_empty_list(self):
+        # given
+        user = self.user_service.create_user(fixtures.user_request())
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user.id)}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json, [])
+
+    def test_get_list_of_looks_for_user_by_id(self):
+        # given
+        user1 = self.user_service.create_user(fixtures.user_request())
+        user2 = self.user_service.create_user(fixtures.user_request())
+        look1 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
+        look2 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
+        self.look_service.create_look(fixtures.look_request(user_id=user2.id))
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user1.id)}/looks",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+
+        response_look1 = response.json[0]
+        response_look2 = response.json[1]
+
+        self.assertEqual(response_look1["id"], str(look1.id))
+        self.assertEqual(response_look1["look_name"], str(look1.look_name))
+        self.assertEqual(response_look2["id"], str(look2.id))
+        self.assertEqual(response_look2["look_name"], str(look2.look_name))

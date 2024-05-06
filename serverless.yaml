@@ -85,8 +85,8 @@ custom:
     createRoute53IPv6Record: true
     endpointType: REGIONAL
     securityPolicy: tls_1_2
-    apiType: rest
     autoDomain: true
+    apiType: rest
 
   datadog_profiler: false
 

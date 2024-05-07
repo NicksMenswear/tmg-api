@@ -83,7 +83,7 @@ class OrderType(enum.Enum):
 
 
 @enum.unique
-class RMAStatus2(enum.Enum):
+class RMAStatus(enum.Enum):
     PENDING = "Pending"
     PENDING_CS_ACTION = "Pending CS Action"
     WAREHOUSE_COMPLETE = "Warehouse Complete"
@@ -99,7 +99,7 @@ class RMAType(enum.Enum):
 
 
 @enum.unique
-class RMAItemType2(enum.Enum):
+class RMAItemType(enum.Enum):
     REFUND = "Refund"
     EXCHANGE = "Exchange"
 
@@ -506,7 +506,7 @@ class RMA(Base):
     return_tracking = Column(String)  # Tracking number for the return shipment
     internal_return_note = Column(String)  # Internal note for the return
     customer_return_types = Column(String)  # Type of customer return, e.g., 'Refund'
-    status = Column(Enum(RMAStatus2), default=RMAStatus2.PENDING, nullable=False)
+    status = Column(Enum(RMAStatus), default=RMAStatus.PENDING, nullable=False)
     type = Column(ARRAY(Enum(RMAType)), nullable=False)
     reason = Column(String)  # Reason for the return
     is_returned = Column(Boolean)

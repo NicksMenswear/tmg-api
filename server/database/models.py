@@ -524,6 +524,7 @@ class RMA(Base):
     internal_return_note = Column(String)  # Internal note for the return
     customer_return_types = Column(String)  # Type of customer return, e.g., 'Refund'
     status = Column(Enum(RMAStatus), default=RMAStatus.PENDING, nullable=False)
+    status2 = Column(Enum(RMAStatus2), default=RMAStatus2.PENDING, nullable=False)
     type = Column(ARRAY(Enum(RMAType)), nullable=False)
     reason = Column(String)  # Reason for the return
     is_returned = Column(Boolean)

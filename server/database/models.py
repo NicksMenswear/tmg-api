@@ -91,6 +91,14 @@ class RMAStatus(enum.Enum):
 
 
 @enum.unique
+class RMAStatus2(enum.Enum):
+    PENDING = "Pending"
+    PENDING_CS_ACTION = "Pending CS Action"
+    WAREHOUSE_COMPLETE = "Warehouse Complete"
+    COMPLETED = "Completed"
+
+
+@enum.unique
 class RMAType(enum.Enum):
     RESIZE = "Resize"
     DAMAGED = "Damaged"
@@ -100,6 +108,21 @@ class RMAType(enum.Enum):
 
 @enum.unique
 class RMAItemType(enum.Enum):
+    DISLIKED = "Disliked"
+    TOO_BIG = "Too big"
+    TOO_SMALL = "Too small"
+    DAMAGED = "Damaged"
+    WRONG_ITEM = "Wrong Item"
+
+
+@enum.unique
+class RMAItemType2(enum.Enum):
+    REFUND = "Refund"
+    EXCHANGE = "Exchange"
+
+
+@enum.unique
+class RMAItemReason(enum.Enum):
     DISLIKED = "Disliked"
     TOO_BIG = "Too big"
     TOO_SMALL = "Too small"
@@ -503,8 +526,12 @@ class RMA(Base):
     status = Column(Enum(RMAStatus), default=RMAStatus.PENDING, nullable=False)
     type = Column(ARRAY(Enum(RMAType)), nullable=False)
     reason = Column(String)  # Reason for the return
+    reason2 = Column(Enum(RMAItemReason))
     is_returned = Column(Boolean)
     is_refunded = Column(Boolean)
+    refund_amount = Column(Numeric, nullable=True)
+    shiphero_id = Column(String, nullable=True)
+    warehouse_notes = Column(String, nullable=True)
 
     # Relationship to Order model, assuming that Order has a backref to RMADetail
     order = relationship("Order", backref="rmas")
@@ -524,8 +551,10 @@ class RMAItem(Base):
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
     purchased_price = Column(Numeric)
     quantity = Column(Integer)
+    quantity_received = Column(Integer)
     type = Column(Enum(RMAItemType), nullable=False)
     reason = Column(String)
+    reason2 = Column(Enum(RMAItemReason))
     rma = relationship("RMA", backref="rma_items")
 
 

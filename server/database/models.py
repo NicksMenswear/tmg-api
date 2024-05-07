@@ -83,14 +83,6 @@ class OrderType(enum.Enum):
 
 
 @enum.unique
-class RMAStatus(enum.Enum):
-    PENDING = "Pending"
-    RECEIVED = "Received"
-    RESTOCKED = "Restocked"
-    CLOSED = "Closed"
-
-
-@enum.unique
 class RMAStatus2(enum.Enum):
     PENDING = "Pending"
     PENDING_CS_ACTION = "Pending CS Action"
@@ -104,15 +96,6 @@ class RMAType(enum.Enum):
     DAMAGED = "Damaged"
     CANCELLATION = "Cancellation"
     EXCHANGE = "Exchange"
-
-
-@enum.unique
-class RMAItemType(enum.Enum):
-    DISLIKED = "Disliked"
-    TOO_BIG = "Too big"
-    TOO_SMALL = "Too small"
-    DAMAGED = "Damaged"
-    WRONG_ITEM = "Wrong Item"
 
 
 @enum.unique
@@ -523,8 +506,7 @@ class RMA(Base):
     return_tracking = Column(String)  # Tracking number for the return shipment
     internal_return_note = Column(String)  # Internal note for the return
     customer_return_types = Column(String)  # Type of customer return, e.g., 'Refund'
-    status = Column(Enum(RMAStatus), default=RMAStatus.PENDING, nullable=False)
-    status2 = Column(Enum(RMAStatus2), default=RMAStatus2.PENDING, nullable=False)
+    status = Column(Enum(RMAStatus2), default=RMAStatus2.PENDING, nullable=False)
     type = Column(ARRAY(Enum(RMAType)), nullable=False)
     reason = Column(String)  # Reason for the return
     is_returned = Column(Boolean)
@@ -552,10 +534,8 @@ class RMAItem(Base):
     purchased_price = Column(Numeric)
     quantity = Column(Integer)
     quantity_received = Column(Integer)
-    type = Column(Enum(RMAItemType), nullable=False)
-    type2 = Column(Enum(RMAItemType2), nullable=False)
-    reason = Column(String)
-    reason2 = Column(Enum(RMAItemReason))
+    type = Column(Enum(RMAItemType2), nullable=False)
+    reason = Column(Enum(RMAItemReason), nullable=False)
     rma = relationship("RMA", backref="rma_items")
 
 

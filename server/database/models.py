@@ -534,7 +534,7 @@ class RMAItem(Base):
     purchased_price = Column(Numeric)
     quantity = Column(Integer)
     quantity_received = Column(Integer)
-    type = Column(Enum(RMAItemType2), nullable=False)
+    type = Column(Enum(RMAItemType), nullable=False)
     reason = Column(Enum(RMAItemReason), nullable=False)
     rma = relationship("RMA", backref="rma_items")
 

@@ -85,9 +85,9 @@ class OrderType(enum.Enum):
 @enum.unique
 class RMAStatus(enum.Enum):
     PENDING = "Pending"
-    RECEIVED = "Received"
-    RESTOCKED = "Restocked"
-    CLOSED = "Closed"
+    PENDING_CS_ACTION = "Pending CS Action"
+    WAREHOUSE_COMPLETE = "Warehouse Complete"
+    COMPLETED = "Completed"
 
 
 @enum.unique
@@ -100,6 +100,12 @@ class RMAType(enum.Enum):
 
 @enum.unique
 class RMAItemType(enum.Enum):
+    REFUND = "Refund"
+    EXCHANGE = "Exchange"
+
+
+@enum.unique
+class RMAItemReason(enum.Enum):
     DISLIKED = "Disliked"
     TOO_BIG = "Too big"
     TOO_SMALL = "Too small"
@@ -314,7 +320,7 @@ class User(Base):
     legacy_id = Column(String, unique=True)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, nullable=True, unique=True, index=True)
     phone_number = Column(String)
     shopify_id = Column(String, unique=True)
     orders = relationship("Order", backref="user")
@@ -505,6 +511,9 @@ class RMA(Base):
     reason = Column(String)  # Reason for the return
     is_returned = Column(Boolean)
     is_refunded = Column(Boolean)
+    refund_amount = Column(Numeric, nullable=True)
+    shiphero_id = Column(String, nullable=True)
+    warehouse_notes = Column(String, nullable=True)
 
     # Relationship to Order model, assuming that Order has a backref to RMADetail
     order = relationship("Order", backref="rmas")
@@ -524,8 +533,9 @@ class RMAItem(Base):
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
     purchased_price = Column(Numeric)
     quantity = Column(Integer)
+    quantity_received = Column(Integer)
     type = Column(Enum(RMAItemType), nullable=False)
-    reason = Column(String)
+    reason = Column(Enum(RMAItemReason), nullable=False)
     rma = relationship("RMA", backref="rma_items")
 
 

@@ -314,7 +314,7 @@ class User(Base):
     legacy_id = Column(String, unique=True)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String)
     phone_number = Column(String)
     shopify_id = Column(String, unique=True)
     orders = relationship("Order", backref="user")

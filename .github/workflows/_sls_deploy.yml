@@ -84,7 +84,7 @@ jobs:
       - name: Set function deploy mode
         if: ${{ ! inputs.cfn_deploy }}
         run: |
-          echo "SLS_ARGS=${SLS_ARGS} function --function api" >> $GITHUB_ENV
+          echo "SLS_ARGS=${SLS_ARGS} function --function api --force" >> $GITHUB_ENV
 
       - name: Reuse release artifact for prd
         if: ${{ inputs.stage == 'prd' && inputs.release_semver }}

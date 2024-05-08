@@ -49,13 +49,13 @@ paths:
       tags:
         - Health
       x-openapi-router-controller: server.controllers.health
-  /health2:
+  /health3:
     get:
-      operationId: health2
+      operationId: health3
       responses:
         "200":
           description: Successful response
-      summary: TMG Health Check 2
+      summary: TMG Health Check 3
       x-openapi-router-controller: server.controllers.health
 
   /users:

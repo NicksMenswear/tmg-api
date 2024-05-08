@@ -15,7 +15,7 @@ TOP_SITES = [
 ]
 
 
-def health2():
+def health3():
     return health()
 
 

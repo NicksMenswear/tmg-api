@@ -60,7 +60,7 @@ jobs:
         with:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
-            *API "${{ inputs.stage }}" Now Deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
+            *API "${{ inputs.stage }}" now deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
             *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
@@ -145,7 +145,7 @@ jobs:
         with:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
-            *API "${{ inputs.stage }}" Deployment ${{ job.status == 'success' && 'Completed :large_green_circle:' || job.status == 'cancelled' && 'Cancelled :large_yellow_circle:' || 'Failed :red_circle:' }}*
+            *API "${{ inputs.stage }}" deployment ${{ job.status }} ${{ job.status == 'success' && ':large_green_circle:' || job.status == 'cancelled' && ':large_yellow_circle:' || ':red_circle:' }}*
             *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
             *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

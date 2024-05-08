@@ -20,7 +20,7 @@ functions:
     events:
       - http: ANY /
       - http: ANY /{proxy+}
-    # provisionedConcurrency: 15
+    provisionedConcurrency: 15
     reservedConcurrency: 100
     timeout: 10
     memorySize: 256

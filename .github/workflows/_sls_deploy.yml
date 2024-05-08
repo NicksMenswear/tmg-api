@@ -1,4 +1,4 @@
-name: _sls-deploy
+name: _sls_deploy
 
 on:
   workflow_call:
@@ -20,6 +20,11 @@ on:
         type: boolean
         default: true
         description: Notify Slack
+      cfn_deploy:
+        required: false
+        type: boolean
+        default: true
+        description: Deploy via CloudFormation
     secrets:
       DATADOG_API_KEY:
         required: true
@@ -76,11 +81,10 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           
-      # - name: Determine sls deploy mode
-      #   run: |
-      #     if ! git diff --name-only "${{ inputs.ref }}" | grep -q "serverless.yaml"; then
-      #         echo "SLS_ARGS=${SLS_ARGS} function --function api" >> $GITHUB_ENV
-      #     fi
+      - name: Set function deploy mode
+        if: ${{ ! inputs.cfn_deploy }}
+        run: |
+          echo "SLS_ARGS=${SLS_ARGS} function --function api" >> $GITHUB_ENV
 
       - name: Reuse release artifact for prd
         if: ${{ inputs.stage == 'prd' && inputs.release_semver }}
@@ -107,6 +111,13 @@ jobs:
 
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
+
+      - name: Update API Gateway
+        if: ${{ ! inputs.cfn_deploy }}
+        run: | 
+          rest_api_name="${{ inputs.stage }}-tmg-api"
+          aws apigateway get-rest-apis --query "items[?name=='$rest_api_name'].id" --output text
+          aws apigateway create-deployment --rest-api-id "$rest_api_id" --stage-name ${{ inputs.stage }}
 
       - name: Create GitHub release
         if: ${{ inputs.release_semver != '' }} 

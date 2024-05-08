@@ -15,6 +15,10 @@ TOP_SITES = [
 ]
 
 
+def health2():
+    return health()
+
+
 def health():
     try:
         with ThreadPoolExecutor(max_workers=2) as executor:

@@ -20,10 +20,10 @@ functions:
     events:
       - http: ANY /
       - http: ANY /{proxy+}
-    provisionedConcurrency: 15
+    # provisionedConcurrency: 15
     reservedConcurrency: 100
     timeout: 10
-    memorySize: 384
+    memorySize: 256
     lambdaInsights: true
     vpc:
       securityGroupIds:

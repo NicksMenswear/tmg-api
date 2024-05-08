@@ -51,6 +51,8 @@ jobs:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev
       notify: false
+    secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
   
   e2e:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
@@ -60,6 +62,8 @@ jobs:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev
       notify: false
+    secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
 
   report-finish:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}

@@ -22,6 +22,8 @@ on:
         default: true
         description: Notify Slack
     secrets:
+      DATADOG_API_KEY:
+        required: true
       SLACK_BOT_TOKEN:
         required: false  # required when notify is true
 
@@ -32,6 +34,7 @@ jobs:
       - name: Datadog CI tags
         env:
           DATADOG_SITE: us5.datadoghq.com
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
         run: |
           npm install -g @datadog/datadog-ci
           datadog-ci tag --level job --tags env:${{ inputs.stage }} --tags browser:${{ inputs.browser }}

@@ -13,6 +13,7 @@ jobs:
       stage: ${{ matrix.stage }}
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
     strategy:
       fail-fast: false
       matrix:

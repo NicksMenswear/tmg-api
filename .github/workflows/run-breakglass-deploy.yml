@@ -23,6 +23,7 @@ jobs:
       stage: ${{ inputs.stage }}
       notify: true
     secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
   e2e:
@@ -33,4 +34,5 @@ jobs:
       stage: ${{ inputs.stage }}
       notify: true
     secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

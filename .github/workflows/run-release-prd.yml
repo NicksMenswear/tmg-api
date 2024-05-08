@@ -44,6 +44,7 @@ jobs:
       release_semver: ${{ inputs.semver }}
       notify: true
     secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   e2e:
@@ -54,4 +55,5 @@ jobs:
       stage: prd
       notify: true
     secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

@@ -10,10 +10,6 @@ on:
         - dev
         - stg
         - prd
-      cfn_deploy:
-        type: boolean
-        description: Deploy via CloudFormation
-        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.stage }}
@@ -26,7 +22,6 @@ jobs:
       ref: ${{ github.sha }}
       stage: ${{ inputs.stage }}
       notify: true
-      cfn_deploy: ${{ inputs.cfn_deploy }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

@@ -3,10 +3,6 @@ name: run-release-prd
 on:
   workflow_dispatch:
     inputs:
-      cfn_deploy:
-        type: boolean
-        description: Deploy via CloudFormation
-        default: false
       semver:
         type: string
         description: semver
@@ -47,7 +43,6 @@ jobs:
       stage: prd
       release_semver: ${{ inputs.semver }}
       notify: true
-      cfn_deploy: ${{ inputs.cfn_deploy }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

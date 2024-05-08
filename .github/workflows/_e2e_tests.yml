@@ -29,6 +29,13 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     steps:
+      - name: Datadog CI tags
+        env:
+          DATADOG_SITE: us5.datadoghq.com
+        run: |
+          npm install -g @datadog/datadog-ci
+          datadog-ci tag --level job --tags env:${{ inputs.stage }} --tags browser:${{ inputs.browser }}
+
       - name: Echo Environment
         run: echo "Running tests on ${{ inputs.stage }} in ${{ inputs.browser }} browser"
 

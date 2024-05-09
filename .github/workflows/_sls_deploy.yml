@@ -1,5 +1,4 @@
 name: _sls_deploy
-run-name: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
 
 on:
   workflow_call:
@@ -40,7 +39,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.stage }}
+    environment: 
+      name: ${{ inputs.stage }}
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
     timeout-minutes: 20
     env:
       SLS_ARGS: ""

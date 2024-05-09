@@ -23,7 +23,7 @@ functions:
     provisionedConcurrency: 15
     reservedConcurrency: 100
     timeout: 10
-    memorySize: 256
+    memorySize: 384
     lambdaInsights: true
     vpc:
       securityGroupIds:

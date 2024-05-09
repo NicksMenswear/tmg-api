@@ -52,7 +52,7 @@ jobs:
 
             const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
             if (e2e.state != 'success') {
-              core.setFailed(`E2E status is ${e2e.state}`);
+              core.setFailed(`${{ inputs.semver }} E2E status is ${e2e.state}`);
             }
 
   cd:

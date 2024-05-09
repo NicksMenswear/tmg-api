@@ -68,6 +68,7 @@ jobs:
     if: ${{ always() }}
     permissions:
       id-token: write
+      contents: read
       statuses: write
     steps:
       - name: Checkout code

@@ -32,7 +32,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const release = await github.repos.getReleaseByTag({
+            const release = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag: "${{ inputs.semver }}"
@@ -42,7 +42,7 @@ jobs:
             }
             console.log(`Release SHA: ${release.data.target_commitish}`);
 
-            const commit = await github.repos.getCommit({
+            const commit = await github.rest.repos.getCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: release.data.target_commitish

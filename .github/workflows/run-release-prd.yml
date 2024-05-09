@@ -46,7 +46,7 @@ jobs:
             const response = await github.rest.repos.listCommitStatusesForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: "${release.data.target_commitish}"
+              ref: `${release.data.target_commitish}`
             });
             console.log(`Commit statuses: ${status.data.statuses}`);
 

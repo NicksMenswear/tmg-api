@@ -83,6 +83,7 @@ jobs:
       - name: Reuse release artifact for prd
         if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
         run: |
+          mkdir -p .serverless
           curl -sSL -o .serverless/${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
           echo "SLS_ARGS=${SLS_ARGS} --package .serverless/${{ env.API_ZIP }}" >> $GITHUB_ENV
 

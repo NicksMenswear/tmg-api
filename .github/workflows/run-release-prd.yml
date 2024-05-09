@@ -40,7 +40,7 @@ jobs:
     needs: validate-stg-release
     with:
       ref: ${{ github.sha }}
-      stage: prd
+      stage: dev
       release_semver: ${{ inputs.semver }}
       notify: false
     secrets:
@@ -52,7 +52,7 @@ jobs:
     needs: cd
     with:
       ref: ${{ github.ref_name }}
-      stage: prd
+      stage: dev
       notify: false
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

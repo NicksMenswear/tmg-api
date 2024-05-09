@@ -36,12 +36,16 @@ jobs:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for CI gate to succeed
+      - name: Wait for CI gate status
         uses: fountainhead/action-wait-for-check@v1.2.0
+        id: wait-for-gate
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: refs/pull/${{ github.event.issue.number }}/head
           checkName: "ci / gate"
+      
+      - name: Assert CI gate status
+        run: ${{ steps.wait-for-gate.outputs.conclusion == 'success' }}
 
   cd:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}

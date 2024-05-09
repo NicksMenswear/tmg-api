@@ -43,9 +43,9 @@ jobs:
     needs: ci
     with:
       ref: ${{ github.sha }}
-      release_semver: ${{ inputs.semver }}
       stage: stg
       notify: false
+      release_semver: ${{ inputs.semver }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -68,17 +68,13 @@ jobs:
     if: ${{ always() }}
     permissions:
       id-token: write
-      contents: read
       statuses: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Set commit status as pending
+        uses: myrotvorets/set-commit-status-action@v2.0.1
         with:
-          ref: ${{ github.sha }}
-
-      - name: Set commit status
-        uses: ouzi-dev/commit-status-updater@v2
-        with:
-          name: "run-release-stg / e2e"
-          url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           status: "${{ needs.e2e.result == 'success' && 'success' || 'failure' }}"
+          context: "run-release-stg / e2e"
+          sha: ${{ github.sha }}
+          targetUrl: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -42,7 +42,7 @@ jobs:
       ref: ${{ github.sha }}
       stage: prd
       release_semver: ${{ inputs.semver }}
-      notify: true
+      notify: false
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -53,7 +53,7 @@ jobs:
     with:
       ref: ${{ github.ref_name }}
       stage: prd
-      notify: true
+      notify: false
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

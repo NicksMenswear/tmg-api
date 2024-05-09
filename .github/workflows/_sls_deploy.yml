@@ -41,11 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: ${{ inputs.stage }}
-      url: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
+      url: ${{ inputs.release_semver != '' && env.TAG_REF || env.SHA_REF }}
     timeout-minutes: 20
     env:
       SLS_ARGS: ""
       API_ZIP: "tmg-api.zip"
+      TAG_REF: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
+      SHA_REF: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
 
     steps:
       - name: Datadog CI tags

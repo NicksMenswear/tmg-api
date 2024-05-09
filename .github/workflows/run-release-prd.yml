@@ -13,13 +13,12 @@ concurrency:
   group: ${{ github.workflow }}-prd
   cancel-in-progress: false
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   validate-release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - name: Validate semver
         run: |
@@ -42,7 +41,7 @@ jobs:
               core.setFailed(`Release ${{ inputs.semver }} does not exist.`);
             }
             console.log(`Release SHA: ${release.data.target_commitish}`);
-            
+
             const commit = await github.repos.getCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,

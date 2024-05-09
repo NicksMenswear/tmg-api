@@ -83,6 +83,7 @@ jobs:
       - name: Reuse release artifact for prd
         if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
         run: |
+          rm -f requirements.txt
           mkdir -p .serverless
           curl -sSL -o .serverless/${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
           echo "SLS_ARGS=${SLS_ARGS} --package .serverless" >> $GITHUB_ENV
@@ -103,9 +104,6 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
 
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}

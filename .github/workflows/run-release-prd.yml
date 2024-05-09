@@ -35,7 +35,7 @@ jobs:
             const release = await github.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag: ${{ inputs.semver }}
+              tag: "${{ inputs.semver }}"
             });
             if (!release) {
               core.setFailed(`Release ${{ inputs.semver }} does not exist.`);

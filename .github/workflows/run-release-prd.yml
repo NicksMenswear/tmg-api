@@ -48,10 +48,12 @@ jobs:
               repo: context.repo.repo,
               ref: `${release.data.target_commitish}`
             });
-            console.log(`Commit statuses: ${statuses.data}`);
+            console.log(`Commit statuses: ${statuses.data.statuses}`);
 
             const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
-            assert(e2e.state === 'success', `E2E status is ${e2e.state}`);
+            if (e2e.state != 'success') {
+              core.setFailed(`E2E status is ${e2e.state}`);
+            }
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml

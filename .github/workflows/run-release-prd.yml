@@ -42,14 +42,14 @@ jobs:
             }
             console.log(`Release SHA: ${release.data.target_commitish}`);
 
-            const status = await github.rest.repos.getCommitStatus({
+            const response = await github.repos.listCommitStatusesForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: "release.data.target_commitish"
             });
             console.log(`Commit statuses: ${status.data.statuses}`);
 
-            const e2e = status.data.statuses.find(s => s.context === 'run-release-stg / e2e');
+            const e2e = response.data.find(status => status.context === 'run-release-stg / e2e');
             assert(e2e.state === 'success', `E2E status is ${status.state}`);
 
   cd:

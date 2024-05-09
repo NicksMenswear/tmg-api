@@ -19,6 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      statuses: read
     steps:
       - name: Validate semver
         run: |

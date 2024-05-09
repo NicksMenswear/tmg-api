@@ -14,7 +14,7 @@ on:
       release_semver:
         required: false
         type: string
-        description: Create GitHub release with semver
+        description: Create/Download GitHub release with semver
       notify:
         required: false
         type: boolean

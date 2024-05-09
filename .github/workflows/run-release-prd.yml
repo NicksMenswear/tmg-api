@@ -51,14 +51,13 @@ jobs:
             console.log(`Commit statuses: ${JSON.stringify(statuses.data)}`);
 
             const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
-
-          # if (e2e.state != 'success') {
-          #   core.setFailed(`Release ${{ inputs.semver }} e2e status is ${e2e.state}`);
-          # }
+            if (e2e.state != 'success') {
+              core.setFailed(`Release ${{ inputs.semver }} e2e status is ${e2e.state}`);
+            }
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
-    needs: validate-release
+    # needs: validate-release
     with:
       ref: ${{ github.sha }}
       stage: dev

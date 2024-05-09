@@ -47,7 +47,7 @@ jobs:
               repo: context.repo.repo,
               ref: release.data.target_commitish
             });
-            console.log(`Statuses: ${commit.data.statuses}`);
+            console.log(`Commit data: ${commit.data}`);
 
             const status = commit.data.statuses.find(s => s.context === 'run-release-stg / e2e');
             assert(status.state === 'success', `E2E status is ${status.state}`);

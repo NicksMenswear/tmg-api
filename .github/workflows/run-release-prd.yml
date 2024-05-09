@@ -48,11 +48,11 @@ jobs:
               repo: context.repo.repo,
               ref: `${release.data.target_commitish}`
             });
-            console.log(`Commit statuses: ${statuses.data.statuses}`);
+            console.log(`Commit statuses: ${JSON.stringify(statuses.data)}`);
 
             const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
             if (e2e.state != 'success') {
-              core.setFailed(`${{ inputs.semver }} E2E status is ${e2e.state}`);
+              core.setFailed(`Release ${{ inputs.semver }} e2e status is ${e2e.state}`);
             }
 
   cd:

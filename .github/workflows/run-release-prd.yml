@@ -13,11 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-prd
   cancel-in-progress: false
 
-permissions: 
-  id-token: write
-  contents: write
-  statuses: write
-
 jobs:
   validate-stg-release:
     runs-on: ubuntu-latest

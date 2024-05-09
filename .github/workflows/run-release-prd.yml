@@ -53,7 +53,7 @@ jobs:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ inputs.semver }}
       stage: dev
       notify: false
     secrets:

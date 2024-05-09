@@ -55,7 +55,7 @@ jobs:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
-      ref: ${{ github.ref_name }}
+      ref: ${{ inputs.semver }}
       stage: stg
       notify: false
     secrets:
@@ -70,8 +70,13 @@ jobs:
       id-token: write
       statuses: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: ouzi-dev/commit-status-updater@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set commit status
+        uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "run-release-stg / e2e"
           url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -1,4 +1,5 @@
 name: _sls_deploy
+run-name: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
 
 on:
   workflow_call:

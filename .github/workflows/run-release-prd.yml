@@ -42,15 +42,15 @@ jobs:
             }
             console.log(`Release SHA: ${release.data.target_commitish}`);
 
-            const commit = await github.rest.repos.getCommit({
+            const status = await github.rest.repos.getCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: release.data.target_commitish
+              ref: "release.data.target_commitish"
             });
-            console.log(`Commit data: ${commit.data}`);
+            console.log(`Commit statuses: ${status.data.statuses}`);
 
-            const status = commit.data.statuses.find(s => s.context === 'run-release-stg / e2e');
-            assert(status.state === 'success', `E2E status is ${status.state}`);
+            const e2e = status.data.statuses.find(s => s.context === 'run-release-stg / e2e');
+            assert(e2e.state === 'success', `E2E status is ${status.state}`);
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml

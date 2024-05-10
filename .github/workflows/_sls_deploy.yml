@@ -147,7 +147,6 @@ jobs:
           append_body: true
           body: |
           
-            ---
             **`${{ inputs.stage }}` deployed:** ${{ steps.time.outputs.NOW }}. [CI Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Notify slack

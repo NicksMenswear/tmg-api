@@ -84,9 +84,8 @@ jobs:
         if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
         run: |
           rm -f requirements.txt
-          mkdir -p .serverless
-          curl -sSL -o .serverless/${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
-          echo "SLS_ARGS=${SLS_ARGS} --package .serverless" >> $GITHUB_ENV
+          curl -sSL -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
+          echo "SLS_ARGS=${SLS_ARGS} --param="artifact=tmg-api.zip" >> $GITHUB_ENV
 
       - name: Setup node.js
         uses: actions/setup-node@v4

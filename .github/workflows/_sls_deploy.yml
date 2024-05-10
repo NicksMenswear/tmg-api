@@ -49,7 +49,7 @@ jobs:
     env:
       SLS_ARGS: ""
       API_ZIP: "tmg-api.zip"
-      VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
+      VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.sha }}
       TAG_REF: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
       SHA_REF: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
 
@@ -89,10 +89,10 @@ jobs:
         with:
           node-version: 21
 
-      - name: Install Serverless
+      - name: Install sls
         run: npm install -g serverless@3.38.*
 
-      - name: Install Serverless dependencies
+      - name: Install sls dependencies
         run: npm install
 
       - name: Configure AWS credentials
@@ -147,7 +147,6 @@ jobs:
           append_body: true
           body: |
           
-            ---
             **`${{ inputs.stage }}` deployed:** ${{ steps.time.outputs.NOW }}. [CI Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Notify slack

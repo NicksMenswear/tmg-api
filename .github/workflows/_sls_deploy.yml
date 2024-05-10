@@ -111,7 +111,7 @@ jobs:
           tag: ${{ inputs.release_semver }}
           fileName: ${{ env.API_ZIP }}
 
-      - name: Reuse release artifacts in sls deploy
+      - name: Set release artifacts in sls deploy
         if: ${{ inputs.release_semver != '' && inputs.release_reuse }}
         run: |
           rm requirements.txt

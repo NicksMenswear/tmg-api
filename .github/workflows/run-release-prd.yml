@@ -57,11 +57,11 @@ jobs:
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
-    # needs: validate-release
+    # needs: validate-release  # TODO uncomment once e2e are fixed
     with:
       ref: ${{ github.sha }}
-      stage: dev
-      notify: false
+      stage: prd
+      notify: true
       release_semver: ${{ inputs.semver }}
       release_reuse: true
     secrets:
@@ -73,8 +73,8 @@ jobs:
     needs: cd
     with:
       ref: ${{ inputs.semver }}
-      stage: dev
-      notify: false
+      stage: prd
+      notify: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

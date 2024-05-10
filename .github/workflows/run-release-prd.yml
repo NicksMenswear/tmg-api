@@ -63,6 +63,7 @@ jobs:
       stage: dev
       notify: false
       release_semver: ${{ inputs.semver }}
+      release_reuse: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

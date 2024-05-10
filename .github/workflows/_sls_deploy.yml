@@ -14,7 +14,12 @@ on:
       release_semver:
         required: false
         type: string
-        description: Create/Download GitHub release with semver
+        description: Release semver to use
+      release_reuse:
+        required: false
+        type: boolean
+        default: false  
+        description: Create or reuse GitHub release
       notify:
         required: false
         type: boolean
@@ -44,6 +49,7 @@ jobs:
     env:
       SLS_ARGS: ""
       API_ZIP: "tmg-api.zip"
+      VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
       TAG_REF: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
       SHA_REF: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
 
@@ -73,7 +79,7 @@ jobs:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
             *API "${{ inputs.stage }}" now deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
-            *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
+            *Release:* ${{ env.VERSION }}
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -95,12 +101,11 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
 
-      - name: Save release version
-        if: ${{ inputs.release_semver != '' }}
-        run: echo "${{ inputs.release_semver }}" > ./VERSION
+      - name: Write release version
+        run: echo "${{ env.VERSION }}" > ./VERSION
 
-      - name: Reuse release artifact from stg for prd
-        if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
+      - name: Reuse release artifacts
+        if: ${{ inputs.release_semver != '' && inputs.release_reuse }}
         run: |
           rm -f requirements.txt
           curl -sSL -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
@@ -110,7 +115,7 @@ jobs:
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
 
       - name: Create GitHub release
-        if: ${{ inputs.release_semver != '' && inputs.stage == 'stg' }}
+        if: ${{ inputs.release_semver != '' && ! inputs.release_reuse }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.release_semver }}
@@ -147,7 +152,7 @@ jobs:
           slack-message: |
             *API "${{ inputs.stage }}" deployment ${{ job.status }} ${{ job.status == 'success' && ':large_green_circle:' || job.status == 'cancelled' && ':large_yellow_circle:' || ':red_circle:' }}*
             *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
-            *Release:* ${{ inputs.release_semver != '' && inputs.release_semver || inputs.ref }}
+            *Release:* ${{ env.VERSION }}
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

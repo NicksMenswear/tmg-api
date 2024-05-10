@@ -25,8 +25,6 @@ on:
         required: true
       SLACK_BOT_TOKEN:
         required: false  # required when notify is true
-      SENTRY_AUTH_TOKEN:
-        required: false  # required when release_semver is true
 
 concurrency:
   group: sls-deploy-${{ inputs.stage }}
@@ -80,13 +78,6 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-      - name: Reuse release artifact from stg for prd
-        if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
-        run: |
-          rm -f requirements.txt
-          curl -sSL -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
-          echo "SLS_ARGS=\"\${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'\"" >> $GITHUB_ENV
-
       - name: Setup node.js
         uses: actions/setup-node@v4
         with:
@@ -103,6 +94,17 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::828867313984:role/SlsDeploy
+
+      - name: Save release version
+        if: ${{ inputs.release_semver != '' }}
+        run: echo "${{ inputs.release_semver }}" > ./VERSION
+
+      - name: Reuse release artifact from stg for prd
+        if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
+        run: |
+          rm -f requirements.txt
+          curl -sSL -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
+          echo "SLS_ARGS=\"\${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'\"" >> $GITHUB_ENV
 
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
@@ -136,16 +138,6 @@ jobs:
           
             ---
             **`${{ inputs.stage }}` deployed:** ${{ steps.time.outputs.NOW }}. [CI Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Create Sentry release
-        if: ${{ inputs.release_semver != '' }}
-        uses: getsentry/action-release@v1
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: the-modern-groom
-          SENTRY_PROJECT: tmg-api
-        with:
-          environment: ${{ inputs.stage }}
 
       - name: Notify slack
         if: ${{ always() && inputs.notify }}

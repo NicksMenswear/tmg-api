@@ -24,6 +24,13 @@ def init_sentry():
 
         return event
 
+    def get_version():
+        try:
+            with open("./VERSION") as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return None
+
     sentry_sdk.init(
         dsn="https://8e6bac4bea5b3bf97a544417ca20e275@o4507018035724288.ingest.us.sentry.io/4507018177609728",
         integrations=[AwsLambdaIntegration(timeout_warning=True)],
@@ -38,6 +45,7 @@ def init_sentry():
         # Ignoring healthcheck transactions
         before_send_transaction=filter_transactions,
         environment=os.getenv("STAGE"),
+        release=get_version(),
     )
     for logger in ["connexion.decorators.validation"]:
         ignore_logger(logger)

@@ -108,7 +108,7 @@ jobs:
         if: ${{ inputs.release_semver != '' && inputs.release_reuse }}
         run: |
           rm requirements.txt
-          curl -sSL -H "Authorization: token ${{ github.token }}" -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
+          curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
           echo SLS_ARGS="${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'" >> $GITHUB_ENV
 
       - name: Sls Deploy

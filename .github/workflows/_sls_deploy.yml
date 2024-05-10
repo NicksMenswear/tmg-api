@@ -109,7 +109,7 @@ jobs:
         run: |
           rm -f requirements.txt
           curl -sSL -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
-          echo "SLS_ARGS=\"\${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'\"" >> $GITHUB_ENV
+          echo "SLS_ARGS=\"${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'\"" >> $GITHUB_ENV
 
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}

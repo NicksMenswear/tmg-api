@@ -114,7 +114,7 @@ jobs:
       - name: Sls Deploy
         run: sls deploy ${{ env.SLS_ARGS }} --stage ${{ inputs.stage }}
 
-      - name: Create GitHub release
+      - name: Create GitHub release and upload artifacts
         if: ${{ inputs.release_semver != '' && ! inputs.release_reuse }}
         uses: softprops/action-gh-release@v2
         with:

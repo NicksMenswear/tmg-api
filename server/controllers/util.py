@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import os
 from functools import wraps
+from copy import deepcopy
 import logging
 
 import urllib3
@@ -54,9 +55,14 @@ def http(method, *args, **kwargs):
         "retries": urllib3.util.Retry(total=2, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)
-    # TODO remove debug
-    logger.debug(f"Making {method} request with args {args} {kwargs}")
+    log_request(method, *args, **merge_kwargs)
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.
         return urllib3.PoolManager().request(method, *args, **merge_kwargs)
     return http_pool.request(method, *args, **merge_kwargs)
+
+
+def log_request(method, *args, **kwargs):
+    log_kwargs = deepcopy(kwargs)
+    log_kwargs.get("headers", {})["X-Shopify-Access-Token"] = "***"
+    logger.debug(f"Making {method} request with args {args} {kwargs}")

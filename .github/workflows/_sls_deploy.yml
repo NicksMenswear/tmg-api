@@ -104,11 +104,17 @@ jobs:
       - name: Write release version
         run: echo "${{ env.VERSION }}" > ./VERSION
 
-      - name: Reuse release artifacts
+      - name: Download release artifacts
+        uses: robinraju/release-downloader@v1.10
+        if: ${{ inputs.release_semver != '' && inputs.release_reuse }}
+        with:
+          tag: ${{ inputs.release_semver }}
+          fileName: ${{ env.API_ZIP }}
+
+      - name: Reuse release artifacts in sls deploy
         if: ${{ inputs.release_semver != '' && inputs.release_reuse }}
         run: |
           rm requirements.txt
-          curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ${{ env.API_ZIP }} https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_semver }}/${{ env.API_ZIP }}
           echo SLS_ARGS="${SLS_ARGS} --param='artifact=${{ env.API_ZIP }}'" >> $GITHUB_ENV
 
       - name: Sls Deploy

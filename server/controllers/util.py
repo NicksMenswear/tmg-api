@@ -2,9 +2,13 @@ import hashlib
 import hmac
 import os
 from functools import wraps
+import logging
 
 import urllib3
 from flask import request
+
+logger = logging.getLogger(__name__)
+
 
 from server.flask_app import FlaskApp
 
@@ -50,6 +54,7 @@ def http(method, *args, **kwargs):
         "retries": urllib3.util.Retry(total=2, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)
+    logger.debug(f"Making {method} request with args {args} {kwargs}")
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.
         return urllib3.PoolManager().request(method, *args, **merge_kwargs)

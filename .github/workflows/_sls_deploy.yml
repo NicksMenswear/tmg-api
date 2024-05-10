@@ -140,12 +140,12 @@ jobs:
               const release = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                tag: inputs.release_semver
+                tag: "${{ inputs.release_semver }}"
               });
 
               const date = new Date().toISOString();
-              const logs = `[CI Logs](https://github.com/${github.repository}/actions/runs/${github.run_id})`;
-              const appendBody = `**\`${inputs.stage}\` deployed:** ${date} ${logs}`;
+              const logs = `[CI Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+              const appendBody = `**\`${{ inputs.stage }}\` deployed:** ${date} ${logs}`;
               
               github.rest.repos.updateRelease({
                 owner: context.repo.owner,

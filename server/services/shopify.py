@@ -43,7 +43,7 @@ class ShopifyService:
                 "X-Shopify-Access-Token": self.__admin_api_access_token,
             },
         )
-        if response.status == 429:  # TODO remove
+        if response.status == 422:  # TODO remove
             # Retry request if 1 more time
             from time import sleep
 

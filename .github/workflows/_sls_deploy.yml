@@ -145,13 +145,13 @@ jobs:
 
               const date = new Date().toISOString();
               const logs = `[CI Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
-              const appendBody = `**\`${{ inputs.stage }}\` deployed:** ${date} ${logs}`;
+              const appendBody = `**\`${{ inputs.stage }}\` deployed:** ${date}. ${logs}`;
               
               github.rest.repos.updateRelease({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release.data.id,
-                body: release.data.body + "\n" + appendBody
+                body: release.data.body + "\n\n" + appendBody
               });
 
       - name: Notify slack

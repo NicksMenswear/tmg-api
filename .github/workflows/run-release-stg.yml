@@ -44,7 +44,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       stage: stg
-      notify: false
+      notify: true
       release_semver: ${{ inputs.semver }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
@@ -56,7 +56,7 @@ jobs:
     with:
       ref: ${{ inputs.semver }}
       stage: stg
-      notify: false
+      notify: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

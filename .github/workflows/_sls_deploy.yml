@@ -49,7 +49,7 @@ jobs:
     env:
       SLS_ARGS: ""
       API_ZIP: "tmg-api.zip"
-      VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || inputs.sha }}
+      VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || github.sha }}
       TAG_REF: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
       SHA_REF: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
 

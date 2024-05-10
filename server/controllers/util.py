@@ -54,6 +54,7 @@ def http(method, *args, **kwargs):
         "retries": urllib3.util.Retry(total=2, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)
+    # TODO remove debug
     logger.debug(f"Making {method} request with args {args} {kwargs}")
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.

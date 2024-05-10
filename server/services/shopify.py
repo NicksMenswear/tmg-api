@@ -43,6 +43,20 @@ class ShopifyService:
                 "X-Shopify-Access-Token": self.__admin_api_access_token,
             },
         )
+        if response.status == 429:  # TODO remove
+            # Retry request if 1 more time
+            from time import sleep
+
+            sleep(1)
+            response = http(
+                "POST",
+                endpoint,
+                json=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Shopify-Access-Token": self.__admin_api_access_token,
+                },
+            )
         if response.status >= 400:
             raise ServiceError(f"Shopify API request failed with {response.status}")
         return json.loads(response.data.decode("utf-8"))

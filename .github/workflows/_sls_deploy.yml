@@ -80,7 +80,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-      - name: Reuse release artifact for prd
+      - name: Reuse release artifact from stg for prd
         if: ${{ inputs.release_semver != '' && inputs.stage == 'dev' }}
         run: |
           rm -f requirements.txt

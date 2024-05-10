@@ -65,4 +65,4 @@ def http(method, *args, **kwargs):
 def log_request(method, *args, **kwargs):
     log_kwargs = deepcopy(kwargs)
     log_kwargs.get("headers", {})["X-Shopify-Access-Token"] = "***"
-    logger.debug(f"Making {method} request with args {args} {kwargs}")
+    logger.debug(f"Making {method} request with args {args} {log_kwargs}")

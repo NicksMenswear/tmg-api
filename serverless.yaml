@@ -119,6 +119,7 @@ custom:
     forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
 
 package:
+  artifact: ${param:artifact, ""}
   exclude:
     - .serverless/**
     - .tox/**

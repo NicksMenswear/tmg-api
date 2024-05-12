@@ -655,6 +655,110 @@ paths:
         - Event
         - Attendee
       x-openapi-router-controller: server.controllers.events
+  /events/{event_id}/discounts:
+    get:
+      operationId: get_discounts
+      parameters:
+        - description: ID of the event
+          explode: false
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Discount"
+                type: array
+          description: Collection of discounts for event
+      summary: Get a collection of discounts by event id
+      x-openapi-router-controller: server.controllers.discounts
+    post:
+      operationId: create_discount_intents
+      parameters:
+        - description: ID of the event
+          explode: false
+          in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: "#/components/schemas/CreateDiscountIntent"
+              type: array
+        required: true
+        x-body-name: intents
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Discount"
+                type: array
+          description: An array of discounts created
+      summary: Create discount intents
+      x-openapi-router-controller: server.controllers.discounts
 
   /looks:
     post:
@@ -1155,7 +1259,7 @@ paths:
     put:
       operationId: update_attendee
       parameters:
-        - description: Unique ID of the event to retrieve
+        - description: Unique ID of the attendee
           explode: false
           in: path
           name: attendee_id
@@ -1247,6 +1351,30 @@ paths:
       tags:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
+
+  /webhooks/shopify:
+    post:
+      operationId: shopify_webhook
+      parameters:
+        - name: X-Shopify-Topic
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopifyWebhook"
+        required: true
+        x-body-name: payload
+      responses:
+        "200":
+          description: Webhook received
+      summary: Shopify Webhook
+      tags:
+        - Webhooks
+      x-openapi-router-controller: server.controllers.webhooks
 
   /audit:
     get:
@@ -2246,6 +2374,9 @@ components:
         - last_name
       title: Attendee
       type: object
+    ShopifyWebhook:
+        title: ShopifyWebhook
+        type: object
     UpdateAttendee:
       properties:
         style:
@@ -2284,6 +2415,40 @@ components:
         - ship
       title: UpdateAttendee
       type: object
+
+    CreateDiscountIntent:
+      properties:
+        attendee_id:
+          format: uuid
+          title: attendee_id
+          type: string
+        amount:
+          format: float
+          title: amount
+          type: number
+
+    Discount:
+      properties:
+        id:
+          format: uuid
+          title: id
+          type: string
+        event_id:
+          format: uuid
+          title: event_id
+          type: string
+        attendee_id:
+          format: uuid
+          title: attendee_id
+          type: string
+        amount:
+          format: float
+          title: amount
+          type: number
+        code:
+          title: code
+          type: string
+
     OrderItem:
       example:
         product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4

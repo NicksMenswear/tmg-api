@@ -1,9 +1,10 @@
+import json
 import os
 import random
-import json
+from datetime import datetime, timezone
 
 from server.controllers.util import http
-
+from server.database.models import User
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
@@ -25,6 +26,19 @@ class FakeShopifyService:
                 "inventory_quantity": 10,
             },
         }
+
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        return {
+            "id": random.randint(1000, 100000),
+            "title": title,
+            "vendor": vendor,
+            "body_html": body_html,
+            "images": [{"src": "https://via.placeholder.com/150"}],
+            "variants": [{"id": random.randint(1000, 100000), "title": title, "price": price, "sku": sku}],
+        }
+
+    def delete_product(self, product_id):
+        pass
 
 
 class ShopifyService:
@@ -83,4 +97,84 @@ class ShopifyService:
             "body_html": body_html,
             "images": images,
             "specific_variant": specific_variant,
+        }
+
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        try:
+            created_product = self.admin_api_request(
+                f"{self.__shopify_admin_api_endpoint}/products.json",
+                {
+                    "product": {
+                        "title": title,
+                        "body_html": body_html,
+                        "vendor": vendor,
+                        "product_type": "Virtual Goods",
+                        "tags": tags,
+                        # "published_at": None,  # Unpublish from storefront
+                        "variants": [
+                            {
+                                "option1": title,
+                                "price": str(price),
+                                "sku": sku,
+                                "requires_shipping": False,
+                                "taxable": False,
+                                "inventory_management": None,
+                            }
+                        ],
+                    }
+                },
+            )
+
+            return created_product.get("product")
+        except Exception as e:
+            raise ServiceError("Failed to create shopify customer.", e)
+
+    def delete_product(self, product_id):
+        try:
+            self.admin_api_request(f"{self.__shopify_admin_api_endpoint}/products/{product_id}.json", {}, "DELETE")
+        except Exception as e:
+            raise ServiceError("Failed to delete product from shopify.", e)
+
+    def create_discount_code(self, groom_user: User, shopify_customer_id: int, amount: int):
+        try:
+            created_price_rule = self.admin_api_request(
+                f"{self.__shopify_admin_api_endpoint}/price_rules.json",
+                {
+                    "price_rule": {
+                        "title": f"Groom {groom_user.first_name} discount gift",
+                        "target_type": "line_item",
+                        "target_selection": "all",
+                        "allocation_method": "across",
+                        "value_type": "fixed_amount",
+                        "value": f"-{str(int(amount))}.00",
+                        "customer_selection": "prerequisite",
+                        "prerequisite_customer_ids": [shopify_customer_id],
+                        "once_per_customer": True,
+                        "combine_with": "combine_with_all",
+                        "usage_limit": 1,
+                        "starts_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                },
+            )
+
+            created_price_rule = created_price_rule.get("price_rule")
+
+            price_rule_id = created_price_rule["id"]
+
+            created_discount_code = self.admin_api_request(
+                f"{self.__shopify_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
+                {
+                    "discount_code": {
+                        "code": f"GROOM-{groom_user.first_name.upper()}-GIFT-{amount}-OFF-{random.randint(100000, 999999)}"
+                    }
+                },
+            )
+
+            created_discount_code = created_discount_code.get("discount_code")
+        except Exception as e:
+            raise ServiceError("Failed to create shopify customer.", e)
+
+        return {
+            "shopify_discount_id": created_discount_code["id"],
+            "code": created_discount_code["code"],
         }

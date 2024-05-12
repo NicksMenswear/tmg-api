@@ -55,6 +55,9 @@ class UserService:
     def get_user_by_id(self, user_id):
         return User.query.filter_by(id=user_id).first()
 
+    def get_user_by_shopify_id(self, shopify_id):
+        return User.query.filter_by(shopify_id=shopify_id).first()
+
     def get_user_by_email(self, email):
         return User.query.filter_by(email=email).first()
 

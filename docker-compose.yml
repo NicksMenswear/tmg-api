@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tmg_api
+      POSTGRES_DB: tmg
     ports:
       - "5432:5432"
     volumes:
@@ -18,7 +18,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: tmg_api
+      DB_NAME: tmg
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_POOL_SIZE: 100
@@ -42,7 +42,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: tmg_api
+      DB_NAME: tmg
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_POOL_SIZE: 100

@@ -584,3 +584,36 @@ class CartProduct(Base):
             "category": self.category,
             "quantity": self.quantity,
         }
+
+
+class Discount(Base):
+    __tablename__ = "discounts"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
+    amount = Column(Numeric, nullable=False)
+    code = Column(String)
+    shopify_discount_code_id = Column(String)
+    shopify_virtual_product_id = Column(String)
+    shopify_virtual_product_variant_id = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "event_id": self.event_id,
+            "attendee_id": self.attendee_id,
+            "amount": self.amount,
+            "code": self.code,
+            "shopify_virtual_product_id": self.shopify_virtual_product_id,
+            "shopify_virtual_product_variant_id": self.shopify_virtual_product_variant_id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }

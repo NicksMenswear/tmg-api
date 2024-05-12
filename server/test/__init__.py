@@ -3,7 +3,19 @@ from flask_testing import TestCase
 from server.app import init_app, init_db
 from server.flask_app import FlaskApp
 from server.database.database_manager import db
-from server.database.models import Order, ProductItem, User, Event, Look, Role, Attendee, OrderItem, Cart, CartProduct
+from server.database.models import (
+    Order,
+    ProductItem,
+    User,
+    Event,
+    Look,
+    Role,
+    Attendee,
+    OrderItem,
+    Cart,
+    CartProduct,
+    Discount,
+)
 from server.services.emails import FakeEmailService
 from server.services.shopify import FakeShopifyService
 
@@ -23,6 +35,7 @@ class BaseTestCase(TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
+        Discount.query.delete()
         CartProduct.query.delete()
         Cart.query.delete()
         Attendee.query.delete()

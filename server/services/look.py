@@ -44,13 +44,8 @@ class LookService:
         if not look:
             raise NotFoundError("Look not found")
 
-        user = self.user_service.get_user_by_id(look_data["user_id"])
-
-        if not user:
-            raise NotFoundError("User not found")
-
         existing_look = Look.query.filter(
-            Look.look_name == look_data["look_name"], Look.user_id == user.id, Look.id != look_id
+            Look.look_name == look_data["look_name"], Look.user_id == look.user_id, Look.id != look_id
         ).first()
 
         if existing_look:

@@ -48,6 +48,7 @@ functions:
       shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
       client_id: ${ssm:/${sls:stage}/shopify/client_id}
       client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
+      webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
       admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
 
 plugins:

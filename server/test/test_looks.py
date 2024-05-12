@@ -102,26 +102,6 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assert_equal_response_look_with_db_look(look, response.json)
 
-    def test_update_look_for_invalid_user(self):
-        # given
-        user = self.user_service.create_user(fixtures.user_request())
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
-
-        # when
-        look_data = fixtures.update_look_request(user_id=str(uuid.uuid4()))
-
-        response = self.client.open(
-            f"/looks/{look.id}",
-            query_string=self.hmac_query_params,
-            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
-            method="PUT",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 404)
-
     def test_update_look_for_invalid_look_id(self):
         # given
         user = self.user_service.create_user(fixtures.user_request())

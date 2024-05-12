@@ -1,7 +1,7 @@
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event
+from server.database.models import Attendee, Event, User
 from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -23,6 +23,11 @@ class AttendeeService:
 
     def get_attendee_by_id(self, attendee_id):
         return Attendee.query.filter(Attendee.id == attendee_id).first()
+
+    def get_attendee_user(self, attendee_id):
+        return User.query.filter(
+            User.id == Attendee.query.filter(Attendee.id == attendee_id).first().attendee_id
+        ).first()
 
     def create_attendee(self, attendee_data):
         event = Event.query.filter(Event.id == attendee_data["event_id"], Event.is_active).first()

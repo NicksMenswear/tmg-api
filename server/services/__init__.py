@@ -6,6 +6,13 @@ class ServiceError(Exception):
         self.original_exception = original_exception
 
 
+class BadRequestError(ServiceError):
+    MESSAGE = "Bad request"
+
+    def __init__(self, message=MESSAGE, original_exception=None):
+        super().__init__(message, original_exception)
+
+
 class NotFoundError(ServiceError):
     MESSAGE = "Not found"
 

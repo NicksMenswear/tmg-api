@@ -103,7 +103,7 @@ paths:
           name: email
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/email'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1322,7 +1322,7 @@ paths:
         - in: query
           name: email
           schema:
-            type: string
+            $ref: '#/components/schemas/email'
           required: true
       responses:
         "200":
@@ -1427,7 +1427,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            $ref: '#/components/schemas/uuid'
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1471,8 +1471,7 @@ paths:
           name: user_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - description: Optional event ID to filter orders
           explode: true
@@ -1480,8 +1479,7 @@ paths:
           name: event_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - in: query
           name: logged_in_customer_id
@@ -1613,8 +1611,7 @@ paths:
           name: order_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -2073,10 +2070,9 @@ components:
     User:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         first_name:
           title: first_name
           type: string
@@ -2085,7 +2081,7 @@ components:
           type: string
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         shopify_id:
           title: shopify_id
           type: string
@@ -2115,10 +2111,9 @@ components:
     Event:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_name:
           format: string
           title: event_name
@@ -2128,9 +2123,8 @@ components:
           title: event_date
           type: string
         user_id:
-          format: uuid
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
       required:
         - user_id
         - event_name
@@ -2155,10 +2149,9 @@ components:
     Look:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         look_name:
           title: look_name
           type: string
@@ -2192,10 +2185,9 @@ components:
     Role:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         role_name:
           title: look_name
           type: string
@@ -2219,7 +2211,7 @@ components:
       properties:
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         event_id:
           title: event_id
           type: string
@@ -2306,9 +2298,8 @@ components:
         price: 2.302136
       properties:
         product_item_id:
-          format: uuid
           title: product_item_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         quantity:
           format: int32
           title: quantity
@@ -2336,18 +2327,15 @@ components:
             price: 2.302136
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         user_id:
-          format: uuid
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_id:
-          format: uuid
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         order_date:
           format: date-time
           title: order_date
@@ -2376,9 +2364,8 @@ components:
         received_date: "2000-01-23T04:56:07.000+00:00"
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         shipped_date:
           format: date-time
           title: shipped_date
@@ -2459,9 +2446,8 @@ components:
         id: 1
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         is_active:
           title: is_active
           type: boolean
@@ -2559,9 +2545,8 @@ components:
         id: 1
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         is_active:
           title: is_active
           type: boolean

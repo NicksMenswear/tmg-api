@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from server.database.database_manager import db
 from server.database.models import User, Event, Attendee, Look
@@ -6,6 +7,8 @@ from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
 from server.services.shopify import ShopifyService, FakeShopifyService
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -43,9 +46,10 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(user)
-        except Exception:
+        except Exception as e:
             db.session.rollback()
-            raise
+            logger.exception(e)
+            raise ServiceError("Failed to create user.")
         return user
 
     def get_user_by_id(self, user_id):
@@ -81,6 +85,7 @@ class UserService:
             db.session.commit()
             db.session.refresh(user)
         except Exception as e:
+            logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
         return user

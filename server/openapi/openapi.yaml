@@ -210,7 +210,7 @@ paths:
           name: user_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -2061,6 +2061,15 @@ paths:
 
 components:
   schemas:
+    # TODO remove these types after pydantic
+    uuid:
+      type: string
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      minLength: 36
+      maxLength: 36
+    email:
+      type: string
+      pattern: '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     User:
       properties:
         id:

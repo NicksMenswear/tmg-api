@@ -708,7 +708,7 @@ paths:
           name: look_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id

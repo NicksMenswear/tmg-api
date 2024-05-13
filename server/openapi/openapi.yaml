@@ -406,7 +406,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: enriched

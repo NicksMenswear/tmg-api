@@ -2164,7 +2164,7 @@ components:
           type: string
         user_id:
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         product_specs:
           title: product_specs
           type: object

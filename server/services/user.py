@@ -19,9 +19,7 @@ class UserService:
             self.email_service = EmailService()
 
     def create_user(self, user_data):
-        user = User.query.filter_by(email=user_data["email"]).first()
-
-        if user:
+        if User.query.filter_by(email=user_data["email"]).first():
             raise DuplicateError("User already exists with that email address.")
 
         try:
@@ -45,13 +43,9 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(user)
-        except ServiceError as e:
+        except Exception:
             db.session.rollback()
-            raise ServiceError(e.message, e)
-        except Exception as e:
-            db.session.rollback()
-            raise ServiceError("Failed to create user.", e)
-
+            raise
         return user
 
     def get_user_by_id(self, user_id):
@@ -75,7 +69,6 @@ class UserService:
 
     def update_user(self, user_id, user_data):
         user = User.query.filter_by(id=user_id).first()
-
         if not user:
             raise NotFoundError("User not found.")
 

@@ -29,7 +29,7 @@ def create_look(look_data):
         look = look_service.create_look(look_data)
     except NotFoundError as e:
         logger.debug(e)
-        return jsonify({"errors": e.message}), 409
+        return jsonify({"errors": e.message}), 404
     except DuplicateError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 409

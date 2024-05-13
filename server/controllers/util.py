@@ -55,14 +55,20 @@ def http(method, *args, **kwargs):
         "retries": urllib3.util.Retry(total=2, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)
-    log_request(method, *args, **merge_kwargs)
+    _log_request(method, *args, **merge_kwargs)
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.
-        return urllib3.PoolManager().request(method, *args, **merge_kwargs)
-    return http_pool.request(method, *args, **merge_kwargs)
+        response = urllib3.PoolManager().request(method, *args, **merge_kwargs)
+    response = http_pool.request(method, *args, **merge_kwargs)
+    _log_response(response)
+    return response
 
 
-def log_request(method, *args, **kwargs):
+def _log_request(method, *args, **kwargs):
     log_kwargs = deepcopy(kwargs)
     log_kwargs.get("headers", {})["X-Shopify-Access-Token"] = "***"
     logger.debug(f"Making {method} request with args {args} {log_kwargs}")
+
+
+def _log_response(response):
+    logger.debug(f"Received response {response.status} with data {response.data}")

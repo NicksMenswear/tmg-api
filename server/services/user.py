@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from server.database.database_manager import db
 from server.database.models import User, Event, Attendee, Look
@@ -6,6 +7,8 @@ from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
 from server.services.shopify import ShopifyService, FakeShopifyService
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -19,9 +22,7 @@ class UserService:
             self.email_service = EmailService()
 
     def create_user(self, user_data):
-        user = User.query.filter_by(email=user_data["email"]).first()
-
-        if user:
+        if User.query.filter_by(email=user_data["email"]).first():
             raise DuplicateError("User already exists with that email address.")
 
         try:
@@ -45,13 +46,10 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(user)
-        except ServiceError as e:
-            db.session.rollback()
-            raise ServiceError(e.message, e)
         except Exception as e:
             db.session.rollback()
-            raise ServiceError("Failed to create user.", e)
-
+            logger.exception(e)
+            raise ServiceError("Failed to create user.")
         return user
 
     def get_user_by_id(self, user_id):
@@ -75,7 +73,6 @@ class UserService:
 
     def update_user(self, user_id, user_data):
         user = User.query.filter_by(id=user_id).first()
-
         if not user:
             raise NotFoundError("User not found.")
 
@@ -88,6 +85,7 @@ class UserService:
             db.session.commit()
             db.session.refresh(user)
         except Exception as e:
+            logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
         return user

@@ -2192,7 +2192,7 @@ components:
           type: string
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
       required:
         - role_name
       title: Role
@@ -2213,7 +2213,7 @@ components:
           $ref: '#/components/schemas/email'
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         first_name:
           title: first_name
           type: string
@@ -2240,8 +2240,8 @@ components:
           type: string
           nullable: true
         look_id:
-          title: role
-          type: string
+          title: look_id
+          $ref: '#/components/schemas/uuid'
           nullable: true
       required:
         - event_id
@@ -2277,7 +2277,7 @@ components:
           type: string
           nullable: true
         look_id:
-          title: role
+          title: look_id
           $ref: '#/components/schemas/uuid'
           nullable: true
       required:
@@ -2388,7 +2388,7 @@ components:
       properties:
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         first_name:
           title: first_name
           type: string
@@ -2400,7 +2400,7 @@ components:
           type: string
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         data:
           title: data
           type: array
@@ -2414,16 +2414,16 @@ components:
       properties:
         id:
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         user_id:
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         attendee_id:
           title: attendee_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         product_id:
           title: product_id
           type: integer

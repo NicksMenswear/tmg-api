@@ -41,7 +41,7 @@ jobs:
         id: wait-for-gate
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: refs/pull/${{ github.event.issue.number }}/head
+          ref: ${{ github.sha }}
           checkName: "ci / gate"
       
       - name: Assert CI gate status
@@ -52,7 +52,7 @@ jobs:
     uses: ./.github/workflows/_sls_deploy.yml
     needs: await-ci
     with:
-      ref: refs/pull/${{ github.event.issue.number }}/head
+      ref: ${{ github.sha }}
       stage: dev
       notify: false
     secrets:
@@ -63,7 +63,7 @@ jobs:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:
-      ref: refs/pull/${{ github.event.issue.number }}/head
+      ref: ${{ github.sha }}
       stage: dev
       notify: false
     secrets:

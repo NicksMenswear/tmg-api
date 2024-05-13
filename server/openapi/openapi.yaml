@@ -2287,8 +2287,16 @@ components:
           nullable: true
         look_id:
           title: role
-          type: string
+          $ref: '#/components/schemas/uuid'
           nullable: true
+      required:
+        - style
+        - invite
+        - pay
+        - size
+        - ship
+        - role
+        - look_id
       title: UpdateAttendee
       type: object
     OrderItem:

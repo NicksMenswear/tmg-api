@@ -103,7 +103,7 @@ paths:
           name: email
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/email'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -210,7 +210,7 @@ paths:
           name: user_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -406,7 +406,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: enriched
@@ -708,7 +708,7 @@ paths:
           name: look_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -751,7 +751,7 @@ paths:
           name: look_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1322,7 +1322,7 @@ paths:
         - in: query
           name: email
           schema:
-            type: string
+            $ref: '#/components/schemas/email'
           required: true
       responses:
         "200":
@@ -1427,7 +1427,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            $ref: '#/components/schemas/uuid'
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1471,8 +1471,7 @@ paths:
           name: user_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - description: Optional event ID to filter orders
           explode: true
@@ -1480,8 +1479,7 @@ paths:
           name: event_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - in: query
           name: logged_in_customer_id
@@ -1613,8 +1611,7 @@ paths:
           name: order_id
           required: true
           schema:
-            format: uuid
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -2061,13 +2058,20 @@ paths:
 
 components:
   schemas:
+    uuid:
+      type: string
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      minLength: 36
+      maxLength: 36
+    email:
+      type: string
+      pattern: '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     User:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         first_name:
           title: first_name
           type: string
@@ -2076,7 +2080,7 @@ components:
           type: string
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         shopify_id:
           title: shopify_id
           type: string
@@ -2106,10 +2110,9 @@ components:
     Event:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_name:
           format: string
           title: event_name
@@ -2119,9 +2122,8 @@ components:
           title: event_date
           type: string
         user_id:
-          format: uuid
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
       required:
         - user_id
         - event_name
@@ -2146,16 +2148,15 @@ components:
     Look:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         look_name:
           title: look_name
           type: string
         user_id:
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         product_specs:
           title: product_specs
           type: object
@@ -2169,26 +2170,29 @@ components:
         look_name:
           title: look_name
           type: string
+        user_id:
+          title: user_id
+          $ref: '#/components/schemas/uuid'
         product_specs:
           title: product_specs
           type: object
       required:
         - look_name
+        - user_id
       title: Look
       type: object
     Role:
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         role_name:
           title: look_name
           type: string
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
       required:
         - role_name
       title: Role
@@ -2206,10 +2210,10 @@ components:
       properties:
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         first_name:
           title: first_name
           type: string
@@ -2236,8 +2240,8 @@ components:
           type: string
           nullable: true
         look_id:
-          title: role
-          type: string
+          title: look_id
+          $ref: '#/components/schemas/uuid'
           nullable: true
       required:
         - event_id
@@ -2273,9 +2277,15 @@ components:
           type: string
           nullable: true
         look_id:
-          title: role
-          type: string
+          title: look_id
+          $ref: '#/components/schemas/uuid'
           nullable: true
+      required:
+        - style
+        - invite
+        - pay
+        - size
+        - ship
       title: UpdateAttendee
       type: object
     OrderItem:
@@ -2285,9 +2295,8 @@ components:
         price: 2.302136
       properties:
         product_item_id:
-          format: uuid
           title: product_item_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         quantity:
           format: int32
           title: quantity
@@ -2315,18 +2324,15 @@ components:
             price: 2.302136
       properties:
         id:
-          format: uuid
           readOnly: true
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         user_id:
-          format: uuid
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_id:
-          format: uuid
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         order_date:
           format: date-time
           title: order_date
@@ -2355,9 +2361,8 @@ components:
         received_date: "2000-01-23T04:56:07.000+00:00"
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         shipped_date:
           format: date-time
           title: shipped_date
@@ -2381,7 +2386,7 @@ components:
       properties:
         email:
           title: email
-          type: string
+          $ref: '#/components/schemas/email'
         first_name:
           title: first_name
           type: string
@@ -2393,7 +2398,7 @@ components:
           type: string
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         data:
           title: data
           type: array
@@ -2407,16 +2412,16 @@ components:
       properties:
         id:
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         event_id:
           title: event_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         user_id:
           title: user_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         attendee_id:
           title: attendee_id
-          type: string
+          $ref: '#/components/schemas/uuid'
         product_id:
           title: product_id
           type: integer
@@ -2438,9 +2443,8 @@ components:
         id: 1
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         is_active:
           title: is_active
           type: boolean
@@ -2538,9 +2542,8 @@ components:
         id: 1
       properties:
         id:
-          format: uuid
           title: id
-          type: string
+          $ref: '#/components/schemas/uuid'
         is_active:
           title: is_active
           type: boolean

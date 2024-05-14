@@ -665,7 +665,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -712,7 +712,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -2419,8 +2419,8 @@ components:
     CreateDiscountIntent:
       properties:
         attendee_id:
-          format: uuid
           title: attendee_id
+          $ref: '#/components/schemas/uuid'
           type: string
         amount:
           format: float
@@ -2430,16 +2430,16 @@ components:
     Discount:
       properties:
         id:
-          format: uuid
           title: id
+          $ref: '#/components/schemas/uuid'
           type: string
         event_id:
-          format: uuid
           title: event_id
+          $ref: '#/components/schemas/uuid'
           type: string
         attendee_id:
-          format: uuid
           title: attendee_id
+          $ref: '#/components/schemas/uuid'
           type: string
         amount:
           format: float

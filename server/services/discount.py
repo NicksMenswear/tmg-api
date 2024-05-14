@@ -77,12 +77,9 @@ class DiscountService:
                 except Exception as e:
                     # do not raise exception if shopify product deletion fails
                     pass
-        except BadRequestError as e:
+        except ServiceError:
             db.session.rollback()
-            raise e
-        except NotFoundError as e:
-            db.session.rollback()
-            raise e
+            raise
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to persist discount intents.", e)

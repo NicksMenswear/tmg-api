@@ -84,9 +84,18 @@ class TestDiscounts(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(len(response.json), 2)
-        discount_intent1 = response.json[0]
+
+        if response.json[0]["attendee_id"] == str(intents[0].attendee_id):
+            discount_intent1 = response.json[0]
+            discount_intent2 = response.json[1]
+        else:
+            discount_intent1 = response.json[1]
+            discount_intent2 = response.json[0]
+
         self.assertEqual(discount_intent1["attendee_id"], str(intents[0].attendee_id))
         self.assertEqual(discount_intent1["amount"], intents[0].amount)
+        self.assertEqual(discount_intent2["attendee_id"], str(intents[1].attendee_id))
+        self.assertEqual(discount_intent2["amount"], intents[1].amount)
         self.assertIsNotNone(discount_intent1["id"])
         self.assertEqual(discount_intent1["event_id"], str(event.id))
         self.assertIsNone(discount_intent1["code"])

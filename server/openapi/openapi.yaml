@@ -153,7 +153,7 @@ paths:
           name: user_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -260,7 +260,7 @@ paths:
           name: user_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -311,7 +311,7 @@ paths:
           name: user_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -460,7 +460,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -510,7 +510,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -554,7 +554,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: enriched
@@ -612,7 +612,7 @@ paths:
           name: event_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -803,7 +803,7 @@ paths:
           name: look_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -846,7 +846,7 @@ paths:
           name: look_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -934,7 +934,7 @@ paths:
           name: role_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -977,7 +977,7 @@ paths:
           name: role_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1031,7 +1031,7 @@ paths:
           name: role_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1118,7 +1118,7 @@ paths:
           name: attendee_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1161,7 +1161,7 @@ paths:
           name: attendee_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1213,7 +1213,7 @@ paths:
           name: attendee_id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: simple
         - in: query
           name: logged_in_customer_id
@@ -1426,7 +1426,6 @@ paths:
           description: Unique identifier of the order to delete
           required: true
           schema:
-            type: string
             $ref: '#/components/schemas/uuid'
         - in: query
           name: logged_in_customer_id
@@ -1823,8 +1822,7 @@ paths:
           name: cart_id
           required: true
           schema:
-            format: str
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - in: query
           name: logged_in_customer_id
@@ -1870,8 +1868,7 @@ paths:
           name: event_id
           required: true
           schema:
-            format: str
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - description: Retrieve products of cart
           explode: true
@@ -1879,8 +1876,7 @@ paths:
           name: attendee_id
           required: true
           schema:
-            format: str
-            type: string
+            $ref: '#/components/schemas/uuid'
           style: form
         - in: query
           name: logged_in_customer_id
@@ -1923,7 +1919,7 @@ paths:
         - in: query
           name: product_id
           schema:
-            type: string
+            $ref: '#/components/schemas/uuid'
           required: true
         - in: query
           name: logged_in_customer_id

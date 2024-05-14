@@ -61,6 +61,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       stage: prd
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.semver }}
       notify: true
       release_semver: ${{ inputs.semver }}
       release_reuse: true

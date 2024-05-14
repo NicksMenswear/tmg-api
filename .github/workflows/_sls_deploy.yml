@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         description: Stage to deploy to
+      url:
+        required: true
+        type: string
+        description: URL of environment to show in GitHub UI
       release_semver:
         required: false
         type: string
@@ -44,14 +48,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: ${{ inputs.stage }}
-      url: ${{ inputs.release_semver != '' && env.TAG_REF || env.SHA_REF }}
+      url: ${{ inputs.url }}
     timeout-minutes: 20
     env:
       SLS_ARGS: ""
       API_ZIP: "tmg-api.zip"
       VERSION: ${{ inputs.release_semver != '' && inputs.release_semver || github.sha }}
-      TAG_REF: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.release_semver }}
-      SHA_REF: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
       ACCOUNT: ${{ inputs.stage == 'prd' && '729911029963' || '828867313984' }}
       REGION: ${{ inputs.stage == 'prd' && 'us-east-1' || 'us-west-2' }}
 

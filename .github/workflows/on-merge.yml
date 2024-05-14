@@ -27,6 +27,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       stage: dev
+      url: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
       notify: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

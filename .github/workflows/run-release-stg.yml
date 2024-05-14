@@ -44,6 +44,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       stage: stg
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ inputs.semver }}
       notify: true
       release_semver: ${{ inputs.semver }}
     secrets:

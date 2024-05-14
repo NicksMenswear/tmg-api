@@ -54,6 +54,7 @@ jobs:
     with:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev
+      url: https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}
       notify: false
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

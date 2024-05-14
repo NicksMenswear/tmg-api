@@ -1073,7 +1073,7 @@ paths:
         - in: query
           name: logged_in_customer_id
           schema:
-            $ref: '#/components/schemas/uuid'
+            type: string
           required: true
         - in: query
           name: shop

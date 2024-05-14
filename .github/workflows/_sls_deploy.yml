@@ -70,12 +70,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
+          fetch-depth: 0
 
       - name: Get head commit message
         id: get_head_commit_message
         run: |
           if ${{ inputs.release_reuse }}; then
-          echo "HEAD_COMMIT_MESSAGE=$(git show -s --format='%h \"%s\" by %an' ${{ inputs.release_semver }})" >> $GITHUB_OUTPUT
+            echo "HEAD_COMMIT_MESSAGE=$(git show -s --format='%h \"%s\" by %an' ${{ inputs.release_semver }})" >> $GITHUB_OUTPUT
           else
             echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
           fi

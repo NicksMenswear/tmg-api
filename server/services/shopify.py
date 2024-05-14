@@ -57,6 +57,7 @@ class ShopifyService:
                 "X-Shopify-Access-Token": self.__admin_api_access_token,
             },
         )
+
         return response.status, json.loads(response.data.decode("utf-8"))
 
     def create_customer(self, first_name, last_name, email):
@@ -65,6 +66,7 @@ class ShopifyService:
             f"{self.__shopify_admin_api_endpoint}/customers.json",
             {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
         )
+
         if status == 422:
             raise DuplicateError("Shopify customer with this email address already exists.")
         if status >= 400:
@@ -100,79 +102,87 @@ class ShopifyService:
         }
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
-        try:
-            created_product = self.admin_api_request(
-                f"{self.__shopify_admin_api_endpoint}/products.json",
-                {
-                    "product": {
-                        "title": title,
-                        "body_html": body_html,
-                        "vendor": vendor,
-                        "product_type": "Virtual Goods",
-                        "tags": tags,
-                        # "published_at": None,  # Unpublish from storefront
-                        "variants": [
-                            {
-                                "option1": title,
-                                "price": str(price),
-                                "sku": sku,
-                                "requires_shipping": False,
-                                "taxable": False,
-                                "inventory_management": None,
-                            }
-                        ],
-                    }
-                },
-            )
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_admin_api_endpoint}/products.json",
+            {
+                "product": {
+                    "title": title,
+                    "body_html": body_html,
+                    "vendor": vendor,
+                    "product_type": "Virtual Goods",
+                    "tags": tags,
+                    # "published_at": None,  # Unpublish from storefront
+                    "variants": [
+                        {
+                            "option1": title,
+                            "price": str(price),
+                            "sku": sku,
+                            "requires_shipping": False,
+                            "taxable": False,
+                            "inventory_management": None,
+                        }
+                    ],
+                }
+            },
+        )
 
-            return created_product.get("product")
-        except Exception as e:
-            raise ServiceError("Failed to create shopify customer.", e)
+        if status >= 400:
+            raise ServiceError("Failed to create virtual product in shopify store.")
+
+        return body.get("product")
 
     def delete_product(self, product_id):
-        try:
-            self.admin_api_request(f"{self.__shopify_admin_api_endpoint}/products/{product_id}.json", {}, "DELETE")
-        except Exception as e:
-            raise ServiceError("Failed to delete product from shopify.", e)
+        status, body = self.admin_api_request(
+            "DELETE", f"{self.__shopify_admin_api_endpoint}/products/{product_id}.json"
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete product by id '{product_id}' in shopify store.")
 
     def create_discount_code(self, groom_user: User, shopify_customer_id: int, amount: int):
-        try:
-            created_price_rule = self.admin_api_request(
-                f"{self.__shopify_admin_api_endpoint}/price_rules.json",
-                {
-                    "price_rule": {
-                        "title": f"Groom {groom_user.first_name} discount gift",
-                        "target_type": "line_item",
-                        "target_selection": "all",
-                        "allocation_method": "across",
-                        "value_type": "fixed_amount",
-                        "value": f"-{str(int(amount))}.00",
-                        "customer_selection": "prerequisite",
-                        "prerequisite_customer_ids": [shopify_customer_id],
-                        "once_per_customer": True,
-                        "combine_with": "combine_with_all",
-                        "usage_limit": 1,
-                        "starts_at": datetime.now(timezone.utc).isoformat(),
-                    }
-                },
-            )
+        status, created_price_rule = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_admin_api_endpoint}/price_rules.json",
+            {
+                "price_rule": {
+                    "title": f"Groom {groom_user.first_name} discount gift",
+                    "target_type": "line_item",
+                    "target_selection": "all",
+                    "allocation_method": "across",
+                    "value_type": "fixed_amount",
+                    "value": f"-{str(int(amount))}.00",
+                    "customer_selection": "prerequisite",
+                    "prerequisite_customer_ids": [shopify_customer_id],
+                    "once_per_customer": True,
+                    "combine_with": "combine_with_all",
+                    "usage_limit": 1,
+                    "starts_at": datetime.now(timezone.utc).isoformat(),
+                }
+            },
+        )
 
-            created_price_rule = created_price_rule.get("price_rule")
+        if status >= 400:
+            raise ServiceError(f"Failed to create price rule in shopify store.")
 
-            price_rule_id = created_price_rule["id"]
+        created_price_rule = created_price_rule.get("price_rule")
 
-            created_discount_code = self.admin_api_request(
-                f"{self.__shopify_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
-                {
-                    "discount_code": {
-                        "code": f"GROOM-{groom_user.first_name.upper()}-GIFT-{amount}-OFF-{random.randint(100000, 999999)}"
-                    }
-                },
-            )
+        price_rule_id = created_price_rule["id"]
 
-            created_discount_code = created_discount_code.get("discount_code")
-        except Exception as e:
-            raise ServiceError("Failed to create shopify customer.", e)
+        status, created_discount_code = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
+            {
+                "discount_code": {
+                    "code": f"GROOM-{groom_user.first_name.upper()}-GIFT-{amount}-OFF-{random.randint(100000, 999999)}"
+                }
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create discount in shopify store.")
+
+        created_discount_code = created_discount_code.get("discount_code")
 
         return {
             "shopify_discount_id": created_discount_code["id"],

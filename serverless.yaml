@@ -3,7 +3,7 @@ provider:
   name: aws
   runtime: python3.12
   stage: ${opt:stage, "dev"}
-  region: us-west-2
+  region: ${self:custom.stageVars.${sls:stage}.region}
   iam:
     role:
       name: tmg-api-${sls:stage}-role
@@ -25,12 +25,7 @@ functions:
     timeout: 10
     memorySize: 512
     lambdaInsights: true
-    vpc:
-      securityGroupIds:
-        - sg-0649f5114f8fdde15
-      subnetIds:
-        - subnet-0558d5c84f76f6246
-        - subnet-081fa5d80ecd9a253
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
     environment:
       # General
       STAGE: ${sls:stage}
@@ -59,6 +54,27 @@ plugins:
   - serverless-plugin-lambda-insights
 
 custom:
+  stageVars:
+    dev:
+      region: us-west-2
+      vpc:
+        securityGroupIds:
+          - sg-0649f5114f8fdde15
+        subnetIds:
+          - subnet-0558d5c84f76f6246
+          - subnet-081fa5d80ecd9a253
+      forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
+    stg: ${self:custom.stageVars.dev}
+    prd:
+      region: us-east-1
+      vpc:
+        securityGroupIds:
+          - sg-02f3c6c3b0ac6cdb3
+        subnetIds:
+          - subnet-093a8f537a70dfd4d
+          - subnet-01ad0640e7bff4e0a
+      forwarderArn: arn:aws:lambda:us-east-1:729911029963:function:DatadogIntegration-ForwarderStack-XVMH0A-Forwarder-SGfRbOdHeb42
+
   lambdaInsights:
     # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html 
     lambdaInsightsVersion: 52
@@ -117,7 +133,7 @@ custom:
     decodeAuthorizerContext: false
     subscribeToAccessLogs: true
     subscribeToExecutionLogs: true
-    forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
+    forwarderArn: ${self:custom.stageVars.${sls:stage}.forwarderArn}
 
 package:
   artifact: ${param:artifact, ""}

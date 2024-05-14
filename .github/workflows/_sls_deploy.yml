@@ -76,7 +76,7 @@ jobs:
         id: get_head_commit_message
         run: |
           if ${{ inputs.release_reuse }}; then
-            echo "HEAD_COMMIT_MESSAGE=$(git show -s --format='%h \"%s\" by %an' ${{ inputs.release_semver }})" >> $GITHUB_OUTPUT
+            echo "HEAD_COMMIT_MESSAGE=$(git show -s --format='%h "%s" by %an' ${{ inputs.release_semver }})" >> $GITHUB_OUTPUT
           else
             echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
           fi

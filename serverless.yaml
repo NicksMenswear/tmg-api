@@ -46,6 +46,7 @@ functions:
       client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
       webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
       admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
+      storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
 
 plugins:
   - serverless-python-requirements

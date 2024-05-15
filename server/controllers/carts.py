@@ -1,6 +1,7 @@
+import os
+import logging
 from flask import jsonify
 
-from server.controllers.shopify import *
 from server.controllers.util import hmac_verification
 from server.services import ServiceError, NotFoundError
 from server.services.cart import CartService

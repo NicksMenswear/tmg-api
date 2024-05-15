@@ -65,15 +65,6 @@ def get_user_looks(user_id):
 
 
 @hmac_verification
-def get_user_discounts(user_id, event_id=None):
-    user_service = UserService()
-
-    discounts = user_service.get_user_discounts(user_id, event_id)
-
-    return [discount.to_dict() for discount in discounts], 200
-
-
-@hmac_verification
 def update_user(user_id, user_data):
     user_service = UserService()
 

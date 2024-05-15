@@ -5,6 +5,7 @@ from server.controllers.registration_email import send_email
 from server.controllers.util import hmac_verification
 from server.database.database_manager import db
 from server.database.models import User
+from server.services.shopify import ShopifyService
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +17,6 @@ password = os.getenv("sender_password")
 @hmac_verification
 def send_invite(invite_data):
     try:
-        from server.services.shopify import ShopifyService
-
         shopify_service = ShopifyService()
 
         if "data" in invite_data:

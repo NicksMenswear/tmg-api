@@ -29,10 +29,11 @@ def create_user(user_data):
 def get_user_by_email(email):
     user_service = UserService()
 
-    user = user_service.get_user_by_email(email)
-
-    if not user:
-        return jsonify({"errors": "User not found"}), 404
+    try:
+        user = user_service.get_user_by_email(email)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
 
     return user.to_dict(), 200
 
@@ -62,6 +63,15 @@ def get_user_looks(user_id):
     looks = user_service.get_user_looks(user_id)
 
     return [look.to_dict() for look in looks]
+
+
+@hmac_verification
+def get_user_discounts(user_id, event_id=None):
+    user_service = UserService()
+
+    discounts = user_service.get_user_discounts(user_id, event_id)
+
+    return [discount.to_dict() for discount in discounts], 200
 
 
 @hmac_verification

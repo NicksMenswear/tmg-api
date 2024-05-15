@@ -1,8 +1,8 @@
-import uuid
 import logging
+import uuid
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee, Look
+from server.database.models import User, Event, Attendee, Look, Discount
 from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -52,9 +52,6 @@ class UserService:
             raise ServiceError("Failed to create user.")
         return user
 
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()
-
     def get_user_by_shopify_id(self, shopify_id):
         return User.query.filter_by(shopify_id=shopify_id).first()
 
@@ -63,6 +60,22 @@ class UserService:
 
     def get_user_events(self, user_id):
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
+
+    def get_user_discounts(self, user_id, event_id=None):
+        if event_id:
+            return (
+                Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
+                .join(User, Attendee.attendee_id == User.id)
+                .filter(User.id == user_id, Attendee.event_id == event_id)
+                .all()
+            )
+        else:
+            return (
+                Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
+                .join(User, Attendee.attendee_id == User.id)
+                .filter(User.id == user_id)
+                .all()
+            )
 
     def get_user_invites(self, user_id):
         return (

@@ -342,6 +342,60 @@ paths:
         - Looks
       x-openapi-router-controller: server.controllers.users
 
+  /users/{user_id}/discounts:
+    get:
+      operationId: get_user_discounts
+      parameters:
+        - description: Gets list of discounts for a user
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+          style: simple
+        - in: query
+          name: event_id
+          schema:
+            $ref: '#/components/schemas/uuid'
+          required: false
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Discount"
+                type: array
+          description: Collection of discounts that user has
+      summary: Collection of discounts that user has
+      x-openapi-router-controller: server.controllers.users
+
   /events:
     post:
       operationId: create_event

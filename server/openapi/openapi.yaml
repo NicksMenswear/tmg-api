@@ -1418,6 +1418,48 @@ paths:
         - Webhooks
       x-openapi-router-controller: server.controllers.webhooks
 
+  /store/apply-discounts:
+    post:
+      operationId: apply_discounts
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyDiscountsRequest"
+        required: true
+        x-body-name: apply_discounts_request
+      responses:
+        "200":
+          description: Discounts applied
+      summary: Apply discounts
+      x-openapi-router-controller: server.controllers.store
+
   /audit:
     get:
       operationId: list_audit_entries
@@ -2452,6 +2494,24 @@ components:
         code:
           title: code
           type: string
+
+    ApplyDiscountsRequest:
+      properties:
+        event_id:
+          title: event_id
+          type: string
+          $ref: '#/components/schemas/uuid'
+        user_id:
+          title: user_id
+          type: string
+          $ref: '#/components/schemas/uuid'
+        shopify_cart_id:
+          title: shopify_cart_id
+          type: string
+      required:
+        - event_id
+        - user_id
+        - shopify_cart_id
 
     OrderItem:
       example:

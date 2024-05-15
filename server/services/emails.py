@@ -3,7 +3,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from server.controllers.shopify import get_activation_url
 from server.services import ServiceError
 
 
@@ -46,7 +45,10 @@ class EmailService:
             raise ServiceError("Failed to send email.", e)
 
     def send_activation_url(self, email, shopify_customer_id):
-        activation_url = get_activation_url(shopify_customer_id)
+        from server.services.shopify import ShopifyService
+
+        shopify_service = ShopifyService()
+        activation_url = shopify_service.get_activation_url(shopify_customer_id)
         activation_link = f'<a href="{activation_url}">Click Me</a>'
         body = f"Click the following link to activate your account: {activation_link}"
 

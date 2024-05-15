@@ -2,7 +2,6 @@ import logging
 import os
 
 from server.controllers.registration_email import send_email
-from server.controllers.shopify import get_activation_url
 from server.controllers.util import hmac_verification
 from server.database.database_manager import db
 from server.database.models import User
@@ -15,24 +14,17 @@ password = os.getenv("sender_password")
 
 
 @hmac_verification
-def send_invite(invite_data):  # noqa: E501
-    """Send Invite
-
-     # noqa: E501
-    Customer-id
-    First Name
-    Last Name
-    Customer email
-    Event-id
-    Event Name
-    :rtype: None
-    """
+def send_invite(invite_data):
     try:
+        from server.services.shopify import ShopifyService
+
+        shopify_service = ShopifyService()
+
         if "data" in invite_data:
             for attendee in invite_data["data"]:
                 existing_user = db.session.query(User).filter(User.email == attendee["email"]).first()
                 if not existing_user.account_status:
-                    activation_url = get_activation_url(existing_user.shopify_id)
+                    activation_url = shopify_service.get_activation_url(existing_user.shopify_id)
                     logger.debug(activation_url)
                     activation_link = f'<a href="{activation_url}">Click Me</a>'
                     body = f"You have been invited to an event. Click the following link to activate your account: {activation_link}"

@@ -45,7 +45,9 @@ class ShopifyService:
     def __init__(self):
         self.__shopify_store = os.getenv("shopify_store")
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
+        self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
         self.__shopify_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
+        self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/api/2024-01"
 
     def admin_api_request(self, method, endpoint, body=None):
         response = http(
@@ -59,6 +61,30 @@ class ShopifyService:
         )
 
         return response.status, json.loads(response.data.decode("utf-8"))
+
+    def storefront_api_request(self, method, endpoint, body=None):
+        response = http(
+            method,
+            endpoint,
+            json=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-Shopify-Storefront-Access-Token": self.__storefront_api_access_token,
+            },
+        )
+
+        return response.status, json.loads(response.data.decode("utf-8"))
+
+    def get_activation_url(self, customer_id):
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to create shopify customer.")
+
+        return body.get("account_activation_url")
 
     def create_customer(self, first_name, last_name, email):
         status, body = self.admin_api_request(
@@ -188,3 +214,21 @@ class ShopifyService:
             "shopify_discount_id": created_discount_code["id"],
             "code": created_discount_code["code"],
         }
+
+    def apply_discount_codes_to_cart(self, cart_id, discount_codes):
+        status, body = self.storefront_api_request(
+            "POST",
+            f"{self.__shopify_storefront_api_endpoint}/graphql.json",
+            {
+                "query": "mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]!) {cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) { cart { id } } }",
+                "variables": {"cartId": f"gid://shopify/Cart/{cart_id}", "discountCodes": discount_codes},
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to apply discount codes to cart in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
+
+        return body.get("data", {}).get("cartDiscountCodesUpdate", {}).get("cart", {})

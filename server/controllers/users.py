@@ -29,11 +29,10 @@ def create_user(user_data):
 def get_user_by_email(email):
     user_service = UserService()
 
-    try:
-        user = user_service.get_user_by_email(email)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
+    user = user_service.get_user_by_email(email)
+
+    if not user:
+        return jsonify({"errors": "User not found"}), 404
 
     return user.to_dict(), 200
 

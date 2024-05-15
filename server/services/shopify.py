@@ -231,4 +231,4 @@ class ShopifyService:
         if "errors" in body:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
 
-        return body.get("data", {}).get("cartDiscountCodesUpdate", {}).get("cart", {})
+        return body

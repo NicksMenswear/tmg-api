@@ -16,9 +16,12 @@ def apply_discounts(apply_discounts_request):
         return "{}", 200
 
     shopify_service = ShopifyService()
-    shopify_service.apply_discount_codes_to_cart(
+    response = shopify_service.apply_discount_codes_to_cart(
         apply_discounts_request["shopify_cart_id"], [discount.code for discount in discounts]
     )
+
+    logger.info(f"Discount codes applied to cart {apply_discounts_request}")
+    logger.info(f"Response body: {response}")
 
     # get groom discounts for the customer
 

@@ -62,20 +62,27 @@ class UserService:
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
 
     def get_user_discounts(self, user_id, event_id=None):
-        if event_id:
-            return (
-                Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
-                .join(User, Attendee.attendee_id == User.id)
-                .filter(User.id == user_id, Attendee.event_id == event_id)
-                .all()
-            )
-        else:
-            return (
-                Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
-                .join(User, Attendee.attendee_id == User.id)
-                .filter(User.id == user_id)
-                .all()
-            )
+        groom_gift_discounts = (
+            Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
+            .join(User, Attendee.attendee_id == User.id)
+            .filter(User.id == user_id, Discount.code != None)
+            .all()
+        )
+
+        # if event_id:
+        #     return (
+        #         Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
+        #         .join(User, Attendee.attendee_id == User.id)
+        #         .filter(User.id == user_id, Attendee.event_id == event_id)
+        #         .all()
+        #     )
+        # else:
+        #     return (
+        #         Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
+        #         .join(User, Attendee.attendee_id == User.id)
+        #         .filter(User.id == user_id)
+        #         .all()
+        #     )
 
     def get_user_invites(self, user_id):
         return (

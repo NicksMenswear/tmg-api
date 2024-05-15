@@ -20,7 +20,7 @@ def apply_discounts(apply_discounts_request):
         apply_discounts_request["shopify_cart_id"], [discount.code for discount in discounts]
     )
 
-    logger.info(f"Discount codes applied to cart {apply_discounts_request}")
+    logger.info(f"Discount codes applied to cart: {apply_discounts_request}")
     logger.info(f"Response body: {response}")
 
     # get groom discounts for the customer

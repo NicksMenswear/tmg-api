@@ -4,6 +4,7 @@ import json
 import uuid
 
 from server import encoder
+from server.database.models import DiscountType
 from server.services.attendee import AttendeeService
 from server.services.discount import DiscountService
 from server.services.event import EventService
@@ -64,7 +65,7 @@ class TestDiscounts(BaseTestCase):
         attendee2 = self.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user2.id, event_id=event.id)
         )
-        intents = self.discount_service.create_discount_intents(
+        intents = self.discount_service.create_groom_gift_discount_intents(
             event.id,
             [
                 fixtures.create_discount_intent_request(attendee_id=attendee1.id),
@@ -210,6 +211,7 @@ class TestDiscounts(BaseTestCase):
         discount_intent1 = response.json[0]
         self.assertEqual(discount_intent1["attendee_id"], str(attendee1.id))
         self.assertEqual(discount_intent1["amount"], create_discount_intent_request1["amount"])
+        self.assertEqual(discount_intent1["type"], str(DiscountType.GROOM_GIFT))
         self.assertEqual(discount_intent1["event_id"], str(event.id))
         self.assertIsNotNone(discount_intent1["id"])
         self.assertIsNone(discount_intent1["code"])
@@ -228,7 +230,7 @@ class TestDiscounts(BaseTestCase):
         attendee2 = self.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user2.id, event_id=event.id)
         )
-        intents = self.discount_service.create_discount_intents(
+        intents = self.discount_service.create_groom_gift_discount_intents(
             event.id,
             [
                 fixtures.create_discount_intent_request(attendee_id=attendee1.id),

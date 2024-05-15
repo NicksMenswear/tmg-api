@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from server.database.database_manager import db
-from server.database.models import Discount, Event, Attendee
+from server.database.models import Discount, Event, Attendee, DiscountType
 from server.flask_app import FlaskApp
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.shopify import ShopifyService, FakeShopifyService
@@ -16,15 +16,33 @@ class DiscountService:
         else:
             self.shopify_service = ShopifyService()
 
-    def get_discounts(self, event_id):
-        return Discount.query.filter_by(event_id=event_id).all()
+    def get_groom_gift_discounts(self, event_id):
+        return Discount.query.filter_by(event_id=event_id, type=DiscountType.GROOM_GIFT).all()
 
-    def get_discounts_for_product(self, product_id):
+    def get_not_paid_groom_gift_discounts_for_product(self, product_id):
         return Discount.query.filter(
-            Discount.shopify_virtual_product_id == str(product_id), Discount.code == None
+            Discount.shopify_virtual_product_id == str(product_id),
+            Discount.code == None,
+            Discount.type == DiscountType.GROOM_GIFT,
         ).all()
 
-    def create_discount_intents(self, event_id, discount_intents):
+    def get_discount_by_shopify_code(self, shopify_code):
+        return Discount.query.filter(Discount.code == shopify_code).first()
+
+    def mark_discount_by_shopify_code_as_paid(self, shopify_code):
+        discount = Discount.query.filter(Discount.code == shopify_code).first()
+
+        if not discount:
+            return None
+
+        discount.used = True
+        discount.updated_at = datetime.now(timezone.utc)
+        db.session.add(discount)
+        db.session.commit()
+
+        return discount
+
+    def create_groom_gift_discount_intents(self, event_id, discount_intents):
         if not discount_intents:
             return []
 
@@ -40,7 +58,11 @@ class DiscountService:
         created_discounts = []
 
         try:
-            existing_discounts = Discount.query.filter(Discount.event_id == event_id, Discount.code == None).all()
+            existing_discounts = Discount.query.filter(
+                Discount.event_id == event_id,
+                Discount.code == None,
+                Discount.type == DiscountType.GROOM_GIFT,
+            ).all()
 
             for discount in existing_discounts:
                 if discount.shopify_virtual_product_id:
@@ -63,6 +85,7 @@ class DiscountService:
                     event_id=event_id,
                     attendee_id=intent["attendee_id"],
                     amount=intent["amount"],
+                    type=DiscountType.GROOM_GIFT,
                 )
 
                 intents.append(discount_intent)
@@ -123,6 +146,7 @@ class DiscountService:
 
         discount.code = code
         discount.shopify_discount_code_id = shopify_discount_id
+        discount.updated_at = datetime.now(timezone.utc)
 
         db.session.add(discount)
         db.session.commit()

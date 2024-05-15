@@ -14,7 +14,7 @@ def get_discounts(event_id):
     discount_service = DiscountService()
 
     try:
-        discounts = discount_service.get_discounts(event_id)
+        discounts = discount_service.get_groom_gift_discounts(event_id)
     except ServiceError as e:
         logger.exception(e)
         return jsonify({"errors": e.message}), 500
@@ -27,7 +27,7 @@ def create_discount_intents(event_id, intents):
     discount_service = DiscountService()
 
     try:
-        discounts = discount_service.create_discount_intents(event_id, intents)
+        discounts = discount_service.create_groom_gift_discount_intents(event_id, intents)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

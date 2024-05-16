@@ -1,10 +1,13 @@
 import json
+import logging
 import os
 import random
 from datetime import datetime, timezone
 
 from server.controllers.util import http
 from server.services import ServiceError, NotFoundError, DuplicateError
+
+logger = logging.getLogger(__name__)
 
 
 class FakeShopifyService:
@@ -265,6 +268,8 @@ class ShopifyService:
 
         if "errors" in body:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
+
+        logger.info(f"Discount code created: {body}")
 
         shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]
         shopify_discount_id = shopify_discount["id"].split("/")[-1]

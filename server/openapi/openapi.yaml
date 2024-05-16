@@ -29,16 +29,6 @@ tags:
       for compliance and monitoring.
     name: Audit
 paths:
-  /:
-    get:
-      operationId: get_default
-      responses:
-        "200":
-          description: Successful response
-      summary: TMG API
-      tags:
-        - Default
-      x-openapi-router-controller: server.controllers.default
   /health:
     get:
       operationId: health
@@ -49,7 +39,6 @@ paths:
       tags:
         - Health
       x-openapi-router-controller: server.controllers.health
-
   /users:
     post:
       operationId: create_user

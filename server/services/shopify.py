@@ -266,9 +266,9 @@ class ShopifyService:
         if "errors" in body:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
 
-        shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]["codeDiscount"]
-        shopify_discount_id = "gid://shopify/DiscountCodeNode/1258570317955".split("/")[-1]
-        shopify_discount_code = shopify_discount["codes"]["nodes"][0]["code"]
+        shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]
+        shopify_discount_id = shopify_discount["id"].split("/")[-1]
+        shopify_discount_code = shopify_discount["codeDiscount"]["codes"]["nodes"][0]["code"]
 
         return {
             "shopify_discount_id": shopify_discount_id,

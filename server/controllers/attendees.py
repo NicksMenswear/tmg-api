@@ -5,10 +5,6 @@ from flask import jsonify
 from server.controllers.util import hmac_verification
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.attendee import AttendeeService
-from server.services.discount import DiscountService
-from server.services.event import EventService
-from server.services.shopify import ShopifyService
-from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -84,35 +80,13 @@ def soft_delete_attendee(attendee_id):
 
 @hmac_verification
 def apply_discounts(attendee_id, apply_discounts_request):
-    user_service = UserService()
-    event_service = EventService()
-    discount_service = DiscountService()
-
     event_id = apply_discounts_request["event_id"]
     shopify_cart_id = apply_discounts_request["shopify_cart_id"]
 
-    discounts = user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
+    attendee_service = AttendeeService()
 
-    num_attendees = event_service.get_num_attendees_for_event(event_id)
+    response = attendee_service.apply_discounts(attendee_id, event_id, shopify_cart_id)
 
-    if num_attendees >= 4:
-        existing_discount = discount_service.get_group_discount_for_attendee(attendee_id)
-
-        if not existing_discount:
-            discount = discount_service.create_group_discount_for_attendee(attendee_id, event_id)
-            discounts.append(discount)
-        else:
-            discounts.append(existing_discount)
-
-    discounts = [discount for discount in discounts]
-
-    if not discounts:
-        return "{}", 200
-
-    shopify_service = ShopifyService()
-    response = shopify_service.apply_discount_codes_to_cart(shopify_cart_id, [discount.code for discount in discounts])
-
-    logger.info(f"Discount codes applied to cart: {apply_discounts_request}")
-    logger.info(f"Response body: {response}")
+    logger.info(f"Discount codes applied to cart: {response}")
 
     return "{}", 200

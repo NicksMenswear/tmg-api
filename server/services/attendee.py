@@ -109,3 +109,32 @@ class AttendeeService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to deactivate attendee.", e)
+
+    def apply_discounts(self, attendee_id, event_id, shopify_cart_id):
+        from server.services.discount import DiscountService
+        from server.services.event import EventService
+
+        user_service = UserService()
+        event_service = EventService()
+        discount_service = DiscountService()
+
+        discounts = user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
+
+        num_attendees = event_service.get_num_attendees_for_event(event_id)
+
+        if num_attendees >= 4:
+            existing_discount = discount_service.get_group_discount_for_attendee(attendee_id)
+
+            if not existing_discount:
+                discount = discount_service.create_group_discount_for_attendee(attendee_id, event_id)
+                discounts.append(discount)
+            else:
+                discounts.append(existing_discount)
+
+        discounts = [discount for discount in discounts]
+
+        if not discounts:
+            return
+
+        shopify_service = ShopifyService()
+        shopify_service.apply_discount_codes_to_cart(shopify_cart_id, [discount.code for discount in discounts])

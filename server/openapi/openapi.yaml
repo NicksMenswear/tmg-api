@@ -699,7 +699,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}/discounts:
     get:
-      operationId: get_discounts
+      operationId: get_groom_gift_discount_intents
       parameters:
         - description: ID of the event
           explode: false
@@ -1393,35 +1393,17 @@ paths:
       tags:
         - Attendees
       x-openapi-router-controller: server.controllers.attendees
-
-  /webhooks/shopify:
-    post:
-      operationId: shopify_webhook
-      parameters:
-        - name: X-Shopify-Topic
-          in: header
-          required: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ShopifyWebhook"
-        required: true
-        x-body-name: payload
-      responses:
-        "200":
-          description: Webhook received
-      summary: Shopify Webhook
-      tags:
-        - Webhooks
-      x-openapi-router-controller: server.controllers.webhooks
-
-  /store/apply-discounts:
+  /attendees/{attendee_id}/apply-discounts:
     post:
       operationId: apply_discounts
       parameters:
+        - explode: false
+          in: path
+          name: attendee_id
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+          style: simple
         - in: query
           name: logged_in_customer_id
           schema:
@@ -1458,7 +1440,31 @@ paths:
         "200":
           description: Discounts applied
       summary: Apply discounts
-      x-openapi-router-controller: server.controllers.store
+      x-openapi-router-controller: server.controllers.attendees
+
+  /webhooks/shopify:
+    post:
+      operationId: shopify_webhook
+      parameters:
+        - name: X-Shopify-Topic
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopifyWebhook"
+        required: true
+        x-body-name: payload
+      responses:
+        "200":
+          description: Webhook received
+      summary: Shopify Webhook
+      tags:
+        - Webhooks
+      x-openapi-router-controller: server.controllers.webhooks
 
   /audit:
     get:
@@ -2501,16 +2507,11 @@ components:
           title: event_id
           type: string
           $ref: '#/components/schemas/uuid'
-        user_id:
-          title: user_id
-          type: string
-          $ref: '#/components/schemas/uuid'
         shopify_cart_id:
           title: shopify_cart_id
           type: string
       required:
         - event_id
-        - user_id
         - shopify_cart_id
 
     OrderItem:

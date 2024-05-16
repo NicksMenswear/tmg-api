@@ -2,7 +2,7 @@ import logging
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee, Look, Discount
+from server.database.models import User, Event, Attendee, Look, Discount, DiscountType
 from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import EmailService, FakeEmailService
@@ -60,6 +60,14 @@ class UserService:
 
     def get_user_events(self, user_id):
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
+
+    def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
+        return Discount.query.filter(
+            Discount.attendee_id == attendee_id,
+            Discount.code != None,
+            Discount.used == False,
+            Discount.type == DiscountType.GROOM_GIFT,
+        ).all()
 
     def get_user_discounts(self, user_id, event_id=None):
         groom_gift_discounts = (

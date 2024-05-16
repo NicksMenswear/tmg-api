@@ -4,7 +4,6 @@ import random
 from datetime import datetime, timezone
 
 from server.controllers.util import http
-from server.database.models import User
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
@@ -46,7 +45,8 @@ class ShopifyService:
         self.__shopify_store = os.getenv("shopify_store")
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
         self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
-        self.__shopify_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
+        self.__shopify_rest_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
+        self.__shopify_graphql_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
         self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/api/2024-01"
 
     def admin_api_request(self, method, endpoint, body=None):
@@ -78,7 +78,7 @@ class ShopifyService:
     def get_activation_url(self, customer_id):
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
+            f"{self.__shopify_rest_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
         )
 
         if status >= 400:
@@ -89,7 +89,7 @@ class ShopifyService:
     def create_customer(self, first_name, last_name, email):
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_admin_api_endpoint}/customers.json",
+            f"{self.__shopify_rest_admin_api_endpoint}/customers.json",
             {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
         )
 
@@ -101,7 +101,9 @@ class ShopifyService:
         return body["customer"]
 
     def get_product_by_id(self, product_id):
-        status, body = self.admin_api_request("GET", f"{self.__shopify_admin_api_endpoint}/products/{product_id}.json")
+        status, body = self.admin_api_request(
+            "GET", f"{self.__shopify_rest_admin_api_endpoint}/products/{product_id}.json"
+        )
 
         if status == 404:
             raise NotFoundError("Product not found in shopify store.")
@@ -130,7 +132,7 @@ class ShopifyService:
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_admin_api_endpoint}/products.json",
+            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
             {
                 "product": {
                     "title": title,
@@ -160,19 +162,19 @@ class ShopifyService:
 
     def delete_product(self, product_id):
         status, body = self.admin_api_request(
-            "DELETE", f"{self.__shopify_admin_api_endpoint}/products/{product_id}.json"
+            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{product_id}.json"
         )
 
         if status >= 400:
             raise ServiceError(f"Failed to delete product by id '{product_id}' in shopify store.")
 
-    def create_discount_code(self, groom_user: User, shopify_customer_id: int, amount: int):
+    def create_discount_code(self, title, code, shopify_customer_id, amount):
         status, created_price_rule = self.admin_api_request(
             "POST",
-            f"{self.__shopify_admin_api_endpoint}/price_rules.json",
+            f"{self.__shopify_rest_admin_api_endpoint}/price_rules.json",
             {
                 "price_rule": {
-                    "title": f"Groom {groom_user.first_name} discount gift",
+                    "title": title,
                     "target_type": "line_item",
                     "target_selection": "all",
                     "allocation_method": "across",
@@ -197,12 +199,8 @@ class ShopifyService:
 
         status, created_discount_code = self.admin_api_request(
             "POST",
-            f"{self.__shopify_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
-            {
-                "discount_code": {
-                    "code": f"GROOM-{groom_user.first_name.upper()}-GIFT-{amount}-OFF-{random.randint(100000, 999999)}"
-                }
-            },
+            f"{self.__shopify_rest_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
+            {"discount_code": {"code": code}},
         )
 
         if status >= 400:
@@ -213,6 +211,68 @@ class ShopifyService:
         return {
             "shopify_discount_id": created_discount_code["id"],
             "code": created_discount_code["code"],
+        }
+
+    def create_discount_code2(self, title, code, shopify_customer_id, amount):
+        mutation = """
+        mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
+          discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+            userErrors {
+              field
+              message
+            }
+            codeDiscountNode {
+              id
+              codeDiscount {
+                ... on DiscountCodeBasic {
+                  title
+                  codes(first: 10) {
+                    nodes {
+                      code
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {
+            "basicCodeDiscount": {
+                "title": title,
+                "code": code,
+                "usageLimit": 1,
+                "customerSelection": {"customers": {"add": [f"gid://shopify/Customer/{shopify_customer_id}"]}},
+                "startsAt": datetime.now(timezone.utc).isoformat(),
+                "appliesOncePerCustomer": True,
+                "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
+                "customerGets": {
+                    "items": {"all": True},
+                    "value": {"discountAmount": {"amount": amount, "appliesOnEachItem": False}},
+                },
+            }
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create discount code in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
+
+        shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]["codeDiscount"]
+        shopify_discount_id = "gid://shopify/DiscountCodeNode/1258570317955".split("/")[-1]
+        shopify_discount_code = shopify_discount["codes"]["nodes"][0]["code"]
+
+        return {
+            "shopify_discount_id": shopify_discount_id,
+            "code": shopify_discount_code,
         }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):

@@ -25,9 +25,7 @@ class AttendeeService:
         return Attendee.query.filter(Attendee.id == attendee_id).first()
 
     def get_attendee_user(self, attendee_id):
-        return User.query.filter(
-            User.id == Attendee.query.filter(Attendee.id == attendee_id).first().attendee_id
-        ).first()
+        return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
 
     def create_attendee(self, attendee_data):
         event = Event.query.filter(Event.id == attendee_data["event_id"], Event.is_active).first()

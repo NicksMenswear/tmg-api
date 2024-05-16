@@ -1,4 +1,5 @@
 import logging
+import random
 
 from server.services.attendee import AttendeeService
 from server.services.discount import DiscountService
@@ -26,7 +27,6 @@ class WebhookService:
 
         if len(payload.get("discount_codes")) > 0:
             WebhookService.handle_used_discount_code(payload)
-            return
 
     @staticmethod
     def handle_groom_gift_discount(payload):
@@ -41,7 +41,7 @@ class WebhookService:
         )
 
         discount_service = DiscountService()
-        discounts = discount_service.get_not_paid_groom_gift_discounts_for_product(shopify_product_id)
+        discounts = discount_service.get_groom_gift_discount_intents_for_product(shopify_product_id)
 
         shopify_service = ShopifyService()
 
@@ -55,9 +55,14 @@ class WebhookService:
 
         for discount in discounts:
             attendee_user = attendee_service.get_attendee_user(discount.attendee_id)
-            discount_response = shopify_service.create_discount_code(
-                groom_user, attendee_user.shopify_id, discount.amount
+
+            discount_response = shopify_service.create_discount_code2(
+                f"Groom {groom_user.first_name} discount gift",
+                f"GROOM-{groom_user.first_name.upper()}-GIFT-{discount.amount}-OFF-{random.randint(100000, 999999)}",
+                attendee_user.shopify_id,
+                discount.amount,
             )
+
             discount_service.add_code_to_discount(
                 discount.id, discount_response.get("shopify_discount_id"), discount_response.get("code")
             )

@@ -1,9 +1,11 @@
+import random
 from datetime import datetime, timezone
 
 from server.database.database_manager import db
 from server.database.models import Discount, Event, Attendee, DiscountType
 from server.flask_app import FlaskApp
 from server.services import ServiceError, NotFoundError, BadRequestError
+from server.services.attendee import AttendeeService
 from server.services.shopify import ShopifyService, FakeShopifyService
 
 
@@ -16,10 +18,10 @@ class DiscountService:
         else:
             self.shopify_service = ShopifyService()
 
-    def get_groom_gift_discounts(self, event_id):
-        return Discount.query.filter_by(event_id=event_id, type=DiscountType.GROOM_GIFT).all()
+    def get_groom_gift_discount_intents(self, event_id):
+        return Discount.query.filter_by(event_id=event_id, type=DiscountType.GROOM_GIFT, code=None).all()
 
-    def get_not_paid_groom_gift_discounts_for_product(self, product_id):
+    def get_groom_gift_discount_intents_for_product(self, product_id):
         return Discount.query.filter(
             Discount.shopify_virtual_product_id == str(product_id),
             Discount.code == None,
@@ -148,6 +150,34 @@ class DiscountService:
         discount.shopify_discount_code_id = shopify_discount_id
         discount.updated_at = datetime.now(timezone.utc)
 
+        db.session.add(discount)
+        db.session.commit()
+
+        return discount
+
+    def get_group_discount_for_attendee(self, attendee_id):
+        return Discount.query.filter(
+            Discount.attendee_id == attendee_id,
+            Discount.type == DiscountType.PARTY_OF_FOUR,
+        ).first()
+
+    def create_group_discount_for_attendee(self, attendee_id, event_id):
+        attendee_service = AttendeeService()
+        attendee_user = attendee_service.get_attendee_user(attendee_id)
+
+        code = f"TMG-GROUP-100OFF-{random.randint(100000, 999999)}"
+        title = code
+
+        shopify_discount = self.shopify_service.create_discount_code2(title, code, attendee_user.shopify_id, 100)
+
+        discount = Discount(
+            attendee_id=attendee_id,
+            event_id=event_id,
+            type=DiscountType.PARTY_OF_FOUR,
+            amount=100,
+            code=shopify_discount.get("code"),
+            shopify_discount_code_id=shopify_discount.get("shopify_discount_id"),
+        )
         db.session.add(discount)
         db.session.commit()
 

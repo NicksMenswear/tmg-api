@@ -61,8 +61,6 @@ services:
 
   smoke-test:
     image: python:3.12
-    environment:
-      API_TOKEN: Test123
     command: >
       bash -c "
       echo 'Waiting for up to 45 sec for app to start ...' &&

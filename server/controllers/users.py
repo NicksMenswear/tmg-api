@@ -47,15 +47,6 @@ def get_user_events(user_id):
 
 
 @hmac_verification
-def get_user_discounts(user_id, event_id=None):
-    user_service = UserService()
-
-    event_discounts = user_service.get_user_discounts(user_id, event_id)
-
-    return event_discounts, 200
-
-
-@hmac_verification
 def get_user_invites(user_id):
     user_service = UserService()
 

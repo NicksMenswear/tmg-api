@@ -6,7 +6,6 @@ from urllib.parse import urlparse
 
 import connexion
 import sentry_sdk
-from flask_cors import CORS
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -64,7 +63,7 @@ def init_logging(debug=False):
 def init_app():
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-    CORS(api.app)
+    # CORS(api.app)
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )

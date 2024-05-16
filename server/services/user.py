@@ -69,29 +69,6 @@ class UserService:
             Discount.type == DiscountType.GROOM_GIFT,
         ).all()
 
-    def get_user_discounts(self, user_id, event_id=None):
-        groom_gift_discounts = (
-            Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
-            .join(User, Attendee.attendee_id == User.id)
-            .filter(User.id == user_id, Discount.code != None)
-            .all()
-        )
-
-        # if event_id:
-        #     return (
-        #         Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
-        #         .join(User, Attendee.attendee_id == User.id)
-        #         .filter(User.id == user_id, Attendee.event_id == event_id)
-        #         .all()
-        #     )
-        # else:
-        #     return (
-        #         Discount.query.join(Attendee, Discount.attendee_id == Attendee.id)
-        #         .join(User, Attendee.attendee_id == User.id)
-        #         .filter(User.id == user_id)
-        #         .all()
-        #     )
-
     def get_user_invites(self, user_id):
         return (
             Event.query.join(Attendee, Event.id == Attendee.event_id)

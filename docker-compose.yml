@@ -40,6 +40,7 @@ services:
     volumes:
       - .:/usr/src/app
     environment:
+      API_TOKEN: Test123
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: tmg
@@ -47,7 +48,6 @@ services:
       DB_PASSWORD: postgres
       DB_POOL_SIZE: 100
       TMG_APP_TESTING: 'true'
-      API_TOKEN: Test123
     working_dir: /usr/src/app/
     ports:
       - "8080:8080"
@@ -66,7 +66,7 @@ services:
     command: >
       bash -c "
       echo 'Waiting for up to 45 sec for app to start ...' &&
-      timeout 45 bash -c 'while ! curl -s -o /dev/null -H "X-Api-Access-Token: $API_TOKEN" -w '%{http_code}' http://app:8080/health | grep -q 200; do
+      timeout 45 bash -c 'while ! curl -s -o /dev/null -H 'X-Api-Access-Token: ${API_TOKEN}' -w '%{http_code}' http://app:8080/health | grep -q 200; do
         sleep 1;
       done'"
     depends_on:

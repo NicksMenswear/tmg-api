@@ -64,7 +64,7 @@ def init_logging(debug=False):
 def init_app():
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-    CORS(api.app)
+    # CORS(api.app)
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )

@@ -1,19 +1,19 @@
 """discounts
 
-Revision ID: 94afde41dce3
+Revision ID: da75e62e6c93
 Revises: f7a376258cb7
-Create Date: 2024-05-15 16:16:25.882950
+Create Date: 2024-05-17 10:58:20.666741
 
 """
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "94afde41dce3"
+revision: str = "da75e62e6c93"
 down_revision: Union[str, None] = "f7a376258cb7"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("id", sa.UUID(), server_default=sa.text("uuid_generate_v4()"), nullable=False),
         sa.Column("event_id", sa.UUID(), nullable=True),
         sa.Column("attendee_id", sa.UUID(), nullable=True),
-        sa.Column("amount", sa.Numeric(), nullable=False),
+        sa.Column("amount", sa.Integer(), nullable=False),
         sa.Column(
             "type", sa.Enum("GROOM_GIFT", "GROOM_FULL_PAY", "PARTY_OF_FOUR", name="discounttype"), nullable=False
         ),
@@ -50,3 +50,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("discounts")
+    op.execute("DROP TYPE IF EXISTS discounttype")

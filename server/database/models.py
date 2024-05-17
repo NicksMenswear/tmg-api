@@ -607,7 +607,7 @@ class Discount(Base):
     )
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
-    amount = Column(Numeric, nullable=False)
+    amount = Column(Integer, nullable=False)
     type = Column(Enum(DiscountType), nullable=False)
     used = Column(Boolean, default=False, nullable=False)
     code = Column(String)

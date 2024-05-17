@@ -56,9 +56,11 @@ class WebhookService:
         for discount in discounts:
             attendee_user = attendee_service.get_attendee_user(discount.attendee_id)
 
+            code = f"GROOM-GIFT-{discount.amount}OFF-{random.randint(100000, 9999999)}"
+
             discount_response = shopify_service.create_discount_code2(
-                f"Groom {groom_user.first_name} discount gift",
-                f"GROOM-{groom_user.first_name.upper()}-GIFT-{discount.amount}-OFF-{random.randint(100000, 999999)}",
+                code,
+                code,
                 attendee_user.shopify_id,
                 discount.amount,
             )

@@ -331,6 +331,4 @@ class ShopifyService:
         if "errors" in body:
             raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. {body['errors']}")
 
-        total_price = sum(float(variant["price"]) for variant in body.json()["data"]["nodes"])
-
-        return total_price
+        return sum(float(variant["price"]) for variant in body["data"]["nodes"])

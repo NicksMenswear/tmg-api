@@ -2425,6 +2425,13 @@ components:
           format: float
           title: amount
           type: number
+          default: 0
+        full_amount:
+          title: amount
+          type: boolean
+          default: false
+      required:
+        - attendee_id
 
     Discount:
       properties:

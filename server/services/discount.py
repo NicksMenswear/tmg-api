@@ -1,6 +1,8 @@
 import random
 from datetime import datetime, timezone
 
+from sqlalchemy import or_
+
 from server.database.database_manager import db
 from server.database.models import Discount, Event, Attendee, DiscountType, User, Look
 from server.flask_app import FlaskApp
@@ -59,7 +61,7 @@ class DiscountService:
 
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
-            Discount.type == DiscountType.GROOM_GIFT,
+            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
             Discount.code == None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
@@ -69,14 +71,19 @@ class DiscountService:
 
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
-            Discount.type == DiscountType.GROOM_GIFT,
+            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
             Discount.code != None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
 
         for paid_discount in paid_discounts:
             groom_gift_discounts[paid_discount.attendee_id]["codes"].append(
-                {"code": paid_discount.code, "amount": paid_discount.amount, "used": paid_discount.used}
+                {
+                    "code": paid_discount.code,
+                    "amount": paid_discount.amount,
+                    "type": str(paid_discount.type),
+                    "used": paid_discount.used,
+                }
             )
 
         return list(groom_gift_discounts.values())
@@ -85,7 +92,7 @@ class DiscountService:
         return Discount.query.filter(
             Discount.shopify_virtual_product_id == str(product_id),
             Discount.code == None,
-            Discount.type == DiscountType.GROOM_GIFT,
+            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
 
     def get_discount_by_shopify_code(self, shopify_code):
@@ -123,7 +130,7 @@ class DiscountService:
             existing_discounts = Discount.query.filter(
                 Discount.event_id == event_id,
                 Discount.code == None,
-                Discount.type == DiscountType.GROOM_GIFT,
+                or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
             ).all()
 
             for discount in existing_discounts:
@@ -138,19 +145,37 @@ class DiscountService:
                 if not attendee:
                     raise NotFoundError(f"Attendee not found.")
 
-                if intent["amount"] <= 0:
+                if intent["amount"] <= 0 and not intent["full_amount"]:
                     raise BadRequestError("Discount amount must be greater than 0.")
 
-                total_intent_amount = total_intent_amount + float(intent["amount"])
+                if intent["full_amount"]:
+                    look = Look.query.filter(Look.id == attendee.look_id).first()
 
-                discount_intent = Discount(
-                    event_id=event_id,
-                    attendee_id=intent["attendee_id"],
-                    amount=intent["amount"],
-                    type=DiscountType.GROOM_GIFT,
-                )
+                    total_price_of_look = self.shopify_service.get_total_price_for_variants(
+                        look.product_specs["variants"]
+                    )
 
-                intents.append(discount_intent)
+                    total_intent_amount = total_intent_amount + total_price_of_look
+
+                    discount_intent = Discount(
+                        event_id=event_id,
+                        attendee_id=intent["attendee_id"],
+                        amount=total_price_of_look,
+                        type=DiscountType.GROOM_FULL_PAY,
+                    )
+
+                    intents.append(discount_intent)
+                else:
+                    total_intent_amount = total_intent_amount + float(intent["amount"])
+
+                    discount_intent = Discount(
+                        event_id=event_id,
+                        attendee_id=intent["attendee_id"],
+                        amount=intent["amount"],
+                        type=DiscountType.GROOM_GIFT,
+                    )
+
+                    intents.append(discount_intent)
 
                 db.session.add(discount_intent)
 

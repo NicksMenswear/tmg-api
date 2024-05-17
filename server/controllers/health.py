@@ -1,7 +1,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from server.controllers.util import http
+from server.controllers.util import http, token_verification
 from server.database.models import ProductItem
 from server.flask_app import FlaskApp
 
@@ -15,6 +15,7 @@ TOP_SITES = [
 ]
 
 
+@token_verification
 def health():
     try:
         with ThreadPoolExecutor(max_workers=2) as executor:

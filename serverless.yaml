@@ -29,6 +29,7 @@ functions:
     environment:
       # General
       STAGE: ${sls:stage}
+      API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
       # SQLAlchemy Env Variables
       DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
       DB_PORT: 5432

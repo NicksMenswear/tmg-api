@@ -95,6 +95,19 @@ def hmac_webhook_verification(func):
     return wrapper
 
 
+def token_verification(func, api_token=os.getenv("API_TOKEN", None)):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        request_token = request.headers.get("X-Api-Access-Token", "unset")
+        if request_token == api_token:
+            return func(*args, **kwargs)
+        else:
+            logger.debug("API token verification failed: token mismatch.")
+            abort(403)
+
+    return wrapper
+
+
 def http(method, *args, **kwargs):
     merge_kwargs = {
         "timeout": 3,

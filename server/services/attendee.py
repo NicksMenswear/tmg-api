@@ -36,7 +36,12 @@ class AttendeeService:
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not attendee_user:
-            disabled_user = {**attendee_data, "account_status": False}
+            disabled_user = {
+                "first_name": attendee_data["first_name"],
+                "last_name": attendee_data["last_name"],
+                "email": attendee_data["email"],
+                "account_status": False,
+            }
 
             try:
                 attendee_user = self.user_service.create_user(disabled_user)

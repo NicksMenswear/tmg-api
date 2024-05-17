@@ -646,7 +646,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}/discounts:
     get:
-      operationId: get_groom_gift_discount_intents
+      operationId: get_groom_gift_discounts
       parameters:
         - description: ID of the event
           explode: false

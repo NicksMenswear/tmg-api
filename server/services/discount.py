@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timezone
 
 from server.database.database_manager import db
-from server.database.models import Discount, Event, Attendee, DiscountType
+from server.database.models import Discount, Event, Attendee, DiscountType, User, Look
 from server.flask_app import FlaskApp
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee import AttendeeService
@@ -18,8 +18,68 @@ class DiscountService:
         else:
             self.shopify_service = ShopifyService()
 
-    def get_groom_gift_discount_intents(self, event_id):
-        return Discount.query.filter_by(event_id=event_id, type=DiscountType.GROOM_GIFT, code=None).all()
+    def get_groom_gift_discounts(self, event_id):
+        event = Event.query.filter(Event.id == event_id, Event.is_active).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        users_attendees_looks = (
+            db.session.query(User, Attendee, Look)
+            .join(Attendee, User.id == Attendee.attendee_id)
+            .outerjoin(Look, Attendee.look_id == Look.id)
+            .filter(Attendee.event_id == event_id, Attendee.is_active)
+            .all()
+        )
+
+        if not users_attendees_looks:
+            return []
+
+        groom_gift_discounts = {}
+
+        attendee_ids = []
+
+        for user, attendee, look in users_attendees_looks:
+            attendee_ids.append(attendee.id)
+
+            groom_gift_discounts[attendee.id] = {
+                "attendee_id": attendee.id,
+                "event_id": event_id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "amount": 0,
+                "codes": [],
+                "look": {"id": attendee.look_id, "name": look.look_name if look else None, "price": 0},
+            }
+
+            if look and look.product_specs and look.product_specs.get("variants"):
+                variant_ids = look.product_specs["variants"]
+                look_price = self.shopify_service.get_total_price_for_variants(variant_ids)
+                groom_gift_discounts[attendee.id]["look"]["price"] = look_price
+
+        discount_intents = Discount.query.filter(
+            Discount.event_id == event_id,
+            Discount.type == DiscountType.GROOM_GIFT,
+            Discount.code == None,
+            Discount.attendee_id.in_(attendee_ids),
+        ).all()
+
+        for discount_intent in discount_intents:
+            groom_gift_discounts[discount_intent.attendee_id]["amount"] = discount_intent.amount
+
+        paid_discounts = Discount.query.filter(
+            Discount.event_id == event_id,
+            Discount.type == DiscountType.GROOM_GIFT,
+            Discount.code != None,
+            Discount.attendee_id.in_(attendee_ids),
+        ).all()
+
+        for paid_discount in paid_discounts:
+            groom_gift_discounts[paid_discount.attendee_id]["codes"].append(
+                {"code": paid_discount.code, "amount": paid_discount.amount, "used": paid_discount.used}
+            )
+
+        return list(groom_gift_discounts.values())
 
     def get_groom_gift_discount_intents_for_product(self, product_id):
         return Discount.query.filter(

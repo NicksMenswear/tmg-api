@@ -10,16 +10,19 @@ logger = logging.getLogger(__name__)
 
 
 @hmac_verification
-def get_groom_gift_discount_intents(event_id):
+def get_groom_gift_discounts(event_id):
     discount_service = DiscountService()
 
     try:
-        discounts = discount_service.get_groom_gift_discount_intents(event_id)
+        groom_gift_discounts = discount_service.get_groom_gift_discounts(event_id)
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
     except ServiceError as e:
         logger.exception(e)
         return jsonify({"errors": e.message}), 500
 
-    return [discount.to_dict() for discount in discounts], 200
+    return groom_gift_discounts, 200
 
 
 @hmac_verification

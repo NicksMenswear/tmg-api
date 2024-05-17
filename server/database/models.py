@@ -605,8 +605,8 @@ class Discount(Base):
         server_default=text("uuid_generate_v4()"),
         nullable=False,
     )
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
-    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"), nullable=False)
     amount = Column(Integer, nullable=False)
     type = Column(Enum(DiscountType), nullable=False)
     used = Column(Boolean, default=False, nullable=False)

@@ -42,6 +42,9 @@ class FakeShopifyService:
     def delete_product(self, product_id):
         pass
 
+    def get_total_price_for_variants(self, variant_ids):
+        return random.randint(500, 800)
+
 
 class ShopifyService:
     def __init__(self):
@@ -297,3 +300,37 @@ class ShopifyService:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
 
         return body
+
+    def get_total_price_for_variants(self, variant_ids):
+        total_price = 0
+
+        if not variant_ids:
+            return total_price
+
+        ids_query = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
+
+        query = f"""
+        {{
+          nodes(ids: [{ids_query}]) {{
+            ... on ProductVariant {{
+              price
+            }}
+          }}
+        }}
+        """
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. {body['errors']}")
+
+        total_price = sum(float(variant["price"]) for variant in body.json()["data"]["nodes"])
+
+        return total_price

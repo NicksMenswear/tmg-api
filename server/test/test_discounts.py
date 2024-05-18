@@ -150,7 +150,7 @@ class TestDiscounts(BaseTestCase):
     #     self.assertEqual(discount_intent2["amount"], intents[1].amount)
     #     self.assertIsNotNone(discount_intent1["id"])
     #     self.assertEqual(discount_intent1["event_id"], str(event.id))
-    #     self.assertIsNone(discount_intent1["code"])
+    #     self.assertIsNone(discount_intent1["shopify_discount_code"])
     #     self.assertIsNotNone(discount_intent1["created_at"])
     #     self.assertIsNotNone(discount_intent1["updated_at"])
     #
@@ -415,13 +415,13 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertIsNotNone(discount_intent["id"])
         self.assertIsNotNone(discount_intent["shopify_virtual_product_id"])
-        self.assertIsNone(discount_intent["code"])
+        self.assertIsNone(discount_intent["shopify_discount_code"])
         self.assertFalse(discount_intent["used"])
         self.assertIsNotNone(discount_intent["created_at"])
         self.assertIsNotNone(discount_intent["updated_at"])
 
         shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            int(discount_intent["shopify_virtual_product_id"])
+            discount_intent["shopify_virtual_product_id"]
         )
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(shopify_virtual_product["variants"][0]["price"], create_discount_intent_request["amount"])
@@ -570,7 +570,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertEqual(discount_intent["amount"], (123 + 234 + 567) * 10)
         self.assertIsNotNone(discount_intent["id"])
-        self.assertIsNone(discount_intent["code"])
+        self.assertIsNone(discount_intent["shopify_discount_code"])
         self.assertFalse(discount_intent["used"])
         self.assertIsNotNone(discount_intent["created_at"])
         self.assertIsNotNone(discount_intent["updated_at"])
@@ -721,6 +721,6 @@ class TestDiscounts(BaseTestCase):
     #     self.assertEqual(discount_intent1["amount"], create_discount_intent_request1["amount"])
     #     self.assertEqual(discount_intent1["event_id"], str(event.id))
     #     self.assertIsNotNone(discount_intent1["id"])
-    #     self.assertIsNone(discount_intent1["code"])
+    #     self.assertIsNone(discount_intent1["shopify_discount_code"])
     #     self.assertIsNotNone(discount_intent1["created_at"])
     #     self.assertIsNotNone(discount_intent1["updated_at"])

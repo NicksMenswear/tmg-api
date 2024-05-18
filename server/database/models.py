@@ -610,10 +610,10 @@ class Discount(Base):
     amount = Column(Integer, nullable=False)
     type = Column(Enum(DiscountType), nullable=False)
     used = Column(Boolean, default=False, nullable=False)
-    code = Column(String)
-    shopify_discount_code_id = Column(String)
-    shopify_virtual_product_id = Column(String)
-    shopify_virtual_product_variant_id = Column(String)
+    shopify_discount_code = Column(String)
+    shopify_discount_code_id = Column(Integer)
+    shopify_virtual_product_id = Column(Integer)
+    shopify_virtual_product_variant_id = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
@@ -624,7 +624,8 @@ class Discount(Base):
             "attendee_id": self.attendee_id,
             "type": str(self.type),
             "amount": self.amount,
-            "code": self.code,
+            "shopify_discount_code": self.shopify_discount_code,
+            "shopify_discount_code_id": self.shopify_discount_code_id,
             "shopify_virtual_product_id": self.shopify_virtual_product_id,
             "shopify_virtual_product_variant_id": self.shopify_virtual_product_variant_id,
             "used": self.used,

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import random
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
 from server.controllers.util import http
@@ -10,23 +11,33 @@ from server.services import ServiceError, NotFoundError, DuplicateError
 logger = logging.getLogger(__name__)
 
 
-class AbstractShopifyService:
+class AbstractShopifyService(ABC):
+    @abstractmethod
     def create_customer(self, first_name, last_name, email):
         pass
 
+    @abstractmethod
     def get_product_by_id(self, product_id):
         pass
 
+    @abstractmethod
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         pass
 
+    @abstractmethod
     def delete_product(self, product_id):
         pass
 
+    @abstractmethod
     def get_total_price_for_variants(self, variant_ids):
         pass
 
+    @abstractmethod
     def create_discount_code(self, title, code, shopify_customer_id, amount):
+        pass
+
+    @abstractmethod
+    def apply_discount_codes_to_cart(self, cart_id, discount_codes):
         pass
 
 
@@ -79,6 +90,12 @@ class FakeShopifyService(AbstractShopifyService):
             total_look_price += variant_price
 
         return total_look_price
+
+    def create_discount_code(self, title, code, shopify_customer_id, amount):
+        pass
+
+    def apply_discount_codes_to_cart(self, cart_id, discount_codes):
+        pass
 
 
 class ShopifyService(AbstractShopifyService):
@@ -270,7 +287,7 @@ class ShopifyService(AbstractShopifyService):
 
         return {
             "shopify_discount_id": shopify_discount_id,
-            "code": shopify_discount_code,
+            "shopify_discount_code": shopify_discount_code,
         }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):

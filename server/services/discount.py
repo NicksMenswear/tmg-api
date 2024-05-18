@@ -75,7 +75,7 @@ class DiscountService:
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
-            Discount.code == None,
+            Discount.shopify_discount_code == None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
 
@@ -85,14 +85,14 @@ class DiscountService:
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
-            Discount.code != None,
+            Discount.shopify_discount_code != None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
 
         for paid_discount in paid_discounts:
             groom_gift_discounts[paid_discount.attendee_id]["codes"].append(
                 {
-                    "code": paid_discount.code,
+                    "code": paid_discount.shopify_discount_code,
                     "amount": paid_discount.amount,
                     "type": str(paid_discount.type),
                     "used": paid_discount.used,
@@ -103,16 +103,16 @@ class DiscountService:
 
     def get_groom_gift_discount_intents_for_product(self, product_id):
         return Discount.query.filter(
-            Discount.shopify_virtual_product_id == str(product_id),
-            Discount.code == None,
+            Discount.shopify_virtual_product_id == product_id,
+            Discount.shopify_discount_code == None,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
 
     def get_discount_by_shopify_code(self, shopify_code):
-        return Discount.query.filter(Discount.code == shopify_code).first()
+        return Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
     def mark_discount_by_shopify_code_as_paid(self, shopify_code):
-        discount = Discount.query.filter(Discount.code == shopify_code).first()
+        discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
         if not discount:
             return None
@@ -144,7 +144,7 @@ class DiscountService:
         try:
             existing_discounts = Discount.query.filter(
                 Discount.event_id == event_id,
-                Discount.code == None,
+                Discount.shopify_discount_code == None,
                 or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
             ).all()
 
@@ -250,8 +250,8 @@ class DiscountService:
             )
 
             for discount_intent in intents:
-                discount_intent.shopify_virtual_product_id = str(shopify_product["id"])
-                discount_intent.shopify_virtual_product_variant_id = str(shopify_product["variants"][0]["id"])
+                discount_intent.shopify_virtual_product_id = shopify_product["id"]
+                discount_intent.shopify_virtual_product_variant_id = shopify_product["variants"][0]["id"]
                 db.session.add(discount_intent)
 
             db.session.commit()
@@ -272,7 +272,7 @@ class DiscountService:
         if not discount:
             raise NotFoundError("Discount not found.")
 
-        discount.code = code
+        discount.shopify_discount_code = code
         discount.shopify_discount_code_id = shopify_discount_id
         discount.updated_at = datetime.now(timezone.utc)
 
@@ -300,7 +300,7 @@ class DiscountService:
             event_id=event_id,
             type=DiscountType.PARTY_OF_FOUR,
             amount=100,
-            code=shopify_discount.get("code"),
+            shopify_discount_code=shopify_discount.get("shopify_discount_code"),
             shopify_discount_code_id=shopify_discount.get("shopify_discount_id"),
         )
         db.session.add(discount)
@@ -327,4 +327,6 @@ class DiscountService:
         if not discounts:
             return
 
-        self.shopify_service.apply_discount_codes_to_cart(shopify_cart_id, [discount.code for discount in discounts])
+        self.shopify_service.apply_discount_codes_to_cart(
+            shopify_cart_id, [discount.shopify_discount_code for discount in discounts]
+        )

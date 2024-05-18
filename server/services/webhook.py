@@ -73,7 +73,9 @@ class WebhookService:
             )
 
             self.discount_service.add_code_to_discount(
-                discount.id, discount_response.get("shopify_discount_id"), discount_response.get("code")
+                discount.id,
+                discount_response.get("shopify_discount_id"),
+                discount_response.get("shopify_discount_code"),
             )
 
     def handle_used_discount_code(self, payload):
@@ -84,7 +86,7 @@ class WebhookService:
             return
 
         for discount_code in discount_codes:
-            shopify_discount_code = discount_code.get("code")
+            shopify_discount_code = discount_code.get("shopify_discount_code")
 
             discount = self.discount_service.mark_discount_by_shopify_code_as_paid(shopify_discount_code)
 

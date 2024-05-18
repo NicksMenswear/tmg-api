@@ -58,7 +58,7 @@ class UserService:
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
         return Discount.query.filter(
             Discount.attendee_id == attendee_id,
-            Discount.code != None,
+            Discount.shopify_discount_code != None,
             Discount.used == False,
             Discount.type == DiscountType.GROOM_GIFT,
         ).all()

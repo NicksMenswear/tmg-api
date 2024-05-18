@@ -3,23 +3,21 @@ import logging
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
+from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.attendee import AttendeeService
 
 logger = logging.getLogger(__name__)
 
 
 @hmac_verification
 def get_attendee(attendee_id):
-    attendee_service = AttendeeService()
-
-    attendee = attendee_service.get_attendee_by_id(attendee_id)
-
-    if not attendee:
-        return jsonify({"errors": "Attendee not found"}), 404
+    attendee_service = FlaskApp.current().attendee_service
 
     try:
         attendee = attendee_service.get_attendee_by_id(attendee_id)
+
+        if not attendee:
+            return jsonify({"errors": "Attendee not found"}), 404
     except ServiceError as e:
         logger.exception(e)
         return jsonify({"errors": "Failed to get attendee"}), 500
@@ -29,7 +27,7 @@ def get_attendee(attendee_id):
 
 @hmac_verification
 def create_attendee(attendee_data):
-    attendee_service = AttendeeService()
+    attendee_service = FlaskApp.current().attendee_service
 
     try:
         attendee = attendee_service.create_attendee(attendee_data)
@@ -48,7 +46,7 @@ def create_attendee(attendee_data):
 
 @hmac_verification
 def update_attendee(attendee_id, attendee_data):
-    attendee_service = AttendeeService()
+    attendee_service = FlaskApp.current().attendee_service
 
     try:
         attendee = attendee_service.update_attendee(attendee_id, attendee_data)
@@ -64,7 +62,7 @@ def update_attendee(attendee_id, attendee_data):
 
 @hmac_verification
 def soft_delete_attendee(attendee_id):
-    attendee_service = AttendeeService()
+    attendee_service = FlaskApp.current().attendee_service
 
     try:
         attendee_service.soft_delete_attendee(attendee_id)
@@ -80,10 +78,10 @@ def soft_delete_attendee(attendee_id):
 
 @hmac_verification
 def apply_discounts(attendee_id, apply_discounts_request):
+    attendee_service = FlaskApp.current().attendee_service
+
     event_id = apply_discounts_request["event_id"]
     shopify_cart_id = apply_discounts_request["shopify_cart_id"]
-
-    attendee_service = AttendeeService()
 
     response = attendee_service.apply_discounts(attendee_id, event_id, shopify_cart_id)
 

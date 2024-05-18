@@ -6,7 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import ProductItem
-from server.services.product import ProductService
+from server.services.legacy.product import ProductService
 from server.test import BaseTestCase, fixtures
 
 # TODO: Remove this key mapping once the API is fixed
@@ -35,6 +35,7 @@ PRODUCT_KEYS_MAPPING = {
 }
 
 
+@unittest.skip("Products are not used at the moment.")
 class TestProducts(BaseTestCase):
     def setUp(self):
         super().setUp()

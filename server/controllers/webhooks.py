@@ -3,7 +3,7 @@ import logging
 from connexion import request
 
 from server.controllers.util import hmac_webhook_verification
-from server.services.webhook import WebhookService
+from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,11 @@ def shopify_webhook(payload):
 
     logger.info(f"Received Shopify webhook with topic: {topic}")
 
+    webhook_service = FlaskApp.current().webhook_service
+
     try:
         if topic == "orders/paid":
-            WebhookService.handle_orders_paid(payload)
+            webhook_service.handle_orders_paid(payload)
         else:
             logger.debug(f"Unhandled Shopify webhook topic: {topic}")
     finally:

@@ -162,5 +162,6 @@ def create_cart_product_request(**cart_product_data):
 def create_discount_intent_request(**create_discount_intent):
     return {
         "attendee_id": create_discount_intent.get("attendee_id", str(uuid.uuid4())),
-        "amount": create_discount_intent.get("amount", random.randint(10, 100)),
+        "amount": create_discount_intent.get("amount", random.randint(10, 500)),
+        "pay_full": create_discount_intent.get("pay_full", False),
     }

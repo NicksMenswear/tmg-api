@@ -10,7 +10,30 @@ from server.services import ServiceError, NotFoundError, DuplicateError
 logger = logging.getLogger(__name__)
 
 
-class FakeShopifyService:
+class AbstractShopifyService:
+    def create_customer(self, first_name, last_name, email):
+        pass
+
+    def get_product_by_id(self, product_id):
+        pass
+
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        pass
+
+    def delete_product(self, product_id):
+        pass
+
+    def get_total_price_for_variants(self, variant_ids):
+        pass
+
+    def create_discount_code(self, title, code, shopify_customer_id, amount):
+        pass
+
+
+class FakeShopifyService(AbstractShopifyService):
+    def __init__(self, shopify_virtual_products=None):
+        self.shopify_virtual_products = shopify_virtual_products if shopify_virtual_products else {}
+
     def create_customer(self, first_name, last_name, email):
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
@@ -30,8 +53,10 @@ class FakeShopifyService:
         }
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
-        return {
-            "id": random.randint(1000, 100000),
+        virtual_product_id = random.randint(1000, 100000)
+
+        virtual_product = {
+            "id": virtual_product_id,
             "title": title,
             "vendor": vendor,
             "body_html": body_html,
@@ -39,14 +64,24 @@ class FakeShopifyService:
             "variants": [{"id": random.randint(1000, 100000), "title": title, "price": price, "sku": sku}],
         }
 
-    def delete_product(self, product_id):
-        pass
+        self.shopify_virtual_products[virtual_product_id] = virtual_product
+
+        return virtual_product
 
     def get_total_price_for_variants(self, variant_ids):
-        return random.randint(500, 800)
+        if not variant_ids:
+            return 0
+
+        total_look_price = 0
+
+        for variant_id in variant_ids:
+            variant_price = variant_id * 10
+            total_look_price += variant_price
+
+        return total_look_price
 
 
-class ShopifyService:
+class ShopifyService(AbstractShopifyService):
     def __init__(self):
         self.__shopify_store = os.getenv("shopify_store")
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
@@ -175,51 +210,6 @@ class ShopifyService:
             raise ServiceError(f"Failed to delete product by id '{product_id}' in shopify store.")
 
     def create_discount_code(self, title, code, shopify_customer_id, amount):
-        status, created_price_rule = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/price_rules.json",
-            {
-                "price_rule": {
-                    "title": title,
-                    "target_type": "line_item",
-                    "target_selection": "all",
-                    "allocation_method": "across",
-                    "value_type": "fixed_amount",
-                    "value": f"-{str(int(amount))}.00",
-                    "customer_selection": "prerequisite",
-                    "prerequisite_customer_ids": [shopify_customer_id],
-                    "once_per_customer": True,
-                    "combine_with": "combine_with_all",
-                    "usage_limit": 1,
-                    "starts_at": datetime.now(timezone.utc).isoformat(),
-                }
-            },
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create price rule in shopify store.")
-
-        created_price_rule = created_price_rule.get("price_rule")
-
-        price_rule_id = created_price_rule["id"]
-
-        status, created_discount_code = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/price_rules/{price_rule_id}/discount_codes.json",
-            {"discount_code": {"code": code}},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create discount in shopify store.")
-
-        created_discount_code = created_discount_code.get("discount_code")
-
-        return {
-            "shopify_discount_id": created_discount_code["id"],
-            "code": created_discount_code["code"],
-        }
-
-    def create_discount_code2(self, title, code, shopify_customer_id, amount):
         mutation = """
         mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
           discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {

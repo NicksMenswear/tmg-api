@@ -2,27 +2,26 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
-from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.event import EventService
+from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
 
+# noinspection PyMethodMayBeStatic
 class AttendeeService:
-    def __init__(self):
-        super().__init__()
-        self.user_service = UserService()
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        user_service: UserService,
+        event_service: EventService,
+    ):
+        self.shopify_service = shopify_service
+        self.user_service = user_service
+        self.event_service = event_service
 
-        if FlaskApp.current().config["TMG_APP_TESTING"]:
-            self.shopify_service = FakeShopifyService()
-            self.email_service = FakeEmailService()
-        else:
-            self.shopify_service = ShopifyService()
-            self.email_service = EmailService()
-
-    def get_attendee_by_id(self, attendee_id):
-        return Attendee.query.filter(Attendee.id == attendee_id).first()
+    def get_attendee_by_id(self, attendee_id, is_active=True):
+        return Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
 
     def get_attendee_user(self, attendee_id):
         return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
@@ -114,32 +113,3 @@ class AttendeeService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to deactivate attendee.", e)
-
-    def apply_discounts(self, attendee_id, event_id, shopify_cart_id):
-        from server.services.discount import DiscountService
-        from server.services.event import EventService
-
-        user_service = UserService()
-        event_service = EventService()
-        discount_service = DiscountService()
-
-        discounts = user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
-
-        num_attendees = event_service.get_num_attendees_for_event(event_id)
-
-        if num_attendees >= 4:
-            existing_discount = discount_service.get_group_discount_for_attendee(attendee_id)
-
-            if not existing_discount:
-                discount = discount_service.create_group_discount_for_attendee(attendee_id, event_id)
-                discounts.append(discount)
-            else:
-                discounts.append(existing_discount)
-
-        discounts = [discount for discount in discounts]
-
-        if not discounts:
-            return
-
-        shopify_service = ShopifyService()
-        shopify_service.apply_discount_codes_to_cart(shopify_cart_id, [discount.code for discount in discounts])

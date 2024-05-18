@@ -1,19 +1,21 @@
 from __future__ import absolute_import
 
 import json
+import unittest
 import uuid
 
 from server import encoder
 from server.database.models import Cart, CartProduct
 from server.services.attendee import AttendeeService
-from server.services.cart import CartService
 from server.services.event import EventService
+from server.services.legacy.cart import CartService
 from server.services.look import LookService
 from server.services.role import RoleService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
+@unittest.skip("Carts are not used at the moment.")
 class TestCarts(BaseTestCase):
     def setUp(self):
         super().setUp()

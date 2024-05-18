@@ -4,24 +4,10 @@ import json
 import uuid
 
 from server import encoder
-from server.services.attendee import AttendeeService
-from server.services.event import EventService
-from server.services.look import LookService
-from server.services.role import RoleService
-from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
 class TestAttendees(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.attendee_service = AttendeeService()
-        self.user_service = UserService()
-        self.event_service = EventService()
-        self.look_service = LookService()
-        self.role_service = RoleService()
-
     def assert_equal_attendee(self, attendee_request, attendee_response):
         self.assertEqual(str(attendee_request["event_id"]), attendee_response["event_id"])
         self.assertEqual(attendee_request["invite"], attendee_response["invite"])
@@ -353,7 +339,7 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 204)
 
         # checking db
-        soft_deleted_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        soft_deleted_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
         self.assertEqual(False, soft_deleted_attendee.is_active)
 
     def test_deactivate_attendee_with_invalid_id(self):

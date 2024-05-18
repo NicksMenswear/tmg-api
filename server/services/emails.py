@@ -6,12 +6,16 @@ from email.mime.text import MIMEText
 from server.services import ServiceError
 
 
-class FakeEmailService:
+class AbstractEmailService:
     def send_activation_url(self, email, shopify_customer_id):
         pass
 
 
-class EmailService:
+class FakeEmailService(AbstractEmailService):
+    pass
+
+
+class EmailService(AbstractEmailService):
     def __init__(self):
         self.sender_password = os.getenv("sender_password")
         self.sender_email = os.getenv("sender_email")

@@ -1,7 +1,6 @@
 from flask_testing import TestCase
 
 from server.app import init_app, init_db
-from server.flask_app import FlaskApp
 from server.database.database_manager import db
 from server.database.models import (
     Order,
@@ -16,8 +15,7 @@ from server.database.models import (
     CartProduct,
     Discount,
 )
-from server.services.emails import FakeEmailService
-from server.services.shopify import FakeShopifyService
+from server.flask_app import FlaskApp
 
 CONTENT_TYPE_JSON = "application/json"
 
@@ -25,11 +23,9 @@ CONTENT_TYPE_JSON = "application/json"
 class BaseTestCase(TestCase):
     def create_app(self):
         FlaskApp.cleanup()
-        app = init_app().app
-        init_db()
+        app = init_app(True).app
         app.config["TMG_APP_TESTING"] = True
-        app.shopify_service = FakeShopifyService()
-        app.email_service = FakeEmailService()
+        init_db()
         return app
 
     def setUp(self):
@@ -60,6 +56,14 @@ class BaseTestCase(TestCase):
             "timestamp": "1712665883",
             "signature": "test",
         }
+
+        self.user_service = self.app.user_service
+        self.role_service = self.app.role_service
+        self.look_service = self.app.look_service
+        self.event_service = self.app.event_service
+        self.attendee_service = self.app.attendee_service
+        self.discount_service = self.app.discount_service
+        self.webhook_service = self.app.webhook_service
 
     def assert_equal_left(self, left, right):
         # Asserts that all key-value pairs in left are present and equal in right.

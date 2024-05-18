@@ -7,8 +7,8 @@ from server.services.user import UserService
 
 
 class LookService:
-    def __init__(self):
-        self.user_service = UserService()
+    def __init__(self, user_service: UserService):
+        self.user_service = user_service
 
     def get_look_by_id(self, look_id):
         return Look.query.filter(Look.id == look_id).first()

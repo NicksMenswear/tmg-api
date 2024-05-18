@@ -1539,7 +1539,7 @@ paths:
       summary: Lists all product items
       tags:
         - Product
-      x-openapi-router-controller: server.controllers.product
+      x-openapi-router-controller: server.controllers.legacy.products
     post:
       operationId: create_product_item
       parameters:
@@ -1581,7 +1581,7 @@ paths:
       summary: Create product item
       tags:
         - Product
-      x-openapi-router-controller: server.controllers.product
+      x-openapi-router-controller: server.controllers.legacy.products
   /orders:
     delete:
       operationId: delete_order
@@ -1625,7 +1625,7 @@ paths:
       summary: Delete order by ID
       tags:
         - Orders
-      x-openapi-router-controller: server.controllers.orders
+      x-openapi-router-controller: server.controllers.legacy.orders
     get:
       operationId: get_orders
       parameters:
@@ -1676,7 +1676,7 @@ paths:
       summary: Retrieve all orders, optionally filtered by user ID or event ID
       tags:
         - Orders
-      x-openapi-router-controller: server.controllers.orders
+      x-openapi-router-controller: server.controllers.legacy.orders
     post:
       operationId: create_order
       parameters:
@@ -1718,7 +1718,7 @@ paths:
       summary: Create order
       tags:
         - Orders
-      x-openapi-router-controller: server.controllers.orders
+      x-openapi-router-controller: server.controllers.legacy.orders
     put:
       operationId: update_order
       parameters:
@@ -1764,7 +1764,7 @@ paths:
       summary: Update an existing order by ID
       tags:
         - Orders
-      x-openapi-router-controller: server.controllers.orders
+      x-openapi-router-controller: server.controllers.legacy.orders
   /orders/{order_id}:
     get:
       operationId: get_order_by_id
@@ -1810,7 +1810,7 @@ paths:
       summary: Retrieve a specific order by ID
       tags:
         - Orders
-      x-openapi-router-controller: server.controllers.orders
+      x-openapi-router-controller: server.controllers.legacy.orders
   /invite:
     post:
       operationId: send_invite
@@ -1896,7 +1896,7 @@ paths:
       summary: Create cart
       tags:
         - Carts
-      x-openapi-router-controller: server.controllers.carts
+      x-openapi-router-controller: server.controllers.legacy.carts
     put:
       operationId: update_cart
       parameters:
@@ -1938,7 +1938,7 @@ paths:
       summary: Upadte cart
       tags:
         - Carts
-      x-openapi-router-controller: server.controllers.carts
+      x-openapi-router-controller: server.controllers.legacy.carts
   /cart_by_id:
     get:
       operationId: get_cart_by_id
@@ -1984,7 +1984,7 @@ paths:
       summary: Get a single cart by id
       tags:
         - Carts
-      x-openapi-router-controller: server.controllers.carts
+      x-openapi-router-controller: server.controllers.legacy.carts
   /cart_by_event_attendee:
     get:
       operationId: get_cart_by_event_attendee
@@ -2038,7 +2038,7 @@ paths:
       summary: Get a single cart by id
       tags:
         - Carts
-      x-openapi-router-controller: server.controllers.carts
+      x-openapi-router-controller: server.controllers.legacy.carts
   /product:
     get:
       operationId: single_product_item
@@ -2079,7 +2079,7 @@ paths:
       summary: List single product
       tags:
         - Product
-      x-openapi-router-controller: server.controllers.product
+      x-openapi-router-controller: server.controllers.legacy.products
   /update_product:
     put:
       operationId: update_product_item
@@ -2128,7 +2128,7 @@ paths:
       summary: update single product
       tags:
         - Product
-      x-openapi-router-controller: server.controllers.product
+      x-openapi-router-controller: server.controllers.legacy.products
   /delete_product:
     put:
       operationId: soft_delete_product
@@ -2177,7 +2177,7 @@ paths:
       summary: delete product items
       tags:
         - Product
-      x-openapi-router-controller: server.controllers.product
+      x-openapi-router-controller: server.controllers.legacy.products
 
 components:
   schemas:
@@ -2426,8 +2426,8 @@ components:
           title: amount
           type: number
           default: 0
-        full_amount:
-          title: amount
+        pay_full:
+          title: pay_full
           type: boolean
           default: false
       required:

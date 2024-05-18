@@ -5,24 +5,10 @@ import uuid
 
 from server import encoder
 from server.database.models import Look
-from server.services.attendee import AttendeeService
-from server.services.event import EventService
-from server.services.look import LookService
-from server.services.role import RoleService
-from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
 class TestLooks(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.look_service = LookService()
-        self.role_service = RoleService()
-        self.user_service = UserService()
-        self.attendee_service = AttendeeService()
-        self.event_service = EventService()
-
     def assert_equal_response_look_with_db_look(self, look: Look, response_look: dict):
         self.assertEqual(response_look["id"], str(look.id))
         self.assertEqual(response_look["look_name"], look.look_name)

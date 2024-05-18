@@ -3,7 +3,7 @@ import logging
 from flask import jsonify
 
 from server.services import ServiceError, NotFoundError, DuplicateError
-from server.services.product import ProductService
+from server.services.legacy.product import ProductService
 
 logger = logging.getLogger(__name__)
 

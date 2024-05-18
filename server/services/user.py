@@ -3,23 +3,17 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import User, Event, Attendee, Look, Discount, DiscountType
-from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.emails import AbstractEmailService
+from server.services.shopify import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
 
 class UserService:
-    def __init__(self):
-        super().__init__()
-        if FlaskApp.current().config["TMG_APP_TESTING"]:
-            self.shopify_service = FakeShopifyService()
-            self.email_service = FakeEmailService()
-        else:
-            self.shopify_service = ShopifyService()
-            self.email_service = EmailService()
+    def __init__(self, shopify_service: AbstractShopifyService, email_service: AbstractEmailService):
+        self.shopify_service = shopify_service
+        self.email_service = email_service
 
     def create_user(self, user_data):
         if User.query.filter_by(email=user_data["email"]).first():

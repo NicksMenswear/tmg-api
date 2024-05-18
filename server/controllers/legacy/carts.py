@@ -1,10 +1,11 @@
-import os
 import logging
+import os
+
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
 from server.services import ServiceError, NotFoundError
-from server.services.cart import CartService
+from server.services.legacy.cart import CartService
 
 logger = logging.getLogger(__name__)
 

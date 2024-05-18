@@ -6,16 +6,16 @@ from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 class EventService:
-    def get_event_by_id(self, event_id, enriched=False):
+    def get_event_by_id(self, event_id):
+        return Event.query.filter_by(id=event_id).first()
+
+    def get_enriched_event_by_id(self, event_id):
         event = Event.query.filter_by(id=event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
         event = event.to_dict()
-
-        if not enriched:
-            return event
 
         event["attendees"] = []
 
@@ -86,7 +86,7 @@ class EventService:
         if not event:
             raise NotFoundError("Event not found.")
 
-        return self.get_event_by_id(event_id, enriched=True)["attendees"]
+        return self.get_enriched_event_by_id(event_id)["attendees"]
 
     def create_event(self, event_data):
         user = User.query.filter_by(id=event_data["user_id"]).first()

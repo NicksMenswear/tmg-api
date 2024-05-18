@@ -5,22 +5,10 @@ import uuid
 
 from server import encoder
 from server.database.models import User
-from server.services.attendee import AttendeeService
-from server.services.event import EventService
-from server.services.look import LookService
-from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
 class TestUsers(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.user_service = UserService()
-        self.event_service = EventService()
-        self.look_service = LookService()
-        self.attendee_service = AttendeeService()
-
     def assert_equal_response_user_with_db_user(self, user: User, response_user: dict):
         self.assertEqual(response_user["id"], str(user.id))
         self.assertEqual(response_user["first_name"], user.first_name)

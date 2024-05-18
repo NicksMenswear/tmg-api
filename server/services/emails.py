@@ -1,18 +1,28 @@
 import os
 import smtplib
+from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from server.services import ServiceError
 
 
-class AbstractEmailService:
+class AbstractEmailService(ABC):
+    @abstractmethod
     def send_activation_url(self, email, shopify_customer_id):
+        pass
+
+    @abstractmethod
+    def send_email(subject, body, sender_email, receiver_email, password):
         pass
 
 
 class FakeEmailService(AbstractEmailService):
-    pass
+    def send_activation_url(self, email, shopify_customer_id):
+        pass
+
+    def send_email(subject, body, sender_email, receiver_email, password):
+        pass
 
 
 class EmailService(AbstractEmailService):
@@ -20,8 +30,7 @@ class EmailService(AbstractEmailService):
         self.sender_password = os.getenv("sender_password")
         self.sender_email = os.getenv("sender_email")
 
-    @staticmethod
-    def send_email(subject, body, sender_email, receiver_email, password):
+    def send_email(self, subject, body, sender_email, receiver_email, password):
         try:
             msg = MIMEMultipart()
             msg["From"] = sender_email

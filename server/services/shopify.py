@@ -91,6 +91,9 @@ class FakeShopifyService(AbstractShopifyService):
 
         return total_look_price
 
+    def delete_product(self, product_id):
+        pass
+
     def create_discount_code(self, title, code, shopify_customer_id, amount):
         pass
 

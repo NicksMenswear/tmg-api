@@ -130,7 +130,7 @@ class DiscountService:
 
         event = self.event_service.get_event_by_id(event_id)
 
-        if not event:
+        if not event or not event.is_active:
             raise NotFoundError("Event not found.")
 
         num_attendees = self.event_service.get_num_attendees_for_event(event_id)
@@ -164,13 +164,10 @@ class DiscountService:
                 if "pay_full" not in intent and "amount" not in intent:
                     raise BadRequestError("Either 'amount' or 'pay_full' must be provided for intent.")
 
-                if "pay_full" in intent and intent.get("pay_full") is False and "amount" not in intent:
-                    raise BadRequestError("'amount' is required if 'pay_full' is set to false.")
-
                 if intent.get("pay_full") and intent.get("amount"):
                     raise BadRequestError("'amount' shouldn't be present when 'pay_full' is set.")
 
-                if intent.get("pay_full") is False and intent.get("amount") <= 0:
+                if "amount" in intent and intent.get("amount") <= 0:
                     raise BadRequestError("Discount amount must be greater than 0.")
 
                 if intent.get("pay_full"):
@@ -190,13 +187,13 @@ class DiscountService:
                         look.product_specs.get("variants")
                     )
 
-                    total_intent_amount = total_intent_amount + total_price_of_look
+                    total_intent_amount += total_price_of_look
 
                     if total_price_of_look < 100:
                         raise BadRequestError("Total look items price must be greater than 100.")
 
                     if num_attendees >= 4:
-                        total_intent_amount = total_intent_amount - 100
+                        total_intent_amount -= 100
 
                     discount_intent = Discount(
                         event_id=event_id,
@@ -207,7 +204,7 @@ class DiscountService:
 
                     intents.append(discount_intent)
                 else:
-                    total_intent_amount = total_intent_amount + float(intent.get("amount"))
+                    total_intent_amount += intent.get("amount")
 
                     discount_intent = Discount(
                         event_id=event_id,

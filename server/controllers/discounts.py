@@ -30,7 +30,7 @@ def create_discount_intents(event_id, intents):
     discount_service = FlaskApp.current().discount_service
 
     try:
-        discounts = discount_service.create_groom_gift_discount_intents(event_id, intents)
+        discounts = discount_service.create_discount_intents(event_id, intents)
     except NotFoundError as e:
         logger.debug(e)
         return jsonify({"errors": e.message}), 404

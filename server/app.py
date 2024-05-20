@@ -101,7 +101,7 @@ def init_services(app, is_testing=False):
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
     app.webhook_service = WebhookService(
-        app.user_service, app.attendee_service, app.discount_service, app.shopify_service
+        app.user_service, app.attendee_service, app.discount_service, app.look_service, app.shopify_service
     )
 
 

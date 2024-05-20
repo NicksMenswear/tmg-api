@@ -20,10 +20,12 @@ def shopify_webhook(payload):
 
     webhook_service = FlaskApp.current().webhook_service
 
+    response_payload = {}
+
     try:
         if topic == "orders/paid":
-            webhook_service.handle_orders_paid(payload)
+            response_payload = webhook_service.handle_orders_paid(payload)
         else:
             logger.debug(f"Unhandled Shopify webhook topic: {topic}")
     finally:
-        return "OK", 200
+        return response_payload, 200

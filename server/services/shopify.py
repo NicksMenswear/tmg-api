@@ -33,7 +33,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_discount_code(self, title, code, shopify_customer_id, amount):
+    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
         pass
 
     @abstractmethod
@@ -94,8 +94,11 @@ class FakeShopifyService(AbstractShopifyService):
     def delete_product(self, product_id):
         pass
 
-    def create_discount_code(self, title, code, shopify_customer_id, amount):
-        pass
+    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+        return {
+            "shopify_discount_code": code,
+            "shopify_discount_id": random.randint(1000, 100000),
+        }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
         pass
@@ -229,7 +232,7 @@ class ShopifyService(AbstractShopifyService):
         if status >= 400:
             raise ServiceError(f"Failed to delete product by id '{product_id}' in shopify store.")
 
-    def create_discount_code(self, title, code, shopify_customer_id, amount):
+    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
         mutation = """
         mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
           discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
@@ -254,6 +257,8 @@ class ShopifyService(AbstractShopifyService):
         }
         """
 
+        variants = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
+
         variables = {
             "basicCodeDiscount": {
                 "title": title,
@@ -264,7 +269,7 @@ class ShopifyService(AbstractShopifyService):
                 "appliesOncePerCustomer": True,
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
                 "customerGets": {
-                    "items": {"all": True},
+                    "items": {"products": {"productVariantsToAdd": variants}},
                     "value": {"discountAmount": {"amount": amount, "appliesOnEachItem": False}},
                 },
             }

@@ -6,6 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
+from server.services.discount import GROOM_GIFT_DISCOUNT_CODE_PREFIX
 from server.test import BaseTestCase, fixtures
 
 
@@ -929,7 +930,7 @@ class TestDiscounts(BaseTestCase):
             random.randint(1, 9),
             DiscountType.GROOM_GIFT,
             False,
-            f"TEST-CODE-{random.randint(100000, 1000000)}",
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -995,7 +996,7 @@ class TestDiscounts(BaseTestCase):
             random.randint(300, 700),
             DiscountType.GROOM_FULL_PAY,
             False,
-            f"TEST-CODE-{random.randint(100000, 1000000)}",
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1043,7 +1044,7 @@ class TestDiscounts(BaseTestCase):
             random.randint(300, 700),
             DiscountType.GROOM_GIFT,
             False,
-            f"TEST-CODE-{random.randint(100000, 1000000)}",
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),

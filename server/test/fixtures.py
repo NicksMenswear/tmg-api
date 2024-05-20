@@ -171,3 +171,20 @@ def create_groom_full_pay_discount_intent_request(**create_discount_intent):
         "attendee_id": create_discount_intent.get("attendee_id", str(uuid.uuid4())),
         "pay_full": True,
     }
+
+
+def shopify_webhook_payload(sku="", customer_id=7132517335171, product_id=123):
+    return {
+        "id": random.randint(1000, 1000000),
+        "discount_codes": [],
+        "customer": {
+            "id": customer_id if customer_id else random.randint(1000, 1000000),
+            "email": "test@example.com",
+        },
+        "line_items": [
+            {
+                "id": product_id if product_id else random.randint(1000, 1000000),
+                "sku": sku,
+            }
+        ],
+    }

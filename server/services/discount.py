@@ -287,9 +287,24 @@ class DiscountService:
             db.session.refresh(intent)
 
         try:
+            product_body = "<strong>Groom gift discounts:</strong>"
+            product_body += "<ul>"
+
+            for intent in intents:
+                attendee_user = self.attendee_service.get_attendee_user(intent.attendee_id)
+                type = "Full pay" if intent.type == DiscountType.GROOM_FULL_PAY else "Gift"
+                product_body += (
+                    f"<li>{type} for {attendee_user.first_name} {attendee_user.last_name}: ${intent.amount}</li>"
+                )
+
+            if num_attendees >= 4:
+                product_body += "<li>Group discount: -$100</li>"
+
+            product_body += "</ul>"
+
             shopify_product = self.shopify_service.create_virtual_product(
                 title=f"{event.event_name} attendees discount",
-                body_html=f"Discount for {event.event_name} event for ${total_intent_amount}",
+                body_html=product_body,
                 price=total_intent_amount,
                 sku=f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
                 tags=",".join(

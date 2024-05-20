@@ -16,6 +16,7 @@ from server.services.user import UserService
 GROOM_DISCOUNT_TYPES = {DiscountType.GROOM_GIFT, DiscountType.GROOM_FULL_PAY}
 GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "GROOM-DISCOUNT"
 GROOM_GIFT_DISCOUNT_CODE_PREFIX = "GROOM-GIFT"
+TMG_GROUP_DISCOUNT_CODE_PREFIX = "TMG-GROUP-100-OFF"
 
 
 # noinspection PyMethodMayBeStatic
@@ -360,28 +361,18 @@ class DiscountService:
             Discount.type == DiscountType.PARTY_OF_FOUR,
         ).first()
 
-    def create_tmg_group_discount_for_attendee(self, attendee_id, event_id):
-        event = self.event_service.get_event_by_id(event_id)
-
-        if not event:
-            raise NotFoundError("Event not found.")
-
-        attendee = self.attendee_service.get_attendee_by_id(attendee_id)
-
-        if not attendee:
-            raise NotFoundError("Attendee not found.")
-
+    def create_tmg_group_discount_for_attendee(self, attendee, event_id):
         if not attendee.look_id:
-            raise ServiceError("Attendee has no look associated.")
+            raise NotFoundError("Attendee has no look associated.")
 
         look = self.look_service.get_look_by_id(attendee.look_id)
 
         if not look or not look.product_specs or len(look.product_specs.get("variants", [])) == 0:
             raise ServiceError("Look has no variants.")
 
-        attendee_user = self.attendee_service.get_attendee_user(attendee_id)
+        attendee_user = self.attendee_service.get_attendee_user(attendee.id)
 
-        code = f"TMG-GROUP-100-OFF-{random.randint(100000, 999999)}"
+        code = f"{TMG_GROUP_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
         title = code
 
         shopify_discount = self.shopify_service.create_discount_code(
@@ -389,7 +380,7 @@ class DiscountService:
         )
 
         discount = Discount(
-            attendee_id=attendee_id,
+            attendee_id=attendee.id,
             event_id=event_id,
             type=DiscountType.PARTY_OF_FOUR,
             amount=100,
@@ -402,6 +393,11 @@ class DiscountService:
         return discount
 
     def apply_discounts(self, attendee_id, event_id, shopify_cart_id):
+        attendee = self.attendee_service.get_attendee_by_id(attendee_id)
+
+        if not attendee:
+            raise NotFoundError("Attendee not found.")
+
         discounts = self.user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
 
         num_attendees = self.event_service.get_num_attendees_for_event(event_id)
@@ -410,7 +406,7 @@ class DiscountService:
             existing_discount = self.get_group_discount_for_attendee(attendee_id)
 
             if not existing_discount:
-                discount = self.create_tmg_group_discount_for_attendee(attendee_id, event_id)
+                discount = self.create_tmg_group_discount_for_attendee(attendee, event_id)
                 discounts.append(discount)
             else:
                 discounts.append(existing_discount)
@@ -418,8 +414,10 @@ class DiscountService:
         discounts = [discount for discount in discounts]
 
         if not discounts:
-            return
+            return []
 
         self.shopify_service.apply_discount_codes_to_cart(
             shopify_cart_id, [discount.shopify_discount_code for discount in discounts]
         )
+
+        return [discount.shopify_discount_code for discount in discounts]

@@ -201,3 +201,10 @@ def shopify_paid_order_user_pays_for_order_with_discounts(discounts):
             }
         ],
     }
+
+
+def apply_discounts_request(**apply_discounts_data):
+    return {
+        "event_id": apply_discounts_data.get("event_id", str(uuid.uuid4())),
+        "shopify_cart_id": apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
+    }

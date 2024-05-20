@@ -78,13 +78,20 @@ def soft_delete_attendee(attendee_id):
 
 @hmac_verification
 def apply_discounts(attendee_id, apply_discounts_request):
-    attendee_service = FlaskApp.current().attendee_service
+    discount_service = FlaskApp.current().discount_service
 
     event_id = apply_discounts_request["event_id"]
     shopify_cart_id = apply_discounts_request["shopify_cart_id"]
 
-    response = attendee_service.apply_discounts(attendee_id, event_id, shopify_cart_id)
+    try:
+        response = discount_service.apply_discounts(attendee_id, event_id, shopify_cart_id)
 
-    logger.info(f"Discount codes applied to cart: {response}")
+        logger.info(f"Discount codes applied to cart: {response}")
+    except NotFoundError as e:
+        logger.debug(e)
+        return jsonify({"errors": e.message}), 404
+    except ServiceError as e:
+        logger.exception(e)
+        return jsonify({"errors": e.message}), 500
 
-    return "{}", 200
+    return response, 200

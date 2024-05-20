@@ -1,6 +1,8 @@
 import logging
 import uuid
 
+from sqlalchemy import or_
+
 from server.database.database_manager import db
 from server.database.models import User, Event, Attendee, Look, Discount, DiscountType
 from server.services import ServiceError, DuplicateError, NotFoundError
@@ -60,7 +62,7 @@ class UserService:
             Discount.attendee_id == attendee_id,
             Discount.shopify_discount_code != None,
             Discount.used == False,
-            Discount.type == DiscountType.GROOM_GIFT,
+            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
 
     def get_user_invites(self, user_id):

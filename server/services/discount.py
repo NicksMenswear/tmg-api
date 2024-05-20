@@ -400,16 +400,20 @@ class DiscountService:
 
         discounts = self.user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
 
-        num_attendees = self.event_service.get_num_attendees_for_event(event_id)
+        groom_full_pay_discount_types = set([discount.type for discount in discounts])
+        can_apply_tmg_discount = False if DiscountType.GROOM_FULL_PAY in groom_full_pay_discount_types else True
 
-        if num_attendees >= 4:
-            existing_discount = self.get_group_discount_for_attendee(attendee_id)
+        if can_apply_tmg_discount:
+            num_attendees = self.event_service.get_num_attendees_for_event(event_id)
 
-            if not existing_discount:
-                discount = self.create_tmg_group_discount_for_attendee(attendee, event_id)
-                discounts.append(discount)
-            else:
-                discounts.append(existing_discount)
+            if num_attendees >= 4:
+                existing_discount = self.get_group_discount_for_attendee(attendee_id)
+
+                if not existing_discount:
+                    discount = self.create_tmg_group_discount_for_attendee(attendee, event_id)
+                    discounts.append(discount)
+                else:
+                    discounts.append(existing_discount)
 
         discounts = [discount for discount in discounts]
 

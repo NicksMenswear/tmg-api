@@ -224,13 +224,25 @@ class ShopifyService(AbstractShopifyService):
 
         return body.get("product")
 
-    def delete_product(self, product_id):
+    def archive_product(self, shopify_product_id):
         status, body = self.admin_api_request(
-            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{product_id}.json"
+            "PATCH",
+            f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json",
+            {"product": {"id": shopify_product_id, "published": False}},
         )
 
         if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{product_id}' in shopify store.")
+            raise ServiceError(f"Failed to archive/unpublish product by id '{shopify_product_id}' in shopify store.")
+
+        return body.get("product")
+
+    def delete_product(self, shopify_product_id):
+        status, body = self.admin_api_request(
+            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json"
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}' in shopify store.")
 
     def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
         mutation = """

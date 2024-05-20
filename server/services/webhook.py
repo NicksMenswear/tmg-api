@@ -62,6 +62,11 @@ class WebhookService:
             f"Handling groom discount for product_id '{shopify_product_id}' and customer_id '{shopify_customer_id}'"
         )
 
+        try:
+            self.shopify_service.archive_product(shopify_product_id)
+        except Exception as e:
+            logger.error(f"Error archiving product with id '{shopify_product_id}': {e}")  # log but proceed
+
         discounts = self.discount_service.get_groom_gift_discount_intents_for_product(shopify_product_id)
 
         if not discounts:

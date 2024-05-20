@@ -24,7 +24,6 @@ class BaseTestCase(TestCase):
     def create_app(self):
         FlaskApp.cleanup()
         app = init_app(True).app
-        app.config["TMG_APP_TESTING"] = True
         init_db()
         return app
 

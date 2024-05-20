@@ -76,13 +76,15 @@ def init_app(is_testing=False):
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
-    is_in_testing_mode = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
-    api.app.config["TMG_APP_TESTING"] = is_in_testing_mode
     api.app.json_encoder = encoder.CustomJSONEncoder
+
+    run_in_test_mode = is_testing or os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+
+    api.app.config["TMG_APP_TESTING"] = run_in_test_mode
 
     FlaskApp.set(api.app)
 
-    init_services(api.app, is_testing or is_in_testing_mode)
+    init_services(api.app, run_in_test_mode)
 
     return api
 

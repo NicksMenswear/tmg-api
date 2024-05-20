@@ -261,10 +261,6 @@ class TestProducts(BaseTestCase):
         self.assert200(response)
         self.assert_equal_left(updated_product, response.json)
 
-    @unittest.skip("this should fail on validation phase")
-    def test_update_product_missing_required_fields(self):
-        pass
-
     def test_delete_non_existing_product(self):
         # given
         delete_product_payload = {"id": str(uuid.uuid4()), "is_active": False}

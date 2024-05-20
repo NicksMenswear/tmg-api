@@ -2,11 +2,11 @@ import json
 import random
 import uuid
 
-from . import fixtures
 from server import encoder
 from server.database.models import DiscountType
 from server.services.discount import GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GROOM_GIFT_DISCOUNT_CODE_PREFIX
 from server.test import BaseTestCase
+from . import fixtures
 
 PAID_ORDER_REQUEST_HEADERS = {
     "Accept": "application/json",
@@ -57,7 +57,7 @@ class TestWebhooks(BaseTestCase):
 
     def test_paid_order_for_non_groom_gift_virtual_product(self):
         # when
-        response = self.__post(fixtures.shopify_webhook_payload())
+        response = self.__post(fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts())
 
         # then
         self.assert200(response)
@@ -66,7 +66,9 @@ class TestWebhooks(BaseTestCase):
     def test_paid_order_with_groom_gift_virtual_product_sku(self):
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -87,7 +89,9 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -109,7 +113,9 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -133,7 +139,9 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -172,7 +180,9 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -226,7 +236,9 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_webhook_payload(f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+            )
         )
 
         # then
@@ -243,4 +255,105 @@ class TestWebhooks(BaseTestCase):
         )
         self.assertTrue(
             discount_codes[2].startswith(f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent3.amount}-OFF")
+        )
+
+    def test_paid_order_with_empty_list_of_discount_codes(self):
+        # when
+        response = self.__post(fixtures.shopify_paid_order_user_pays_for_order_with_discounts([]))
+
+        # then
+        self.assert200(response)
+        self.assertEqual(response.text, "")
+
+    def test_paid_order_with_non_existing_discount_codes(self):
+        # when
+        response = self.__post(fixtures.shopify_paid_order_user_pays_for_order_with_discounts(["ASDF1234"]))
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 0)
+
+    def test_paid_order_with_discount_code(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.user_request())
+        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.user_request())
+        look = self.app.look_service.create_look(
+            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+        )
+        discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 900),
+            DiscountType.GROOM_GIFT,
+            False,
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.__post(
+            fixtures.shopify_paid_order_user_pays_for_order_with_discounts([discount.shopify_discount_code])
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0], discount.shopify_discount_code)
+
+        discount_in_db = self.discount_service.get_discount_by_shopify_code(discount.shopify_discount_code)
+        self.assertTrue(discount_in_db.used)
+
+    def test_paid_order_with_multiple_discount_codes(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.user_request())
+        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.user_request())
+        look = self.app.look_service.create_look(
+            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 900),
+            DiscountType.GROOM_GIFT,
+            False,
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 900),
+            DiscountType.GROOM_GIFT,
+            False,
+            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.__post(
+            fixtures.shopify_paid_order_user_pays_for_order_with_discounts(
+                [discount1.shopify_discount_code, discount2.shopify_discount_code]
+            )
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+        self.assertEqual(
+            {response.json[0], response.json[1]}, {discount1.shopify_discount_code, discount2.shopify_discount_code}
         )

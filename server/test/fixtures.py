@@ -173,7 +173,7 @@ def create_groom_full_pay_discount_intent_request(**create_discount_intent):
     }
 
 
-def shopify_webhook_payload(sku="", customer_id=7132517335171, product_id=123):
+def shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(sku="", customer_id=None, product_id=None):
     return {
         "id": random.randint(1000, 1000000),
         "discount_codes": [],
@@ -185,6 +185,19 @@ def shopify_webhook_payload(sku="", customer_id=7132517335171, product_id=123):
             {
                 "id": product_id if product_id else random.randint(1000, 1000000),
                 "sku": sku,
+            }
+        ],
+    }
+
+
+def shopify_paid_order_user_pays_for_order_with_discounts(discounts):
+    return {
+        "id": random.randint(1000, 1000000),
+        "discount_codes": [{"shopify_discount_code": discount} for discount in discounts],
+        "line_items": [
+            {
+                "id": random.randint(1000, 1000000),
+                "sku": "PRODUCT_SKU",
             }
         ],
     }

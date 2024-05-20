@@ -105,11 +105,13 @@ class WebhookService:
         return {"discount_codes": discounts_codes}
 
     def handle_used_discount_code(self, payload):
-        discount_codes = payload.get("discount_codes")
+        discount_codes = payload.get("discount_codes", [])
 
-        if not discount_codes:
-            logger.error(f"No discount codes found in payload")
-            return
+        if len(discount_codes) == 0:
+            logger.debug(f"No discount codes found in payload")
+            return {}
+
+        used_discount_codes = []
 
         for discount_code in discount_codes:
             shopify_discount_code = discount_code.get("shopify_discount_code")
@@ -117,4 +119,7 @@ class WebhookService:
             discount = self.discount_service.mark_discount_by_shopify_code_as_paid(shopify_discount_code)
 
             if discount:
+                used_discount_codes.append(shopify_discount_code)
                 logger.info(f"Marked discount with code '{shopify_discount_code}' with id '{discount.id}' as paid")
+
+        return used_discount_codes

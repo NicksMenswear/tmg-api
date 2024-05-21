@@ -269,8 +269,6 @@ class ShopifyService(AbstractShopifyService):
         }
         """
 
-        variants = [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids]
-
         variables = {
             "basicCodeDiscount": {
                 "title": title,
@@ -281,11 +279,21 @@ class ShopifyService(AbstractShopifyService):
                 "appliesOncePerCustomer": True,
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
                 "customerGets": {
-                    "items": {"products": {"productVariantsToAdd": variants}},
                     "value": {"discountAmount": {"amount": amount, "appliesOnEachItem": False}},
                 },
             }
         }
+
+        if variant_ids:
+            variables["basicCodeDiscount"]["customerGets"]["items"] = {
+                {
+                    "products": {
+                        "productVariantsToAdd": [
+                            f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids
+                        ]
+                    }
+                },
+            }
 
         status, body = self.admin_api_request(
             "POST",

@@ -375,9 +375,7 @@ class DiscountService:
         code = f"{TMG_GROUP_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
         title = code
 
-        shopify_discount = self.shopify_service.create_discount_code(
-            title, code, attendee_user.shopify_id, 100, look.product_specs.get("variants")
-        )
+        shopify_discount = self.shopify_service.create_discount_code(title, code, attendee_user.shopify_id, 100, [])
 
         discount = Discount(
             attendee_id=attendee.id,

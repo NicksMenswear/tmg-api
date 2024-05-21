@@ -119,7 +119,7 @@ class WebhookService:
         used_discount_codes = []
 
         for discount_code in discount_codes:
-            shopify_discount_code = discount_code.get("shopify_discount_code")
+            shopify_discount_code = discount_code.get("code")
 
             discount = self.discount_service.mark_discount_by_shopify_code_as_paid(shopify_discount_code)
 

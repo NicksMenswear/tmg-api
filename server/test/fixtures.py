@@ -193,7 +193,7 @@ def shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(sku="", cust
 def shopify_paid_order_user_pays_for_order_with_discounts(discounts):
     return {
         "id": random.randint(1000, 1000000),
-        "discount_codes": [{"shopify_discount_code": discount} for discount in discounts],
+        "discount_codes": [{"code": discount} for discount in discounts],
         "line_items": [
             {
                 "id": random.randint(1000, 1000000),

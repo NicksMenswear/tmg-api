@@ -269,7 +269,7 @@ class ShopifyService(AbstractShopifyService):
         }
         """
 
-        variants = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
+        variants = ", ".join([f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids])
 
         variables = {
             "basicCodeDiscount": {

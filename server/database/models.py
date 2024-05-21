@@ -611,9 +611,9 @@ class Discount(Base):
     type = Column(Enum(DiscountType), nullable=False)
     used = Column(Boolean, default=False, nullable=False)
     shopify_discount_code = Column(String)
-    shopify_discount_code_id = Column(Integer)
-    shopify_virtual_product_id = Column(Integer)
-    shopify_virtual_product_variant_id = Column(Integer)
+    shopify_discount_code_id = Column(BigInteger)
+    shopify_virtual_product_id = Column(BigInteger)
+    shopify_virtual_product_variant_id = Column(BigInteger)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 

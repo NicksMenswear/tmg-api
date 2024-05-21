@@ -278,7 +278,7 @@ class ShopifyService(AbstractShopifyService):
                 "usageLimit": 1,
                 "customerSelection": {"customers": {"add": [f"gid://shopify/Customer/{shopify_customer_id}"]}},
                 "startsAt": datetime.now(timezone.utc).isoformat(),
-                "appliesOncePerCustomer": False,
+                "appliesOncePerCustomer": True,
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
                 "customerGets": {
                     "items": {"products": {"productVariantsToAdd": variants}},

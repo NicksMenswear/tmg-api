@@ -7,6 +7,9 @@ from email.mime.text import MIMEText
 from server.services import ServiceError
 
 
+ACTIVE_CAMPAIGN_API_KEY = os.getenv("ACTIVE_CAMPAIGN_API_KEY")
+
+
 class AbstractEmailService(ABC):
     @abstractmethod
     def send_activation_url(self, email, shopify_customer_id):

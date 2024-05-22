@@ -5,7 +5,7 @@ from server.controllers.registration_email import send_email
 from server.controllers.util import hmac_verification
 from server.database.database_manager import db
 from server.database.models import User
-from server.services.shopify import ShopifyService
+from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ password = os.getenv("sender_password")
 @hmac_verification
 def send_invite(invite_data):
     try:
-        shopify_service = ShopifyService()
+        shopify_service = FlaskApp.current().shopify_service
 
         if "data" in invite_data:
             for attendee in invite_data["data"]:

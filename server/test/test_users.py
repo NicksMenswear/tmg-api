@@ -181,8 +181,8 @@ class TestUsers(BaseTestCase):
     def test_get_invites_for_non_existing_user(self):
         # when
         response = self.client.open(
-            f"/users/{str(uuid.uuid4())}/invites",
-            query_string=self.hmac_query_params,
+            f"/users/{str(uuid.uuid4())}/events",
+            query_string={**self.hmac_query_params, "status": "invited"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -198,8 +198,8 @@ class TestUsers(BaseTestCase):
 
         # when
         response = self.client.open(
-            f"/users/{str(user.id)}/invites",
-            query_string=self.hmac_query_params,
+            f"/users/{str(user.id)}/events",
+            query_string={**self.hmac_query_params, "status": "invited"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -219,8 +219,8 @@ class TestUsers(BaseTestCase):
 
         # when
         response = self.client.open(
-            f"/users/{str(attendee_user.id)}/invites",
-            query_string=self.hmac_query_params,
+            f"/users/{str(attendee_user.id)}/events",
+            query_string={**self.hmac_query_params, "status": "invited"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -244,8 +244,8 @@ class TestUsers(BaseTestCase):
 
         # when
         response = self.client.open(
-            f"/users/{str(attendee_user.id)}/invites",
-            query_string=self.hmac_query_params,
+            f"/users/{str(attendee_user.id)}/events",
+            query_string={**self.hmac_query_params, "status": "invited"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -258,6 +258,37 @@ class TestUsers(BaseTestCase):
         response_event2 = response.json[1]
         self.assertEqual(response_event1["id"], str(event1.id))
         self.assertEqual(response_event2["id"], str(event2.id))
+
+    def test_get_events_of_mix_statuses(self):
+        # given
+        user1 = self.user_service.create_user(fixtures.user_request())
+        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
+        user2 = self.user_service.create_user(fixtures.user_request())
+        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
+        event3_owner_inactive = self.event_service.create_event(
+            fixtures.event_request(user_id=user2.id, is_active=False)
+        )
+        event4_invited_inactive = self.event_service.create_event(
+            fixtures.event_request(user_id=user1.id, is_active=False)
+        )
+        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=user2.email))
+
+        # when
+        response = self.client.open(
+            f"/users/{str(user2.id)}/events",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+        response_event1 = response.json[0]
+        response_event2 = response.json[1]
+        self.assertTrue(response_event1["id"] in (str(event1.id), str(event2.id)))
+        self.assertTrue(response_event2["id"] in (str(event1.id), str(event2.id)))
 
     def test_get_user_looks_for_non_existing_user(self):
         # when

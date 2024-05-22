@@ -586,6 +586,16 @@ class CartProduct(Base):
         }
 
 
+@enum.unique
+class DiscountType(enum.Enum):
+    GROOM_GIFT = "groom_gift"
+    GROOM_FULL_PAY = "groom_full_pay"
+    PARTY_OF_FOUR = "party_of_four"
+
+    def __str__(self):
+        return self.value
+
+
 class Discount(Base):
     __tablename__ = "discounts"
     id = Column(
@@ -595,13 +605,15 @@ class Discount(Base):
         server_default=text("uuid_generate_v4()"),
         nullable=False,
     )
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
-    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
-    amount = Column(Numeric, nullable=False)
-    code = Column(String)
-    shopify_discount_code_id = Column(String)
-    shopify_virtual_product_id = Column(String)
-    shopify_virtual_product_variant_id = Column(String)
+    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"), nullable=False)
+    amount = Column(Integer, nullable=False)
+    type = Column(Enum(DiscountType), nullable=False)
+    used = Column(Boolean, default=False, nullable=False)
+    shopify_discount_code = Column(String)
+    shopify_discount_code_id = Column(BigInteger)
+    shopify_virtual_product_id = Column(BigInteger)
+    shopify_virtual_product_variant_id = Column(BigInteger)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
@@ -610,10 +622,13 @@ class Discount(Base):
             "id": self.id,
             "event_id": self.event_id,
             "attendee_id": self.attendee_id,
+            "type": str(self.type),
             "amount": self.amount,
-            "code": self.code,
+            "shopify_discount_code": self.shopify_discount_code,
+            "shopify_discount_code_id": self.shopify_discount_code_id,
             "shopify_virtual_product_id": self.shopify_virtual_product_id,
             "shopify_virtual_product_variant_id": self.shopify_virtual_product_variant_id,
+            "used": self.used,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }

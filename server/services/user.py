@@ -1,25 +1,21 @@
-import uuid
 import logging
+import uuid
+
+from sqlalchemy import or_
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee, Look
-from server.flask_app import FlaskApp
+from server.database.models import User, Event, Attendee, Look, Discount, DiscountType
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.emails import AbstractEmailService
+from server.services.shopify import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
 
 class UserService:
-    def __init__(self):
-        super().__init__()
-        if FlaskApp.current().config["TMG_APP_TESTING"]:
-            self.shopify_service = FakeShopifyService()
-            self.email_service = FakeEmailService()
-        else:
-            self.shopify_service = ShopifyService()
-            self.email_service = EmailService()
+    def __init__(self, shopify_service: AbstractShopifyService, email_service: AbstractEmailService):
+        self.shopify_service = shopify_service
+        self.email_service = email_service
 
     def create_user(self, user_data):
         if User.query.filter_by(email=user_data["email"]).first():
@@ -52,9 +48,6 @@ class UserService:
             raise ServiceError("Failed to create user.")
         return user
 
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()
-
     def get_user_by_shopify_id(self, shopify_id):
         return User.query.filter_by(shopify_id=shopify_id).first()
 
@@ -63,6 +56,14 @@ class UserService:
 
     def get_user_events(self, user_id):
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
+
+    def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
+        return Discount.query.filter(
+            Discount.attendee_id == attendee_id,
+            Discount.shopify_discount_code != None,
+            Discount.used == False,
+            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
+        ).all()
 
     def get_user_invites(self, user_id):
         return (

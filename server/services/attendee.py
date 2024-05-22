@@ -2,32 +2,29 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
-from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.emails import EmailService, FakeEmailService
-from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.event import EventService
+from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
 
+# noinspection PyMethodMayBeStatic
 class AttendeeService:
-    def __init__(self):
-        super().__init__()
-        self.user_service = UserService()
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        user_service: UserService,
+        event_service: EventService,
+    ):
+        self.shopify_service = shopify_service
+        self.user_service = user_service
+        self.event_service = event_service
 
-        if FlaskApp.current().config["TMG_APP_TESTING"]:
-            self.shopify_service = FakeShopifyService()
-            self.email_service = FakeEmailService()
-        else:
-            self.shopify_service = ShopifyService()
-            self.email_service = EmailService()
-
-    def get_attendee_by_id(self, attendee_id):
-        return Attendee.query.filter(Attendee.id == attendee_id).first()
+    def get_attendee_by_id(self, attendee_id, is_active=True):
+        return Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
 
     def get_attendee_user(self, attendee_id):
-        return User.query.filter(
-            User.id == Attendee.query.filter(Attendee.id == attendee_id).first().attendee_id
-        ).first()
+        return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
 
     def create_attendee(self, attendee_data):
         event = Event.query.filter(Event.id == attendee_data["event_id"], Event.is_active).first()
@@ -38,7 +35,12 @@ class AttendeeService:
         attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
 
         if not attendee_user:
-            disabled_user = {**attendee_data, "account_status": False}
+            disabled_user = {
+                "first_name": attendee_data["first_name"],
+                "last_name": attendee_data["last_name"],
+                "email": attendee_data["email"],
+                "account_status": False,
+            }
 
             try:
                 attendee_user = self.user_service.create_user(disabled_user)

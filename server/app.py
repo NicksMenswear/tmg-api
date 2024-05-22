@@ -6,12 +6,22 @@ from urllib.parse import urlparse
 
 import connexion
 import sentry_sdk
+from flask_cors import CORS
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
+from server.services.attendee import AttendeeService
+from server.services.discount import DiscountService
+from server.services.emails import EmailService, FakeEmailService
+from server.services.event import EventService
+from server.services.look import LookService
+from server.services.role import RoleService
+from server.services.shopify import ShopifyService, FakeShopifyService
+from server.services.user import UserService
+from server.services.webhook import WebhookService
 
 
 def init_sentry():
@@ -60,17 +70,40 @@ def init_logging(debug=False):
             logging.getLogger(name).setLevel(logging.INFO)
 
 
-def init_app():
+def init_app(is_testing=False):
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
-    # CORS(api.app)
+    CORS(api.app)
     api.add_api(
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
-    api.app.config["TMG_APP_TESTING"] = os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+
+    run_in_test_mode = is_testing or os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+
+    api.app.config["TMG_APP_TESTING"] = run_in_test_mode
+
     FlaskApp.set(api.app)
+
+    init_services(api.app, run_in_test_mode)
+
     return api
+
+
+def init_services(app, is_testing=False):
+    app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
+    app.email_service = FakeEmailService() if is_testing else EmailService()
+    app.user_service = UserService(app.shopify_service, app.email_service)
+    app.role_service = RoleService()
+    app.look_service = LookService(app.user_service)
+    app.event_service = EventService()
+    app.attendee_service = AttendeeService(app.shopify_service, app.user_service, app.event_service)
+    app.discount_service = DiscountService(
+        app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
+    )
+    app.webhook_service = WebhookService(
+        app.user_service, app.attendee_service, app.discount_service, app.look_service, app.shopify_service
+    )
 
 
 def init_db():

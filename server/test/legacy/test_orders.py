@@ -8,8 +8,8 @@ from datetime import datetime
 from server import encoder
 from server.database.models import Order
 from server.services.event import EventService
-from server.services.order import OrderService
-from server.services.product import ProductService
+from server.services.legacy.order import OrderService
+from server.services.legacy.product import ProductService
 from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 

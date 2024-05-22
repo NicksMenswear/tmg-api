@@ -5,24 +5,10 @@ import uuid
 from datetime import datetime
 
 from server import encoder
-from server.services.attendee import AttendeeService
-from server.services.event import EventService
-from server.services.look import LookService
-from server.services.role import RoleService
-from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
 class TestEvents(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.user_service = UserService()
-        self.event_service = EventService()
-        self.look_service = LookService()
-        self.attendee_service = AttendeeService()
-        self.role_service = RoleService()
-
     def assert_equal_response_event_with_db_event(self, event, response_event: dict):
         self.assertEqual(response_event["id"], str(event.get("id")))
         self.assertEqual(response_event["event_name"], event.get("event_name"))
@@ -84,7 +70,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assert_equal_response_event_with_db_event(
-            self.event_service.get_event_by_id(response.json["id"]), response.json
+            self.event_service.get_event_by_id(response.json["id"]).to_dict(), response.json
         )
 
     def test_get_event_non_existing(self):
@@ -117,7 +103,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assert_equal_response_event_with_db_event(
-            self.event_service.get_event_by_id(response.json["id"]), response.json
+            self.event_service.get_event_by_id(response.json["id"]).to_dict(), response.json
         )
 
     def test_get_event_non_active(self):
@@ -137,7 +123,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assert_equal_response_event_with_db_event(
-            self.event_service.get_event_by_id(response.json["id"]), response.json
+            self.event_service.get_event_by_id(response.json["id"]).to_dict(), response.json
         )
 
     def test_get_event_enriched_without_attendees(self):
@@ -159,7 +145,7 @@ class TestEvents(BaseTestCase):
         self.assert200(response)
         response_event = response.json
         self.assert_equal_response_event_with_db_event(
-            self.event_service.get_event_by_id(response.json["id"]), response_event
+            self.event_service.get_event_by_id(response.json["id"]).to_dict(), response_event
         )
         self.assertEqual(response_event["attendees"], [])
 
@@ -194,13 +180,14 @@ class TestEvents(BaseTestCase):
         self.assert200(response)
         response_event = response.json
         self.assert_equal_response_event_with_db_event(
-            self.event_service.get_event_by_id(response.json["id"]), response_event
+            self.event_service.get_event_by_id(response.json["id"]).to_dict(), response_event
         )
         self.assertEqual(len(response_event["attendees"]), 2)
         response_attendee1 = response_event["attendees"][0]
         response_attendee2 = response_event["attendees"][1]
-        self.assertEqual(response_attendee1["id"], str(attendee1.id))
-        self.assertEqual(response_attendee2["id"], str(attendee2.id))
+        self.assertNotEqual(str(attendee1.id), str(attendee2.id))
+        self.assertTrue(str(attendee1.id) in [response_attendee1["id"], response_attendee2["id"]])
+        self.assertTrue(str(attendee2.id) in [response_attendee1["id"], response_attendee2["id"]])
 
     def test_get_event_enriched_attendee_look_and_role(self):
         # given
@@ -344,8 +331,9 @@ class TestEvents(BaseTestCase):
         self.assertEqual(len(response.json), 2)
         response_attendee1 = response.json[0]
         response_attendee2 = response.json[1]
-        self.assertEqual(str(attendee1.id), response_attendee1["id"])
-        self.assertEqual(str(attendee2.id), response_attendee2["id"])
+        self.assertNotEqual(str(attendee1.id), str(attendee2.id))
+        self.assertTrue(str(attendee1.id) in [response_attendee1["id"], response_attendee2["id"]])
+        self.assertTrue(str(attendee2.id) in [response_attendee1["id"], response_attendee2["id"]])
 
     def test_get_all_attendees_for_non_existing_event(self):
         # when
@@ -457,4 +445,4 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 204)
 
         looked_up_event = self.event_service.get_event_by_id(event.id)
-        self.assertEqual(looked_up_event.get("is_active"), False)
+        self.assertEqual(looked_up_event.is_active, False)

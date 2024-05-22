@@ -6,6 +6,9 @@ from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 class RoleService:
+    def get_role_by_id(self, role_id):
+        return Role.query.filter(Role.id == role_id).first()
+
     def create_role(self, role_data):
         event = Event.query.filter(Event.id == role_data["event_id"]).first()
 
@@ -29,9 +32,6 @@ class RoleService:
             raise ServiceError("Failed to create role.", e)
 
         return role
-
-    def get_role_by_id(self, role_id):
-        return Role.query.filter(Role.id == role_id).first()
 
     def update_role(self, role_id, role_data):
         role = Role.query.filter(Role.id == role_id).first()

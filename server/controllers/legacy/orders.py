@@ -4,7 +4,7 @@ from flask import jsonify
 
 from server.controllers.util import hmac_verification
 from server.services import NotFoundError, ServiceError
-from server.services.order import OrderService
+from server.services.legacy.order import OrderService
 
 logger = logging.getLogger(__name__)
 

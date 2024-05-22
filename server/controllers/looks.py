@@ -3,6 +3,7 @@ import logging
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
+from server.flask_app import FlaskApp
 from server.services import NotFoundError, ServiceError, DuplicateError
 from server.services.look import LookService
 
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 def get_look(look_id):
-    look_service = LookService()
+    look_service = FlaskApp.current().look_service
 
     look = look_service.get_look_by_id(look_id)
 
@@ -23,7 +24,7 @@ def get_look(look_id):
 
 @hmac_verification
 def create_look(look_data):
-    look_service = LookService()
+    look_service = FlaskApp.current().look_service
 
     try:
         look = look_service.create_look(look_data)
@@ -42,7 +43,7 @@ def create_look(look_data):
 
 @hmac_verification
 def get_events_for_look(look_id):
-    look_service = LookService()
+    look_service = FlaskApp.current().look_service
 
     events = look_service.get_events_for_look(look_id)
 
@@ -51,7 +52,7 @@ def get_events_for_look(look_id):
 
 @hmac_verification
 def update_look(look_id, look_data):
-    look_service = LookService()
+    look_service = FlaskApp.current().look_service
 
     try:
         look = look_service.update_look(look_id, look_data)
@@ -70,7 +71,7 @@ def update_look(look_id, look_data):
 
 @hmac_verification
 def delete_look(look_id):
-    look_service = LookService()
+    look_service = FlaskApp.current().look_service
 
     try:
         look_service.delete_look(look_id)

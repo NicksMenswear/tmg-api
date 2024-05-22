@@ -3,15 +3,15 @@ import logging
 from flask import jsonify
 
 from server.controllers.util import hmac_verification
+from server.flask_app import FlaskApp
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
 
 
 @hmac_verification
 def create_user(user_data):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     try:
         user = user_service.create_user(user_data)
@@ -27,7 +27,7 @@ def create_user(user_data):
 
 @hmac_verification
 def get_user_by_email(email):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     user = user_service.get_user_by_email(email)
 
@@ -39,7 +39,7 @@ def get_user_by_email(email):
 
 @hmac_verification
 def get_user_events(user_id):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     events = user_service.get_user_events(user_id)
 
@@ -48,7 +48,7 @@ def get_user_events(user_id):
 
 @hmac_verification
 def get_user_invites(user_id):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     events = user_service.get_user_invites(user_id)
 
@@ -57,7 +57,7 @@ def get_user_invites(user_id):
 
 @hmac_verification
 def get_user_looks(user_id):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     looks = user_service.get_user_looks(user_id)
 
@@ -66,7 +66,7 @@ def get_user_looks(user_id):
 
 @hmac_verification
 def update_user(user_id, user_data):
-    user_service = UserService()
+    user_service = FlaskApp.current().user_service
 
     try:
         user = user_service.update_user(user_id, user_data)

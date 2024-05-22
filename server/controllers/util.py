@@ -126,7 +126,14 @@ def http(method, *args, **kwargs):
 
 def _log_request(method, *args, **kwargs):
     log_kwargs = deepcopy(kwargs)
-    log_kwargs.get("headers", {})["X-Shopify-Access-Token"] = "***"
+    headers = log_kwargs.get("headers", {})
+
+    if "X-Shopify-Access-Token" in headers:
+        headers["X-Shopify-Access-Token"] = "***"
+
+    if "X-Shopify-Storefront-Access-Token" in headers:
+        headers["X-Shopify-Storefront-Access-Token"] = "***"
+
     logger.debug(f"Making {method} request with args {args} {log_kwargs}")
 
 

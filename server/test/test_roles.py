@@ -5,20 +5,10 @@ import uuid
 
 from server import encoder
 from server.database.models import Role
-from server.services.event import EventService
-from server.services.role import RoleService
-from server.services.user import UserService
 from server.test import BaseTestCase, fixtures
 
 
 class TestRoles(BaseTestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.user_service = UserService()
-        self.event_service = EventService()
-        self.role_service = RoleService()
-
     def assert_equal_response_role_with_db_role(self, role: Role, response_role: dict):
         self.assertEqual(response_role["id"], str(role.id))
         self.assertEqual(response_role["role_name"], role.role_name)

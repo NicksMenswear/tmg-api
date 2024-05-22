@@ -2,30 +2,24 @@ import logging
 
 from flask import jsonify
 
-from server.controllers.util import hmac_verification
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
-from server.services import ServiceError, DuplicateError, NotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 @hmac_verification
+@error_handler
 def create_user(user_data):
     user_service = FlaskApp.current().user_service
 
-    try:
-        user = user_service.create_user(user_data)
-    except DuplicateError as e:
-        logger.debug(e)
-        return jsonify({"errors": DuplicateError.MESSAGE}), 409
-    except ServiceError as e:
-        logger.exception(e)
-        return jsonify({"errors": "Failed to create user"}), 500
+    user = user_service.create_user(user_data)
 
     return user.to_dict(), 201
 
 
 @hmac_verification
+@error_handler
 def get_user_by_email(email):
     user_service = FlaskApp.current().user_service
 
@@ -38,6 +32,7 @@ def get_user_by_email(email):
 
 
 @hmac_verification
+@error_handler
 def get_user_events(user_id, status=None):
     user_service = FlaskApp.current().user_service
 
@@ -47,6 +42,7 @@ def get_user_events(user_id, status=None):
 
 
 @hmac_verification
+@error_handler
 def get_user_looks(user_id):
     user_service = FlaskApp.current().user_service
 
@@ -56,16 +52,10 @@ def get_user_looks(user_id):
 
 
 @hmac_verification
+@error_handler
 def update_user(user_id, user_data):
     user_service = FlaskApp.current().user_service
 
-    try:
-        user = user_service.update_user(user_id, user_data)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
-    except ServiceError as e:
-        logger.exception(e)
-        return jsonify({"errors": "Failed to update user."}), 500
+    user = user_service.update_user(user_id, user_data)
 
     return user.to_dict(), 200

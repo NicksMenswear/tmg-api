@@ -71,7 +71,7 @@ class UserService:
         if not status or status == "owner":
             owned_events = self.get_user_owned_events(user_id)
 
-        if not status or status == "invited":
+        if not status or status == "attendee":
             invited_events = self.get_user_invited_events(user_id)
 
         combined_events = owned_events + invited_events
@@ -80,7 +80,7 @@ class UserService:
 
         for event in combined_events:
             events[event.id] = event.to_dict()
-            events[event.id]["status"] = "owner" if str(event.user_id) == user_id else "invited"
+            events[event.id]["status"] = "owner" if str(event.user_id) == user_id else "attendee"
 
         return [event for event in list(events.values())]
 

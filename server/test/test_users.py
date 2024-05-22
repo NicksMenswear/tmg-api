@@ -182,7 +182,7 @@ class TestUsers(BaseTestCase):
         # when
         response = self.client.open(
             f"/users/{str(uuid.uuid4())}/events",
-            query_string={**self.hmac_query_params, "status": "invited"},
+            query_string={**self.hmac_query_params, "status": "attendee"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -199,7 +199,7 @@ class TestUsers(BaseTestCase):
         # when
         response = self.client.open(
             f"/users/{str(user.id)}/events",
-            query_string={**self.hmac_query_params, "status": "invited"},
+            query_string={**self.hmac_query_params, "status": "attendee"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -220,7 +220,7 @@ class TestUsers(BaseTestCase):
         # when
         response = self.client.open(
             f"/users/{str(attendee_user.id)}/events",
-            query_string={**self.hmac_query_params, "status": "invited"},
+            query_string={**self.hmac_query_params, "status": "attendee"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,
@@ -245,7 +245,7 @@ class TestUsers(BaseTestCase):
         # when
         response = self.client.open(
             f"/users/{str(attendee_user.id)}/events",
-            query_string={**self.hmac_query_params, "status": "invited"},
+            query_string={**self.hmac_query_params, "status": "attendee"},
             method="GET",
             headers=self.request_headers,
             content_type=self.content_type,

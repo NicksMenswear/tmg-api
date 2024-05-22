@@ -208,7 +208,7 @@ paths:
             type: string
             enum:
               - owner
-              - invited
+              - attendee
         - in: query
           name: logged_in_customer_id
           schema:

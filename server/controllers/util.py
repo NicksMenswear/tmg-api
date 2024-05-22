@@ -10,9 +10,6 @@ import urllib3
 from flask import request, abort, jsonify
 from pydantic import ValidationError
 
-logger = logging.getLogger(__name__)
-
-
 from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 
@@ -43,7 +40,7 @@ def hmac_verification(func):
 
         is_in_testing_mode = FlaskApp.current().config.get(
             "TMG_APP_TESTING", False
-        ) or "127.0.0.1:9292" in request.headers.get("Origin")
+        ) or "127.0.0.1:9292" in request.headers.get("Origin", "")
 
         if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
             # Remove the HMAC parameters from the kwargs

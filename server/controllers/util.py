@@ -9,9 +9,6 @@ from functools import wraps
 import urllib3
 from flask import request, abort
 
-logger = logging.getLogger(__name__)
-
-
 from server.flask_app import FlaskApp
 
 secret_key = os.getenv("client_secret", "")
@@ -41,7 +38,11 @@ def hmac_verification(func):
 
         is_in_testing_mode = FlaskApp.current().config.get(
             "TMG_APP_TESTING", False
-        ) or "127.0.0.1:9292" in request.headers.get("Origin")
+        ) or "127.0.0.1:9292" in request.headers.get("Origin", "")
+
+        logger.info("HEADERS:")
+        for header, value in request.headers.items():
+            logger.info(f"{header}: {value}")
 
         if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
             # Remove the HMAC parameters from the kwargs

@@ -47,27 +47,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -98,27 +98,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -148,27 +148,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -205,27 +205,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -306,27 +306,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -350,27 +350,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -406,27 +406,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -455,27 +455,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -505,27 +505,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "204":
           description: Event Deleted Success
@@ -554,27 +554,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -607,27 +607,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -660,27 +660,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -707,27 +707,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -757,27 +757,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -807,27 +807,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Single look by id
@@ -850,27 +850,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -902,27 +902,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "204":
           description: Look Deleted Successfully
@@ -945,27 +945,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Collection of events for look by id
@@ -983,27 +983,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1033,27 +1033,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Single role by id
@@ -1076,27 +1076,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1130,27 +1130,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "204":
           description: Role deleted successfully
@@ -1167,27 +1167,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1217,27 +1217,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Single attendee by id
@@ -1260,27 +1260,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1312,27 +1312,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "204":
           description: Attendee Deleted Successfully
@@ -1355,27 +1355,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1421,27 +1421,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -1463,27 +1463,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: email
           schema:
@@ -1506,27 +1506,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -1547,27 +1547,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1596,27 +1596,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "204":
           description: Order deleted successfully
@@ -1649,27 +1649,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Retrieve all orders by user ID or event ID
@@ -1684,27 +1684,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1726,27 +1726,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1781,27 +1781,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Details of the specific order
@@ -1819,27 +1819,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1862,27 +1862,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1904,27 +1904,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       requestBody:
         content:
           application/json:
@@ -1955,27 +1955,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Details of the Cart
@@ -2009,27 +2009,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: Details of the Cart
@@ -2052,27 +2052,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           description: show single product by id
@@ -2095,27 +2095,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:
@@ -2144,27 +2144,27 @@ paths:
           name: logged_in_customer_id
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: shop
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: path_prefix
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: timestamp
           schema:
             type: string
-          required: true
+          required: false
         - in: query
           name: signature
           schema:
             type: string
-          required: true
+          required: false
       responses:
         "200":
           content:

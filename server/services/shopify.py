@@ -286,13 +286,9 @@ class ShopifyService(AbstractShopifyService):
 
         if variant_ids:
             variables["basicCodeDiscount"]["customerGets"]["items"] = {
-                {
-                    "products": {
-                        "productVariantsToAdd": [
-                            f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids
-                        ]
-                    }
-                },
+                "products": {
+                    "productVariantsToAdd": [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids]
+                }
             }
 
         status, body = self.admin_api_request(

@@ -87,6 +87,7 @@ class RMAStatus(enum.Enum):
     PENDING = "Pending"
     PENDING_CS_ACTION = "Pending CS Action"
     WAREHOUSE_COMPLETE = "Warehouse Complete"
+    WAREHOUSE_CANCELED = "Warehouse Cancelled"
     COMPLETED = "Completed"
 
 

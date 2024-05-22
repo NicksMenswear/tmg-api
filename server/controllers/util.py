@@ -40,10 +40,6 @@ def hmac_verification(func):
             "TMG_APP_TESTING", False
         ) or "127.0.0.1:9292" in request.headers.get("Origin", "")
 
-        logger.info("HEADERS:")
-        for header, value in request.headers.items():
-            logger.info(f"{header}: {value}")
-
         if is_in_testing_mode or hmac.compare_digest(signature, calculated_signature):
             # Remove the HMAC parameters from the kwargs
             for param in ("logged_in_customer_id", "shop", "path_prefix", "timestamp", "signature"):

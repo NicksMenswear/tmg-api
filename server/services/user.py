@@ -54,8 +54,35 @@ class UserService:
     def get_user_by_email(self, email):
         return User.query.filter_by(email=email).first()
 
-    def get_user_events(self, user_id):
+    def get_user_owned_events(self, user_id):
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
+
+    def get_user_invited_events(self, user_id):
+        return (
+            Event.query.join(Attendee, Event.id == Attendee.event_id)
+            .filter(Attendee.attendee_id == user_id, Event.is_active)
+            .all()
+        )
+
+    def get_user_events(self, user_id, status=None):
+        owned_events = []
+        invited_events = []
+
+        if not status or status == "owner":
+            owned_events = self.get_user_owned_events(user_id)
+
+        if not status or status == "attendee":
+            invited_events = self.get_user_invited_events(user_id)
+
+        combined_events = owned_events + invited_events
+
+        events = {}
+
+        for event in combined_events:
+            events[event.id] = event.to_dict()
+            events[event.id]["status"] = "owner" if str(event.user_id) == user_id else "attendee"
+
+        return [event for event in list(events.values())]
 
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
         return Discount.query.filter(
@@ -64,13 +91,6 @@ class UserService:
             Discount.used == False,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
-
-    def get_user_invites(self, user_id):
-        return (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.attendee_id == user_id, Event.is_active)
-            .all()
-        )
 
     def get_user_looks(self, user_id):
         return Look.query.filter(Look.user_id == user_id).all()

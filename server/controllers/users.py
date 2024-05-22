@@ -38,21 +38,12 @@ def get_user_by_email(email):
 
 
 @hmac_verification
-def get_user_events(user_id):
+def get_user_events(user_id, status=None):
     user_service = FlaskApp.current().user_service
 
-    events = user_service.get_user_events(user_id)
+    events = user_service.get_user_events(user_id, status=status)
 
-    return [event.to_dict() for event in events], 200
-
-
-@hmac_verification
-def get_user_invites(user_id):
-    user_service = FlaskApp.current().user_service
-
-    events = user_service.get_user_invites(user_id)
-
-    return [event.to_dict() for event in events], 200
+    return events, 200
 
 
 @hmac_verification

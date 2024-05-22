@@ -290,6 +290,8 @@ class ShopifyService(AbstractShopifyService):
                     "productVariantsToAdd": [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids]
                 }
             }
+        else:
+            variables["basicCodeDiscount"]["customerGets"]["items"] = {"all": True}
 
         status, body = self.admin_api_request(
             "POST",

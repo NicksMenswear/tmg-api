@@ -7,12 +7,14 @@ from copy import deepcopy
 from functools import wraps
 
 import urllib3
-from flask import request, abort
+from flask import request, abort, jsonify
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
 
 from server.flask_app import FlaskApp
+from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 
 secret_key = os.getenv("client_secret", "")
 secret_key = secret_key.encode("utf-8")
@@ -105,6 +107,30 @@ def token_verification(func, api_token=os.getenv("API_TOKEN", None)):
         else:
             logger.debug("API token verification failed: token mismatch.")
             abort(403)
+
+    return wrapper
+
+
+def error_handler(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValidationError as e:
+            logger.debug(e)
+            return jsonify({"errors": "Bad request"}), 400
+        except BadRequestError as e:
+            logger.debug(e)
+            return jsonify({"errors": e.message}), 400
+        except NotFoundError as e:
+            logger.debug(e)
+            return jsonify({"errors": e.message}), 404
+        except DuplicateError as e:
+            logger.debug(e)
+            return jsonify({"errors": e.message}), 409
+        except ServiceError as e:
+            logger.exception(e)
+            return jsonify({"errors": e.message}), 500
 
     return wrapper
 

@@ -2,15 +2,15 @@ import logging
 
 from flask import jsonify
 
-from server.controllers.util import hmac_verification
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
-from server.services import NotFoundError, ServiceError, DuplicateError
-from server.services.look import LookService
+from server.services import NotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 @hmac_verification
+@error_handler
 def get_look(look_id):
     look_service = FlaskApp.current().look_service
 
@@ -23,25 +23,17 @@ def get_look(look_id):
 
 
 @hmac_verification
+@error_handler
 def create_look(look_data):
     look_service = FlaskApp.current().look_service
 
-    try:
-        look = look_service.create_look(look_data)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
-    except DuplicateError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 409
-    except ServiceError as e:
-        logger.exception(e)
-        return jsonify({"errors": "Failed to create look"}), 500
+    look = look_service.create_look(look_data)
 
     return look.to_dict(), 201
 
 
 @hmac_verification
+@error_handler
 def get_events_for_look(look_id):
     look_service = FlaskApp.current().look_service
 
@@ -51,35 +43,20 @@ def get_events_for_look(look_id):
 
 
 @hmac_verification
+@error_handler
 def update_look(look_id, look_data):
     look_service = FlaskApp.current().look_service
 
-    try:
-        look = look_service.update_look(look_id, look_data)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
-    except DuplicateError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 409
-    except ServiceError as e:
-        logger.exception(e)
-        return jsonify({"errors": e.message}), 500
+    look = look_service.update_look(look_id, look_data)
 
     return look.to_dict(), 200
 
 
 @hmac_verification
+@error_handler
 def delete_look(look_id):
     look_service = FlaskApp.current().look_service
 
-    try:
-        look_service.delete_look(look_id)
-    except NotFoundError as e:
-        logger.debug(e)
-        return jsonify({"errors": e.message}), 404
-    except ServiceError as e:
-        logger.exception(e)
-        return jsonify({"errors": e.message}), 500
+    look_service.delete_look(look_id)
 
     return jsonify({}), 204

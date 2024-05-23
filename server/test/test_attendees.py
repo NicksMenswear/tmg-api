@@ -22,7 +22,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_without_role_and_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
         attendee = fixtures.attendee_request(event_id=event.id, role=None, look_id=None)
@@ -54,7 +54,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_without_role(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
 
         # when
@@ -87,7 +87,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_without_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
@@ -119,7 +119,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_with_role_and_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
@@ -151,7 +151,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_for_existing_attendee_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
@@ -188,7 +188,7 @@ class TestAttendees(BaseTestCase):
     def test_create_attendee_but_it_already_exist_and_associated(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event.id, email=attendee_user.email))
 
@@ -234,7 +234,7 @@ class TestAttendees(BaseTestCase):
     def test_update_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
@@ -319,7 +319,7 @@ class TestAttendees(BaseTestCase):
     def test_deactivate_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(

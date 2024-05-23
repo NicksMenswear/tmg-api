@@ -28,7 +28,7 @@ class TestDiscounts(BaseTestCase):
     def test_get_groom_gift_discounts_from_event_without_attendees(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
         response = self.client.open(
@@ -46,7 +46,7 @@ class TestDiscounts(BaseTestCase):
     def test_get_groom_gift_discounts_from_event_with_attendees_and_looks_but_without_any_discounts(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
@@ -110,7 +110,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_for_non_active_event(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id, is_active=False))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
 
         # when
         response = self.client.open(
@@ -134,7 +134,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_for_invalid_event(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -162,7 +162,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_with_empty_intents_input(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
         response = self.client.open(
@@ -184,7 +184,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_for_invalid_one_attendee(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -217,7 +217,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_for_not_active_attendee(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, is_active=False)
@@ -245,7 +245,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_both_amount_and_pay_full_missing(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -273,7 +273,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_both_amount_is_required_if_pay_full_is_false(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -303,7 +303,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_both_amount_and_pay_full_present(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -331,7 +331,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_with_invalid_amount(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -359,7 +359,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_gift(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -407,7 +407,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_gift_for_2_attendees(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id)
@@ -464,7 +464,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_full_pay_look_not_set_for_attendee(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -494,7 +494,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_full_pay_look_has_no_variants(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(fixtures.create_look_request(user_id=attendee_user.id))
         attendee = self.app.attendee_service.create_attendee(
@@ -525,7 +525,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_full_pay(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         variant1 = random.randint(1, 30)
         variant2 = random.randint(1, 30)
@@ -582,7 +582,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_type_groom_full_pay_is_less_then_100(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         variant = random.randint(1, 9)
         look = self.app.look_service.create_look(
@@ -616,7 +616,7 @@ class TestDiscounts(BaseTestCase):
     def test_create_discount_intent_of_mixed_types(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         variant1 = random.randint(1, 30)
         variant2 = random.randint(1, 30)
@@ -690,7 +690,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id)
@@ -745,7 +745,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id)
@@ -817,7 +817,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         variant1 = random.randint(10, 30)
         variant2 = random.randint(10, 30)
@@ -877,7 +877,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -921,7 +921,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -987,7 +987,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -1030,7 +1030,7 @@ class TestDiscounts(BaseTestCase):
     ):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
             fixtures.create_look_request(
@@ -1090,7 +1090,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_invalid_event(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -1112,7 +1112,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_no_gift_discounts_and_party_less_then_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
@@ -1134,7 +1134,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_no_gift_discounts_and_party_more_then_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
@@ -1172,7 +1172,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_with_groom_gift_discounts(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
@@ -1231,7 +1231,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_with_groom_gift_discounts_and_party_of_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
@@ -1289,7 +1289,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_with_groom_full_pay_discounts(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
@@ -1326,7 +1326,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_with_groom_full_pay_discounts_and_party_of_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
@@ -1376,7 +1376,7 @@ class TestDiscounts(BaseTestCase):
 
     def test_apply_discounts_with_groom_gift_discounts_and_party_of_4_when_tmg_discount_already_issued(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )

@@ -334,7 +334,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Event"
         required: true
-        x-body-name: event
+        x-body-name: create_event_request
       responses:
         "201":
           description: Event created

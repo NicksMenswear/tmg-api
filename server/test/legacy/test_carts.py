@@ -41,7 +41,7 @@ class TestCarts(BaseTestCase):
     def test_create_cart_without_user_and_without_products(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
@@ -72,7 +72,7 @@ class TestCarts(BaseTestCase):
     def test_create_cart_with_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
@@ -105,7 +105,7 @@ class TestCarts(BaseTestCase):
     def test_create_cart_with_products(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
@@ -148,7 +148,7 @@ class TestCarts(BaseTestCase):
     def test_get_cart_by_id(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
@@ -202,7 +202,7 @@ class TestCarts(BaseTestCase):
     def test_get_cart_by_event_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(
@@ -253,7 +253,7 @@ class TestCarts(BaseTestCase):
     def test_update_cart(self):
         # when
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
         attendee = self.attendee_service.create_attendee(

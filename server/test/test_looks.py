@@ -106,7 +106,7 @@ class TestLooks(BaseTestCase):
     def test_update_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234, 345]})
         )
@@ -144,7 +144,7 @@ class TestLooks(BaseTestCase):
     def test_update_look_existing(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
@@ -170,6 +170,7 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
+    # TODO: pydantify
     def test_get_empty_set_of_events_for_look(self):
         # when
         response = self.client.open(
@@ -184,11 +185,12 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(response.json, [])
 
+    # TODO: pydantify
     def test_get_events_for_look(self):
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
-        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user1.id)))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)

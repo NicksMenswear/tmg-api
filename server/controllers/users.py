@@ -5,6 +5,7 @@ from pydantic import validate_email
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
+from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UpdateUserModel
 
 logger = logging.getLogger(__name__)
@@ -34,13 +35,12 @@ def get_user_by_email(email):
 
 @hmac_verification
 @error_handler
-# TODO: pydantify
 def get_user_events(user_id, status=None):
-    user_service = FlaskApp.current().user_service
+    event_service = FlaskApp.current().event_service
 
-    events = user_service.get_user_events(user_id, status=status)
+    events = event_service.get_user_events(user_id, status=EventUserStatus(status) if status else None)
 
-    return events, 200
+    return [event.to_response() for event in events], 200
 
 
 @hmac_verification

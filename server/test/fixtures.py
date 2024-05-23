@@ -2,6 +2,7 @@ import random
 import uuid
 from datetime import datetime
 
+from server.models.event_model import CreateEventModel, UpdateEventModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 
@@ -22,48 +23,20 @@ def update_user_request(**user_data) -> UpdateUserModel:
     )
 
 
-def product_request(**product_data):
-    return {
-        "name": product_data.get("name", str(uuid.uuid4())),
-        "Active": product_data.get("is_active", True),
-        "SKU": product_data.get("sku", str(uuid.uuid4())),
-        "Weight": product_data.get("weight", 1.0),
-        "Height": product_data.get("height", 1.0),
-        "Width": product_data.get("width", 1.0),
-        "Length": product_data.get("length", 1.0),
-        "Value": product_data.get("value", 1.0),
-        "Price": product_data.get("price", 1.0),
-        "On_hand": product_data.get("on_hand", 1),
-        "Allocated": product_data.get("allocated", 1),
-        "Reserve": product_data.get("reserve", 1),
-        "Non_sellable_total": product_data.get("non_sellable_total", 1),
-        "Reorder_level": product_data.get("reorder_level", 1),
-        "Reorder_amount": product_data.get("reorder_amount", 1),
-        "Replenishment_level": product_data.get("replenishment_level", 1),
-        "Available": product_data.get("available", 1),
-        "Backorder": product_data.get("backorder", 1),
-        "Barcode": product_data.get("barcode", random.randint(1000, 100000)),
-        "Tags": product_data.get("tags", ["tag1", "tag2"]),
-    }
+def create_event_request(**event_data) -> CreateEventModel:
+    return CreateEventModel(
+        event_name=event_data.get("event_name", str(uuid.uuid4())),
+        event_date=event_data.get("event_date", datetime.now().isoformat()),
+        user_id=event_data.get("user_id", uuid.uuid4()),
+        is_active=event_data.get("is_active", True),
+    )
 
 
-def event_request(**event_data):
-    if "email" in event_data:
-        raise ValueError("email is not a valid key for event_request")
-
-    return {
-        "event_name": event_data.get("event_name", str(uuid.uuid4())),
-        "event_date": event_data.get("event_date", datetime.now().isoformat()),
-        "user_id": event_data.get("user_id", str(uuid.uuid4())),
-        "is_active": event_data.get("is_active", True),
-    }
-
-
-def update_event_request(**event_data):
-    return {
-        "event_name": event_data.get("event_name", str(uuid.uuid4())),
-        "event_date": event_data.get("event_date", datetime.now().isoformat()),
-    }
+def update_event_request(**event_data) -> UpdateEventModel:
+    return UpdateEventModel(
+        event_name=event_data.get("event_name", str(uuid.uuid4())),
+        event_date=event_data.get("event_date", datetime.now().isoformat()),
+    )
 
 
 def create_look_request(**look_data) -> CreateLookModel:
@@ -207,4 +180,29 @@ def apply_discounts_request(**apply_discounts_data):
     return {
         "event_id": apply_discounts_data.get("event_id", str(uuid.uuid4())),
         "shopify_cart_id": apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
+    }
+
+
+def product_request(**product_data):
+    return {
+        "name": product_data.get("name", str(uuid.uuid4())),
+        "Active": product_data.get("is_active", True),
+        "SKU": product_data.get("sku", str(uuid.uuid4())),
+        "Weight": product_data.get("weight", 1.0),
+        "Height": product_data.get("height", 1.0),
+        "Width": product_data.get("width", 1.0),
+        "Length": product_data.get("length", 1.0),
+        "Value": product_data.get("value", 1.0),
+        "Price": product_data.get("price", 1.0),
+        "On_hand": product_data.get("on_hand", 1),
+        "Allocated": product_data.get("allocated", 1),
+        "Reserve": product_data.get("reserve", 1),
+        "Non_sellable_total": product_data.get("non_sellable_total", 1),
+        "Reorder_level": product_data.get("reorder_level", 1),
+        "Reorder_amount": product_data.get("reorder_amount", 1),
+        "Replenishment_level": product_data.get("replenishment_level", 1),
+        "Available": product_data.get("available", 1),
+        "Backorder": product_data.get("backorder", 1),
+        "Barcode": product_data.get("barcode", random.randint(1000, 100000)),
+        "Tags": product_data.get("tags", ["tag1", "tag2"]),
     }

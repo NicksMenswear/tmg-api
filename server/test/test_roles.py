@@ -17,7 +17,7 @@ class TestRoles(BaseTestCase):
     def test_create_role(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
         role = fixtures.role_request(event_id=str(event.id))
@@ -54,7 +54,7 @@ class TestRoles(BaseTestCase):
     def test_create_role_with_same_name_as_existing(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
@@ -75,7 +75,7 @@ class TestRoles(BaseTestCase):
     def test_get_role_by_id(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
@@ -107,7 +107,7 @@ class TestRoles(BaseTestCase):
     def test_update_role(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when
@@ -145,7 +145,7 @@ class TestRoles(BaseTestCase):
     def test_update_role_with_existing_role_name(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         role2 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
@@ -178,7 +178,7 @@ class TestRoles(BaseTestCase):
     def test_delete_role(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
 
         # when

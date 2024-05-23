@@ -1,9 +1,11 @@
 import logging
+import uuid
 
 from flask import jsonify
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
+from server.models.event_model import CreateEventModel, UpdateEventModel
 
 logger = logging.getLogger(__name__)
 
@@ -13,25 +15,19 @@ logger = logging.getLogger(__name__)
 def get_event(event_id, enriched=False):
     event_service = FlaskApp.current().event_service
 
-    if not enriched:
-        event = event_service.get_event_by_id(event_id)
+    event = event_service.get_event_by_id(uuid.UUID(event_id))
 
-        if not event:
-            return jsonify({}), 404
-
-        return event.to_dict(), 200
-    else:
-        return event_service.get_enriched_event_by_id(event_id), 200
+    return event.to_response(), 200
 
 
 @hmac_verification
 @error_handler
-def create_event(event):
+def create_event(create_event_request):
     event_service = FlaskApp.current().event_service
 
-    event = event_service.create_event(event)
+    event = event_service.create_event(CreateEventModel(**create_event_request))
 
-    return event.to_dict(), 201
+    return event.to_response(), 201
 
 
 @hmac_verification
@@ -39,9 +35,9 @@ def create_event(event):
 def update_event(event_id, event_data):
     event_service = FlaskApp.current().event_service
 
-    event = event_service.update_event(event_id, event_data)
+    event = event_service.update_event(event_id, UpdateEventModel(**event_data))
 
-    return event.to_dict(), 200
+    return event.to_response(), 200
 
 
 @hmac_verification
@@ -49,13 +45,14 @@ def update_event(event_id, event_data):
 def soft_delete_event(event_id):
     event_service = FlaskApp.current().event_service
 
-    event_service.soft_delete_event(event_id)
+    event_service.soft_delete_event(uuid.UUID(event_id))
 
     return None, 204
 
 
 @hmac_verification
 @error_handler
+# TODO: pydantify
 def get_event_roles(event_id):
     event_service = FlaskApp.current().event_service
 

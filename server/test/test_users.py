@@ -108,8 +108,7 @@ class TestUsers(BaseTestCase):
         )
 
         # then
-        self.assert200(response)
-        self.assertEqual(response.json, [])
+        self.assert404(response)
 
     def test_get_all_events_for_user_without_events(self):
         # given
@@ -131,9 +130,9 @@ class TestUsers(BaseTestCase):
     def test_get_all_active_events_for_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
-        event2 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
-        self.event_service.create_event(fixtures.event_request(user_id=user.id, is_active=False))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        self.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
 
         # when
         response = self.client.open(
@@ -163,8 +162,7 @@ class TestUsers(BaseTestCase):
         )
 
         # then
-        self.assert200(response)
-        self.assertEqual(len(response.json), 0)
+        self.assert404(response)
 
     def test_get_invites_for_existing_user_but_without_events(self):
         # given
@@ -187,9 +185,9 @@ class TestUsers(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
-        self.event_service.create_event(fixtures.event_request(user_id=attendee_user.id))
+        self.event_service.create_event(fixtures.create_event_request(user_id=attendee_user.id))
 
         # when
         response = self.client.open(
@@ -211,8 +209,8 @@ class TestUsers(BaseTestCase):
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
-        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=attendee_user.email))
 
@@ -236,14 +234,14 @@ class TestUsers(BaseTestCase):
     def test_get_events_of_mix_statuses(self):
         # given
         user1 = self.user_service.create_user(fixtures.create_user_request())
-        event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         user2 = self.user_service.create_user(fixtures.create_user_request())
-        event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
         event3_owner_inactive = self.event_service.create_event(
-            fixtures.event_request(user_id=user2.id, is_active=False)
+            fixtures.create_event_request(user_id=user2.id, is_active=False)
         )
         event4_invited_inactive = self.event_service.create_event(
-            fixtures.event_request(user_id=user1.id, is_active=False)
+            fixtures.create_event_request(user_id=user1.id, is_active=False)
         )
         self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=user2.email))
 

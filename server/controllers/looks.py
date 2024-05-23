@@ -32,13 +32,12 @@ def create_look(look_data):
 
 @hmac_verification
 @error_handler
-# TODO: pydantify
 def get_events_for_look(look_id):
-    look_service = FlaskApp.current().look_service
+    event_service = FlaskApp.current().event_service
 
-    events = look_service.get_events_for_look(look_id)
+    events = event_service.get_events_for_look(uuid.UUID(look_id))
 
-    return [event.to_dict() for event in events], 200
+    return [event.to_response() for event in events], 200
 
 
 @hmac_verification

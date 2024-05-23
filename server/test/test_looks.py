@@ -63,7 +63,7 @@ class TestLooks(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 404)
+        self.assert404(response)
 
     def test_look_by_id(self):
         # given
@@ -101,7 +101,7 @@ class TestLooks(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 404)
+        self.assert404(response)
 
     def test_update_look(self):
         # given
@@ -170,8 +170,7 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
-    # TODO: pydantify
-    def test_get_empty_set_of_events_for_look(self):
+    def test_get_looks_for_non_existed_event(self):
         # when
         response = self.client.open(
             f"/looks/{str(uuid.uuid4())}/events",
@@ -182,16 +181,14 @@ class TestLooks(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
+        self.assert404(response)
 
-    # TODO: pydantify
     def test_get_events_for_look(self):
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user1.id)))
+        look = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)
         )
@@ -212,9 +209,9 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
         self.assertEqual(response.json[0]["id"], str(event1.id))
-        self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
+        self.assertEqual(response.json[0]["event_name"], event1.event_name)
         self.assertEqual(response.json[1]["id"], str(event2.id))
-        self.assertEqual(response.json[1]["event_name"], str(event2.event_name))
+        self.assertEqual(response.json[1]["event_name"], event2.event_name)
 
     def test_delete_look_non_existing(self):
         # when
@@ -227,7 +224,7 @@ class TestLooks(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 404)
+        self.assert404(response)
 
     def test_delete_look(self):
         # given

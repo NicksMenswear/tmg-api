@@ -118,7 +118,6 @@ class EventService:
 
         return EventModel.from_orm(db_event)
 
-    # TODO: pydantify
     def update_event(self, event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
         db_event = Event.query.filter(Event.id == event_id, Event.is_active).first()
 
@@ -198,3 +197,17 @@ class EventService:
             events[event.id].status = EventUserStatus.OWNER if event.user_id == user_id else EventUserStatus.ATTENDEE
 
         return [event for event in list(events.values())]
+
+    def get_events_for_look(self, look_id: uuid.UUID) -> List[EventModel]:
+        db_look = Look.query.filter(Look.id == look_id).first()
+
+        if not db_look:
+            raise NotFoundError("Look not found")
+
+        events = (
+            Event.query.join(Attendee, Event.id == Attendee.event_id)
+            .filter(Attendee.look_id == look_id, Event.is_active)
+            .all()
+        )
+
+        return [EventModel.from_orm(event) for event in events]

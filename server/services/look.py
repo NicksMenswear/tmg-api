@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Look, Event, Attendee
@@ -19,12 +20,8 @@ class LookService:
 
         return LookModel.from_orm(db_look)
 
-    def get_looks_by_user_id(self, user_id: uuid.UUID) -> list[LookModel]:
+    def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
         return [LookModel.from_orm(look).to_response() for look in Look.query.filter(Look.user_id == user_id).all()]
-
-    # TODO: pydantify
-    def get_events_for_look(self, look_id):
-        return Event.query.join(Attendee, Event.id == Attendee.event_id).filter(Attendee.look_id == look_id).all()
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         db_look: Look = Look.query.filter(

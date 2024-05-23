@@ -2,23 +2,23 @@ import random
 import uuid
 from datetime import datetime
 
-
-def user_request(**user_data):
-    return {
-        "first_name": user_data.get("first_name", str(uuid.uuid4())),
-        "last_name": user_data.get("last_name", str(uuid.uuid4())),
-        "email": user_data.get("email", f"{str(uuid.uuid4())}@example.com"),
-        "account_status": user_data.get("account_status", True),
-    }
+from server.models.user_model import CreateUserModel, UpdateUserModel
 
 
-def update_user_request(**user_data):
-    return {
-        "first_name": user_data.get("first_name", str(uuid.uuid4())),
-        "last_name": user_data.get("last_name", str(uuid.uuid4())),
-        "shopify_id": user_data.get("shopify_id", str(random.randint(1000, 100000))),
-        "account_status": user_data.get("account_status", True),
-    }
+def create_user_request(**user_data) -> CreateUserModel:
+    return CreateUserModel(
+        first_name=user_data.get("first_name", str(uuid.uuid4())),
+        last_name=user_data.get("last_name", str(uuid.uuid4())),
+        email=user_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        account_status=user_data.get("account_status", True),
+    )
+
+
+def update_user_request(**user_data) -> UpdateUserModel:
+    return UpdateUserModel(
+        first_name=user_data.get("first_name", str(uuid.uuid4())),
+        last_name=user_data.get("last_name", str(uuid.uuid4())),
+    )
 
 
 def product_request(**product_data):

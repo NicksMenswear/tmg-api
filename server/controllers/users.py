@@ -1,9 +1,11 @@
 import logging
+import uuid
 
-from flask import jsonify
+from pydantic import validate_email
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
+from server.models.user_model import CreateUserModel, UpdateUserModel
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +15,9 @@ logger = logging.getLogger(__name__)
 def create_user(user_data):
     user_service = FlaskApp.current().user_service
 
-    user = user_service.create_user(user_data)
+    user = user_service.create_user(CreateUserModel(**user_data))
 
-    return user.to_dict(), 201
+    return user.to_response(), 201
 
 
 @hmac_verification
@@ -23,12 +25,11 @@ def create_user(user_data):
 def get_user_by_email(email):
     user_service = FlaskApp.current().user_service
 
+    validate_email(email)
+
     user = user_service.get_user_by_email(email)
 
-    if not user:
-        return jsonify({"errors": "User not found"}), 404
-
-    return user.to_dict(), 200
+    return user.to_response(), 200
 
 
 @hmac_verification
@@ -56,6 +57,6 @@ def get_user_looks(user_id):
 def update_user(user_id, user_data):
     user_service = FlaskApp.current().user_service
 
-    user = user_service.update_user(user_id, user_data)
+    user = user_service.update_user(uuid.UUID(user_id), UpdateUserModel(**user_data))
 
-    return user.to_dict(), 200
+    return user.to_response(), 200

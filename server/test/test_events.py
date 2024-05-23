@@ -32,7 +32,7 @@ class TestEvents(BaseTestCase):
 
     def test_create_event_duplicate(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when
@@ -53,7 +53,7 @@ class TestEvents(BaseTestCase):
 
     def test_create_event(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         event_request = fixtures.event_request(user_id=user.id)
@@ -88,7 +88,7 @@ class TestEvents(BaseTestCase):
 
     def test_get_event(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when
@@ -108,7 +108,7 @@ class TestEvents(BaseTestCase):
 
     def test_get_event_non_active(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id, is_active=False))
 
         # when
@@ -128,7 +128,7 @@ class TestEvents(BaseTestCase):
 
     def test_get_event_enriched_without_attendees(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when
@@ -151,11 +151,11 @@ class TestEvents(BaseTestCase):
 
     def test_get_event_enriched_with_2_out_of_3_attendees_active(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
-        attendee_user1 = self.user_service.create_user(fixtures.user_request())
-        attendee_user2 = self.user_service.create_user(fixtures.user_request())
-        attendee_user3 = self.user_service.create_user(fixtures.user_request())
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
             fixtures.attendee_request(email=attendee_user1.email, event_id=event.id)
         )
@@ -191,9 +191,9 @@ class TestEvents(BaseTestCase):
 
     def test_get_event_enriched_attendee_look_and_role(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
-        attendee_user = self.user_service.create_user(fixtures.user_request())
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
@@ -242,7 +242,7 @@ class TestEvents(BaseTestCase):
 
     def test_get_roles_by_event_id(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         role2 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
@@ -281,7 +281,7 @@ class TestEvents(BaseTestCase):
 
     def test_get_roles_for_event_without_roles(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when
@@ -299,13 +299,13 @@ class TestEvents(BaseTestCase):
 
     def test_get_attendees_for_event(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
-        attendee_user1 = self.user_service.create_user(fixtures.user_request())
-        attendee_user2 = self.user_service.create_user(fixtures.user_request())
-        attendee_user3 = self.user_service.create_user(fixtures.user_request())
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
         attendee_request1 = fixtures.attendee_request(event_id=event.id, email=attendee_user1.email, role=str(role.id))
         attendee_request2 = fixtures.attendee_request(event_id=event.id, email=attendee_user2.email, role=str(role.id))
         attendee1 = self.attendee_service.create_attendee(attendee_request1)
@@ -367,7 +367,7 @@ class TestEvents(BaseTestCase):
 
     def test_update_event(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when
@@ -394,7 +394,7 @@ class TestEvents(BaseTestCase):
 
     def test_update_event_existing(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         event2 = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
@@ -429,7 +429,7 @@ class TestEvents(BaseTestCase):
 
     def test_soft_delete_event(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
 
         # when

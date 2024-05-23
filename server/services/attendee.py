@@ -2,6 +2,7 @@ import uuid
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
+from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.event import EventService
 from server.services.shopify import AbstractShopifyService
@@ -32,15 +33,20 @@ class AttendeeService:
         if not event:
             raise NotFoundError("Event not found.")
 
-        attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
+        attendee_user = None
+
+        try:
+            attendee_user = self.user_service.get_user_by_email(attendee_data["email"])
+        except NotFoundError:
+            pass
 
         if not attendee_user:
-            disabled_user = {
-                "first_name": attendee_data["first_name"],
-                "last_name": attendee_data["last_name"],
-                "email": attendee_data["email"],
-                "account_status": False,
-            }
+            disabled_user = CreateUserModel(
+                first_name=attendee_data["first_name"],
+                last_name=attendee_data["last_name"],
+                email=attendee_data["email"],
+                account_status=False,
+            )
 
             try:
                 attendee_user = self.user_service.create_user(disabled_user)

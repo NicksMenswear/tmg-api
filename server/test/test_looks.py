@@ -17,7 +17,7 @@ class TestLooks(BaseTestCase):
 
     def test_create_look(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         look_data = fixtures.look_request(user_id=user.id)
@@ -39,7 +39,7 @@ class TestLooks(BaseTestCase):
 
     def test_create_look_duplicate(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
@@ -72,7 +72,7 @@ class TestLooks(BaseTestCase):
 
     def test_look_by_id(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when
@@ -90,7 +90,7 @@ class TestLooks(BaseTestCase):
 
     def test_update_look_for_invalid_look_id(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         look_data = fixtures.update_look_request(user_id=user.id)
@@ -109,7 +109,7 @@ class TestLooks(BaseTestCase):
 
     def test_update_look(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
@@ -138,7 +138,7 @@ class TestLooks(BaseTestCase):
 
     def test_update_look_existing(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
         look2 = self.look_service.create_look(fixtures.look_request(user_id=str(user.id)))
@@ -180,8 +180,8 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response.json, [])
 
     def test_get_events_for_look(self):
-        user1 = self.user_service.create_user(fixtures.user_request())
-        user2 = self.user_service.create_user(fixtures.user_request())
+        user1 = self.user_service.create_user(fixtures.create_user_request())
+        user2 = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.event_request(user_id=user2.id))
         look = self.look_service.create_look(fixtures.look_request(user_id=str(user1.id)))
@@ -224,7 +224,7 @@ class TestLooks(BaseTestCase):
 
     def test_delete_look(self):
         # given
-        user = self.user_service.create_user(fixtures.user_request())
+        user = self.user_service.create_user(fixtures.create_user_request())
         look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
 
         # when

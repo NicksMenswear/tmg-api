@@ -9,6 +9,7 @@ from functools import wraps
 import urllib3
 from flask import request, abort, jsonify
 from pydantic import ValidationError
+from pydantic_core import PydanticCustomError
 
 from server.flask_app import FlaskApp
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
@@ -116,6 +117,9 @@ def error_handler(func):
         except ValidationError as e:
             logger.debug(e)
             return jsonify({"errors": "Bad request"}), 400
+        except PydanticCustomError as e:
+            logger.debug(e)
+            return jsonify({"errors": "Bad request"}), 400
         except BadRequestError as e:
             logger.debug(e)
             return jsonify({"errors": e.message}), 400
@@ -128,6 +132,9 @@ def error_handler(func):
         except ServiceError as e:
             logger.exception(e)
             return jsonify({"errors": e.message}), 500
+        except Exception as e:
+            logger.exception(e)
+            return jsonify({"errors": "Error"}), 500
 
     return wrapper
 

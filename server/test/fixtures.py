@@ -2,6 +2,7 @@ import random
 import uuid
 from datetime import datetime
 
+from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 
 
@@ -65,20 +66,19 @@ def update_event_request(**event_data):
     }
 
 
-def look_request(**look_data):
-    return {
-        "look_name": look_data.get("look_name", str(uuid.uuid4())),
-        "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "product_specs": look_data.get("product_specs", {}),
-    }
+def create_look_request(**look_data) -> CreateLookModel:
+    return CreateLookModel(
+        look_name=look_data.get("look_name", str(uuid.uuid4())),
+        user_id=look_data.get("user_id", uuid.uuid4()),
+        product_specs=look_data.get("product_specs", {}),
+    )
 
 
-def update_look_request(**look_data):
-    return {
-        "look_name": look_data.get("look_name", str(uuid.uuid4())),
-        "user_id": look_data.get("user_id", str(uuid.uuid4())),
-        "product_specs": look_data.get("product_specs", {}),
-    }
+def update_look_request(**look_data) -> UpdateLookModel:
+    return UpdateLookModel(
+        look_name=look_data.get("look_name", str(uuid.uuid4())),
+        product_specs=look_data.get("product_specs", {}),
+    )
 
 
 def role_request(**look_data):

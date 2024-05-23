@@ -50,10 +50,10 @@ class TestDiscounts(BaseTestCase):
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user1.id, product_specs={"variants": [1234, 5678, 1715]})
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [1234, 5678, 1715]})
         )
         look2 = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user2.id, product_specs={"variants": [9988, 1715]})
+            fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"variants": [9988, 1715]})
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(email=attendee_user1.email, event_id=event.id, look_id=look1.id)
@@ -496,7 +496,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
-        look = self.app.look_service.create_look(fixtures.look_request(user_id=attendee_user.id))
+        look = self.app.look_service.create_look(fixtures.create_look_request(user_id=attendee_user.id))
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
@@ -531,7 +531,9 @@ class TestDiscounts(BaseTestCase):
         variant2 = random.randint(1, 30)
         variant3 = random.randint(1, 30)
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [variant1, variant2, variant3]})
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"variants": [variant1, variant2, variant3]}
+            )
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -584,7 +586,7 @@ class TestDiscounts(BaseTestCase):
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         variant = random.randint(1, 9)
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [variant]})
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [variant]})
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -619,7 +621,7 @@ class TestDiscounts(BaseTestCase):
         variant1 = random.randint(1, 30)
         variant2 = random.randint(1, 30)
         look1 = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
@@ -820,7 +822,7 @@ class TestDiscounts(BaseTestCase):
         variant1 = random.randint(10, 30)
         variant2 = random.randint(10, 30)
         look1 = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
@@ -1031,7 +1033,7 @@ class TestDiscounts(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.look_request(
+            fixtures.create_look_request(
                 user_id=attendee_user.id, product_specs={"variants": [random.randint(10, 30), random.randint(10, 30)]}
             )
         )
@@ -1134,7 +1136,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look1 = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
@@ -1172,7 +1174,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
@@ -1231,7 +1233,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look1 = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
@@ -1289,7 +1291,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
@@ -1326,7 +1328,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look1 = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
@@ -1376,7 +1378,7 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         look1 = self.look_service.create_look(
-            fixtures.look_request(user_id=user.id, product_specs={"variants": [123, 234]})
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234]})
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(

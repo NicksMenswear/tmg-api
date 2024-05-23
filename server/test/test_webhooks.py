@@ -103,7 +103,7 @@ class TestWebhooks(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
-        look = self.app.look_service.create_look(fixtures.look_request(user_id=attendee_user.id))
+        look = self.app.look_service.create_look(fixtures.create_look_request(user_id=attendee_user.id))
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
@@ -128,7 +128,9 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
+            )
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -158,7 +160,9 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
+            )
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -201,17 +205,17 @@ class TestWebhooks(BaseTestCase):
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
-            fixtures.look_request(
+            fixtures.create_look_request(
                 user_id=attendee_user1.id, product_specs={"variants": [random.randint(1000, 1000000)]}
             )
         )
         look2 = self.app.look_service.create_look(
-            fixtures.look_request(
+            fixtures.create_look_request(
                 user_id=attendee_user2.id, product_specs={"variants": [random.randint(1000, 1000000)]}
             )
         )
         look3 = self.app.look_service.create_look(
-            fixtures.look_request(
+            fixtures.create_look_request(
                 user_id=attendee_user3.id, product_specs={"variants": [random.randint(1000, 1000000)]}
             )
         )
@@ -279,7 +283,9 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
+            )
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -315,7 +321,9 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.look_request(user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]})
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
+            )
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)

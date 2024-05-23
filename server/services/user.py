@@ -1,9 +1,11 @@
 import logging
 import uuid
 from operator import or_
+from typing import List
 
 from server.database.database_manager import db
 from server.database.models import User, Event, Attendee, Discount, DiscountType, Look
+from server.models.look_model import LookModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import AbstractEmailService
@@ -51,6 +53,7 @@ class UserService:
 
         return UserModel.from_orm(db_user)
 
+    # TODO: pydantify
     def get_user_by_shopify_id(self, shopify_id):
         return User.query.filter_by(shopify_id=shopify_id).first()
 
@@ -62,9 +65,11 @@ class UserService:
 
         return UserModel.from_orm(db_user)
 
+    # TODO: pydantify
     def get_user_owned_events(self, user_id):
         return Event.query.filter_by(user_id=user_id, is_active=True).all()
 
+    # TODO: pydantify
     def get_user_invited_events(self, user_id):
         return (
             Event.query.join(Attendee, Event.id == Attendee.event_id)
@@ -72,6 +77,7 @@ class UserService:
             .all()
         )
 
+    # TODO: pydantify
     def get_user_events(self, user_id: uuid.UUID, status=None):
         owned_events = []
         invited_events = []
@@ -92,6 +98,7 @@ class UserService:
 
         return [event for event in list(events.values())]
 
+    # TODO: pydantify
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
         return Discount.query.filter(
             Discount.attendee_id == attendee_id,
@@ -99,9 +106,6 @@ class UserService:
             Discount.used == False,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
-
-    def get_user_looks(self, user_id):
-        return Look.query.filter(Look.user_id == user_id).all()
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:
         user: User = User.query.filter_by(id=user_id).first()

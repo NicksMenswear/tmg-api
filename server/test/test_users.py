@@ -299,9 +299,9 @@ class TestUsers(BaseTestCase):
         # given
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
-        look1 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        look2 = self.look_service.create_look(fixtures.look_request(user_id=user1.id))
-        self.look_service.create_look(fixtures.look_request(user_id=user2.id))
+        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
 
         # when
         response = self.client.open(

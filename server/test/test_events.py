@@ -194,7 +194,7 @@ class TestEvents(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
             fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role=role.id)
@@ -301,7 +301,7 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.look_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())

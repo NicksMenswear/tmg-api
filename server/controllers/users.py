@@ -34,6 +34,7 @@ def get_user_by_email(email):
 
 @hmac_verification
 @error_handler
+# TODO: pydantify
 def get_user_events(user_id, status=None):
     user_service = FlaskApp.current().user_service
 
@@ -45,11 +46,9 @@ def get_user_events(user_id, status=None):
 @hmac_verification
 @error_handler
 def get_user_looks(user_id):
-    user_service = FlaskApp.current().user_service
+    look_service = FlaskApp.current().look_service
 
-    looks = user_service.get_user_looks(user_id)
-
-    return [look.to_dict() for look in looks]
+    return look_service.get_looks_by_user_id(user_id)
 
 
 @hmac_verification

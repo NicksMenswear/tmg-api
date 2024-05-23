@@ -4,6 +4,7 @@ from datetime import datetime
 
 from server.models.event_model import CreateEventModel, UpdateEventModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
+from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 
 
@@ -54,11 +55,17 @@ def update_look_request(**look_data) -> UpdateLookModel:
     )
 
 
-def role_request(**look_data):
-    return {
-        "role_name": look_data.get("role_name", str(uuid.uuid4())),
-        "event_id": look_data.get("event_id", str(uuid.uuid4())),
-    }
+def create_role_request(**role_data):
+    return CreateRoleModel(
+        role_name=role_data.get("role_name", str(uuid.uuid4())),
+        event_id=role_data.get("event_id", uuid.uuid4()),
+    )
+
+
+def update_role_request(**role_data):
+    return UpdateRoleModel(
+        role_name=role_data.get("role_name", str(uuid.uuid4())),
+    )
 
 
 def attendee_request(**attendee_data):

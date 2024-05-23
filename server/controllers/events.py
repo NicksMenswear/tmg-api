@@ -1,8 +1,6 @@
 import logging
 import uuid
 
-from flask import jsonify
-
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.event_model import CreateEventModel, UpdateEventModel
@@ -52,17 +50,17 @@ def soft_delete_event(event_id):
 
 @hmac_verification
 @error_handler
-# TODO: pydantify
 def get_event_roles(event_id):
-    event_service = FlaskApp.current().event_service
+    role_service = FlaskApp.current().role_service
 
-    roles = event_service.get_roles_for_event(event_id)
+    roles = role_service.get_roles_for_event(event_id)
 
-    return jsonify([role.to_dict() for role in roles]), 200
+    return [role.to_response() for role in roles], 200
 
 
 @hmac_verification
 @error_handler
+# TODO: pydantify
 def get_event_attendees(event_id):
     event_service = FlaskApp.current().event_service
 

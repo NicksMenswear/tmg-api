@@ -72,15 +72,6 @@ class EventService:
 
         return event
 
-    # TODO: pydantify
-    def get_roles_for_event(self, event_id):
-        event = Event.query.filter_by(id=event_id).first()
-
-        if not event:
-            raise NotFoundError("Event not found.")
-
-        return Role.query.filter_by(event_id=event_id).all()
-
     def get_num_attendees_for_event(self, event_id: uuid.UUID):
         db_event = Event.query.filter_by(id=event_id, is_active=True).first()
 

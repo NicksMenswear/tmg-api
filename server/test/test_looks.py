@@ -110,7 +110,7 @@ class TestLooks(BaseTestCase):
         look = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234, 345]})
         )
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
         )
@@ -147,7 +147,7 @@ class TestLooks(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
-        role = self.role_service.create_role(fixtures.role_request(event_id=str(event.id)))
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
             fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
         )

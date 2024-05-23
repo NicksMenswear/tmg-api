@@ -232,8 +232,8 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        role1 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
-        role2 = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+        role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
         response = self.client.open(
@@ -290,7 +290,7 @@ class TestEvents(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
-        role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())

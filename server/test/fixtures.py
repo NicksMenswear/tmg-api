@@ -2,6 +2,7 @@ import random
 import uuid
 from datetime import datetime
 
+from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.event_model import CreateEventModel, UpdateEventModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
@@ -68,21 +69,35 @@ def update_role_request(**role_data):
     )
 
 
-def attendee_request(**attendee_data):
-    return {
-        "email": attendee_data.get("email", f"{str(uuid.uuid4())}@example.com"),
-        "event_id": attendee_data.get("event_id", str(uuid.uuid4())),
-        "first_name": attendee_data.get("first_name", str(uuid.uuid4())),
-        "last_name": attendee_data.get("last_name", str(uuid.uuid4())),
-        "role": attendee_data.get("role"),
-        "look_id": attendee_data.get("look_id"),
-        "style": attendee_data.get("style", random.randint(1, 100)),
-        "invite": attendee_data.get("invite", random.randint(1, 100)),
-        "pay": attendee_data.get("pay", random.randint(1, 100)),
-        "size": attendee_data.get("size", random.randint(1, 100)),
-        "ship": attendee_data.get("ship", random.randint(1, 100)),
-        "is_active": attendee_data.get("is_active", True),
-    }
+def create_attendee_request(**attendee_data):
+    return CreateAttendeeModel(
+        email=attendee_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        first_name=attendee_data.get("first_name", str(uuid.uuid4())),
+        last_name=attendee_data.get("last_name", str(uuid.uuid4())),
+        event_id=attendee_data.get("event_id", uuid.uuid4()),
+        role=attendee_data.get("role"),
+        look_id=attendee_data.get("look_id"),
+        style=attendee_data.get("style", random.randint(1, 100)),
+        invite=attendee_data.get("invite", random.randint(1, 100)),
+        pay=attendee_data.get("pay", random.randint(1, 100)),
+        size=attendee_data.get("size", random.randint(1, 100)),
+        ship=attendee_data.get("ship", random.randint(1, 100)),
+        is_active=attendee_data.get("is_active", True),
+    )
+
+
+def update_attendee_request(**attendee_data):
+    return UpdateAttendeeModel(
+        event_id=attendee_data.get("event_id", uuid.uuid4()),
+        role=attendee_data.get("role"),
+        look_id=attendee_data.get("look_id"),
+        style=attendee_data.get("style", random.randint(1, 100)),
+        invite=attendee_data.get("invite", random.randint(1, 100)),
+        pay=attendee_data.get("pay", random.randint(1, 100)),
+        size=attendee_data.get("size", random.randint(1, 100)),
+        ship=attendee_data.get("ship", random.randint(1, 100)),
+        is_active=attendee_data.get("is_active", True),
+    )
 
 
 def order_request(**order_data):

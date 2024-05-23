@@ -294,13 +294,17 @@ class TestEvents(BaseTestCase):
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
-        attendee_request1 = fixtures.attendee_request(event_id=event.id, email=attendee_user1.email, role=str(role.id))
-        attendee_request2 = fixtures.attendee_request(event_id=event.id, email=attendee_user2.email, role=str(role.id))
+        attendee_request1 = fixtures.create_attendee_request(
+            event_id=event.id, email=attendee_user1.email, role=str(role.id)
+        )
+        attendee_request2 = fixtures.create_attendee_request(
+            event_id=event.id, email=attendee_user2.email, role=str(role.id)
+        )
         attendee1 = self.attendee_service.create_attendee(attendee_request1)
         attendee2 = self.attendee_service.create_attendee(attendee_request2)
 
         self.attendee_service.create_attendee(
-            fixtures.attendee_request(
+            fixtures.create_attendee_request(
                 event_id=event.id, email=attendee_user3.email, role=str(role.id), look_id=look.id, is_active=False
             )
         )

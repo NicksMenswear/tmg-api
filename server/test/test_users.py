@@ -186,7 +186,9 @@ class TestUsers(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email)
+        )
         self.event_service.create_event(fixtures.create_event_request(user_id=attendee_user.id))
 
         # when
@@ -211,8 +213,12 @@ class TestUsers(BaseTestCase):
         user2 = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=attendee_user.email))
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event2.id, email=attendee_user.email))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email)
+        )
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email)
+        )
 
         # when
         response = self.client.open(
@@ -243,7 +249,7 @@ class TestUsers(BaseTestCase):
         event4_invited_inactive = self.event_service.create_event(
             fixtures.create_event_request(user_id=user1.id, is_active=False)
         )
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event1.id, email=user2.email))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event1.id, email=user2.email))
 
         # when
         response = self.client.open(

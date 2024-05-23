@@ -81,7 +81,7 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id)
         )
         self.app.discount_service.create_discount(
             event.id, attendee.id, random.randint(50, 500), DiscountType.GROOM_GIFT
@@ -105,7 +105,7 @@ class TestWebhooks(BaseTestCase):
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(fixtures.create_look_request(user_id=attendee_user.id))
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
         self.app.discount_service.create_discount(
             event.id, attendee.id, random.randint(50, 500), DiscountType.GROOM_GIFT
@@ -133,7 +133,7 @@ class TestWebhooks(BaseTestCase):
             )
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
         self.app.discount_service.create_discount(
             event.id, attendee.id, random.randint(50, 500), DiscountType.GROOM_GIFT
@@ -165,7 +165,7 @@ class TestWebhooks(BaseTestCase):
             )
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
         self.app.discount_service.create_discount(
             event.id,
@@ -220,13 +220,13 @@ class TestWebhooks(BaseTestCase):
             )
         )
         attendee1 = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
+            fixtures.create_attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
         )
         attendee2 = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user2.id, event_id=event.id, look_id=look2.id)
+            fixtures.create_attendee_request(user_id=attendee_user2.id, event_id=event.id, look_id=look2.id)
         )
         attendee3 = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user3.id, event_id=event.id, look_id=look3.id)
+            fixtures.create_attendee_request(user_id=attendee_user3.id, event_id=event.id, look_id=look3.id)
         )
         discount_intent1 = self.app.discount_service.create_discount(
             event.id, attendee1.id, random.randint(50, 500), DiscountType.GROOM_GIFT
@@ -288,7 +288,7 @@ class TestWebhooks(BaseTestCase):
             )
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
         discount = self.app.discount_service.create_discount(
             event.id,
@@ -326,7 +326,7 @@ class TestWebhooks(BaseTestCase):
             )
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
         )
         discount1 = self.app.discount_service.create_discount(
             event.id,

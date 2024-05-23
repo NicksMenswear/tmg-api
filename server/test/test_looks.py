@@ -112,7 +112,9 @@ class TestLooks(BaseTestCase):
         )
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
+            fixtures.create_attendee_request(
+                email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id
+            )
         )
 
         # when
@@ -149,7 +151,9 @@ class TestLooks(BaseTestCase):
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
-            fixtures.attendee_request(email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id)
+            fixtures.create_attendee_request(
+                email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id
+            )
         )
 
         # when
@@ -190,10 +194,10 @@ class TestLooks(BaseTestCase):
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
         self.attendee_service.create_attendee(
-            fixtures.attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)
+            fixtures.create_attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)
         )
         self.attendee_service.create_attendee(
-            fixtures.attendee_request(event_id=event2.id, email=user2.email, look_id=look.id)
+            fixtures.create_attendee_request(event_id=event2.id, email=user2.email, look_id=look.id)
         )
 
         # when

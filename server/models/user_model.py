@@ -8,7 +8,7 @@ class CreateUserModel(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    account_status: bool = False
+    account_status: bool = True
 
 
 class UserModel(BaseModel):

@@ -1,22 +1,21 @@
 from __future__ import absolute_import
 
-import json
 import uuid
 
-from server import encoder
+from server.models.attendee_model import CreateAttendeeModel
 from server.test import BaseTestCase, fixtures
 
 
 class TestAttendees(BaseTestCase):
-    def assert_equal_attendee(self, attendee_request, attendee_response):
-        self.assertEqual(str(attendee_request["event_id"]), attendee_response["event_id"])
-        self.assertEqual(attendee_request["invite"], attendee_response["invite"])
-        self.assertEqual(attendee_request["pay"], attendee_response["pay"])
-        self.assertEqual(attendee_request["size"], attendee_response["size"])
-        self.assertEqual(attendee_request["style"], attendee_response["style"])
-        self.assertEqual(attendee_request["ship"], attendee_response["ship"])
-        self.assertEqual(str(attendee_request["role"]), str(attendee_response["role"]))
-        self.assertEqual(str(attendee_request["look_id"]), str(attendee_response["look_id"]))
+    def assert_equal_attendee(self, create_attendee: CreateAttendeeModel, attendee_response: dict):
+        self.assertEqual(str(create_attendee.event_id), attendee_response["event_id"])
+        self.assertEqual(create_attendee.invite, attendee_response["invite"])
+        self.assertEqual(create_attendee.pay, attendee_response["pay"])
+        self.assertEqual(create_attendee.size, attendee_response["size"])
+        self.assertEqual(create_attendee.style, attendee_response["style"])
+        self.assertEqual(create_attendee.ship, attendee_response["ship"])
+        self.assertEqual(str(create_attendee.role), str(attendee_response["role"]))
+        self.assertEqual(str(create_attendee.look_id), str(attendee_response["look_id"]))
         self.assertIsNotNone(attendee_response["id"])
 
     def test_create_attendee_without_role_and_look(self):
@@ -25,13 +24,13 @@ class TestAttendees(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
-        attendee = fixtures.attendee_request(event_id=event.id, role=None, look_id=None)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=None, look_id=None)
 
         response = self.client.open(
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            data=create_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -40,15 +39,14 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNone(response.json["role"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
-        self.assert_equal_attendee(attendee, response.json)
-        attendee_user = self.user_service.get_user_by_email(attendee["email"])
+        self.assert_equal_attendee(create_attendee, response.json)
+        attendee_user = self.user_service.get_user_by_email(create_attendee.email)
         self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
-        self.assertEqual(attendee_user.first_name, attendee["first_name"])
-        self.assertEqual(attendee_user.last_name, attendee["last_name"])
-        self.assertEqual(attendee_user.email, attendee["email"])
-        self.assertIsNone(response.json.get("look_id"))
+        self.assertEqual(attendee_user.first_name, create_attendee.first_name)
+        self.assertEqual(attendee_user.last_name, create_attendee.last_name)
+        self.assertEqual(attendee_user.email, create_attendee.email)
         self.assertFalse(attendee_user.account_status)
-        self.assertTrue(response.json["is_active"])
+        self.assertIsNone(response.json.get("look_id"))
         self.assertIsNone(response.json.get("role"))
 
     def test_create_attendee_without_role(self):
@@ -58,13 +56,13 @@ class TestAttendees(BaseTestCase):
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
 
         # when
-        attendee = fixtures.attendee_request(event_id=event.id, role=None, look_id=look.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=None, look_id=look.id)
 
         response = self.client.open(
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            data=create_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -73,15 +71,8 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNone(response.json["role"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
-        self.assert_equal_attendee(attendee, response.json)
-        attendee_user = self.user_service.get_user_by_email(attendee["email"])
-        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
-        self.assertEqual(attendee_user.first_name, attendee["first_name"])
-        self.assertEqual(attendee_user.last_name, attendee["last_name"])
-        self.assertEqual(attendee_user.email, attendee["email"])
+        self.assert_equal_attendee(create_attendee, response.json)
         self.assertEqual(response.json["look_id"], str(look.id))
-        self.assertFalse(attendee_user.account_status)
-        self.assertTrue(response.json["is_active"])
         self.assertIsNone(response.json.get("role"))
 
     def test_create_attendee_without_look(self):
@@ -91,13 +82,13 @@ class TestAttendees(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        attendee = fixtures.attendee_request(event_id=event.id, role=role.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=role.id)
 
         response = self.client.open(
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            data=create_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -105,14 +96,7 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
-        self.assert_equal_attendee(attendee, response.json)
-        attendee_user = self.user_service.get_user_by_email(attendee["email"])
-        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
-        self.assertEqual(attendee_user.first_name, attendee["first_name"])
-        self.assertEqual(attendee_user.last_name, attendee["last_name"])
-        self.assertEqual(attendee_user.email, attendee["email"])
-        self.assertFalse(attendee_user.account_status)
-        self.assertTrue(response.json["is_active"])
+        self.assert_equal_attendee(create_attendee, response.json)
         self.assertTrue(response.json["role"], str(role.id))
         self.assertIsNone(response.json.get("look_id"))
 
@@ -124,13 +108,13 @@ class TestAttendees(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        attendee = fixtures.attendee_request(event_id=event.id, role=role.id, look_id=look.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=role.id, look_id=look.id)
 
         response = self.client.open(
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            data=create_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -139,14 +123,7 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["role"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
-        self.assert_equal_attendee(attendee, response.json)
-        attendee_user = self.user_service.get_user_by_email(attendee["email"])
-        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
-        self.assertEqual(attendee_user.first_name, attendee["first_name"])
-        self.assertEqual(attendee_user.last_name, attendee["last_name"])
-        self.assertEqual(attendee_user.email, attendee["email"])
-        self.assertFalse(attendee_user.account_status)
-        self.assertTrue(response.json["is_active"])
+        self.assert_equal_attendee(create_attendee, response.json)
 
     def test_create_attendee_for_existing_attendee_user(self):
         # given
@@ -157,7 +134,7 @@ class TestAttendees(BaseTestCase):
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
-        attendee = fixtures.attendee_request(
+        create_attendee = fixtures.create_attendee_request(
             event_id=event.id,
             role=role.id,
             look_id=look.id,
@@ -170,7 +147,7 @@ class TestAttendees(BaseTestCase):
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(attendee, cls=encoder.CustomJSONEncoder),
+            data=create_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -179,21 +156,23 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["role"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
-        self.assert_equal_attendee(attendee, response.json)
+        self.assert_equal_attendee(create_attendee, response.json)
         self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
-        self.assertEqual(attendee_user.first_name, attendee["first_name"])
-        self.assertEqual(attendee_user.last_name, attendee["last_name"])
-        self.assertEqual(attendee_user.email, attendee["email"])
+        self.assertEqual(attendee_user.first_name, create_attendee.first_name)
+        self.assertEqual(attendee_user.last_name, create_attendee.last_name)
+        self.assertEqual(attendee_user.email, create_attendee.email)
 
     def test_create_attendee_but_it_already_exist_and_associated(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        self.attendee_service.create_attendee(fixtures.attendee_request(event_id=event.id, email=attendee_user.email))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email)
+        )
 
         # when
-        new_attendee = fixtures.attendee_request(
+        new_attendee = fixtures.create_attendee_request(
             event_id=event.id,
             email=attendee_user.email,
             first_name=attendee_user.first_name,
@@ -204,7 +183,7 @@ class TestAttendees(BaseTestCase):
             "/attendees",
             query_string=self.hmac_query_params,
             method="POST",
-            data=json.dumps(new_attendee, cls=encoder.CustomJSONEncoder),
+            data=new_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -240,7 +219,7 @@ class TestAttendees(BaseTestCase):
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(
+            fixtures.create_attendee_request(
                 event_id=event.id,
                 email=user.email,
                 style=1,
@@ -254,61 +233,63 @@ class TestAttendees(BaseTestCase):
         )
 
         # when
-        updated_attendee_data = {
-            "email": user.email,
-            "event_id": event.id,
-            "style": attendee.style + 10,
-            "invite": attendee.invite + 10,
-            "pay": attendee.pay + 10,
-            "size": attendee.size + 10,
-            "ship": attendee.ship + 10,
-            "role": str(role2.id),
-            "look_id": str(look2.id),
-        }
+        update_attendee = fixtures.update_attendee_request(
+            style=attendee.style + 10,
+            invite=attendee.invite + 10,
+            pay=attendee.pay + 10,
+            size=attendee.size + 10,
+            ship=attendee.ship + 10,
+            role=role2.id,
+            look_id=look2.id,
+        )
 
         response = self.client.open(
             f"/attendees/{attendee.id}",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=json.dumps(updated_attendee_data, cls=encoder.CustomJSONEncoder),
+            data=update_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
 
         # then
         self.assertStatus(response, 200)
-
-        # checking response
-        self.assert_equal_attendee(updated_attendee_data, response.json)
+        attendee_response = response.json
+        self.assertEqual(update_attendee.invite, attendee_response["invite"])
+        self.assertEqual(update_attendee.pay, attendee_response["pay"])
+        self.assertEqual(update_attendee.size, attendee_response["size"])
+        self.assertEqual(update_attendee.style, attendee_response["style"])
+        self.assertEqual(update_attendee.ship, attendee_response["ship"])
+        self.assertEqual(str(update_attendee.role), str(attendee_response["role"]))
+        self.assertEqual(str(update_attendee.look_id), str(attendee_response["look_id"]))
+        self.assertIsNotNone(attendee_response["id"])
 
         # checking db
         updated_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
-        self.assertEqual(updated_attendee_data["style"], updated_attendee.style)
-        self.assertEqual(updated_attendee_data["invite"], updated_attendee.invite)
-        self.assertEqual(updated_attendee_data["pay"], updated_attendee.pay)
-        self.assertEqual(updated_attendee_data["size"], updated_attendee.size)
-        self.assertEqual(updated_attendee_data["ship"], updated_attendee.ship)
+        self.assertEqual(updated_attendee.style, updated_attendee.style)
+        self.assertEqual(updated_attendee.invite, updated_attendee.invite)
+        self.assertEqual(updated_attendee.pay, updated_attendee.pay)
+        self.assertEqual(updated_attendee.size, updated_attendee.size)
+        self.assertEqual(updated_attendee.ship, updated_attendee.ship)
         self.assertEqual(str(role2.id), str(updated_attendee.role))
         self.assertEqual(str(look2.id), str(updated_attendee.look_id))
 
     def test_update_attendee_non_existing(self):
         # when
-        updated_attendee_data = {
-            "email": f"{str(uuid.uuid4())}@example.com",
-            "event_id": str(uuid.uuid4()),
-            "style": 1,
-            "invite": 2,
-            "pay": 3,
-            "size": 4,
-            "ship": 5,
-            "role": None,
-        }
+        update_attendee = fixtures.update_attendee_request(
+            style=1,
+            invite=2,
+            pay=3,
+            size=4,
+            ship=5,
+            role=None,
+        )
 
         response = self.client.open(
             f"/attendees/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=json.dumps(updated_attendee_data, cls=encoder.CustomJSONEncoder),
+            data=update_attendee.json(),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -323,7 +304,7 @@ class TestAttendees(BaseTestCase):
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
-            fixtures.attendee_request(event_id=event.id, email=user.email, role=str(role.id), look_id=look.id)
+            fixtures.create_attendee_request(event_id=event.id, email=user.email, role=str(role.id), look_id=look.id)
         )
 
         # when

@@ -603,7 +603,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}/discounts:
     get:
-      operationId: get_groom_gift_discounts
+      operationId: get_gift_discounts
       parameters:
         - description: ID of the event
           explode: false

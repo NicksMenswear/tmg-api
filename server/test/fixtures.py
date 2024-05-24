@@ -1,8 +1,15 @@
 import random
 import uuid
 from datetime import datetime
+from typing import List
 
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
+from server.models.discount_model import (
+    CreateDiscountIntent,
+    ApplyDiscountModel,
+    CreateDiscountIntentAmount,
+    CreateDiscountIntentPayFull,
+)
 from server.models.event_model import CreateEventModel, UpdateEventModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
@@ -100,6 +107,62 @@ def update_attendee_request(**attendee_data):
     )
 
 
+def create_gift_discount_intent_request(**create_discount_intent):
+    return CreateDiscountIntentAmount(
+        attendee_id=create_discount_intent.get("attendee_id", str(uuid.uuid4())),
+        amount=create_discount_intent.get("amount", random.randint(10, 500)),
+    )
+
+
+def create_full_pay_discount_intent_request(**create_discount_intent):
+    return CreateDiscountIntentPayFull(
+        attendee_id=create_discount_intent.get("attendee_id", str(uuid.uuid4())),
+        pay_full=True,
+    )
+
+
+def shopify_paid_order_gift_virtual_product_pay_for_discounts(sku="", customer_id=None, product_id=None):
+    return {
+        "id": random.randint(1000, 1000000),
+        "discount_codes": [],
+        "customer": {
+            "id": customer_id if customer_id else random.randint(1000, 1000000),
+            "email": "test@example.com",
+        },
+        "line_items": [
+            {
+                "id": product_id if product_id else random.randint(1000, 1000000),
+                "sku": sku,
+            }
+        ],
+    }
+
+
+def shopify_paid_order_user_pays_for_order_with_discounts(discounts: List[str]):
+    return {
+        "id": random.randint(1000, 1000000),
+        "discount_codes": [{"code": discount} for discount in discounts],
+        "line_items": [
+            {
+                "id": random.randint(1000, 1000000),
+                "sku": "PRODUCT_SKU",
+            }
+        ],
+    }
+
+
+def apply_discounts_request(**apply_discounts_data):
+    return ApplyDiscountModel(
+        event_id=apply_discounts_data.get("event_id", uuid.uuid4()),
+        shopify_cart_id=apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
+    )
+
+
+######################
+# LEGACY FIXTURES
+######################
+
+
 def order_request(**order_data):
     return {
         "email": order_data.get("email", f"{str(uuid.uuid4())}@example.com"),
@@ -151,57 +214,6 @@ def create_cart_product_request(**cart_product_data):
         "variation_id": cart_product_data.get("variation_id", random.randint(1000, 1000000)),
         "category": cart_product_data.get("category", str(uuid.uuid4())),
         "quantity": cart_product_data.get("quantity", random.randint(1, 100)),
-    }
-
-
-def create_groom_gift_discount_intent_request(**create_discount_intent):
-    return {
-        "attendee_id": create_discount_intent.get("attendee_id", str(uuid.uuid4())),
-        "amount": create_discount_intent.get("amount", random.randint(10, 500)),
-    }
-
-
-def create_groom_full_pay_discount_intent_request(**create_discount_intent):
-    return {
-        "attendee_id": create_discount_intent.get("attendee_id", str(uuid.uuid4())),
-        "pay_full": True,
-    }
-
-
-def shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(sku="", customer_id=None, product_id=None):
-    return {
-        "id": random.randint(1000, 1000000),
-        "discount_codes": [],
-        "customer": {
-            "id": customer_id if customer_id else random.randint(1000, 1000000),
-            "email": "test@example.com",
-        },
-        "line_items": [
-            {
-                "id": product_id if product_id else random.randint(1000, 1000000),
-                "sku": sku,
-            }
-        ],
-    }
-
-
-def shopify_paid_order_user_pays_for_order_with_discounts(discounts):
-    return {
-        "id": random.randint(1000, 1000000),
-        "discount_codes": [{"code": discount} for discount in discounts],
-        "line_items": [
-            {
-                "id": random.randint(1000, 1000000),
-                "sku": "PRODUCT_SKU",
-            }
-        ],
-    }
-
-
-def apply_discounts_request(**apply_discounts_data):
-    return {
-        "event_id": apply_discounts_data.get("event_id", str(uuid.uuid4())),
-        "shopify_cart_id": apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
     }
 
 

@@ -1,11 +1,22 @@
 import random
+import uuid
 from datetime import datetime, timezone
+from typing import List, Union, Optional
 from uuid import UUID
 
 from sqlalchemy import or_
 
 from server.database.database_manager import db
 from server.database.models import Discount, Attendee, DiscountType, User, Look
+from server.models.attendee_model import AttendeeModel
+from server.models.discount_model import (
+    DiscountModel,
+    CreateDiscountIntent,
+    EventDiscountModel,
+    EventDiscountLookModel,
+    EventDiscountCodeModel,
+    CreateDiscountIntentPayFull,
+)
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee import AttendeeService
 from server.services.event import EventService
@@ -35,14 +46,27 @@ class DiscountService:
         self.attendee_service = attendee_service
         self.look_service = look_service
 
-    def get_discount_by_id(self, discount_id):
-        return Discount.query.filter(Discount.id == discount_id).first()
+    def get_discount_by_id(self, discount_id: uuid.UUID):
+        discount = Discount.query.filter(Discount.id == discount_id).first()
 
-    def get_discounts_by_attendee_id(self, attendee_id):
-        return Discount.query.filter(Discount.attendee_id == attendee_id).all()
+        if not discount:
+            raise NotFoundError("Discount not found.")
 
-    def get_discount_by_shopify_code(self, shopify_code):
-        return Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
+        return DiscountModel.from_orm(discount)
+
+    def get_discounts_by_attendee_id(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
+        return [
+            DiscountModel.from_orm(discount)
+            for discount in Discount.query.filter(Discount.attendee_id == attendee_id).all()
+        ]
+
+    def get_discount_by_shopify_code(self, shopify_code: str) -> Union[DiscountModel, None]:
+        discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
+
+        if not discount:
+            return None
+
+        return DiscountModel.from_orm(discount)
 
     def create_discount(
         self,
@@ -73,15 +97,17 @@ class DiscountService:
 
         return discount
 
-    def get_discounts_for_event(self, event_id: UUID):
+    def get_discounts_for_event(self, event_id: UUID) -> List[DiscountModel]:
         event = self.event_service.get_event_by_id(event_id)
 
         if not event:
             raise NotFoundError("Event not found.")
 
-        return Discount.query.filter(Discount.event_id == event_id).all()
+        return [
+            DiscountModel.from_orm(discount) for discount in Discount.query.filter(Discount.event_id == event_id).all()
+        ]
 
-    def get_groom_gift_discounts(self, event_id: UUID):
+    def get_gift_discounts(self, event_id: UUID) -> List[EventDiscountModel]:
         event = self.event_service.get_event_by_id(event_id)
 
         if not event:
@@ -98,27 +124,27 @@ class DiscountService:
         if not users_attendees_looks:
             return []
 
-        groom_gift_discounts = {}
+        gift_discounts = {}
 
         attendee_ids = []
 
         for user, attendee, look in users_attendees_looks:
             attendee_ids.append(attendee.id)
 
-            groom_gift_discounts[attendee.id] = {
-                "attendee_id": attendee.id,
-                "event_id": event_id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "amount": 0,
-                "codes": [],
-                "look": {"id": attendee.look_id, "name": look.look_name if look else None, "price": 0},
-            }
+            gift_discounts[attendee.id] = EventDiscountModel(
+                attendee_id=attendee.id,
+                event_id=event_id,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                amount=0,
+                codes=[],
+                look=EventDiscountLookModel(id=attendee.look_id, name=look.look_name if look else None, price=0),
+            )
 
             if look and look.product_specs and look.product_specs.get("variants"):
                 variant_ids = look.product_specs["variants"]
                 look_price = self.shopify_service.get_total_price_for_variants(variant_ids)
-                groom_gift_discounts[attendee.id]["look"]["price"] = look_price
+                gift_discounts[attendee.id].look.price = look_price
 
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
@@ -128,7 +154,7 @@ class DiscountService:
         ).all()
 
         for discount_intent in discount_intents:
-            groom_gift_discounts[discount_intent.attendee_id]["amount"] = discount_intent.amount
+            gift_discounts[discount_intent.attendee_id].amount = discount_intent.amount
 
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
@@ -138,25 +164,27 @@ class DiscountService:
         ).all()
 
         for paid_discount in paid_discounts:
-            groom_gift_discounts[paid_discount.attendee_id]["codes"].append(
-                {
-                    "code": paid_discount.shopify_discount_code,
-                    "amount": paid_discount.amount,
-                    "type": str(paid_discount.type),
-                    "used": paid_discount.used,
-                }
+            gift_discounts[paid_discount.attendee_id].codes.append(
+                EventDiscountCodeModel(
+                    code=paid_discount.shopify_discount_code,
+                    amount=paid_discount.amount,
+                    type=str(paid_discount.type),
+                    used=paid_discount.used,
+                )
             )
 
-        return list(groom_gift_discounts.values())
+        return gift_discounts.values()
 
-    def get_groom_gift_discount_intents_for_product(self, product_id):
-        return Discount.query.filter(
+    def get_gift_discount_intents_for_product(self, product_id: str) -> List[DiscountModel]:
+        discounts = Discount.query.filter(
             Discount.shopify_virtual_product_id == product_id,
             Discount.shopify_discount_code == None,
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
 
-    def mark_discount_by_shopify_code_as_paid(self, shopify_code):
+        return [DiscountModel.from_orm(discount) for discount in discounts]
+
+    def mark_discount_by_shopify_code_as_paid(self, shopify_code: str) -> Optional[DiscountModel]:
         discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
         if not discount:
@@ -167,9 +195,13 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return discount
+        return DiscountModel.from_orm(discount)
 
-    def create_discount_intents(self, event_id, discount_intents):
+    def create_discount_intents(
+        self,
+        event_id: uuid.UUID,
+        discount_intents: List[CreateDiscountIntent],
+    ) -> List[DiscountModel]:
         if not discount_intents:
             return []
 
@@ -196,24 +228,10 @@ class DiscountService:
                 db.session.delete(discount)
 
             for intent in discount_intents:
-                attendee = self.attendee_service.get_attendee_by_id(intent.get("attendee_id"))
-
-                if not attendee:
-                    raise NotFoundError(f"Attendee not found.")
-
-                # TODO: refactor via pydantic validation
-                if "pay_full" not in intent and "amount" not in intent:
-                    raise BadRequestError("Either 'amount' or 'pay_full' must be provided for intent.")
-
-                if intent.get("pay_full") and intent.get("amount"):
-                    raise BadRequestError("'amount' shouldn't be present when 'pay_full' is set.")
-
-                if "amount" in intent and intent.get("amount") <= 0:
-                    raise BadRequestError("Discount amount must be greater than 0.")
-
+                attendee = self.attendee_service.get_attendee_by_id(intent.attendee_id)
                 attendee_discounts = self.__filter_attendee_discounts(existing_discounts, attendee.id)
 
-                if intent.get("pay_full"):
+                if isinstance(intent, CreateDiscountIntentPayFull):
                     if any(discount.shopify_discount_code for discount in attendee_discounts):
                         raise BadRequestError(f"Groom gift discount already issued for attendee '{attendee.id}'")
 
@@ -254,14 +272,12 @@ class DiscountService:
                             f"Groom full pay gift discount already issued for attendee '{attendee.id}'"
                         )
 
-                    amount = intent.get("amount")
-
-                    total_intent_amount += amount
+                    total_intent_amount += intent.amount
 
                     discount_intent = Discount(
                         event_id=event_id,
                         attendee_id=attendee.id,
-                        amount=amount,
+                        amount=intent.amount,
                         type=DiscountType.GROOM_GIFT,
                     )
 
@@ -328,24 +344,20 @@ class DiscountService:
 
             raise ServiceError("Failed to create discount product in Shopify.", e)
 
-        return intents
+        return [DiscountModel.from_orm(intent) for intent in intents]
 
-    def __filter_groom_discounts_without_codes(self, discounts):
+    def __filter_groom_discounts_without_codes(self, discounts: List[DiscountModel]) -> List[DiscountModel]:
         return [
             discount
             for discount in discounts
             if not discount.shopify_discount_code and discount.type in GROOM_DISCOUNT_TYPES
         ]
 
-    def __filter_attendee_discounts(self, discounts, attendee_id):
+    def __filter_attendee_discounts(self, discounts: List[DiscountModel], attendee_id: uuid.UUID):
         return [discount for discount in discounts if discount.attendee_id == attendee_id]
 
-    def add_code_to_discount(self, discount_id, shopify_discount_id, code):
+    def add_code_to_discount(self, discount_id: uuid.UUID, shopify_discount_id: uuid.UUID, code: str) -> DiscountModel:
         discount = self.get_discount_by_id(discount_id)
-
-        if not discount:
-            raise NotFoundError("Discount not found.")
-
         discount.shopify_discount_code = code
         discount.shopify_discount_code_id = shopify_discount_id
         discount.updated_at = datetime.now(timezone.utc)
@@ -353,15 +365,20 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return discount
+        return DiscountModel.from_orm(discount)
 
-    def get_group_discount_for_attendee(self, attendee_id):
-        return Discount.query.filter(
+    def get_group_discount_for_attendee(self, attendee_id: uuid.UUID) -> Optional[DiscountModel]:
+        discount = Discount.query.filter(
             Discount.attendee_id == attendee_id,
             Discount.type == DiscountType.PARTY_OF_FOUR,
         ).first()
 
-    def create_tmg_group_discount_for_attendee(self, attendee, event_id):
+        if not discount:
+            return None
+
+        return DiscountModel.from_orm(discount)
+
+    def create_tmg_group_discount_for_attendee(self, attendee: AttendeeModel, event_id: uuid.UUID) -> DiscountModel:
         if not attendee.look_id:
             raise NotFoundError("Attendee has no look associated.")
 
@@ -388,9 +405,9 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return discount
+        return DiscountModel.from_orm(discount)
 
-    def apply_discounts(self, attendee_id, event_id, shopify_cart_id):
+    def apply_discounts(self, attendee_id: uuid.UUID, event_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
         attendee = self.attendee_service.get_attendee_by_id(attendee_id)
 
         if not attendee:

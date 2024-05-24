@@ -67,7 +67,7 @@ class WebhookService:
         except Exception as e:
             logger.error(f"Error archiving product with id '{shopify_product_id}': {e}")  # log but proceed
 
-        discounts = self.discount_service.get_groom_gift_discount_intents_for_product(shopify_product_id)
+        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_product_id)
 
         if not discounts:
             logger.error(f"No discounts found for product_id: {shopify_product_id}")

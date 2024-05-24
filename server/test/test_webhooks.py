@@ -57,7 +57,7 @@ class TestWebhooks(BaseTestCase):
 
     def test_paid_order_for_non_groom_gift_virtual_product(self):
         # when
-        response = self.__post(fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts())
+        response = self.__post(fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts())
 
         # then
         self.assert200(response)
@@ -66,7 +66,7 @@ class TestWebhooks(BaseTestCase):
     def test_paid_order_with_groom_gift_virtual_product_sku(self):
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
@@ -89,7 +89,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
@@ -113,7 +113,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
@@ -141,7 +141,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
@@ -184,7 +184,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
@@ -240,7 +240,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_groom_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
                 f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )

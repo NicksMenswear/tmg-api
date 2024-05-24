@@ -1,10 +1,12 @@
 import logging
 import uuid
-
-from sqlalchemy import or_
+from operator import or_
+from typing import List
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee, Look, Discount, DiscountType
+from server.database.models import User, Event, Attendee, Discount, DiscountType, Look
+from server.models.look_model import LookModel
+from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import AbstractEmailService
 from server.services.shopify import AbstractShopifyService
@@ -17,73 +19,53 @@ class UserService:
         self.shopify_service = shopify_service
         self.email_service = email_service
 
-    def create_user(self, user_data):
-        if User.query.filter_by(email=user_data["email"]).first():
+    def create_user(self, create_user: CreateUserModel) -> UserModel:
+        user = User.query.filter_by(email=create_user.email).first()
+
+        if user:
             raise DuplicateError("User already exists with that email address.")
 
         try:
             shopify_customer_id = self.shopify_service.create_customer(
-                user_data.get("first_name"), user_data["last_name"], user_data["email"]
+                create_user.first_name, create_user.last_name, create_user.email
             )["id"]
 
-            user = User(
+            db_user = User(
                 id=uuid.uuid4(),
-                first_name=user_data.get("first_name"),
-                last_name=user_data.get("last_name"),
-                email=user_data.get("email"),
+                first_name=create_user.first_name,
+                last_name=create_user.last_name,
+                email=create_user.email,
                 shopify_id=shopify_customer_id,
-                account_status=user_data.get("account_status"),
+                account_status=create_user.account_status,
             )
 
-            db.session.add(user)
+            db.session.add(db_user)
 
-            if user.account_status:
-                self.email_service.send_activation_url(user.email, shopify_customer_id)
+            if db_user.account_status:
+                self.email_service.send_activation_url(db_user.email, shopify_customer_id)
 
             db.session.commit()
-            db.session.refresh(user)
+            db.session.refresh(db_user)
         except Exception as e:
             db.session.rollback()
             logger.exception(e)
             raise ServiceError("Failed to create user.")
-        return user
 
+        return UserModel.from_orm(db_user)
+
+    # TODO: pydantify
     def get_user_by_shopify_id(self, shopify_id):
         return User.query.filter_by(shopify_id=shopify_id).first()
 
-    def get_user_by_email(self, email):
-        return User.query.filter_by(email=email).first()
+    def get_user_by_email(self, email: str) -> UserModel:
+        db_user = User.query.filter_by(email=email).first()
 
-    def get_user_owned_events(self, user_id):
-        return Event.query.filter_by(user_id=user_id, is_active=True).all()
+        if not db_user:
+            raise NotFoundError("User not found.")
 
-    def get_user_invited_events(self, user_id):
-        return (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.attendee_id == user_id, Event.is_active)
-            .all()
-        )
+        return UserModel.from_orm(db_user)
 
-    def get_user_events(self, user_id, status=None):
-        owned_events = []
-        invited_events = []
-
-        if not status or status == "owner":
-            owned_events = self.get_user_owned_events(user_id)
-
-        if not status or status == "attendee":
-            invited_events = self.get_user_invited_events(user_id)
-
-        combined_events = owned_events + invited_events
-
-        events = {}
-
-        for event in combined_events:
-            events[event.id] = event.to_dict()
-            events[event.id]["status"] = "owner" if str(event.user_id) == user_id else "attendee"
-
-        return [event for event in list(events.values())]
-
+    # TODO: pydantify
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
         return Discount.query.filter(
             Discount.attendee_id == attendee_id,
@@ -92,19 +74,15 @@ class UserService:
             or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
         ).all()
 
-    def get_user_looks(self, user_id):
-        return Look.query.filter(Look.user_id == user_id).all()
+    def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:
+        user: User = User.query.filter_by(id=user_id).first()
 
-    def update_user(self, user_id, user_data):
-        user = User.query.filter_by(id=user_id).first()
         if not user:
             raise NotFoundError("User not found.")
 
         try:
-            user.first_name = user_data.get("first_name", user.first_name)
-            user.last_name = user_data.get("last_name", user.last_name)
-            user.account_status = user_data.get("account_status", user.account_status)
-            user.shopify_id = user_data.get("shopify_id", user.shopify_id)
+            user.first_name = update_user.first_name
+            user.last_name = update_user.last_name
 
             db.session.commit()
             db.session.refresh(user)
@@ -112,4 +90,4 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
-        return user
+        return UserModel.from_orm(user)

@@ -1,10 +1,11 @@
 import logging
+import uuid
 
 from flask import jsonify
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
-from server.services import NotFoundError
+from server.models.look_model import CreateLookModel, UpdateLookModel
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +15,9 @@ logger = logging.getLogger(__name__)
 def get_look(look_id):
     look_service = FlaskApp.current().look_service
 
-    look = look_service.get_look_by_id(look_id)
+    look = look_service.get_look_by_id(uuid.UUID(look_id))
 
-    if not look:
-        return jsonify({"errors": NotFoundError.MESSAGE}), 404
-
-    return look.to_dict(), 200
+    return look.to_response(), 200
 
 
 @hmac_verification
@@ -27,19 +25,19 @@ def get_look(look_id):
 def create_look(look_data):
     look_service = FlaskApp.current().look_service
 
-    look = look_service.create_look(look_data)
+    look = look_service.create_look(CreateLookModel(**look_data))
 
-    return look.to_dict(), 201
+    return look.to_response(), 201
 
 
 @hmac_verification
 @error_handler
 def get_events_for_look(look_id):
-    look_service = FlaskApp.current().look_service
+    event_service = FlaskApp.current().event_service
 
-    events = look_service.get_events_for_look(look_id)
+    events = event_service.get_events_for_look(uuid.UUID(look_id))
 
-    return [event.to_dict() for event in events], 200
+    return [event.to_response() for event in events], 200
 
 
 @hmac_verification
@@ -47,9 +45,9 @@ def get_events_for_look(look_id):
 def update_look(look_id, look_data):
     look_service = FlaskApp.current().look_service
 
-    look = look_service.update_look(look_id, look_data)
+    look = look_service.update_look(uuid.UUID(look_id), UpdateLookModel(**look_data))
 
-    return look.to_dict(), 200
+    return look.to_response(), 200
 
 
 @hmac_verification
@@ -57,6 +55,6 @@ def update_look(look_id, look_data):
 def delete_look(look_id):
     look_service = FlaskApp.current().look_service
 
-    look_service.delete_look(look_id)
+    look_service.delete_look(uuid.UUID(look_id))
 
     return jsonify({}), 204

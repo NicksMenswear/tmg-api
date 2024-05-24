@@ -334,7 +334,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Event"
         required: true
-        x-body-name: event
+        x-body-name: create_event_request
       responses:
         "201":
           description: Event created
@@ -2250,15 +2250,11 @@ components:
         look_name:
           title: look_name
           type: string
-        user_id:
-          title: user_id
-          $ref: '#/components/schemas/uuid'
         product_specs:
           title: product_specs
           type: object
       required:
         - look_name
-        - user_id
       title: Look
       type: object
     Role:

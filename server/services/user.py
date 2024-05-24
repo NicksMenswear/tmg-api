@@ -1,11 +1,9 @@
 import logging
 import uuid
 from operator import or_
-from typing import List
 
 from server.database.database_manager import db
-from server.database.models import User, Event, Attendee, Discount, DiscountType, Look
-from server.models.look_model import LookModel
+from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import AbstractEmailService
@@ -14,6 +12,7 @@ from server.services.shopify import AbstractShopifyService
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyMethodMayBeStatic
 class UserService:
     def __init__(self, shopify_service: AbstractShopifyService, email_service: AbstractEmailService):
         self.shopify_service = shopify_service
@@ -53,10 +52,6 @@ class UserService:
 
         return UserModel.from_orm(db_user)
 
-    # TODO: pydantify
-    def get_user_by_shopify_id(self, shopify_id):
-        return User.query.filter_by(shopify_id=shopify_id).first()
-
     def get_user_by_email(self, email: str) -> UserModel:
         db_user = User.query.filter_by(email=email).first()
 
@@ -66,7 +61,12 @@ class UserService:
         return UserModel.from_orm(db_user)
 
     def get_user_for_attendee(self, attendee_id: uuid.UUID) -> UserModel:
-        return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
+        user = User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
+
+        if not user:
+            raise NotFoundError("User not found.")
+
+        return UserModel.from_orm(user)
 
     # TODO: pydantify
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):

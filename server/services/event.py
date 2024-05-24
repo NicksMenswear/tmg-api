@@ -2,11 +2,12 @@ import uuid
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look, Role
+from server.database.models import Event, User, Attendee, Look
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
+# noinspection PyMethodMayBeStatic
 class EventService:
     def get_event_by_id(self, event_id: uuid.UUID) -> EventModel:
         event = Event.query.filter_by(id=event_id).first()
@@ -16,63 +17,62 @@ class EventService:
 
         return EventModel.from_orm(event)
 
-    # TODO: pydantify
-    def get_enriched_event_by_id(self, event_id):
-        event = Event.query.filter_by(id=event_id).first()
+    # def get_enriched_event_by_id(self, event_id):
+    #     event = Event.query.filter_by(id=event_id).first()
+    #
+    #     if not event:
+    #         raise NotFoundError("Event not found.")
+    #
+    #     event = event.to_dict()
+    #
+    #     event["attendees"] = []
+    #
+    #     results = (
+    #         db.session.query(Attendee, User, Look, Role)
+    #         .join(Event, Event.id == Attendee.event_id)
+    #         .join(User, User.id == Attendee.attendee_id)
+    #         .outerjoin(Look, Look.id == Attendee.look_id)
+    #         .outerjoin(Role, Role.id == Attendee.role)
+    #         .filter(Event.id == event_id, Attendee.is_active)
+    #         .all()
+    #     )
+    #
+    #     for attendee, user, look, role in results:
+    #         attendee = {
+    #             "id": attendee.id,
+    #             "invite": attendee.invite,
+    #             "pay": attendee.pay,
+    #             "ship": attendee.ship,
+    #             "size": attendee.size,
+    #             "style": attendee.style,
+    #             "user": {
+    #                 "id": user.id,
+    #                 "first_name": user.first_name,
+    #                 "last_name": user.last_name,
+    #                 "email": user.email,
+    #             },
+    #             "look": None,
+    #             "role": None,
+    #         }
+    #
+    #         if look:
+    #             attendee["look"] = {
+    #                 "id": look.id,
+    #                 "look_name": look.look_name,
+    #                 "product_specs": look.product_specs,
+    #             }
+    #
+    #         if role:
+    #             attendee["role"] = {
+    #                 "id": role.id,
+    #                 "role_name": role.role_name,
+    #             }
+    #
+    #         event["attendees"].append(attendee)
+    #
+    #     return event
 
-        if not event:
-            raise NotFoundError("Event not found.")
-
-        event = event.to_dict()
-
-        event["attendees"] = []
-
-        results = (
-            db.session.query(Attendee, User, Look, Role)
-            .join(Event, Event.id == Attendee.event_id)
-            .join(User, User.id == Attendee.attendee_id)
-            .outerjoin(Look, Look.id == Attendee.look_id)
-            .outerjoin(Role, Role.id == Attendee.role)
-            .filter(Event.id == event_id, Attendee.is_active)
-            .all()
-        )
-
-        for attendee, user, look, role in results:
-            attendee = {
-                "id": attendee.id,
-                "invite": attendee.invite,
-                "pay": attendee.pay,
-                "ship": attendee.ship,
-                "size": attendee.size,
-                "style": attendee.style,
-                "user": {
-                    "id": user.id,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                },
-                "look": None,
-                "role": None,
-            }
-
-            if look:
-                attendee["look"] = {
-                    "id": look.id,
-                    "look_name": look.look_name,
-                    "product_specs": look.product_specs,
-                }
-
-            if role:
-                attendee["role"] = {
-                    "id": role.id,
-                    "role_name": role.role_name,
-                }
-
-            event["attendees"].append(attendee)
-
-        return event
-
-    def get_num_attendees_for_event(self, event_id: uuid.UUID):
+    def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
         db_event = Event.query.filter_by(id=event_id, is_active=True).first()
 
         if not db_event:

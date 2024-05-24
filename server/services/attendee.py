@@ -2,7 +2,7 @@ import uuid
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User
+from server.database.models import Attendee, Event
 from server.models.attendee_model import AttendeeModel, CreateAttendeeModel, UpdateAttendeeModel
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError

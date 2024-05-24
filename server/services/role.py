@@ -7,6 +7,7 @@ from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
+# noinspection PyMethodMayBeStatic
 class RoleService:
     def __role_by_id(self, role_id: uuid.UUID) -> Role:
         role = Role.query.filter(Role.id == role_id).first()

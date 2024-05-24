@@ -76,7 +76,7 @@ class WebhookService:
         discounts_codes = []
 
         for discount in discounts:
-            attendee_user = self.attendee_service.get_attendee_user(discount.attendee_id)
+            attendee_user = self.user_service.get_user_for_attendee(discount.attendee_id)
             attendee = self.attendee_service.get_attendee_by_id(discount.attendee_id)
 
             if not attendee.look_id:

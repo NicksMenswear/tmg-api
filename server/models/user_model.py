@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -16,10 +16,10 @@ class UserModel(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    shopify_id: str
+    shopify_id: Union[None, str] = None
     account_status: bool = False
-    legacy_id: Optional[str]
-    phone_number: Optional[str]
+    legacy_id: Union[None, str] = None
+    phone_number: Union[None, str] = None
 
     class Config:
         from_attributes = True

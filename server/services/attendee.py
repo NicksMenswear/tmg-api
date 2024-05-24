@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
@@ -30,8 +31,15 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def get_attendee_user(self, attendee_id: uuid.UUID):
-        return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
+    def get_attendees_for_event(self, event_id: uuid.UUID) -> List[AttendeeModel]:
+        event = Event.query.filter_by(id=event_id).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        attendees = Attendee.query.filter(Attendee.event_id == event_id, Attendee.is_active).all()
+
+        return [AttendeeModel.from_orm(attendee) for attendee in attendees]
 
     def create_attendee(self, create_attendee: CreateAttendeeModel) -> AttendeeModel:
         event = Event.query.filter(Event.id == create_attendee.event_id, Event.is_active).first()
@@ -110,7 +118,7 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def soft_delete_attendee(self, attendee_id):
+    def delete_attendee(self, attendee_id: uuid.UUID) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 
         if not attendee:

@@ -65,6 +65,9 @@ class UserService:
 
         return UserModel.from_orm(db_user)
 
+    def get_user_for_attendee(self, attendee_id: uuid.UUID) -> UserModel:
+        return User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
+
     # TODO: pydantify
     def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
         return Discount.query.filter(

@@ -292,7 +292,7 @@ class DiscountService:
             product_body += "<ul>"
 
             for intent in intents:
-                attendee_user = self.attendee_service.get_attendee_user(intent.attendee_id)
+                attendee_user = self.user_service.get_user_for_attendee(intent.attendee_id)
                 type = "Full pay" if intent.type == DiscountType.GROOM_FULL_PAY else "Gift"
                 product_body += (
                     f"<li>{type} for {attendee_user.first_name} {attendee_user.last_name}: ${intent.amount}</li>"
@@ -370,7 +370,7 @@ class DiscountService:
         if not look or not look.product_specs or len(look.product_specs.get("variants", [])) == 0:
             raise ServiceError("Look has no variants.")
 
-        attendee_user = self.attendee_service.get_attendee_user(attendee.id)
+        attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
         code = f"{TMG_GROUP_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
         title = code

@@ -80,15 +80,6 @@ class EventService:
 
         return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
 
-    # TODO: pydantify
-    def get_attendees_for_event(self, event_id):
-        event = Event.query.filter_by(id=event_id).first()
-
-        if not event:
-            raise NotFoundError("Event not found.")
-
-        return self.get_enriched_event_by_id(event_id)["attendees"]
-
     def create_event(self, create_event: CreateEventModel) -> EventModel:
         user = User.query.filter_by(id=create_event.user_id).first()
 
@@ -146,7 +137,7 @@ class EventService:
 
         return EventModel.from_orm(db_event)
 
-    def soft_delete_event(self, event_id: uuid.UUID) -> None:
+    def delete_event(self, event_id: uuid.UUID) -> None:
         db_event = Event.query.filter(Event.id == event_id).first()
 
         if not db_event:

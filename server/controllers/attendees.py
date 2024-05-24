@@ -1,18 +1,17 @@
 import logging
 import uuid
 
-from flask import jsonify
-
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
+from server.services.attendee import AttendeeService
 
 logger = logging.getLogger(__name__)
 
 
 @hmac_verification
 @error_handler
-def get_attendee(attendee_id):
+def get_attendee_by_id(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
     attendee = attendee_service.get_attendee_by_id(uuid.UUID(attendee_id))
@@ -22,32 +21,32 @@ def get_attendee(attendee_id):
 
 @hmac_verification
 @error_handler
-def create_attendee(attendee_data):
+def create_attendee(create_attendee):
     attendee_service = FlaskApp.current().attendee_service
 
-    attendee = attendee_service.create_attendee(CreateAttendeeModel(**attendee_data))
+    attendee = attendee_service.create_attendee(CreateAttendeeModel(**create_attendee))
 
     return attendee.to_response(), 201
 
 
 @hmac_verification
 @error_handler
-def update_attendee(attendee_id, attendee_data):
+def update_attendee(attendee_id, update_attendee):
     attendee_service = FlaskApp.current().attendee_service
 
-    attendee = attendee_service.update_attendee(uuid.UUID(attendee_id), UpdateAttendeeModel(**attendee_data))
+    attendee = attendee_service.update_attendee(uuid.UUID(attendee_id), UpdateAttendeeModel(**update_attendee))
 
     return attendee.to_response(), 200
 
 
 @hmac_verification
 @error_handler
-def soft_delete_attendee(attendee_id):
+def delete_attendee(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
-    attendee_service.soft_delete_attendee(uuid.UUID(attendee_id))
+    attendee_service.delete_attendee(uuid.UUID(attendee_id))
 
-    return jsonify({}), 204
+    return None, 204
 
 
 @hmac_verification

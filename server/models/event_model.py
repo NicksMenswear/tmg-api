@@ -48,7 +48,6 @@ class EventModel(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     def to_response(self):
         return self.dict(include={"id", "user_id", "event_name", "event_date", "status"})

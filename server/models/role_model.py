@@ -26,7 +26,6 @@ class RoleModel(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     def to_response(self):
         return self.dict(include={"id", "role_name", "event_id"})

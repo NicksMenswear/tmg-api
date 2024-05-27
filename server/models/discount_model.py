@@ -61,7 +61,6 @@ class DiscountModel(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     def to_response(self):
         response = self.dict(

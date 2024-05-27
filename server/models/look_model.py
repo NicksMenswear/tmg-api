@@ -28,7 +28,6 @@ class LookModel(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     def to_response(self):
         return self.dict(include={"id", "look_name"})

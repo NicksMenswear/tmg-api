@@ -295,7 +295,7 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assert400(response)
-        self.assertTrue("Bad request" in response.json["errors"])
+        self.assertEqual("Input should be greater than 0", response.json["errors"])
 
     def test_create_discount_intent_of_type_gift(self):
         # given

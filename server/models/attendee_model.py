@@ -3,10 +3,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+from server.models.user_model import UserRequestModel
 
-class CreateAttendeeModel(BaseModel):
-    first_name: str
-    last_name: str
+
+class CreateAttendeeModel(UserRequestModel):
     email: EmailStr
     event_id: UUID
     style: int = 0
@@ -34,7 +34,6 @@ class AttendeeModel(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
     def to_response(self):
         return self.dict(

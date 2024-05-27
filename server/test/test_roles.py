@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 
+import json
 import uuid
 
+from server import encoder
 from server.test import BaseTestCase, fixtures
 
 
@@ -195,3 +197,25 @@ class TestRoles(BaseTestCase):
         except:
             pass
         self.assertIsNone(role_in_db)
+
+    def test_create_role_role_name_too_short(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+
+        # when
+        create_role = fixtures.create_role_request(event_id=event.id).model_dump()
+        create_role["role_name"] = "a"
+
+        response = self.client.open(
+            "/roles",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(create_role, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Role name must be between 2 and 64 characters long")

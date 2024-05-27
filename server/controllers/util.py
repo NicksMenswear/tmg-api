@@ -115,7 +115,15 @@ def error_handler(func):
             return func(*args, **kwargs)
         except ValidationError as e:
             logger.debug(e)
-            return jsonify({"errors": "Bad request"}), 400
+
+            if e.error_count() == 0:
+                return jsonify({"errors": "Bad request"}), 400
+
+            first_error = e.errors()[0]
+
+            msg = first_error.get("ctx", {}).get("error") or first_error.get("msg")
+
+            return jsonify({"errors": str(msg)}), 400
         except ValueError as e:
             logger.debug(e)
             return jsonify({"errors": str(e)}), 400

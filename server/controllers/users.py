@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from pydantic import validate_email
+from pydantic import validate_email, ValidationError
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp

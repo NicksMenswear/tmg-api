@@ -1,9 +1,11 @@
 from __future__ import absolute_import
 
+import json
 import uuid
 
+from server import encoder
 from server.models.user_model import CreateUserModel, UserModel
-from server.test import BaseTestCase, fixtures
+from server.test import BaseTestCase, fixtures, utils
 
 
 class TestUsers(BaseTestCase):
@@ -76,8 +78,8 @@ class TestUsers(BaseTestCase):
         user: UserModel = self.user_service.create_user(fixtures.create_user_request())
 
         # when
-        updated_first_name = str(uuid.uuid4())
-        updated_last_name = str(uuid.uuid4())
+        updated_first_name = utils.generate_unique_name()
+        updated_last_name = utils.generate_unique_name()
 
         updated_user = fixtures.update_user_request(first_name=updated_first_name, last_name=updated_last_name)
 
@@ -324,3 +326,83 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_look1["look_name"], str(look1.look_name))
         self.assertEqual(response_look2["id"], str(look2.id))
         self.assertEqual(response_look2["look_name"], str(look2.look_name))
+
+    def test_create_user_first_name_too_short(self):
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {"first_name": "a", "last_name": "abcd", "email": "test@example.com"},
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_create_user_last_name_too_long(self):
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {
+                    "first_name": "abcdefghij",
+                    "last_name": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij",
+                    "email": "test@example.com",
+                },
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_create_user_first_name_invalid_characters(self):
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {
+                    "first_name": "123",
+                    "last_name": "abcdefg",
+                    "email": "test@example.com",
+                },
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_create_user_invalid_email(self):
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {
+                    "first_name": "abcdefg",
+                    "last_name": "abcdefg",
+                    "email": "not-an-email",
+                },
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)

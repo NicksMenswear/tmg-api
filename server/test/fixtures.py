@@ -2,10 +2,10 @@ import random
 import uuid
 from datetime import datetime
 from typing import List
+from server.test import utils
 
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.discount_model import (
-    CreateDiscountIntent,
     ApplyDiscountModel,
     CreateDiscountIntentAmount,
     CreateDiscountIntentPayFull,
@@ -18,17 +18,17 @@ from server.models.user_model import CreateUserModel, UpdateUserModel
 
 def create_user_request(**user_data) -> CreateUserModel:
     return CreateUserModel(
-        first_name=user_data.get("first_name", str(uuid.uuid4())),
-        last_name=user_data.get("last_name", str(uuid.uuid4())),
-        email=user_data.get("email", f"{str(uuid.uuid4())}@example.com"),
+        first_name=user_data.get("first_name", utils.generate_unique_name()),
+        last_name=user_data.get("last_name", utils.generate_unique_name()),
+        email=user_data.get("email", utils.generate_unique_email()),
         account_status=user_data.get("account_status", True),
     )
 
 
 def update_user_request(**user_data) -> UpdateUserModel:
     return UpdateUserModel(
-        first_name=user_data.get("first_name", str(uuid.uuid4())),
-        last_name=user_data.get("last_name", str(uuid.uuid4())),
+        first_name=user_data.get("first_name", utils.generate_unique_name()),
+        last_name=user_data.get("last_name", utils.generate_unique_name()),
     )
 
 
@@ -78,9 +78,9 @@ def update_role_request(**role_data):
 
 def create_attendee_request(**attendee_data):
     return CreateAttendeeModel(
-        email=attendee_data.get("email", f"{str(uuid.uuid4())}@example.com"),
-        first_name=attendee_data.get("first_name", str(uuid.uuid4())),
-        last_name=attendee_data.get("last_name", str(uuid.uuid4())),
+        email=attendee_data.get("email", utils.generate_unique_email()),
+        first_name=attendee_data.get("first_name", utils.generate_unique_name()),
+        last_name=attendee_data.get("last_name", utils.generate_unique_name()),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
         role=attendee_data.get("role"),
         look_id=attendee_data.get("look_id"),

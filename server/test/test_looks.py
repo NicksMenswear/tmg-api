@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 
+import json
 import uuid
 
+from server import encoder
 from server.database.models import Look
 from server.test import BaseTestCase, fixtures
 
@@ -248,3 +250,26 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 204)
         look_in_db = Look.query.filter(Look.id == look.id).first()
         self.assertIsNone(look_in_db)
+
+    def test_create_look_with_look_name_too_long(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        look_data = fixtures.create_look_request(
+            user_id=user.id, product_specs={"variants": [123, 234, 345]}
+        ).model_dump()
+        look_data["look_name"] = "a" * 256
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=json.dumps(look_data, cls=encoder.CustomJSONEncoder),
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Look name must be between 2 and 64 characters long")

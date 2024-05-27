@@ -1,6 +1,6 @@
 import random
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from server.test import utils
 
@@ -35,7 +35,7 @@ def update_user_request(**user_data) -> UpdateUserModel:
 def create_event_request(**event_data) -> CreateEventModel:
     return CreateEventModel(
         event_name=event_data.get("event_name", str(uuid.uuid4())),
-        event_date=event_data.get("event_date", datetime.now().isoformat()),
+        event_date=event_data.get("event_date", (datetime.now() + timedelta(days=1)).isoformat()),
         user_id=event_data.get("user_id", uuid.uuid4()),
         is_active=event_data.get("is_active", True),
     )

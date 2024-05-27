@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 
+import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from server import encoder
 from server.test import BaseTestCase, fixtures
 
 
@@ -349,7 +351,7 @@ class TestEvents(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=fixtures.update_event_request(
-                event_name=str(uuid.uuid4()), event_date=datetime.now().isoformat()
+                event_name=str(uuid.uuid4()), event_date=(datetime.now() + timedelta(days=1)).isoformat()
             ).json(),
         )
 
@@ -363,7 +365,7 @@ class TestEvents(BaseTestCase):
 
         # when
         updated_event_name = str(uuid.uuid4())
-        updated_event_date = datetime.now().isoformat()
+        updated_event_date = (datetime.now() + timedelta(days=1)).isoformat()
 
         response = self.client.open(
             f"/events/{str(event.id)}",
@@ -431,3 +433,45 @@ class TestEvents(BaseTestCase):
 
         looked_up_event = self.event_service.get_event_by_id(event.id)
         self.assertEqual(looked_up_event.is_active, False)
+
+    def test_create_event_name_too_short(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id).model_dump()
+        event_request["event_name"] = "a"
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(event_request, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Event name must be between 2 and 64 characters long")
+
+    def test_create_event_date_in_the_past(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id).model_dump()
+        event_request["event_date"] = (datetime.now() - timedelta(days=1)).isoformat()
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(event_request, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Event date must be in the future")

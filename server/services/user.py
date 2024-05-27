@@ -68,8 +68,7 @@ class UserService:
 
         return UserModel.from_orm(user)
 
-    # TODO: pydantify
-    def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id):
+    def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[Discount]:
         return Discount.query.filter(
             Discount.attendee_id == attendee_id,
             Discount.shopify_discount_code != None,

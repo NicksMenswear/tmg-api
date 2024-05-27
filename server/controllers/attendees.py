@@ -51,7 +51,6 @@ def delete_attendee(attendee_id):
 
 @hmac_verification
 @error_handler
-# TODO: pydantify
 def apply_discounts(attendee_id, apply_discounts_request):
     discount_service = FlaskApp.current().discount_service
 

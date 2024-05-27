@@ -232,10 +232,7 @@ class TestUsers(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(len(response.json), 2)
-        response_event1 = response.json[0]
-        response_event2 = response.json[1]
-        self.assertEqual(response_event1["id"], str(event1.id))
-        self.assertEqual(response_event2["id"], str(event2.id))
+        self.assertEqual({response.json[0]["id"], response.json[1]["id"]}, {str(event1.id), str(event2.id)})
 
     def test_get_events_of_mix_statuses(self):
         # given

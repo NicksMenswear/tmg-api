@@ -1,9 +1,6 @@
 import logging
 import uuid
 
-from pydantic import ValidationError
-from werkzeug.exceptions import BadRequest
-
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.discount_model import CreateDiscountIntentAmount, CreateDiscountIntentPayFull

@@ -14,6 +14,7 @@ from server.services.user import UserService
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyMethodMayBeStatic
 class WebhookService:
     def __init__(
         self,

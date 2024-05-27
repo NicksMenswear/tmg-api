@@ -38,7 +38,7 @@ functions:
       DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
       # Shopify Env Variables
       API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
-      sender_email: "bsit833@gmail.com"
+      sender_email: "automation@themoderngroom.com"
       sender_password: ${ssm:/${sls:stage}/shopify/sender_password}
       api_version: "2024-01"
       shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}

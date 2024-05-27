@@ -17,6 +17,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage:
-          - stg
+        stage: []
+          # - stg
           # - prd

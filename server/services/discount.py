@@ -46,13 +46,13 @@ class DiscountService:
         self.attendee_service = attendee_service
         self.look_service = look_service
 
-    def get_discount_by_id(self, discount_id: uuid.UUID):
+    def get_discount_by_id(self, discount_id: uuid.UUID) -> Discount:
         discount = Discount.query.filter(Discount.id == discount_id).first()
 
         if not discount:
             raise NotFoundError("Discount not found.")
 
-        return DiscountModel.from_orm(discount)
+        return discount
 
     def get_discounts_by_attendee_id(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
         return [
@@ -97,15 +97,13 @@ class DiscountService:
 
         return discount
 
-    def get_discounts_for_event(self, event_id: UUID) -> List[DiscountModel]:
+    def get_discounts_for_event(self, event_id: UUID) -> List[Discount]:
         event = self.event_service.get_event_by_id(event_id)
 
         if not event:
             raise NotFoundError("Event not found.")
 
-        return [
-            DiscountModel.from_orm(discount) for discount in Discount.query.filter(Discount.event_id == event_id).all()
-        ]
+        return Discount.query.filter(Discount.event_id == event_id).all()
 
     def get_gift_discounts(self, event_id: UUID) -> List[EventDiscountModel]:
         event = self.event_service.get_event_by_id(event_id)
@@ -346,14 +344,14 @@ class DiscountService:
 
         return [DiscountModel.from_orm(intent) for intent in intents]
 
-    def __filter_groom_discounts_without_codes(self, discounts: List[DiscountModel]) -> List[DiscountModel]:
+    def __filter_groom_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
         return [
             discount
             for discount in discounts
             if not discount.shopify_discount_code and discount.type in GROOM_DISCOUNT_TYPES
         ]
 
-    def __filter_attendee_discounts(self, discounts: List[DiscountModel], attendee_id: uuid.UUID):
+    def __filter_attendee_discounts(self, discounts: List[Discount], attendee_id: uuid.UUID):
         return [discount for discount in discounts if discount.attendee_id == attendee_id]
 
     def add_code_to_discount(self, discount_id: uuid.UUID, shopify_discount_id: uuid.UUID, code: str) -> DiscountModel:

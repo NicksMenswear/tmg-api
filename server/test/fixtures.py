@@ -131,7 +131,7 @@ def shopify_paid_order_gift_virtual_product_pay_for_discounts(sku="", customer_i
         },
         "line_items": [
             {
-                "id": product_id if product_id else random.randint(1000, 1000000),
+                "product_id": product_id if product_id else random.randint(1000, 1000000),
                 "sku": sku,
             }
         ],

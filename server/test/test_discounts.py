@@ -507,10 +507,6 @@ class TestDiscounts(BaseTestCase):
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(shopify_virtual_product["variants"][0]["price"], discount_amount)
 
-    ################################
-    #    FIX ME
-    ################################
-
     def test_create_discount_intent_of_type_groom_full_pay_is_less_then_100(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
@@ -534,7 +530,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request],
+                [created_discount_intent_request.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -574,7 +570,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request1, created_discount_intent_request2],
+                [created_discount_intent_request1.model_dump(), created_discount_intent_request2.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -594,23 +590,22 @@ class TestDiscounts(BaseTestCase):
         )
         self.assertNotEqual(discount_intent1["amount"], discount_intent2["amount"])
         self.assertEqual(
-            discount_intent1["amount"]
-            in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.get("amount")],
+            discount_intent1["amount"] in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.amount],
             True,
         )
         self.assertEqual(
-            discount_intent2["amount"]
-            in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.get("amount")],
+            discount_intent2["amount"] in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.amount],
             True,
         )
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            discount_intent1["shopify_virtual_product_id"]
-        )
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            discount_intent1["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
-            variant1 * 10 + variant2 * 10 + created_discount_intent_request2.get("amount"),
+            variant1 * 10 + variant2 * 10 + created_discount_intent_request2.amount,
         )
 
     def test_create_discount_intent_for_party_of_4_of_type_groom_gift_but_only_one_attendee_has_intents_set_no_tmg_discount_to_be_applied(
@@ -646,7 +641,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request1],
+                [created_discount_intent_request1.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -657,13 +652,14 @@ class TestDiscounts(BaseTestCase):
 
         discount_intent = response.json[0]
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            discount_intent["shopify_virtual_product_id"]
-        )
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            discount_intent["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request1.get("amount"),
+            created_discount_intent_request1.amount,
         )
 
     def test_create_discount_intent_for_party_of_4_of_type_groom_gift_no_tmg_discount_to_be_applied(
@@ -703,10 +699,10 @@ class TestDiscounts(BaseTestCase):
             headers=self.request_headers,
             data=json.dumps(
                 [
-                    created_discount_intent_request1,
-                    created_discount_intent_request2,
-                    created_discount_intent_request3,
-                    created_discount_intent_request4,
+                    created_discount_intent_request1.model_dump(),
+                    created_discount_intent_request2.model_dump(),
+                    created_discount_intent_request3.model_dump(),
+                    created_discount_intent_request4.model_dump(),
                 ],
                 cls=encoder.CustomJSONEncoder,
             ),
@@ -716,18 +712,18 @@ class TestDiscounts(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertEqual(len(response.json), 4)
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            response.json[0]["shopify_virtual_product_id"]
-        )
-
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            response.json[0]["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
 
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request1.get("amount")
-            + created_discount_intent_request2.get("amount")
-            + created_discount_intent_request3.get("amount")
-            + created_discount_intent_request4.get("amount"),
+            created_discount_intent_request1.amount
+            + created_discount_intent_request2.amount
+            + created_discount_intent_request3.amount
+            + created_discount_intent_request4.amount,
         )
 
     def test_create_discount_intent_for_party_of_4_of_type_groom_full_pay_but_only_one_attendee_has_intents_set_tmg_discount_of_100_off_to_be_applied(
@@ -770,7 +766,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request1],
+                [created_discount_intent_request1.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -781,9 +777,10 @@ class TestDiscounts(BaseTestCase):
 
         discount_intent = response.json[0]
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            discount_intent["shopify_virtual_product_id"]
-        )
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            discount_intent["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
@@ -812,7 +809,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request],
+                [created_discount_intent_request.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -823,13 +820,14 @@ class TestDiscounts(BaseTestCase):
 
         discount_intent = response.json[0]
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            discount_intent["shopify_virtual_product_id"]
-        )
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            discount_intent["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request["amount"],
+            created_discount_intent_request.amount,
         )
 
     def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_groom_gift(
@@ -864,7 +862,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request],
+                [created_discount_intent_request.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -875,13 +873,14 @@ class TestDiscounts(BaseTestCase):
 
         discount_intent = response.json[0]
 
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(
-            discount_intent["shopify_virtual_product_id"]
-        )
+        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
+            discount_intent["id"]
+        ).shopify_virtual_product_id
+        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(
             shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request["amount"],
+            created_discount_intent_request.amount,
         )
 
         discounts = self.discount_service.get_discounts_by_attendee_id(attendee.id)
@@ -894,7 +893,7 @@ class TestDiscounts(BaseTestCase):
         self.assertNotEqual(discount1.amount, discount2.amount)
         self.assertTrue(existing_discount.amount in [discount1.amount, discount2.amount])
         self.assertNotEqual(discount1.amount, discount2.amount)
-        self.assertTrue(created_discount_intent_request["amount"] in [discount1.amount, discount2.amount])
+        self.assertTrue(created_discount_intent_request.amount in [discount1.amount, discount2.amount])
 
     def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_groom_full_pay(
         self,
@@ -928,7 +927,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request],
+                [created_discount_intent_request.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -974,7 +973,7 @@ class TestDiscounts(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=json.dumps(
-                [created_discount_intent_request],
+                [created_discount_intent_request.model_dump()],
                 cls=encoder.CustomJSONEncoder,
             ),
         )
@@ -991,7 +990,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=uuid.uuid4()), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=uuid.uuid4()).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1013,12 +1014,18 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=uuid.uuid4()), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=uuid.uuid4()).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
         self.assertStatus(response, 404)
         self.assertTrue("Event not found" in response.json["errors"])
+
+    ################################
+    #    FIX ME
+    ################################
 
     def test_apply_discounts_no_gift_discounts_and_party_less_then_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
@@ -1035,7 +1042,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1072,7 +1081,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1131,7 +1142,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1180,7 +1193,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1226,7 +1241,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1276,7 +1293,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then
@@ -1337,7 +1356,9 @@ class TestDiscounts(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.apply_discounts_request(event_id=event.id), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then

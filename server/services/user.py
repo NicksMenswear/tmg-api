@@ -1,6 +1,7 @@
 import logging
 import uuid
 from operator import or_
+from typing import List
 
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType

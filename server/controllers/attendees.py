@@ -4,7 +4,6 @@ import uuid
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
-from server.services.attendee import AttendeeService
 
 logger = logging.getLogger(__name__)
 

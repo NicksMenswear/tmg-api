@@ -13,7 +13,7 @@ class AbstractEmailService(ABC):
         pass
 
     @abstractmethod
-    def send_email(subject, body, sender_email, receiver_email, password):
+    def send_email(self, subject, body, sender_email, receiver_email, password):
         pass
 
 
@@ -21,7 +21,7 @@ class FakeEmailService(AbstractEmailService):
     def send_activation_url(self, email, shopify_customer_id):
         pass
 
-    def send_email(subject, body, sender_email, receiver_email, password):
+    def send_email(self, subject, body, sender_email, receiver_email, password):
         pass
 
 

@@ -1,7 +1,7 @@
 import random
 import uuid
 from datetime import datetime, timezone
-from typing import List, Union, Optional
+from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy import or_
@@ -60,7 +60,7 @@ class DiscountService:
             for discount in Discount.query.filter(Discount.attendee_id == attendee_id).all()
         ]
 
-    def get_discount_by_shopify_code(self, shopify_code: str) -> Union[DiscountModel, None]:
+    def get_discount_by_shopify_code(self, shopify_code: str) -> Optional[DiscountModel]:
         discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
         if not discount:

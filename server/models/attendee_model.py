@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -14,8 +14,8 @@ class CreateAttendeeModel(BaseModel):
     pay: int = 0
     size: int = 0
     ship: int = 0
-    role: Union[None, UUID]
-    look_id: Union[None, UUID]
+    role: Optional[UUID]
+    look_id: Optional[UUID]
     is_active: bool = True
 
 
@@ -23,8 +23,8 @@ class AttendeeModel(BaseModel):
     id: UUID
     attendee_id: UUID  # user_id
     event_id: UUID
-    role: Union[None, UUID]
-    look_id: Union[None, UUID]
+    role: Optional[UUID]
+    look_id: Optional[UUID]
     style: int = 0
     invite: int = 0
     pay: int = 0
@@ -43,8 +43,8 @@ class AttendeeModel(BaseModel):
 
 
 class UpdateAttendeeModel(BaseModel):
-    role: Union[None, UUID]
-    look_id: Union[None, UUID]
+    role: Optional[UUID]
+    look_id: Optional[UUID]
     style: int = 0
     invite: int = 0
     pay: int = 0

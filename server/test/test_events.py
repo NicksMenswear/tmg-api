@@ -399,7 +399,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
-    def test_soft_delete_event_non_existing(self):
+    def test_delete_event_non_existing(self):
         # when
         response = self.client.open(
             f"/events/{str(uuid.uuid4())}",
@@ -412,7 +412,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    def test_soft_delete_event(self):
+    def test_delete_event(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))

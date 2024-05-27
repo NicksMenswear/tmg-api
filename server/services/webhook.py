@@ -14,6 +14,7 @@ from server.services.user import UserService
 logger = logging.getLogger(__name__)
 
 
+# noinspection PyMethodMayBeStatic
 class WebhookService:
     def __init__(
         self,
@@ -67,7 +68,7 @@ class WebhookService:
         except Exception as e:
             logger.error(f"Error archiving product with id '{shopify_product_id}': {e}")  # log but proceed
 
-        discounts = self.discount_service.get_groom_gift_discount_intents_for_product(shopify_product_id)
+        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_product_id)
 
         if not discounts:
             logger.error(f"No discounts found for product_id: {shopify_product_id}")
@@ -76,7 +77,7 @@ class WebhookService:
         discounts_codes = []
 
         for discount in discounts:
-            attendee_user = self.attendee_service.get_attendee_user(discount.attendee_id)
+            attendee_user = self.user_service.get_user_for_attendee(discount.attendee_id)
             attendee = self.attendee_service.get_attendee_by_id(discount.attendee_id)
 
             if not attendee.look_id:

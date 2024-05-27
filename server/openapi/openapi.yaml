@@ -74,7 +74,7 @@ paths:
             schema:
               $ref: "#/components/schemas/User"
         required: true
-        x-body-name: user_data
+        x-body-name: create_user
       responses:
         "201":
           description: User created
@@ -136,7 +136,7 @@ paths:
     put:
       operationId: update_user
       parameters:
-        - description: Unique ID of the user to retrieve
+        - description: Unique ID of the user to update
           explode: false
           in: path
           name: user_id
@@ -175,7 +175,7 @@ paths:
             schema:
               $ref: "#/components/schemas/UpdateUser"
         required: true
-        x-body-name: user_data
+        x-body-name: update_user
       responses:
         "200":
           content:
@@ -334,7 +334,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Event"
         required: true
-        x-body-name: create_event_request
+        x-body-name: create_event
       responses:
         "201":
           description: Event created
@@ -344,7 +344,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}:
     get:
-      operationId: get_event
+      operationId: get_event_by_id
       parameters:
         - description: Unique ID of the event to retrieve
           explode: false
@@ -439,7 +439,7 @@ paths:
             schema:
               $ref: "#/components/schemas/UpdateEvent"
         required: true
-        x-body-name: event_data
+        x-body-name: update_event
       responses:
         "200":
           description: Event Updated Success
@@ -448,7 +448,7 @@ paths:
         - Events
       x-openapi-router-controller: server.controllers.events
     delete:
-      operationId: soft_delete_event
+      operationId: delete_event
       parameters:
         - description: Unique ID of the event to retrieve
           explode: false
@@ -603,7 +603,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}/discounts:
     get:
-      operationId: get_groom_gift_discounts
+      operationId: get_gift_discounts
       parameters:
         - description: ID of the event
           explode: false
@@ -741,7 +741,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Look'
         required: true
-        x-body-name: look_data
+        x-body-name: create_look
       responses:
         "201":
           description: Look created
@@ -751,7 +751,7 @@ paths:
       x-openapi-router-controller: server.controllers.looks
   /looks/{look_id}:
     get:
-      operationId: get_look
+      operationId: get_look_by_id
       parameters:
         - explode: false
           in: path
@@ -834,7 +834,7 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateLook'
         required: true
-        x-body-name: look_data
+        x-body-name: update_look
       responses:
         "200":
           description: Look updated
@@ -967,7 +967,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Role'
         required: true
-        x-body-name: role_data
+        x-body-name: create_role
       responses:
         "201":
           description: role created
@@ -977,7 +977,7 @@ paths:
       x-openapi-router-controller: server.controllers.roles
   /roles/{role_id}:
     get:
-      operationId: get_role
+      operationId: get_role_by_id
       parameters:
         - explode: false
           in: path
@@ -1060,7 +1060,7 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateRole'
         required: true
-        x-body-name: role_data
+        x-body-name: update_role
       responses:
         "200":
           description: Role updated
@@ -1151,7 +1151,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Attendee'
         required: true
-        x-body-name: attendee_data
+        x-body-name: create_attendee
       responses:
         "201":
           description: Attendee created
@@ -1161,7 +1161,7 @@ paths:
       x-openapi-router-controller: server.controllers.attendees
   /attendees/{attendee_id}:
     get:
-      operationId: get_attendee
+      operationId: get_attendee_by_id
       parameters:
         - explode: false
           in: path
@@ -1244,7 +1244,7 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateAttendee'
         required: true
-        x-body-name: attendee_data
+        x-body-name: update_attendee
       responses:
         "200":
           description: Attendee updated
@@ -1255,7 +1255,7 @@ paths:
         - Attendee
       x-openapi-router-controller: server.controllers.attendees
     delete:
-      operationId: soft_delete_attendee
+      operationId: delete_attendee
       parameters:
         - description: Unique ID of the attendee to delete
           explode: false
@@ -1455,319 +1455,6 @@ paths:
       tags:
         - Login
       x-openapi-router-controller: server.controllers.login
-  /products:
-    get:
-      operationId: list_product_items
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/ProductItem"
-                type: array
-          description: An array of product items
-      summary: Lists all product items
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.legacy.products
-    post:
-      operationId: create_product_item
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductItem"
-        required: true
-        x-body-name: product_item
-      responses:
-        "201":
-          description: Product item created
-      summary: Create product item
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.legacy.products
-  /orders:
-    delete:
-      operationId: delete_order
-      parameters:
-        - name: order_id
-          in: query
-          description: Unique identifier of the order to delete
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "204":
-          description: Order deleted successfully
-        "404":
-          description: Order not found
-      summary: Delete order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.legacy.orders
-    get:
-      operationId: get_orders
-      parameters:
-        - description: Optional user ID to filter orders
-          explode: true
-          in: query
-          name: user_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: form
-        - description: Optional event ID to filter orders
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: Retrieve all orders by user ID or event ID
-      summary: Retrieve all orders, optionally filtered by user ID or event ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.legacy.orders
-    post:
-      operationId: create_order
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Order"
-        required: true
-        x-body-name: order
-      responses:
-        "201":
-          description: Order created
-      summary: Create order
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.legacy.orders
-    put:
-      operationId: update_order
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateOrder"
-        required: true
-        x-body-name: order
-      responses:
-        "200":
-          description: Order updated successfully
-        "404":
-          description: Order not found
-        "400":
-          description: Bad Request. Invalid input or missing required fields in the request.
-      summary: Update an existing order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.legacy.orders
-  /orders/{order_id}:
-    get:
-      operationId: get_order_by_id
-      parameters:
-        - description: Unique identifier of the order to retrieve
-          explode: false
-          in: path
-          name: order_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: simple
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: Details of the specific order
-        "404":
-          description: Order not found
-      summary: Retrieve a specific order by ID
-      tags:
-        - Orders
-      x-openapi-router-controller: server.controllers.legacy.orders
   /invite:
     post:
       operationId: send_invite
@@ -1811,330 +1498,6 @@ paths:
       tags:
         - Invites
       x-openapi-router-controller: server.controllers.invites
-  /carts:
-    post:
-      operationId: create_cart
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Cart'
-        required: true
-        x-body-name: cart
-      responses:
-        "201":
-          description: Cart created
-      summary: Create cart
-      tags:
-        - Carts
-      x-openapi-router-controller: server.controllers.legacy.carts
-    put:
-      operationId: update_cart
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Cart'
-        required: true
-        x-body-name: cart
-      responses:
-        "201":
-          description: Cart Updated Success
-      summary: Upadte cart
-      tags:
-        - Carts
-      x-openapi-router-controller: server.controllers.legacy.carts
-  /cart_by_id:
-    get:
-      operationId: get_cart_by_id
-      parameters:
-        - description: Retrieve products of cart
-          explode: true
-          in: query
-          name: cart_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: Details of the Cart
-        "404":
-          description: Cart not found
-      summary: Get a single cart by id
-      tags:
-        - Carts
-      x-openapi-router-controller: server.controllers.legacy.carts
-  /cart_by_event_attendee:
-    get:
-      operationId: get_cart_by_event_attendee
-      parameters:
-        - description: Retrieve products of cart
-          explode: true
-          in: query
-          name: event_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: form
-        - description: Retrieve products of cart
-          explode: true
-          in: query
-          name: attendee_id
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-          style: form
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: Details of the Cart
-        "404":
-          description: Cart not found
-      summary: Get a single cart by id
-      tags:
-        - Carts
-      x-openapi-router-controller: server.controllers.legacy.carts
-  /product:
-    get:
-      operationId: single_product_item
-      parameters:
-        - in: query
-          name: product_id
-          schema:
-            $ref: '#/components/schemas/uuid'
-          required: true
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          description: show single product by id
-      summary: List single product
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.legacy.products
-  /update_product:
-    put:
-      operationId: update_product_item
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductItem"
-        required: true
-        x-body-name: product_data
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/ProductItem"
-                type: object
-          description: update single product by id
-      summary: update single product
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.legacy.products
-  /delete_product:
-    put:
-      operationId: soft_delete_product
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DeleteProductItem"
-        required: true
-        x-body-name: product_data
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/DeleteProductItem"
-                type: object
-          description: Soft Delete Product
-      summary: delete product items
-      tags:
-        - Product
-      x-openapi-router-controller: server.controllers.legacy.products
 
 components:
   schemas:
@@ -2421,91 +1784,6 @@ components:
         - event_id
         - shopify_cart_id
 
-    OrderItem:
-      example:
-        product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-        quantity: 5
-        price: 2.302136
-      properties:
-        product_item_id:
-          title: product_item_id
-          $ref: '#/components/schemas/uuid'
-        quantity:
-          format: int32
-          title: quantity
-          type: integer
-        price:
-          format: float
-          title: price
-          type: number
-      title: OrderItem
-      type: object
-    Order:
-      example:
-        order_date: 2000-01-23T04:56:07.000+00:00
-        event_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-        user_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-        received_date: 2000-01-23T04:56:07.000+00:00
-        shipped_date: 2000-01-23T04:56:07.000+00:00
-        id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-        items:
-          - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-            quantity: 5
-            price: 2.302136
-          - product_item_id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-            quantity: 5
-            price: 2.302136
-      properties:
-        id:
-          readOnly: true
-          title: id
-          $ref: '#/components/schemas/uuid'
-        user_id:
-          title: user_id
-          $ref: '#/components/schemas/uuid'
-        event_id:
-          title: event_id
-          $ref: '#/components/schemas/uuid'
-        order_date:
-          format: date-time
-          title: order_date
-          type: string
-        shipped_date:
-          format: date-time
-          title: shipped_date
-          type: string
-        received_date:
-          format: date-time
-          title: received_date
-          type: string
-        items:
-          items:
-            $ref: "#/components/schemas/OrderItem"
-          title: items
-          type: array
-      required:
-        - items
-      title: Order
-      type: object
-    UpdateOrder:
-      example:
-        id: 19C9A3EE-4791-463A-80EB-BF9FC1057FA4
-        shipped_date: "2000-01-23T04:56:07.000+00:00"
-        received_date: "2000-01-23T04:56:07.000+00:00"
-      properties:
-        id:
-          title: id
-          $ref: '#/components/schemas/uuid'
-        shipped_date:
-          format: date-time
-          title: shipped_date
-          type: string
-        received_date:
-          format: date-time
-          title: received_date
-          type: string
-      title: UpdateOrder
-      type: object
     AuditLog:
       example:
         id: 1
@@ -2540,148 +1818,4 @@ components:
       required:
         - event_id
       title: Invite
-      type: object
-    Cart:
-      properties:
-        id:
-          title: id
-          $ref: '#/components/schemas/uuid'
-        event_id:
-          title: event_id
-          $ref: '#/components/schemas/uuid'
-        user_id:
-          title: user_id
-          $ref: '#/components/schemas/uuid'
-        attendee_id:
-          title: attendee_id
-          $ref: '#/components/schemas/uuid'
-        product_id:
-          title: product_id
-          type: integer
-        variation_id:
-          title: variation_id
-          type: integer
-        category:
-          title: category
-          type: string
-        quantity:
-          title: quantity
-          type: integer
-      title: Cart
-      type: object
-    ProductItem:
-      example:
-        price: 6.0274563
-        name: name
-        id: 1
-      properties:
-        id:
-          title: id
-          $ref: '#/components/schemas/uuid'
-        is_active:
-          title: is_active
-          type: boolean
-        name:
-          title: name
-          type: string
-        sku:
-          title: sku
-          type: string
-        weight_lb:
-          title: weight_lb
-          type: number
-          format: float
-        height_in:
-          title: height_in
-          type: number
-          format: float
-        width_in:
-          title: width_in
-          type: number
-          format: float
-        length_in:
-          title: length_in
-          type: number
-          format: float
-        value:
-          title: value
-          type: number
-          format: float
-        price:
-          title: value
-          type: number
-          format: float
-        on_hand:
-          title: on_hand
-          type: integer
-        allocated:
-          title: allocated
-          type: integer
-        reserve:
-          title: reserve
-          type: integer
-        non_sellable_total:
-          title: non_sellable_total
-          type: integer
-        reorder_level:
-          title: reorder_level
-          type: integer
-        reorder_amount:
-          title: reorder_amount
-          type: integer
-        replenishment_level:
-          title: replenishment_level
-          type: integer
-        available:
-          title: available
-          type: integer
-        backorder:
-          title: backorder
-          type: integer
-        barcode:
-          title: barcode
-          type: number
-          # format: float
-        tags:
-          title: tags
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - Value
-        - Length
-        - SKU
-        - Barcode
-        - Active
-        - Weight
-        - Height
-        - Width
-        - On_hand
-        - Allocated
-        - Reserve
-        - Non_sellable_total
-        - Reorder_amount
-        - Replenishment_level
-        - Available
-        - Backorder
-        - Tags
-      title: ProductItem
-      type: object
-    DeleteProductItem:
-      example:
-        price: 6.0274563
-        name: name
-        id: 1
-      properties:
-        id:
-          title: id
-          $ref: '#/components/schemas/uuid'
-        is_active:
-          title: is_active
-          type: boolean
-      required:
-        - id
-        - is_active
-      title: DeleteProductItem
       type: object

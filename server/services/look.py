@@ -2,12 +2,13 @@ import uuid
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Look, Event, Attendee
+from server.database.models import Look
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.user import UserService
 
 
+# noinspection PyMethodMayBeStatic
 class LookService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
@@ -21,7 +22,7 @@ class LookService:
         return LookModel.from_orm(db_look)
 
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
-        return [LookModel.from_orm(look).to_response() for look in Look.query.filter(Look.user_id == user_id).all()]
+        return [LookModel.from_orm(look) for look in Look.query.filter(Look.user_id == user_id).all()]
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         db_look: Look = Look.query.filter(
@@ -71,7 +72,7 @@ class LookService:
 
         return LookModel.from_orm(db_look)
 
-    def delete_look(self, look_id: uuid.UUID):
+    def delete_look(self, look_id: uuid.UUID) -> None:
         look = Look.query.filter(Look.id == look_id).first()
 
         if not look:

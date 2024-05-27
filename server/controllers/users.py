@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def create_user(user_data):
+def create_user(create_user):
     user_service = FlaskApp.current().user_service
 
-    user = user_service.create_user(CreateUserModel(**user_data))
+    user = user_service.create_user(CreateUserModel(**create_user))
 
     return user.to_response(), 201
 
@@ -38,7 +38,7 @@ def get_user_by_email(email):
 def get_user_events(user_id, status=None):
     event_service = FlaskApp.current().event_service
 
-    events = event_service.get_user_events(user_id, status=EventUserStatus(status) if status else None)
+    events = event_service.get_user_events(uuid.UUID(user_id), status=EventUserStatus(status) if status else None)
 
     return [event.to_response() for event in events], 200
 
@@ -48,14 +48,16 @@ def get_user_events(user_id, status=None):
 def get_user_looks(user_id):
     look_service = FlaskApp.current().look_service
 
-    return look_service.get_looks_by_user_id(user_id)
+    looks = look_service.get_looks_by_user_id(uuid.UUID(user_id))
+
+    return [look.to_response() for look in looks], 200
 
 
 @hmac_verification
 @error_handler
-def update_user(user_id, user_data):
+def update_user(user_id, update_user):
     user_service = FlaskApp.current().user_service
 
-    user = user_service.update_user(uuid.UUID(user_id), UpdateUserModel(**user_data))
+    user = user_service.update_user(uuid.UUID(user_id), UpdateUserModel(**update_user))
 
     return user.to_response(), 200

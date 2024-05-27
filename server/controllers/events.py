@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def get_event(event_id, enriched=False):
+def get_event_by_id(event_id):
     event_service = FlaskApp.current().event_service
 
     event = event_service.get_event_by_id(uuid.UUID(event_id))
@@ -20,30 +20,30 @@ def get_event(event_id, enriched=False):
 
 @hmac_verification
 @error_handler
-def create_event(create_event_request):
+def create_event(create_event):
     event_service = FlaskApp.current().event_service
 
-    event = event_service.create_event(CreateEventModel(**create_event_request))
+    event = event_service.create_event(CreateEventModel(**create_event))
 
     return event.to_response(), 201
 
 
 @hmac_verification
 @error_handler
-def update_event(event_id, event_data):
+def update_event(event_id, update_event):
     event_service = FlaskApp.current().event_service
 
-    event = event_service.update_event(event_id, UpdateEventModel(**event_data))
+    event = event_service.update_event(uuid.UUID(event_id), UpdateEventModel(**update_event))
 
     return event.to_response(), 200
 
 
 @hmac_verification
 @error_handler
-def soft_delete_event(event_id):
+def delete_event(event_id):
     event_service = FlaskApp.current().event_service
 
-    event_service.soft_delete_event(uuid.UUID(event_id))
+    event_service.delete_event(uuid.UUID(event_id))
 
     return None, 204
 
@@ -53,17 +53,16 @@ def soft_delete_event(event_id):
 def get_event_roles(event_id):
     role_service = FlaskApp.current().role_service
 
-    roles = role_service.get_roles_for_event(event_id)
+    roles = role_service.get_roles_for_event(uuid.UUID(event_id))
 
     return [role.to_response() for role in roles], 200
 
 
 @hmac_verification
 @error_handler
-# TODO: pydantify
 def get_event_attendees(event_id):
-    event_service = FlaskApp.current().event_service
+    attendee_service = FlaskApp.current().attendee_service
 
-    attendees = event_service.get_attendees_for_event(event_id)
+    attendees = attendee_service.get_attendees_for_event(uuid.UUID(event_id))
 
-    return attendees, 200
+    return [attendee.to_response() for attendee in attendees], 200

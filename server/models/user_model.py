@@ -16,10 +16,10 @@ class UserModel(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    shopify_id: str
+    shopify_id: Optional[str] = None
     account_status: bool = False
-    legacy_id: Optional[str]
-    phone_number: Optional[str]
+    legacy_id: Optional[str] = None
+    phone_number: Optional[str] = None
 
     class Config:
         from_attributes = True

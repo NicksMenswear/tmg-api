@@ -40,6 +40,10 @@ class AbstractShopifyService(ABC):
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
         pass
 
+    @abstractmethod
+    def archive_product(self, shopify_product_id):
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None):
@@ -101,6 +105,9 @@ class FakeShopifyService(AbstractShopifyService):
         }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
+        pass
+
+    def archive_product(self, shopify_product_id):
         pass
 
 

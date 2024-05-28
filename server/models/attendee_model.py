@@ -21,7 +21,7 @@ class CreateAttendeeModel(UserRequestModel):
 
 class AttendeeModel(BaseModel):
     id: UUID
-    attendee_id: UUID  # user_id
+    user_id: UUID
     event_id: UUID
     role_id: Optional[UUID]
     look_id: Optional[UUID]
@@ -37,7 +37,7 @@ class AttendeeModel(BaseModel):
 
     def to_response(self):
         return self.dict(
-            include={"id", "attendee_id", "event_id", "role_id", "look_id", "style", "invite", "pay", "size", "ship"}
+            include={"id", "user_id", "event_id", "role_id", "look_id", "style", "invite", "pay", "size", "ship"}
         )
 
 
@@ -50,7 +50,7 @@ class EnrichedAttendeeModel(AttendeeModel):
         return self.dict(
             include={
                 "id",
-                "attendee_id",
+                "user_id",
                 "event_id",
                 "role_id",
                 "look_id",

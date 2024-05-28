@@ -31,7 +31,7 @@ class EventService:
     #     results = (
     #         db.session.query(Attendee, User, Look, Role)
     #         .join(Event, Event.id == Attendee.event_id)
-    #         .join(User, User.id == Attendee.attendee_id)
+    #         .join(User, User.id == Attendee.user_id)
     #         .outerjoin(Look, Look.id == Attendee.look_id)
     #         .outerjoin(Role, Role.id == Attendee.role)
     #         .filter(Event.id == event_id, Attendee.is_active)
@@ -161,7 +161,7 @@ class EventService:
             EventModel.from_orm(event)
             for event in (
                 Event.query.join(Attendee, Event.id == Attendee.event_id)
-                .filter(Attendee.attendee_id == user_id, Event.is_active)
+                .filter(Attendee.user_id == user_id, Event.is_active)
                 .all()
             )
         ]

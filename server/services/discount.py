@@ -113,7 +113,7 @@ class DiscountService:
 
         users_attendees_looks = (
             db.session.query(User, Attendee, Look)
-            .join(Attendee, User.id == Attendee.attendee_id)
+            .join(Attendee, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
             .all()

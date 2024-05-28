@@ -38,10 +38,10 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNone(response.json["role_id"])
-        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assertNotEqual(str(user.id), response.json["user_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         attendee_user = self.user_service.get_user_by_email(create_attendee.email)
-        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
+        self.assertEqual(str(attendee_user.id), response.json["user_id"])
         self.assertEqual(attendee_user.first_name, create_attendee.first_name)
         self.assertEqual(attendee_user.last_name, create_attendee.last_name)
         self.assertEqual(attendee_user.email, create_attendee.email)
@@ -70,7 +70,7 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNone(response.json["role_id"])
-        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assertNotEqual(str(user.id), response.json["user_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         self.assertEqual(response.json["look_id"], str(look.id))
         self.assertIsNone(response.json.get("role_id"))
@@ -95,7 +95,7 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assertNotEqual(str(user.id), response.json["user_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         self.assertTrue(response.json["role_id"], str(role.id))
         self.assertIsNone(response.json.get("look_id"))
@@ -122,7 +122,7 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["role_id"])
-        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assertNotEqual(str(user.id), response.json["user_id"])
         self.assert_equal_attendee(create_attendee, response.json)
 
     def test_create_attendee_for_existing_attendee_user(self):
@@ -155,9 +155,9 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["role_id"])
-        self.assertNotEqual(str(user.id), response.json["attendee_id"])
+        self.assertNotEqual(str(user.id), response.json["user_id"])
         self.assert_equal_attendee(create_attendee, response.json)
-        self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
+        self.assertEqual(str(attendee_user.id), response.json["user_id"])
         self.assertEqual(attendee_user.first_name, create_attendee.first_name)
         self.assertEqual(attendee_user.last_name, create_attendee.last_name)
         self.assertEqual(attendee_user.email, create_attendee.email)

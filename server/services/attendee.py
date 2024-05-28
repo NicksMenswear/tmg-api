@@ -42,7 +42,7 @@ class AttendeeService:
 
         db_attendees = (
             db.session.query(Attendee, User)
-            .join(Attendee, User.id == Attendee.attendee_id)
+            .join(Attendee, User.id == Attendee.user_id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
         ).all()
 
@@ -52,7 +52,7 @@ class AttendeeService:
             attendees.append(
                 EnrichedAttendeeModel(
                     id=attendee.id,
-                    attendee_id=attendee.attendee_id,
+                    user_id=attendee.user_id,
                     event_id=attendee.event_id,
                     style=attendee.style,
                     invite=attendee.invite,
@@ -95,7 +95,7 @@ class AttendeeService:
 
         attendee = Attendee.query.filter(
             Attendee.event_id == create_attendee.event_id,
-            Attendee.attendee_id == attendee_user.id,
+            Attendee.user_id == attendee_user.id,
             Attendee.is_active,
         ).first()
 
@@ -105,7 +105,7 @@ class AttendeeService:
             try:
                 new_attendee = Attendee(
                     id=uuid.uuid4(),
-                    attendee_id=attendee_user.id,
+                    user_id=attendee_user.id,
                     event_id=create_attendee.event_id,
                     style=create_attendee.style,
                     invite=create_attendee.invite,

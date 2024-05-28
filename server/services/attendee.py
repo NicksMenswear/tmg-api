@@ -6,7 +6,13 @@ from sqlalchemy.orm import joinedload
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
-from server.models.attendee_model import AttendeeModel, CreateAttendeeModel, UpdateAttendeeModel, EnrichedAttendeeModel
+from server.models.attendee_model import (
+    AttendeeModel,
+    CreateAttendeeModel,
+    UpdateAttendeeModel,
+    EnrichedAttendeeModel,
+    AttendeeUserModel,
+)
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.event import EventService
@@ -62,9 +68,11 @@ class AttendeeService:
                     role_id=attendee.role_id,
                     look_id=attendee.look_id,
                     is_active=attendee.is_active,
-                    first_name=user.first_name,
-                    last_name=user.last_name,
-                    email=user.email,
+                    user=AttendeeUserModel(
+                        first_name=user.first_name,
+                        last_name=user.last_name,
+                        email=user.email,
+                    ),
                 )
             )
 

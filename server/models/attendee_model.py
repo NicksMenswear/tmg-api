@@ -42,8 +42,8 @@ class AttendeeModel(BaseModel):
 
 
 class UpdateAttendeeModel(BaseModel):
-    role: Optional[UUID]
-    look_id: Optional[UUID]
+    role: Optional[UUID] = None
+    look_id: Optional[UUID] = None
     style: int = 0
     invite: int = 0
     pay: int = 0

@@ -14,8 +14,8 @@ class CreateAttendeeModel(UserRequestModel):
     pay: int = 0
     size: int = 0
     ship: int = 0
-    role: Optional[UUID]
-    look_id: Optional[UUID]
+    role: Optional[UUID] = None
+    look_id: Optional[UUID] = None
     is_active: bool = True
 
 

@@ -328,6 +328,8 @@ class TestEvents(BaseTestCase):
         self.assertNotEqual(str(attendee1.id), str(attendee2.id))
         self.assertTrue(str(attendee1.id) in [response_attendee1["id"], response_attendee2["id"]])
         self.assertTrue(str(attendee2.id) in [response_attendee1["id"], response_attendee2["id"]])
+        self.assertIsNotNone(response_attendee1["user"])
+        self.assertIsNotNone(response_attendee2["user"])
 
     def test_get_all_attendees_for_non_existing_event(self):
         # when

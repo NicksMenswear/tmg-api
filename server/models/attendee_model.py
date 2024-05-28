@@ -41,7 +41,7 @@ class AttendeeModel(BaseModel):
         )
 
 
-class EnrichedAttendeeModel(AttendeeModel):
+class AttendeeUserModel(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
@@ -49,21 +49,22 @@ class EnrichedAttendeeModel(AttendeeModel):
     def to_response(self):
         return self.dict(
             include={
-                "id",
-                "user_id",
-                "event_id",
-                "role_id",
-                "look_id",
-                "style",
-                "invite",
-                "pay",
-                "size",
-                "ship",
                 "first_name",
                 "last_name",
                 "email",
             }
         )
+
+
+class EnrichedAttendeeModel(AttendeeModel):
+    user: AttendeeUserModel
+
+    def to_response(self):
+        attendee = super().to_response()
+        user = self.user.to_response()
+        attendee["user"] = user
+
+        return attendee
 
 
 class UpdateAttendeeModel(BaseModel):

@@ -23,7 +23,10 @@ class LookService:
         return LookModel.from_orm(db_look)
 
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
-        return [LookModel.from_orm(look) for look in Look.query.filter(Look.user_id == user_id).all()]
+        return [
+            LookModel.from_orm(look)
+            for look in Look.query.filter(Look.user_id == user_id).order_by(Look.created_at.asc()).all()
+        ]
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         db_look: Look = Look.query.filter(Look.name == create_look.name, Look.user_id == create_look.user_id).first()

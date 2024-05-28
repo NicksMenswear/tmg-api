@@ -189,7 +189,7 @@ class EventService:
             events[event.id] = event
             events[event.id].status = EventUserStatus.OWNER if event.user_id == user_id else EventUserStatus.ATTENDEE
 
-        return [event for event in list(events.values())]
+        return sorted(list(events.values()), key=lambda x: x.event_at)
 
     def get_events_for_look(self, look_id: uuid.UUID) -> List[EventModel]:
         db_look = Look.query.filter(Look.id == look_id).first()

@@ -22,21 +22,25 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # create columns
     op.add_column("events", sa.Column("name", sa.String(), nullable=True))
+    op.add_column("events", sa.Column("event_at", sa.DateTime(), nullable=True))
     op.add_column("looks", sa.Column("name", sa.String(), nullable=True))
     op.add_column("roles", sa.Column("name", sa.String(), nullable=True))
 
     # copy data
     op.execute("UPDATE events SET name = event_name")
+    op.execute("UPDATE events SET event_at = event_date")
     op.execute("UPDATE looks SET name = look_name")
     op.execute("UPDATE roles SET name = role_name")
 
     # alter columns
     op.alter_column("events", "name", nullable=False)
+    op.alter_column("events", "event_at", nullable=False)
     op.alter_column("looks", "name", nullable=False)
     op.alter_column("roles", "name", nullable=False)
 
     # drop columns
     op.drop_column("events", "event_name")
+    op.drop_column("events", "event_date")
     op.drop_column("looks", "look_name")
     op.drop_column("roles", "role_name")
 
@@ -46,18 +50,22 @@ def downgrade() -> None:
     op.add_column("events", sa.Column("event_name", sa.VARCHAR(), nullable=True))
     op.add_column("looks", sa.Column("look_name", sa.VARCHAR(), nullable=True))
     op.add_column("roles", sa.Column("role_name", sa.VARCHAR(), nullable=True))
+    op.add_column("events", sa.Column("event_date", sa.VARCHAR(), nullable=True))
 
     # copy data
     op.execute("UPDATE events SET event_name = name")
+    op.execute("UPDATE events SET event_date = event_at")
     op.execute("UPDATE looks SET look_name = name")
     op.execute("UPDATE roles SET role_name = name")
 
     # alter columns
     op.alter_column("events", "event_name", nullable=False)
+    op.alter_column("events", "event_at", nullable=False)
     op.alter_column("looks", "look_name", nullable=False)
     op.alter_column("roles", "role_name", nullable=False)
 
     # drop columns
     op.drop_column("events", "name")
+    op.drop_column("events", "event_at")
     op.drop_column("looks", "name")
     op.drop_column("roles", "name")

@@ -1560,9 +1560,9 @@ components:
           format: string
           title: name
           type: string
-        event_date:
+        event_at:
           format: date-time
-          title: event_date
+          title: event_at
           type: string
         user_id:
           title: user_id
@@ -1570,7 +1570,7 @@ components:
       required:
         - user_id
         - name
-        - event_date
+        - event_at
       title: Event
       type: object
     UpdateEvent:
@@ -1579,13 +1579,13 @@ components:
           format: string
           title: name
           type: string
-        event_date:
+        event_at:
           format: date-time
-          title: event_date
+          title: event_at
           type: string
       required:
         - name
-        - event_date
+        - event_at
       title: Event
       type: object
     Look:

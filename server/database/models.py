@@ -126,7 +126,7 @@ class Event(Base):
         nullable=False,
     )
     name = Column(String, nullable=False)
-    event_date = Column(DateTime)
+    event_at = Column(DateTime)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
 

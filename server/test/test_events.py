@@ -61,7 +61,7 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json.get("id"))
         self.assertEqual(response.json.get("name"), event_request.name)
-        self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
+        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
     def test_get_event_non_existing(self):
@@ -95,7 +95,7 @@ class TestEvents(BaseTestCase):
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
         self.assertEqual(response.json.get("name"), event_request.name)
-        self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
+        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
     def test_get_event_non_active(self):
@@ -351,7 +351,7 @@ class TestEvents(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=fixtures.update_event_request(
-                name=str(uuid.uuid4()), event_date=(datetime.now() + timedelta(days=1)).isoformat()
+                name=str(uuid.uuid4()), event_at=(datetime.now() + timedelta(days=1)).isoformat()
             ).json(),
         )
 
@@ -365,7 +365,7 @@ class TestEvents(BaseTestCase):
 
         # when
         updated_name = str(uuid.uuid4())
-        updated_event_date = (datetime.now() + timedelta(days=1)).isoformat()
+        updated_event_at = (datetime.now() + timedelta(days=1)).isoformat()
 
         response = self.client.open(
             f"/events/{str(event.id)}",
@@ -373,14 +373,14 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(name=updated_name, event_date=updated_event_date).json(),
+            data=fixtures.update_event_request(name=updated_name, event_at=updated_event_at).json(),
         )
 
         # then
         self.assert200(response)
         response_event = response.json
         self.assertEqual(response_event["name"], updated_name)
-        self.assertEqual(response_event["event_date"], updated_event_date)
+        self.assertEqual(response_event["event_at"], updated_event_at)
 
     def test_update_event_existing(self):
         # given
@@ -395,7 +395,7 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(name=event2.name, event_date=event2.event_date).json(),
+            data=fixtures.update_event_request(name=event2.name, event_at=event2.event_at).json(),
         )
 
         # then
@@ -455,13 +455,13 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertEqual(response.json["errors"], "Event name must be between 2 and 64 characters long")
 
-    def test_create_event_date_in_the_past(self):
+    def test_create_event_at_in_the_past(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         event_request = fixtures.create_event_request(user_id=user.id).model_dump()
-        event_request["event_date"] = (datetime.now() - timedelta(days=1)).isoformat()
+        event_request["event_at"] = (datetime.now() - timedelta(days=1)).isoformat()
 
         response = self.client.open(
             "/events",

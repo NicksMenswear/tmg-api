@@ -96,7 +96,7 @@ class EventService:
         try:
             db_event = Event(
                 name=create_event.name,
-                event_date=create_event.event_date,
+                event_at=create_event.event_at,
                 user_id=user.id,
                 is_active=create_event.is_active,
             )
@@ -119,7 +119,7 @@ class EventService:
             Event.name == update_event.name,
             Event.is_active,
             Event.user_id == db_event.user_id,
-            Event.event_date == update_event.event_date,
+            Event.event_at == update_event.event_at,
             Event.id != event_id,
         ).first()
 
@@ -127,7 +127,7 @@ class EventService:
             raise DuplicateError("Event with the same details already exists.")
 
         try:
-            db_event.event_date = update_event.event_date
+            db_event.event_at = update_event.event_at
             db_event.name = update_event.name
 
             db.session.commit()

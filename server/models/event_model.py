@@ -15,7 +15,7 @@ class EventUserStatus(str, Enum):
 
 class EventRequestModel(BaseModel):
     name: str
-    event_date: datetime
+    event_at: datetime
 
     @field_validator("name")
     @classmethod
@@ -25,7 +25,7 @@ class EventRequestModel(BaseModel):
 
         return v
 
-    @field_validator("event_date")
+    @field_validator("event_at")
     @classmethod
     def date_in_the_future(cls, v):
         if v <= datetime.now():
@@ -42,7 +42,7 @@ class EventModel(BaseModel):
     id: UUID
     user_id: UUID
     name: str
-    event_date: datetime
+    event_at: datetime
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
 
@@ -50,7 +50,7 @@ class EventModel(BaseModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "user_id", "name", "event_date", "status"})
+        return self.dict(include={"id", "user_id", "name", "event_at", "status"})
 
 
 class UpdateEventModel(EventRequestModel):

@@ -14,8 +14,8 @@ class CreateAttendeeModel(UserRequestModel):
     pay: int = 0
     size: int = 0
     ship: int = 0
-    role: Optional[UUID]
-    look_id: Optional[UUID]
+    role: Optional[UUID] = None
+    look_id: Optional[UUID] = None
     is_active: bool = True
 
 
@@ -30,7 +30,7 @@ class AttendeeModel(BaseModel):
     pay: int = 0
     size: int = 0
     ship: int = 0
-    is_active: bool = True
+    is_active: bool
 
     class Config:
         from_attributes = True
@@ -42,11 +42,11 @@ class AttendeeModel(BaseModel):
 
 
 class UpdateAttendeeModel(BaseModel):
-    role: Optional[UUID]
-    look_id: Optional[UUID]
     style: int = 0
     invite: int = 0
     pay: int = 0
     size: int = 0
     ship: int = 0
     is_active: bool = True
+    role: Optional[UUID] = None
+    look_id: Optional[UUID] = None

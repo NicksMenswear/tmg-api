@@ -50,6 +50,7 @@ class AttendeeService:
             db.session.query(Attendee, User)
             .join(Attendee, User.id == Attendee.user_id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
+            .order_by(Attendee.created_at.asc())
         ).all()
 
         attendees = []

@@ -79,6 +79,6 @@ class RoleService:
         if not event:
             raise NotFoundError("Event not found.")
 
-        roles = Role.query.filter(Role.event_id == event_id).all()
+        roles = Role.query.filter(Role.event_id == event_id).order_by(Role.created_at.asc()).all()
 
         return [RoleModel.from_orm(role) for role in roles]

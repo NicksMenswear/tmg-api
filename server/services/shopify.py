@@ -90,7 +90,7 @@ class FakeShopifyService(AbstractShopifyService):
         total_look_price = 0
 
         for variant_id in variant_ids:
-            variant_price = variant_id * 10
+            variant_price = int(variant_id) * 10
             total_look_price += variant_price
 
         return total_look_price

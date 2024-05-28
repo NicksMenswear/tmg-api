@@ -38,7 +38,7 @@ class EventDiscountModel(BaseModel):
     first_name: str
     last_name: str
     amount: int = 0
-    look: EventDiscountLookModel
+    look: Optional[EventDiscountLookModel] = None
     codes: List[EventDiscountCodeModel] = []
 
     def to_response(self):

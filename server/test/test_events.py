@@ -187,7 +187,7 @@ class TestEvents(BaseTestCase):
     #     look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
     #     role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
     #     attendee = self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role=role.id)
+    #         fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role_id=role.id)
     #     )
     #
     #     # when
@@ -220,7 +220,7 @@ class TestEvents(BaseTestCase):
     #     self.assertEqual(response_attendee_look["name"], look.name)
     #     self.assertEqual(response_attendee_look["product_specs"], look.product_specs)
     #
-    #     response_attendee_role = response_attendee["role"]
+    #     response_attendee_role = response_attendee["role_id"]
     #     self.assertEqual(response_attendee_role["id"], str(role.id))
     #     self.assertEqual(response_attendee_role["name"], role.name)
     #
@@ -297,17 +297,17 @@ class TestEvents(BaseTestCase):
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
         attendee_request1 = fixtures.create_attendee_request(
-            event_id=event.id, email=attendee_user1.email, role=str(role.id)
+            event_id=event.id, email=attendee_user1.email, role_id=str(role.id)
         )
         attendee_request2 = fixtures.create_attendee_request(
-            event_id=event.id, email=attendee_user2.email, role=str(role.id)
+            event_id=event.id, email=attendee_user2.email, role_id=str(role.id)
         )
         attendee1 = self.attendee_service.create_attendee(attendee_request1)
         attendee2 = self.attendee_service.create_attendee(attendee_request2)
 
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event.id, email=attendee_user3.email, role=str(role.id), look_id=look.id, is_active=False
+                event_id=event.id, email=attendee_user3.email, role_id=str(role.id), look_id=look.id, is_active=False
             )
         )
 

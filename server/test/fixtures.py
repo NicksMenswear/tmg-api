@@ -82,7 +82,7 @@ def create_attendee_request(**attendee_data):
         first_name=attendee_data.get("first_name", utils.generate_unique_name()),
         last_name=attendee_data.get("last_name", utils.generate_unique_name()),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
-        role=attendee_data.get("role"),
+        role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
         style=attendee_data.get("style", random.randint(1, 100)),
         invite=attendee_data.get("invite", random.randint(1, 100)),
@@ -96,7 +96,7 @@ def create_attendee_request(**attendee_data):
 def update_attendee_request(**attendee_data):
     return UpdateAttendeeModel(
         event_id=attendee_data.get("event_id", uuid.uuid4()),
-        role=attendee_data.get("role"),
+        role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
         style=attendee_data.get("style", random.randint(1, 100)),
         invite=attendee_data.get("invite", random.randint(1, 100)),

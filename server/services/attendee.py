@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from sqlalchemy.orm import joinedload
@@ -58,7 +59,7 @@ class AttendeeService:
                     pay=attendee.pay,
                     size=attendee.size,
                     ship=attendee.ship,
-                    role=attendee.role,
+                    role_id=attendee.role_id,
                     look_id=attendee.look_id,
                     is_active=attendee.is_active,
                     first_name=user.first_name,
@@ -111,7 +112,7 @@ class AttendeeService:
                     pay=create_attendee.pay,
                     size=create_attendee.size,
                     ship=create_attendee.ship,
-                    role=create_attendee.role,
+                    role_id=create_attendee.role_id,
                     look_id=create_attendee.look_id,
                     is_active=create_attendee.is_active,
                 )
@@ -135,8 +136,9 @@ class AttendeeService:
         attendee.pay = update_attendee.pay
         attendee.size = update_attendee.size
         attendee.ship = update_attendee.ship
-        attendee.role = update_attendee.role
+        attendee.role_id = update_attendee.role_id
         attendee.look_id = update_attendee.look_id
+        attendee.updated_at = datetime.now()
 
         try:
             db.session.commit()

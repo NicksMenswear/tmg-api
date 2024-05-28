@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
@@ -54,6 +55,7 @@ class RoleService:
 
         try:
             db_role.name = update_role.name
+            db_role.updated_at = datetime.now()
 
             db.session.commit()
             db.session.refresh(db_role)

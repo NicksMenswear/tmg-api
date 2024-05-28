@@ -14,7 +14,7 @@ class CreateAttendeeModel(UserRequestModel):
     pay: int = 0
     size: int = 0
     ship: int = 0
-    role: Optional[UUID] = None
+    role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     is_active: bool = True
 
@@ -23,7 +23,7 @@ class AttendeeModel(BaseModel):
     id: UUID
     attendee_id: UUID  # user_id
     event_id: UUID
-    role: Optional[UUID]
+    role_id: Optional[UUID]
     look_id: Optional[UUID]
     style: int = 0
     invite: int = 0
@@ -37,7 +37,7 @@ class AttendeeModel(BaseModel):
 
     def to_response(self):
         return self.dict(
-            include={"id", "attendee_id", "event_id", "role", "look_id", "style", "invite", "pay", "size", "ship"}
+            include={"id", "attendee_id", "event_id", "role_id", "look_id", "style", "invite", "pay", "size", "ship"}
         )
 
 
@@ -52,7 +52,7 @@ class EnrichedAttendeeModel(AttendeeModel):
                 "id",
                 "attendee_id",
                 "event_id",
-                "role",
+                "role_id",
                 "look_id",
                 "style",
                 "invite",
@@ -73,5 +73,5 @@ class UpdateAttendeeModel(BaseModel):
     size: int = 0
     ship: int = 0
     is_active: bool = True
-    role: Optional[UUID] = None
+    role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

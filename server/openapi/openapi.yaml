@@ -1674,7 +1674,7 @@ components:
         ship:
           title: ship
           type: integer
-        role:
+        role_id:
           title: role
           type: string
           nullable: true
@@ -1714,7 +1714,7 @@ components:
           format: int64
           title: ship
           type: integer
-        role:
+        role_id:
           title: role
           $ref: '#/components/schemas/uuid'
           nullable: true

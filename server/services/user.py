@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import datetime
 from operator import or_
 from typing import List
 
@@ -86,6 +87,7 @@ class UserService:
         try:
             user.first_name = update_user.first_name
             user.last_name = update_user.last_name
+            user.updated_at = datetime.now()
 
             db.session.commit()
             db.session.refresh(user)

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
@@ -62,6 +63,7 @@ class LookService:
         try:
             db_look.name = update_look.name
             db_look.product_specs = update_look.product_specs
+            db_look.updated_at = datetime.now()
 
             db.session.commit()
             db.session.refresh(db_look)

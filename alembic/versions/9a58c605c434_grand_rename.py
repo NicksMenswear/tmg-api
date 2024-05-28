@@ -33,6 +33,7 @@ def upgrade() -> None:
     op.add_column("looks", sa.Column("updated_at", sa.DateTime(), nullable=True))
     op.add_column("roles", sa.Column("created_at", sa.DateTime(), nullable=True))
     op.add_column("roles", sa.Column("updated_at", sa.DateTime(), nullable=True))
+    op.add_column("attendees", sa.Column("role_id", sa.UUID(), nullable=True))
     op.add_column("attendees", sa.Column("created_at", sa.DateTime(), nullable=True))
     op.add_column("attendees", sa.Column("updated_at", sa.DateTime(), nullable=True))
 
@@ -49,6 +50,7 @@ def upgrade() -> None:
     op.execute("UPDATE roles SET updated_at = now()")
     op.execute("UPDATE users SET created_at = now()")
     op.execute("UPDATE users SET updated_at = now()")
+    op.execute("UPDATE attendees SET role_id = role")
     op.execute("UPDATE attendees SET created_at = now()")
     op.execute("UPDATE attendees SET updated_at = now()")
 
@@ -75,6 +77,7 @@ def upgrade() -> None:
     op.drop_column("events", "event_date")
     op.drop_column("looks", "look_name")
     op.drop_column("roles", "role_name")
+    op.drop_column("attendees", "role")
 
 
 def downgrade() -> None:
@@ -83,12 +86,14 @@ def downgrade() -> None:
     op.add_column("looks", sa.Column("look_name", sa.VARCHAR(), nullable=True))
     op.add_column("roles", sa.Column("role_name", sa.VARCHAR(), nullable=True))
     op.add_column("events", sa.Column("event_date", sa.VARCHAR(), nullable=True))
+    op.add_column("attendees", sa.Column("role", sa.UUID(), nullable=True))
 
     # copy data
     op.execute("UPDATE events SET event_name = name")
     op.execute("UPDATE events SET event_date = event_at")
     op.execute("UPDATE looks SET look_name = name")
     op.execute("UPDATE roles SET role_name = name")
+    op.execute("UPDATE attendees SET role = role_id")
 
     # alter columns
     op.alter_column("events", "event_name", nullable=False)
@@ -109,5 +114,6 @@ def downgrade() -> None:
     op.drop_column("looks", "updated_at")
     op.drop_column("roles", "created_at")
     op.drop_column("roles", "updated_at")
+    op.drop_column("attendees", "role_id")
     op.drop_column("attendees", "created_at")
     op.drop_column("attendees", "updated_at")

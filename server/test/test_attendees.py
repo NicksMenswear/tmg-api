@@ -14,7 +14,7 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(create_attendee.size, attendee_response["size"])
         self.assertEqual(create_attendee.style, attendee_response["style"])
         self.assertEqual(create_attendee.ship, attendee_response["ship"])
-        self.assertEqual(str(create_attendee.role), str(attendee_response["role"]))
+        self.assertEqual(str(create_attendee.role_id), str(attendee_response["role_id"]))
         self.assertEqual(str(create_attendee.look_id), str(attendee_response["look_id"]))
         self.assertIsNotNone(attendee_response["id"])
 
@@ -24,7 +24,7 @@ class TestAttendees(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
-        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=None, look_id=None)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role_id=None, look_id=None)
 
         response = self.client.open(
             "/attendees",
@@ -37,7 +37,7 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNone(response.json["role"])
+        self.assertIsNone(response.json["role_id"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         attendee_user = self.user_service.get_user_by_email(create_attendee.email)
@@ -47,7 +47,7 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(attendee_user.email, create_attendee.email)
         self.assertFalse(attendee_user.account_status)
         self.assertIsNone(response.json.get("look_id"))
-        self.assertIsNone(response.json.get("role"))
+        self.assertIsNone(response.json.get("role_id"))
 
     def test_create_attendee_without_role(self):
         # given
@@ -56,7 +56,7 @@ class TestAttendees(BaseTestCase):
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
 
         # when
-        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=None, look_id=look.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role_id=None, look_id=look.id)
 
         response = self.client.open(
             "/attendees",
@@ -69,11 +69,11 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNone(response.json["role"])
+        self.assertIsNone(response.json["role_id"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         self.assertEqual(response.json["look_id"], str(look.id))
-        self.assertIsNone(response.json.get("role"))
+        self.assertIsNone(response.json.get("role_id"))
 
     def test_create_attendee_without_look(self):
         # given
@@ -82,7 +82,7 @@ class TestAttendees(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=role.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role_id=role.id)
 
         response = self.client.open(
             "/attendees",
@@ -97,7 +97,7 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
         self.assert_equal_attendee(create_attendee, response.json)
-        self.assertTrue(response.json["role"], str(role.id))
+        self.assertTrue(response.json["role_id"], str(role.id))
         self.assertIsNone(response.json.get("look_id"))
 
     def test_create_attendee_with_role_and_look(self):
@@ -108,7 +108,7 @@ class TestAttendees(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        create_attendee = fixtures.create_attendee_request(event_id=event.id, role=role.id, look_id=look.id)
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, role_id=role.id, look_id=look.id)
 
         response = self.client.open(
             "/attendees",
@@ -121,7 +121,7 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNotNone(response.json["role"])
+        self.assertIsNotNone(response.json["role_id"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
         self.assert_equal_attendee(create_attendee, response.json)
 
@@ -136,7 +136,7 @@ class TestAttendees(BaseTestCase):
         # when
         create_attendee = fixtures.create_attendee_request(
             event_id=event.id,
-            role=role.id,
+            role_id=role.id,
             look_id=look.id,
             email=attendee_user.email,
             first_name=attendee_user.first_name,
@@ -154,7 +154,7 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNotNone(response.json["role"])
+        self.assertIsNotNone(response.json["role_id"])
         self.assertNotEqual(str(user.id), response.json["attendee_id"])
         self.assert_equal_attendee(create_attendee, response.json)
         self.assertEqual(str(attendee_user.id), response.json["attendee_id"])
@@ -227,7 +227,7 @@ class TestAttendees(BaseTestCase):
                 pay=3,
                 size=4,
                 ship=5,
-                role=str(role1.id),
+                role_id=role1.id,
                 look_id=look1.id,
             )
         )
@@ -239,7 +239,7 @@ class TestAttendees(BaseTestCase):
             pay=attendee.pay + 10,
             size=attendee.size + 10,
             ship=attendee.ship + 10,
-            role=role2.id,
+            role_id=role2.id,
             look_id=look2.id,
         )
 
@@ -260,7 +260,7 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(update_attendee.size, attendee_response["size"])
         self.assertEqual(update_attendee.style, attendee_response["style"])
         self.assertEqual(update_attendee.ship, attendee_response["ship"])
-        self.assertEqual(str(update_attendee.role), str(attendee_response["role"]))
+        self.assertEqual(str(update_attendee.role_id), str(attendee_response["role_id"]))
         self.assertEqual(str(update_attendee.look_id), str(attendee_response["look_id"]))
         self.assertIsNotNone(attendee_response["id"])
 
@@ -271,7 +271,7 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(updated_attendee.pay, updated_attendee.pay)
         self.assertEqual(updated_attendee.size, updated_attendee.size)
         self.assertEqual(updated_attendee.ship, updated_attendee.ship)
-        self.assertEqual(str(role2.id), str(updated_attendee.role))
+        self.assertEqual(str(role2.id), str(updated_attendee.role_id))
         self.assertEqual(str(look2.id), str(updated_attendee.look_id))
 
     def test_update_attendee_non_existing(self):
@@ -282,7 +282,7 @@ class TestAttendees(BaseTestCase):
             pay=3,
             size=4,
             ship=5,
-            role=None,
+            role_id=None,
         )
 
         response = self.client.open(
@@ -304,7 +304,7 @@ class TestAttendees(BaseTestCase):
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, email=user.email, role=str(role.id), look_id=look.id)
+            fixtures.create_attendee_request(event_id=event.id, email=user.email, role_id=str(role.id), look_id=look.id)
         )
 
         # when

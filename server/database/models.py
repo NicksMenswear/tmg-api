@@ -181,7 +181,7 @@ class Attendee(Base):
     )
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
+    role_id = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
     look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"))
     style = Column(Integer, nullable=False)
     invite = Column(Integer, nullable=False)

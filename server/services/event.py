@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
@@ -129,6 +130,7 @@ class EventService:
         try:
             db_event.event_at = update_event.event_at
             db_event.name = update_event.name
+            db_event.updated_at = datetime.now()
 
             db.session.commit()
             db.session.refresh(db_event)

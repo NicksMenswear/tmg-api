@@ -136,7 +136,7 @@ class DiscountService:
                 last_name=user.last_name,
                 amount=0,
                 codes=[],
-                look=EventDiscountLookModel(id=attendee.look_id, name=look.look_name if look else None, price=0),
+                look=EventDiscountLookModel(id=attendee.look_id, name=look.look_name, price=0) if look else None,
             )
 
             if look and look.product_specs and look.product_specs.get("variants"):
@@ -171,7 +171,7 @@ class DiscountService:
                 )
             )
 
-        return gift_discounts.values()
+        return list(gift_discounts.values())
 
     def get_gift_discount_intents_for_product(self, product_id: str) -> List[DiscountModel]:
         discounts = Discount.query.filter(

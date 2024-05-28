@@ -4,9 +4,9 @@ from pydantic import BaseModel, field_validator
 
 
 class LookRequest(BaseModel):
-    look_name: str
+    name: str
 
-    @field_validator("look_name")
+    @field_validator("name")
     @classmethod
     def name_length(cls, v):
         if len(v) < 2 or len(v) > 64:
@@ -22,7 +22,7 @@ class CreateLookModel(LookRequest):
 
 class LookModel(BaseModel):
     id: UUID
-    look_name: str
+    name: str
     user_id: UUID
     product_specs: dict
 
@@ -30,7 +30,7 @@ class LookModel(BaseModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "look_name"})
+        return self.dict(include={"id", "name"})
 
 
 class UpdateLookModel(LookRequest):

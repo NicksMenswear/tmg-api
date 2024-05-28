@@ -28,7 +28,7 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["id"])
-        self.assertEqual(response.json["look_name"], look_data.look_name)
+        self.assertEqual(response.json["name"], look_data.name)
         db_look = self.look_service.get_look_by_id(response.json["id"])
         self.assertIsNotNone(db_look)
         self.assertEqual(db_look.product_specs, look_data.product_specs)
@@ -40,7 +40,7 @@ class TestLooks(BaseTestCase):
         look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
 
         # when
-        look_data = fixtures.create_look_request(user_id=user.id, look_name=look.look_name)
+        look_data = fixtures.create_look_request(user_id=user.id, name=look.name)
 
         response = self.client.open(
             "/looks",
@@ -84,7 +84,7 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertIsNotNone(response.json["id"])
-        self.assertEqual(response.json["look_name"], look.look_name)
+        self.assertEqual(response.json["name"], look.name)
 
     def test_update_look_for_invalid_look_id(self):
         # given
@@ -114,14 +114,12 @@ class TestLooks(BaseTestCase):
         )
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(
-                email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id
-            )
+            fixtures.create_attendee_request(email=user.email, event_id=str(event.id), role_id=role.id, look_id=look.id)
         )
 
         # when
         update_look_request = fixtures.update_look_request(
-            look_name=f"{str(uuid.uuid4())}-new_look_name",
+            name=f"{str(uuid.uuid4())}-new_name",
             product_specs={"variants": [987, 876]},
         )
 
@@ -137,12 +135,12 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertEqual(response.json["id"], str(look.id))
-        self.assertEqual(response.json["look_name"], str(update_look_request.look_name))
+        self.assertEqual(response.json["name"], str(update_look_request.name))
         self.assertEqual(update_look_request.product_specs, update_look_request.product_specs)
 
         updated_db_look = Look.query.filter(Look.id == look.id).first()
         self.assertEqual(updated_db_look.user_id, user.id)
-        self.assertEqual(updated_db_look.look_name, update_look_request.look_name)
+        self.assertEqual(updated_db_look.name, update_look_request.name)
         self.assertEqual(updated_db_look.product_specs, update_look_request.product_specs)
 
     def test_update_look_existing(self):
@@ -153,15 +151,13 @@ class TestLooks(BaseTestCase):
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(
-                email=user.email, event_id=str(event.id), role=str(role.id), look_id=look.id
-            )
+            fixtures.create_attendee_request(email=user.email, event_id=event.id, role_id=role.id, look_id=look.id)
         )
 
         # when
         update_look_request = fixtures.update_look_request(
             user_id=str(user.id),
-            look_name=look2.look_name,
+            name=look2.name,
         )
 
         response = self.client.open(
@@ -215,9 +211,9 @@ class TestLooks(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
         self.assertEqual(response.json[0]["id"], str(event1.id))
-        self.assertEqual(response.json[0]["event_name"], event1.event_name)
+        self.assertEqual(response.json[0]["name"], event1.name)
         self.assertEqual(response.json[1]["id"], str(event2.id))
-        self.assertEqual(response.json[1]["event_name"], event2.event_name)
+        self.assertEqual(response.json[1]["name"], event2.name)
 
     def test_delete_look_non_existing(self):
         # when
@@ -251,7 +247,7 @@ class TestLooks(BaseTestCase):
         look_in_db = Look.query.filter(Look.id == look.id).first()
         self.assertIsNone(look_in_db)
 
-    def test_create_look_with_look_name_too_long(self):
+    def test_create_look_with_name_too_long(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
@@ -259,7 +255,7 @@ class TestLooks(BaseTestCase):
         look_data = fixtures.create_look_request(
             user_id=user.id, product_specs={"variants": [123, 234, 345]}
         ).model_dump()
-        look_data["look_name"] = "a" * 256
+        look_data["name"] = "a" * 256
 
         response = self.client.open(
             "/looks",

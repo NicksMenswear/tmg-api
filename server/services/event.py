@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
@@ -30,7 +31,7 @@ class EventService:
     #     results = (
     #         db.session.query(Attendee, User, Look, Role)
     #         .join(Event, Event.id == Attendee.event_id)
-    #         .join(User, User.id == Attendee.attendee_id)
+    #         .join(User, User.id == Attendee.user_id)
     #         .outerjoin(Look, Look.id == Attendee.look_id)
     #         .outerjoin(Role, Role.id == Attendee.role)
     #         .filter(Event.id == event_id, Attendee.is_active)
@@ -58,14 +59,14 @@ class EventService:
     #         if look:
     #             attendee["look"] = {
     #                 "id": look.id,
-    #                 "look_name": look.look_name,
+    #                 "name": look.name,
     #                 "product_specs": look.product_specs,
     #             }
     #
     #         if role:
     #             attendee["role"] = {
     #                 "id": role.id,
-    #                 "role_name": role.role_name,
+    #                 "name": role.name,
     #             }
     #
     #         event["attendees"].append(attendee)
@@ -87,7 +88,7 @@ class EventService:
             raise NotFoundError("User not found.")
 
         db_event = Event.query.filter(
-            Event.event_name == create_event.event_name, Event.is_active, Event.user_id == user.id
+            Event.name == create_event.name, Event.is_active, Event.user_id == user.id
         ).first()
 
         if db_event:
@@ -95,8 +96,8 @@ class EventService:
 
         try:
             db_event = Event(
-                event_name=create_event.event_name,
-                event_date=create_event.event_date,
+                name=create_event.name,
+                event_at=create_event.event_at,
                 user_id=user.id,
                 is_active=create_event.is_active,
             )
@@ -116,10 +117,10 @@ class EventService:
             raise NotFoundError("Event not found.")
 
         existing_event = Event.query.filter(
-            Event.event_name == update_event.event_name,
+            Event.name == update_event.name,
             Event.is_active,
             Event.user_id == db_event.user_id,
-            Event.event_date == update_event.event_date,
+            Event.event_at == update_event.event_at,
             Event.id != event_id,
         ).first()
 
@@ -127,8 +128,9 @@ class EventService:
             raise DuplicateError("Event with the same details already exists.")
 
         try:
-            db_event.event_date = update_event.event_date
-            db_event.event_name = update_event.event_name
+            db_event.event_at = update_event.event_at
+            db_event.name = update_event.name
+            db_event.updated_at = datetime.now()
 
             db.session.commit()
             db.session.refresh(db_event)
@@ -159,7 +161,7 @@ class EventService:
             EventModel.from_orm(event)
             for event in (
                 Event.query.join(Attendee, Event.id == Attendee.event_id)
-                .filter(Attendee.attendee_id == user_id, Event.is_active)
+                .filter(Attendee.user_id == user_id, Event.is_active)
                 .all()
             )
         ]

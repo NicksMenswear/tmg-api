@@ -35,7 +35,7 @@ class TestEvents(BaseTestCase):
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.create_event_request(event_name=event.event_name, user_id=user.id, is_active=True).json(),
+            data=fixtures.create_event_request(name=event.name, user_id=user.id, is_active=True).json(),
         )
 
         # then
@@ -60,8 +60,8 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("event_name"), event_request.event_name)
-        self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
+        self.assertEqual(response.json.get("name"), event_request.name)
+        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
     def test_get_event_non_existing(self):
@@ -94,8 +94,8 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("event_name"), event_request.event_name)
-        self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
+        self.assertEqual(response.json.get("name"), event_request.name)
+        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
     def test_get_event_non_active(self):
@@ -187,7 +187,7 @@ class TestEvents(BaseTestCase):
     #     look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
     #     role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
     #     attendee = self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role=role.id)
+    #         fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role_id=role.id)
     #     )
     #
     #     # when
@@ -217,12 +217,12 @@ class TestEvents(BaseTestCase):
     #
     #     response_attendee_look = response_attendee["look"]
     #     self.assertEqual(response_attendee_look["id"], str(look.id))
-    #     self.assertEqual(response_attendee_look["look_name"], look.look_name)
+    #     self.assertEqual(response_attendee_look["name"], look.name)
     #     self.assertEqual(response_attendee_look["product_specs"], look.product_specs)
     #
-    #     response_attendee_role = response_attendee["role"]
+    #     response_attendee_role = response_attendee["role_id"]
     #     self.assertEqual(response_attendee_role["id"], str(role.id))
-    #     self.assertEqual(response_attendee_role["role_name"], role.role_name)
+    #     self.assertEqual(response_attendee_role["name"], role.name)
     #
     #     response_attendee_user = response_attendee["user"]
     #     self.assertEqual(response_attendee_user["id"], str(attendee_user.id))
@@ -252,9 +252,9 @@ class TestEvents(BaseTestCase):
         response_role1 = response.json[0]
         response_role2 = response.json[1]
         self.assertEqual(response_role1.get("id"), str(role1.id))
-        self.assertEqual(response_role1.get("role_name"), role1.role_name)
+        self.assertEqual(response_role1.get("name"), role1.name)
         self.assertEqual(response_role2.get("id"), str(role2.id))
-        self.assertEqual(response_role2.get("role_name"), role2.role_name)
+        self.assertEqual(response_role2.get("name"), role2.name)
 
     def test_get_roles_by_non_existing_event_id(self):
         # when
@@ -297,17 +297,17 @@ class TestEvents(BaseTestCase):
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
         attendee_request1 = fixtures.create_attendee_request(
-            event_id=event.id, email=attendee_user1.email, role=str(role.id)
+            event_id=event.id, email=attendee_user1.email, role_id=str(role.id)
         )
         attendee_request2 = fixtures.create_attendee_request(
-            event_id=event.id, email=attendee_user2.email, role=str(role.id)
+            event_id=event.id, email=attendee_user2.email, role_id=str(role.id)
         )
         attendee1 = self.attendee_service.create_attendee(attendee_request1)
         attendee2 = self.attendee_service.create_attendee(attendee_request2)
 
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event.id, email=attendee_user3.email, role=str(role.id), look_id=look.id, is_active=False
+                event_id=event.id, email=attendee_user3.email, role_id=str(role.id), look_id=look.id, is_active=False
             )
         )
 
@@ -351,7 +351,7 @@ class TestEvents(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=fixtures.update_event_request(
-                event_name=str(uuid.uuid4()), event_date=(datetime.now() + timedelta(days=1)).isoformat()
+                name=str(uuid.uuid4()), event_at=(datetime.now() + timedelta(days=1)).isoformat()
             ).json(),
         )
 
@@ -364,8 +364,8 @@ class TestEvents(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
-        updated_event_name = str(uuid.uuid4())
-        updated_event_date = (datetime.now() + timedelta(days=1)).isoformat()
+        updated_name = str(uuid.uuid4())
+        updated_event_at = (datetime.now() + timedelta(days=1)).isoformat()
 
         response = self.client.open(
             f"/events/{str(event.id)}",
@@ -373,14 +373,14 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(event_name=updated_event_name, event_date=updated_event_date).json(),
+            data=fixtures.update_event_request(name=updated_name, event_at=updated_event_at).json(),
         )
 
         # then
         self.assert200(response)
         response_event = response.json
-        self.assertEqual(response_event["event_name"], updated_event_name)
-        self.assertEqual(response_event["event_date"], updated_event_date)
+        self.assertEqual(response_event["name"], updated_name)
+        self.assertEqual(response_event["event_at"], updated_event_at)
 
     def test_update_event_existing(self):
         # given
@@ -395,7 +395,7 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(event_name=event2.event_name, event_date=event2.event_date).json(),
+            data=fixtures.update_event_request(name=event2.name, event_at=event2.event_at).json(),
         )
 
         # then
@@ -440,7 +440,7 @@ class TestEvents(BaseTestCase):
 
         # when
         event_request = fixtures.create_event_request(user_id=user.id).model_dump()
-        event_request["event_name"] = "a"
+        event_request["name"] = "a"
 
         response = self.client.open(
             "/events",
@@ -455,13 +455,13 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertEqual(response.json["errors"], "Event name must be between 2 and 64 characters long")
 
-    def test_create_event_date_in_the_past(self):
+    def test_create_event_at_in_the_past(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         event_request = fixtures.create_event_request(user_id=user.id).model_dump()
-        event_request["event_date"] = (datetime.now() - timedelta(days=1)).isoformat()
+        event_request["event_at"] = (datetime.now() - timedelta(days=1)).isoformat()
 
         response = self.client.open(
             "/events",

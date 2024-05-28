@@ -21,7 +21,7 @@ def create_contact(data):
             # "last_name": data['last_name'],
             "fieldValues": [
                 {
-                    "event_name": data["event_name"],
+                    "name": data["name"],
                     "event_id": data["event_id"],
                     "activation-url": data["activation_url"],
                 }
@@ -68,7 +68,7 @@ def create_contact_user(data):
             "last_name": data["last_name"],
             "fieldValues": [
                 {
-                    # "event_name": data['event_name'],
+                    # "name": data['name'],
                     # "event_id": data['event_id'],
                     "activation-url": data["activation_url"]
                 }

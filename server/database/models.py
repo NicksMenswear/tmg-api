@@ -125,19 +125,12 @@ class Event(Base):
         unique=True,
         nullable=False,
     )
-    event_name = Column(String, nullable=False)
-    event_date = Column(DateTime)
+    name = Column(String, nullable=False)
+    event_at = Column(DateTime)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "event_name": self.event_name,
-            "event_date": str(self.event_date),
-            "user_id": str(self.user_id),
-            "is_active": self.is_active,
-        }
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class Look(Base):
@@ -151,17 +144,11 @@ class Look(Base):
         unique=True,
         nullable=False,
     )
-    look_name = Column(String, index=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     product_specs = Column(JSON)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "look_name": self.look_name,
-            "user_id": self.user_id,
-            "product_specs": self.product_specs,
-        }
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class Role(Base):
@@ -175,11 +162,10 @@ class Role(Base):
         unique=True,
         nullable=False,
     )
-    role_name = Column(String, index=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-
-    def to_dict(self):
-        return {"id": self.id, "role_name": self.role_name, "event_id": self.event_id}
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class Attendee(Base):
@@ -193,9 +179,9 @@ class Attendee(Base):
         unique=True,
         nullable=False,
     )
-    attendee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
-    role = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
+    role_id = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
     look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"))
     style = Column(Integer, nullable=False)
     invite = Column(Integer, nullable=False)
@@ -203,21 +189,8 @@ class Attendee(Base):
     size = Column(Integer, nullable=False)
     ship = Column(Integer, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "attendee_id": self.attendee_id,
-            "event_id": str(self.event_id),
-            "style": self.style,
-            "invite": self.invite,
-            "pay": self.pay,
-            "size": self.size,
-            "ship": self.ship,
-            "is_active": self.is_active,
-            "role": self.role,
-            "look_id": self.look_id,
-        }
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 # class CurrentSize(Base):
@@ -327,16 +300,8 @@ class User(Base):
     orders = relationship("Order", backref="user")
     account_status = Column(Boolean)
     addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "email": self.email,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "shopify_id": str(self.shopify_id),
-            "account_status": self.account_status,
-        }
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class Order(Base):
@@ -617,19 +582,3 @@ class Discount(Base):
     shopify_virtual_product_variant_id = Column(BigInteger)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "event_id": self.event_id,
-            "attendee_id": self.attendee_id,
-            "type": str(self.type),
-            "amount": self.amount,
-            "shopify_discount_code": self.shopify_discount_code,
-            "shopify_discount_code_id": self.shopify_discount_code_id,
-            "shopify_virtual_product_id": self.shopify_virtual_product_id,
-            "shopify_virtual_product_variant_id": self.shopify_virtual_product_variant_id,
-            "used": self.used,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }

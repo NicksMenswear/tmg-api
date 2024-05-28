@@ -113,7 +113,7 @@ class DiscountService:
 
         users_attendees_looks = (
             db.session.query(User, Attendee, Look)
-            .join(Attendee, User.id == Attendee.attendee_id)
+            .join(Attendee, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
             .all()
@@ -136,7 +136,7 @@ class DiscountService:
                 last_name=user.last_name,
                 amount=0,
                 codes=[],
-                look=EventDiscountLookModel(id=attendee.look_id, name=look.look_name, price=0) if look else None,
+                look=EventDiscountLookModel(id=attendee.look_id, name=look.name, price=0) if look else None,
             )
 
             if look and look.product_specs and look.product_specs.get("variants"):
@@ -318,7 +318,7 @@ class DiscountService:
             product_body += "</ul>"
 
             shopify_product = self.shopify_service.create_virtual_product(
-                title=f"{event.event_name} attendees discount",
+                title=f"{event.name} attendees discount",
                 body_html=product_body,
                 price=total_intent_amount,
                 sku=f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",

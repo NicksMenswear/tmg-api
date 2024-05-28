@@ -94,7 +94,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(discount_item1["amount"], 0)
         self.assertEqual(len(discount_item1["codes"]), 0)
         self.assertEqual(discount_item1["look"]["id"], str(attendee1["look"].id))
-        self.assertEqual(discount_item1["look"]["name"], attendee1["look"].look_name)
+        self.assertEqual(discount_item1["look"]["name"], attendee1["look"].name)
         self.assertEqual(len(discount_item1["codes"]), 0)
 
         self.assertEqual(discount_item2["attendee_id"], str(attendee2["attendee"].id))
@@ -104,7 +104,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(discount_item2["amount"], 0)
         self.assertEqual(len(discount_item2["codes"]), 0)
         self.assertEqual(discount_item2["look"]["id"], str(attendee2["look"].id))
-        self.assertEqual(discount_item2["look"]["name"], attendee2["look"].look_name)
+        self.assertEqual(discount_item2["look"]["name"], attendee2["look"].name)
         self.assertEqual(len(discount_item2["codes"]), 0)
 
     def test_create_discount_intent_for_non_active_event(self):

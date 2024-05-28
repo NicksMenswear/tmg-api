@@ -4,8 +4,8 @@ import random
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
-    GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
-    GROOM_GIFT_DISCOUNT_CODE_PREFIX,
+    EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
+    GIFT_DISCOUNT_CODE_PREFIX,
 )
 from server.services.look import LookService
 from server.services.shopify import ShopifyService
@@ -43,25 +43,23 @@ class WebhookService:
         if (
             len(items) == 1
             and items[0].get("sku")
-            and items[0].get("sku").startswith(GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX)
+            and items[0].get("sku").startswith(EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX)
         ):
             sku = items[0].get("sku")
-            logger.debug(f"Found paid groom discount order with sku '{sku}'")
-            return self.handle_groom_gift_discount(payload)
+            logger.debug(f"Found paid discount order with sku '{sku}'")
+            return self.handle_gift_discount(payload)
 
         if len(payload.get("discount_codes")) > 0:
             return self.handle_used_discount_code(payload)
 
-    def handle_groom_gift_discount(self, payload):
+    def handle_gift_discount(self, payload):
         product = payload.get("line_items")[0]
         customer = payload.get("customer")
 
         shopify_product_id = product.get("product_id")
         shopify_customer_id = customer.get("id")
 
-        logger.info(
-            f"Handling groom discount for product_id '{shopify_product_id}' and customer_id '{shopify_customer_id}'"
-        )
+        logger.info(f"Handling discount for product_id '{shopify_product_id}' and customer_id '{shopify_customer_id}'")
 
         try:
             self.shopify_service.archive_product(shopify_product_id)
@@ -90,7 +88,7 @@ class WebhookService:
                 logger.error(f"No shopify variants founds for look {look.id}. Can't create discount code")
                 return self.__error(f"No shopify variants founds for look {look.id}. Can't create discount code")
 
-            code = f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{discount.amount}-OFF-{random.randint(100000, 9999999)}"
+            code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount.amount}-OFF-{random.randint(100000, 9999999)}"
 
             discount_response = self.shopify_service.create_discount_code(
                 code,

@@ -70,12 +70,12 @@ class UserService:
 
         return UserModel.from_orm(user)
 
-    def get_grooms_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[Discount]:
+    def get_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[Discount]:
         return Discount.query.filter(
             Discount.attendee_id == attendee_id,
             Discount.shopify_discount_code != None,
             Discount.used == False,
-            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
         ).all()
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:

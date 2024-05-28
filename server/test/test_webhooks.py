@@ -4,7 +4,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GROOM_GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount import EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
 from server.test import BaseTestCase
 from . import fixtures
 
@@ -55,7 +55,7 @@ class TestWebhooks(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No items in order" in response.json["errors"])
 
-    def test_paid_order_for_non_groom_gift_virtual_product(self):
+    def test_paid_order_for_non_gift_virtual_product(self):
         # when
         response = self.__post(fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts())
 
@@ -63,11 +63,11 @@ class TestWebhooks(BaseTestCase):
         self.assert200(response)
         self.assertEqual(response.text, "")
 
-    def test_paid_order_with_groom_gift_virtual_product_sku(self):
+    def test_paid_order_with_gift_virtual_product_sku(self):
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
             )
         )
 
@@ -88,14 +88,14 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
 
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
 
@@ -117,14 +117,14 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
 
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
 
@@ -150,14 +150,14 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
 
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
 
@@ -167,9 +167,9 @@ class TestWebhooks(BaseTestCase):
 
         discount_codes = response.json.get("discount_codes")
 
-        self.assertTrue(discount_codes[0].startswith(GROOM_GIFT_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
-    def test_paid_order_with_groom_1_paid_and_1_unpaid_discounts(self):
+    def test_paid_order_with_1_paid_and_1_unpaid_discounts(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -186,9 +186,9 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(10, 900),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -198,14 +198,14 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
 
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
 
@@ -215,9 +215,9 @@ class TestWebhooks(BaseTestCase):
 
         discount_codes = response.json.get("discount_codes")
 
-        self.assertTrue(discount_codes[0].startswith(GROOM_GIFT_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
-    def test_paid_order_with_groom_multiple_discount_intents(self):
+    def test_paid_order_with_multiple_discount_intents(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -253,28 +253,28 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee1.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
         discount_intent2 = self.app.discount_service.create_discount(
             event.id,
             attendee2.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
         discount_intent3 = self.app.discount_service.create_discount(
             event.id,
             attendee3.id,
             random.randint(50, 500),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             shopify_virtual_product_id=product_id,
         )
 
         # when
         response = self.__post(
             fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{EVENT_OWNER_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
 
@@ -284,15 +284,9 @@ class TestWebhooks(BaseTestCase):
 
         discount_codes = response.json.get("discount_codes")
 
-        self.assertTrue(
-            discount_codes[0].startswith(f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent1.amount}-OFF")
-        )
-        self.assertTrue(
-            discount_codes[1].startswith(f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent2.amount}-OFF")
-        )
-        self.assertTrue(
-            discount_codes[2].startswith(f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent3.amount}-OFF")
-        )
+        self.assertTrue(discount_codes[0].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent1.amount}-OFF"))
+        self.assertTrue(discount_codes[1].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent2.amount}-OFF"))
+        self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent3.amount}-OFF"))
 
     def test_paid_order_with_empty_list_of_discount_codes(self):
         # when
@@ -327,9 +321,9 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(10, 900),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -365,9 +359,9 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(10, 900),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -377,9 +371,9 @@ class TestWebhooks(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(10, 900),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),

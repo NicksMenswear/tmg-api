@@ -1556,9 +1556,9 @@ components:
           readOnly: true
           title: id
           $ref: '#/components/schemas/uuid'
-        event_name:
+        name:
           format: string
-          title: event_name
+          title: name
           type: string
         event_date:
           format: date-time
@@ -1569,22 +1569,22 @@ components:
           $ref: '#/components/schemas/uuid'
       required:
         - user_id
-        - event_name
+        - name
         - event_date
       title: Event
       type: object
     UpdateEvent:
       properties:
-        event_name:
+        name:
           format: string
-          title: event_name
+          title: name
           type: string
         event_date:
           format: date-time
           title: event_date
           type: string
       required:
-        - event_name
+        - name
         - event_date
       title: Event
       type: object
@@ -1594,8 +1594,8 @@ components:
           readOnly: true
           title: id
           $ref: '#/components/schemas/uuid'
-        look_name:
-          title: look_name
+        name:
+          title: name
           type: string
         user_id:
           title: user_id
@@ -1604,20 +1604,20 @@ components:
           title: product_specs
           type: object
       required:
-        - look_name
+        - name
         - user_id
       title: Look
       type: object
     UpdateLook:
       properties:
-        look_name:
-          title: look_name
+        name:
+          title: name
           type: string
         product_specs:
           title: product_specs
           type: object
       required:
-        - look_name
+        - name
       title: Look
       type: object
     Role:
@@ -1626,23 +1626,23 @@ components:
           readOnly: true
           title: id
           $ref: '#/components/schemas/uuid'
-        role_name:
-          title: look_name
+        name:
+          title: name
           type: string
         event_id:
           title: event_id
           $ref: '#/components/schemas/uuid'
       required:
-        - role_name
+        - name
       title: Role
       type: object
     UpdateRole:
       properties:
-        role_name:
-          title: role_name
+        name:
+          title: name
           type: string
       required:
-        - role_name
+        - name
       title: Role
       type: object
     Attendee:
@@ -1804,8 +1804,8 @@ components:
         last_name:
           title: last_name
           type: string
-        event_name:
-          title: event_name
+        name:
+          title: name
           type: string
         event_id:
           title: event_id

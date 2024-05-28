@@ -14,10 +14,10 @@ class EventUserStatus(str, Enum):
 
 
 class EventRequestModel(BaseModel):
-    event_name: str
+    name: str
     event_date: datetime
 
-    @field_validator("event_name")
+    @field_validator("name")
     @classmethod
     def name_length(cls, v):
         if len(v) < 2 or len(v) > 64:
@@ -41,7 +41,7 @@ class CreateEventModel(EventRequestModel):
 class EventModel(BaseModel):
     id: UUID
     user_id: UUID
-    event_name: str
+    name: str
     event_date: datetime
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
@@ -50,7 +50,7 @@ class EventModel(BaseModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "user_id", "event_name", "event_date", "status"})
+        return self.dict(include={"id", "user_id", "name", "event_date", "status"})
 
 
 class UpdateEventModel(EventRequestModel):

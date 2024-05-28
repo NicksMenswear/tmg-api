@@ -25,9 +25,7 @@ class LookService:
         return [LookModel.from_orm(look) for look in Look.query.filter(Look.user_id == user_id).all()]
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
-        db_look: Look = Look.query.filter(
-            Look.look_name == create_look.look_name, Look.user_id == create_look.user_id
-        ).first()
+        db_look: Look = Look.query.filter(Look.name == create_look.name, Look.user_id == create_look.user_id).first()
 
         if db_look:
             raise DuplicateError("Look already exists with that name.")
@@ -35,7 +33,7 @@ class LookService:
         try:
             db_look = Look(
                 id=uuid.uuid4(),
-                look_name=create_look.look_name,
+                name=create_look.name,
                 user_id=create_look.user_id,
                 product_specs=create_look.product_specs,
             )
@@ -55,14 +53,14 @@ class LookService:
             raise NotFoundError("Look not found")
 
         existing_look = Look.query.filter(
-            Look.look_name == update_look.look_name, Look.user_id == db_look.user_id, Look.id != look_id
+            Look.name == update_look.name, Look.user_id == db_look.user_id, Look.id != look_id
         ).first()
 
         if existing_look:
             raise DuplicateError("Look already exists with that name.")
 
         try:
-            db_look.look_name = update_look.look_name
+            db_look.name = update_look.name
             db_look.product_specs = update_look.product_specs
 
             db.session.commit()

@@ -28,7 +28,7 @@ class TestRoles(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["id"])
-        self.assertEqual(response.json["role_name"], create_role.role_name)
+        self.assertEqual(response.json["name"], create_role.name)
         self.assertEqual(response.json["event_id"], str(create_role.event_id))
 
     def test_create_role_event_not_found(self):
@@ -54,7 +54,7 @@ class TestRoles(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        create_role = fixtures.create_role_request(event_id=event.id, role_name=role.role_name)
+        create_role = fixtures.create_role_request(event_id=event.id, name=role.name)
 
         response = self.client.open(
             "/roles",
@@ -86,7 +86,7 @@ class TestRoles(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertIsNotNone(response.json["id"])
-        self.assertEqual(response.json["role_name"], role.role_name)
+        self.assertEqual(response.json["name"], role.name)
         self.assertEqual(response.json["event_id"], str(role.event_id))
 
     def test_get_role_by_id_not_found(self):
@@ -109,8 +109,8 @@ class TestRoles(BaseTestCase):
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
 
         # when
-        new_role_name = role.role_name + "-updated"
-        update_role = fixtures.update_role_request(role_name=new_role_name)
+        new_name = role.name + "-updated"
+        update_role = fixtures.update_role_request(name=new_name)
 
         response = self.client.open(
             f"/roles/{str(role.id)}",
@@ -124,7 +124,7 @@ class TestRoles(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertEqual(response.json["id"], str(role.id))
-        self.assertEqual(response.json["role_name"], new_role_name)
+        self.assertEqual(response.json["name"], new_name)
         self.assertEqual(response.json["event_id"], str(event.id))
 
     def test_update_role_invalid_id(self):
@@ -135,13 +135,13 @@ class TestRoles(BaseTestCase):
             method="PUT",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=fixtures.update_role_request(role_name="test").json(),
+            data=fixtures.update_role_request(name="test").json(),
         )
 
         # then
         self.assertStatus(response, 404)
 
-    def test_update_role_with_existing_role_name(self):
+    def test_update_role_with_existing_name(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -155,7 +155,7 @@ class TestRoles(BaseTestCase):
             method="PUT",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=fixtures.update_role_request(role_name=role2.role_name).json(),
+            data=fixtures.update_role_request(name=role2.name).json(),
         )
 
         # then
@@ -198,14 +198,14 @@ class TestRoles(BaseTestCase):
             pass
         self.assertIsNone(role_in_db)
 
-    def test_create_role_role_name_too_short(self):
+    def test_create_role_wiht_name_too_short(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
         create_role = fixtures.create_role_request(event_id=event.id).model_dump()
-        create_role["role_name"] = "a"
+        create_role["name"] = "a"
 
         response = self.client.open(
             "/roles",

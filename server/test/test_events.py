@@ -35,7 +35,7 @@ class TestEvents(BaseTestCase):
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.create_event_request(event_name=event.event_name, user_id=user.id, is_active=True).json(),
+            data=fixtures.create_event_request(name=event.name, user_id=user.id, is_active=True).json(),
         )
 
         # then
@@ -60,7 +60,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("event_name"), event_request.event_name)
+        self.assertEqual(response.json.get("name"), event_request.name)
         self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
@@ -94,7 +94,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("event_name"), event_request.event_name)
+        self.assertEqual(response.json.get("name"), event_request.name)
         self.assertEqual(response.json.get("event_date"), str(event_request.event_date.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
@@ -217,12 +217,12 @@ class TestEvents(BaseTestCase):
     #
     #     response_attendee_look = response_attendee["look"]
     #     self.assertEqual(response_attendee_look["id"], str(look.id))
-    #     self.assertEqual(response_attendee_look["look_name"], look.look_name)
+    #     self.assertEqual(response_attendee_look["name"], look.name)
     #     self.assertEqual(response_attendee_look["product_specs"], look.product_specs)
     #
     #     response_attendee_role = response_attendee["role"]
     #     self.assertEqual(response_attendee_role["id"], str(role.id))
-    #     self.assertEqual(response_attendee_role["role_name"], role.role_name)
+    #     self.assertEqual(response_attendee_role["name"], role.name)
     #
     #     response_attendee_user = response_attendee["user"]
     #     self.assertEqual(response_attendee_user["id"], str(attendee_user.id))
@@ -252,9 +252,9 @@ class TestEvents(BaseTestCase):
         response_role1 = response.json[0]
         response_role2 = response.json[1]
         self.assertEqual(response_role1.get("id"), str(role1.id))
-        self.assertEqual(response_role1.get("role_name"), role1.role_name)
+        self.assertEqual(response_role1.get("name"), role1.name)
         self.assertEqual(response_role2.get("id"), str(role2.id))
-        self.assertEqual(response_role2.get("role_name"), role2.role_name)
+        self.assertEqual(response_role2.get("name"), role2.name)
 
     def test_get_roles_by_non_existing_event_id(self):
         # when
@@ -351,7 +351,7 @@ class TestEvents(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=fixtures.update_event_request(
-                event_name=str(uuid.uuid4()), event_date=(datetime.now() + timedelta(days=1)).isoformat()
+                name=str(uuid.uuid4()), event_date=(datetime.now() + timedelta(days=1)).isoformat()
             ).json(),
         )
 
@@ -364,7 +364,7 @@ class TestEvents(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
 
         # when
-        updated_event_name = str(uuid.uuid4())
+        updated_name = str(uuid.uuid4())
         updated_event_date = (datetime.now() + timedelta(days=1)).isoformat()
 
         response = self.client.open(
@@ -373,13 +373,13 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(event_name=updated_event_name, event_date=updated_event_date).json(),
+            data=fixtures.update_event_request(name=updated_name, event_date=updated_event_date).json(),
         )
 
         # then
         self.assert200(response)
         response_event = response.json
-        self.assertEqual(response_event["event_name"], updated_event_name)
+        self.assertEqual(response_event["name"], updated_name)
         self.assertEqual(response_event["event_date"], updated_event_date)
 
     def test_update_event_existing(self):
@@ -395,7 +395,7 @@ class TestEvents(BaseTestCase):
             method="PUT",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.update_event_request(event_name=event2.event_name, event_date=event2.event_date).json(),
+            data=fixtures.update_event_request(name=event2.name, event_date=event2.event_date).json(),
         )
 
         # then
@@ -440,7 +440,7 @@ class TestEvents(BaseTestCase):
 
         # when
         event_request = fixtures.create_event_request(user_id=user.id).model_dump()
-        event_request["event_name"] = "a"
+        event_request["name"] = "a"
 
         response = self.client.open(
             "/events",

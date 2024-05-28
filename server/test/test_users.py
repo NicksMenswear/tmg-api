@@ -149,9 +149,9 @@ class TestUsers(BaseTestCase):
         self.assert200(response)
         self.assertEqual(len(response.json), 2)
         self.assertEqual(response.json[0]["id"], str(event1.id))
-        self.assertEqual(response.json[0]["event_name"], str(event1.event_name))
+        self.assertEqual(response.json[0]["name"], str(event1.name))
         self.assertEqual(response.json[1]["id"], str(event2.id))
-        self.assertEqual(response.json[1]["event_name"], str(event2.event_name))
+        self.assertEqual(response.json[1]["name"], str(event2.name))
 
     def test_get_invites_for_non_existing_user(self):
         # when
@@ -323,9 +323,9 @@ class TestUsers(BaseTestCase):
         response_look2 = response.json[1]
 
         self.assertEqual(response_look1["id"], str(look1.id))
-        self.assertEqual(response_look1["look_name"], str(look1.look_name))
+        self.assertEqual(response_look1["name"], str(look1.name))
         self.assertEqual(response_look2["id"], str(look2.id))
-        self.assertEqual(response_look2["look_name"], str(look2.look_name))
+        self.assertEqual(response_look2["name"], str(look2.name))
 
     def test_create_user_first_name_too_short(self):
         # when

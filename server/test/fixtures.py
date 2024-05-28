@@ -34,7 +34,7 @@ def update_user_request(**user_data) -> UpdateUserModel:
 
 def create_event_request(**event_data) -> CreateEventModel:
     return CreateEventModel(
-        event_name=event_data.get("event_name", str(uuid.uuid4())),
+        name=event_data.get("name", str(uuid.uuid4())),
         event_date=event_data.get("event_date", (datetime.now() + timedelta(days=1)).isoformat()),
         user_id=event_data.get("user_id", uuid.uuid4()),
         is_active=event_data.get("is_active", True),
@@ -43,14 +43,14 @@ def create_event_request(**event_data) -> CreateEventModel:
 
 def update_event_request(**event_data) -> UpdateEventModel:
     return UpdateEventModel(
-        event_name=event_data.get("event_name", str(uuid.uuid4())),
+        name=event_data.get("name", str(uuid.uuid4())),
         event_date=event_data.get("event_date", datetime.now().isoformat()),
     )
 
 
 def create_look_request(**look_data) -> CreateLookModel:
     return CreateLookModel(
-        look_name=look_data.get("look_name", str(uuid.uuid4())),
+        name=look_data.get("name", str(uuid.uuid4())),
         user_id=look_data.get("user_id", uuid.uuid4()),
         product_specs=look_data.get("product_specs", {}),
     )
@@ -58,21 +58,21 @@ def create_look_request(**look_data) -> CreateLookModel:
 
 def update_look_request(**look_data) -> UpdateLookModel:
     return UpdateLookModel(
-        look_name=look_data.get("look_name", str(uuid.uuid4())),
+        name=look_data.get("name", str(uuid.uuid4())),
         product_specs=look_data.get("product_specs", {}),
     )
 
 
 def create_role_request(**role_data):
     return CreateRoleModel(
-        role_name=role_data.get("role_name", str(uuid.uuid4())),
+        name=role_data.get("name", str(uuid.uuid4())),
         event_id=role_data.get("event_id", uuid.uuid4()),
     )
 
 
 def update_role_request(**role_data):
     return UpdateRoleModel(
-        role_name=role_data.get("role_name", str(uuid.uuid4())),
+        name=role_data.get("name", str(uuid.uuid4())),
     )
 
 

@@ -26,15 +26,13 @@ class RoleService:
         if not db_event:
             raise NotFoundError("Event not found.")
 
-        existing_role = Role.query.filter(
-            Role.role_name == create_role.role_name, Role.event_id == create_role.event_id
-        ).first()
+        existing_role = Role.query.filter(Role.name == create_role.name, Role.event_id == create_role.event_id).first()
 
         if existing_role:
             raise DuplicateError("Role already exists.")
 
         try:
-            db_role = Role(role_name=create_role.role_name, event_id=create_role.event_id)
+            db_role = Role(name=create_role.name, event_id=create_role.event_id)
 
             db.session.add(db_role)
             db.session.commit()
@@ -48,14 +46,14 @@ class RoleService:
         db_role = self.__role_by_id(role_id)
 
         existing_role_by_name = Role.query.filter(
-            Role.role_name == update_role.role_name, Role.event_id == db_role.event_id
+            Role.name == update_role.name, Role.event_id == db_role.event_id
         ).first()
 
         if existing_role_by_name:
             raise DuplicateError("Role with this name already exists.")
 
         try:
-            db_role.role_name = update_role.role_name
+            db_role.name = update_role.name
 
             db.session.commit()
             db.session.refresh(db_role)

@@ -41,6 +41,31 @@ class AttendeeModel(BaseModel):
         )
 
 
+class EnrichedAttendeeModel(AttendeeModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+
+    def to_response(self):
+        return self.dict(
+            include={
+                "id",
+                "attendee_id",
+                "event_id",
+                "role",
+                "look_id",
+                "style",
+                "invite",
+                "pay",
+                "size",
+                "ship",
+                "first_name",
+                "last_name",
+                "email",
+            }
+        )
+
+
 class UpdateAttendeeModel(BaseModel):
     style: int = 0
     invite: int = 0

@@ -1,9 +1,11 @@
 import uuid
 from typing import List
 
+from sqlalchemy.orm import joinedload
+
 from server.database.database_manager import db
-from server.database.models import Attendee, Event
-from server.models.attendee_model import AttendeeModel, CreateAttendeeModel, UpdateAttendeeModel
+from server.database.models import Attendee, Event, User
+from server.models.attendee_model import AttendeeModel, CreateAttendeeModel, UpdateAttendeeModel, EnrichedAttendeeModel
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.event import EventService
@@ -37,9 +39,35 @@ class AttendeeService:
         if not event:
             raise NotFoundError("Event not found.")
 
-        attendees = Attendee.query.filter(Attendee.event_id == event_id, Attendee.is_active).all()
+        db_attendees = (
+            db.session.query(Attendee, User)
+            .join(Attendee, User.id == Attendee.attendee_id)
+            .filter(Attendee.event_id == event_id, Attendee.is_active)
+        ).all()
 
-        return [AttendeeModel.from_orm(attendee) for attendee in attendees]
+        attendees = []
+
+        for attendee, user in db_attendees:
+            attendees.append(
+                EnrichedAttendeeModel(
+                    id=attendee.id,
+                    attendee_id=attendee.attendee_id,
+                    event_id=attendee.event_id,
+                    style=attendee.style,
+                    invite=attendee.invite,
+                    pay=attendee.pay,
+                    size=attendee.size,
+                    ship=attendee.ship,
+                    role=attendee.role,
+                    look_id=attendee.look_id,
+                    is_active=attendee.is_active,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    email=user.email,
+                )
+            )
+
+        return attendees
 
     def create_attendee(self, create_attendee: CreateAttendeeModel) -> AttendeeModel:
         event = Event.query.filter(Event.id == create_attendee.event_id, Event.is_active).first()

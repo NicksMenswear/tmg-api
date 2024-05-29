@@ -11,6 +11,7 @@ from typing import Sequence, Union
 from sqlalchemy.dialects import postgresql
 
 from alembic import op
+import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "356c3889f8f9"
@@ -29,6 +30,7 @@ def upgrade() -> None:
     op.execute("UPDATE discounts SET type = 'GIFT' WHERE type = 'GROOM_GIFT'")
     op.execute("UPDATE discounts SET type = 'FULL_PAY' WHERE type = 'GROOM_FULL_PAY'")
     op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE new_discounttype USING type::new_discounttype")
+    op.alter_column("discounts", "amount", type_=sa.Float(), postgresql_using="amount::double precision")
 
     # Drop old enum type
     op.execute("DROP TYPE discounttype")
@@ -47,6 +49,7 @@ def downgrade() -> None:
     op.execute("UPDATE discounts SET type = 'GROOM_GIFT' WHERE type = 'GIFT'")
     op.execute("UPDATE discounts SET type = 'GROOM_FULL_PAY' WHERE type = 'FULL_PAY'")
     op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE old_discounttype USING type::old_discounttype")
+    op.alter_column("discounts", "amount", type_=sa.Integer(), postgresql_using="amount::integer")
 
     # Drop new enum type
     op.execute("DROP TYPE discounttype")

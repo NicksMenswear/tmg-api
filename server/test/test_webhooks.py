@@ -284,9 +284,9 @@ class TestWebhooks(BaseTestCase):
 
         discount_codes = response.json.get("discount_codes")
 
-        self.assertTrue(discount_codes[0].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent1.amount}-OFF"))
-        self.assertTrue(discount_codes[1].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent2.amount}-OFF"))
-        self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount_intent3.amount}-OFF"))
+        self.assertTrue(discount_codes[0].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent1.amount)}-OFF"))
+        self.assertTrue(discount_codes[1].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent2.amount)}-OFF"))
+        self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent3.amount)}-OFF"))
 
     def test_paid_order_with_empty_list_of_discount_codes(self):
         # when

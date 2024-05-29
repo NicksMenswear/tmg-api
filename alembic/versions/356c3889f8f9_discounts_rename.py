@@ -20,16 +20,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create a temporary type with the new enum values
+    # Create a temporary type
     new_discounttype = postgresql.ENUM("GIFT", "FULL_PAY", "PARTY_OF_FOUR", name="new_discounttype")
     new_discounttype.create(op.get_bind(), checkfirst=True)
 
-    # Rename existing values
+    # Alter and update
+    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE text")
     op.execute("UPDATE discounts SET type = 'GIFT' WHERE type = 'GROOM_GIFT'")
     op.execute("UPDATE discounts SET type = 'FULL_PAY' WHERE type = 'GROOM_FULL_PAY'")
-
-    # Alter the column to use the new enum type
-    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE new_discounttype USING type::text::new_discounttype")
+    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE new_discounttype USING type::new_discounttype")
 
     # Drop old enum type
     op.execute("DROP TYPE discounttype")
@@ -39,19 +38,18 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Create a temporary type with the old enum values
+    # Create a temporary type
     old_discounttype = postgresql.ENUM("GROOM_GIFT", "GROOM_FULL_PAY", "PARTY_OF_FOUR", name="old_discounttype")
     old_discounttype.create(op.get_bind(), checkfirst=True)
 
-    # Rename existing values back to the original ones
+    # Alter and update
+    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE text")
     op.execute("UPDATE discounts SET type = 'GROOM_GIFT' WHERE type = 'GIFT'")
     op.execute("UPDATE discounts SET type = 'GROOM_FULL_PAY' WHERE type = 'FULL_PAY'")
+    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE old_discounttype USING type::old_discounttype")
 
-    # Alter the column to use the old enum type
-    op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE old_discounttype USING type::text::old_discounttype")
-
-    # Drop the new enum type
+    # Drop new enum type
     op.execute("DROP TYPE discounttype")
 
-    # Rename the old enum type to the original enum type name
+    # Rename
     op.execute("ALTER TYPE old_discounttype RENAME TO discounttype")

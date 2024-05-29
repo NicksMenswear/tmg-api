@@ -1296,8 +1296,12 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 1)
-        self.assertEqual(response.json[0], discount.shopify_discount_code)
+        self.assertEqual(len(response.json), 2)
+        self.assertTrue(discount.shopify_discount_code in {response.json[0], response.json[1]})
+        self.assertTrue(
+            response.json[0].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
+            or response.json[1].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
+        )
 
     def test_apply_discounts_with_gift_discounts_and_party_of_4_when_tmg_discount_already_issued(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())

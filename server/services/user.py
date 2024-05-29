@@ -6,6 +6,7 @@ from typing import List
 
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
+from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.emails import AbstractEmailService
@@ -70,13 +71,16 @@ class UserService:
 
         return UserModel.from_orm(user)
 
-    def get_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[Discount]:
-        return Discount.query.filter(
-            Discount.attendee_id == attendee_id,
-            Discount.shopify_discount_code != None,
-            Discount.used == False,
-            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
-        ).all()
+    def get_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
+        return [
+            DiscountModel.from_orm(discount)
+            for discount in Discount.query.filter(
+                Discount.attendee_id == attendee_id,
+                Discount.shopify_discount_code != None,
+                Discount.used == False,
+                or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
+            ).all()
+        ]
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:
         user: User = User.query.filter_by(id=user_id).first()

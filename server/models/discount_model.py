@@ -71,6 +71,7 @@ class DiscountModel(BaseModel):
                 "amount",
                 "used",
                 "shopify_discount_code",
+                "shopify_virtual_product_variant_id",
             }
         )
 

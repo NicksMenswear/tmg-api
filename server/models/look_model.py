@@ -30,7 +30,7 @@ class LookModel(BaseModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "name"})
+        return self.dict(include={"id", "name", "product_specs"})
 
 
 class UpdateLookModel(LookRequest):

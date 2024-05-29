@@ -256,7 +256,7 @@ class DiscountService:
                     discount_intent = Discount(
                         event_id=event_id,
                         attendee_id=attendee.id,
-                        amount=total_price_of_look,
+                        amount=total_intent_amount,
                         type=DiscountType.FULL_PAY,
                     )
 

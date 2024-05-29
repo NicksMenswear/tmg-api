@@ -8,7 +8,7 @@ from server.models.discount_model import CreateDiscountIntentAmount, CreateDisco
 logger = logging.getLogger(__name__)
 
 
-# @hmac_verification
+@hmac_verification
 @error_handler
 def get_gift_discounts(event_id):
     discount_service = FlaskApp.current().discount_service
@@ -18,7 +18,7 @@ def get_gift_discounts(event_id):
     return [discount.to_response() for discount in discounts], 200
 
 
-# @hmac_verification
+@hmac_verification
 @error_handler
 def create_discount_intents(event_id, intents):
     discount_service = FlaskApp.current().discount_service

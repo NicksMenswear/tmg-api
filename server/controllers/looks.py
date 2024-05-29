@@ -8,7 +8,7 @@ from server.models.look_model import CreateLookModel, UpdateLookModel
 logger = logging.getLogger(__name__)
 
 
-# @hmac_verification
+@hmac_verification
 @error_handler
 def get_look_by_id(look_id):
     look_service = FlaskApp.current().look_service

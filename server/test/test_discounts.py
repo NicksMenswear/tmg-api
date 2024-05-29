@@ -6,7 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import GROOM_GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX
+from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX
 from server.test import BaseTestCase, fixtures
 
 
@@ -330,7 +330,7 @@ class TestDiscounts(BaseTestCase):
         discount_intent = response.json[0]
         self.assertEqual(discount_intent["attendee_id"], str(attendee.id))
         self.assertEqual(discount_intent["amount"], created_discount_intent_request["amount"])
-        self.assertEqual(discount_intent["type"], str(DiscountType.GROOM_GIFT))
+        self.assertEqual(discount_intent["type"], str(DiscountType.GIFT))
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertIsNotNone(discount_intent["id"])
         self.assertIsNone(discount_intent["shopify_discount_code"])
@@ -343,7 +343,7 @@ class TestDiscounts(BaseTestCase):
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(shopify_virtual_product["variants"][0]["price"], created_discount_intent_request["amount"])
 
-    def test_create_discount_intent_of_type_groom_gift_for_2_attendees(self):
+    def test_create_discount_intent_of_type_gift_for_2_attendees(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -383,7 +383,7 @@ class TestDiscounts(BaseTestCase):
             discount_intent1["amount"] + discount_intent2["amount"],
             created_discount_intent_request1.amount + created_discount_intent_request2.amount,
         )
-        self.assertEqual(discount_intent1["type"], str(DiscountType.GROOM_GIFT))
+        self.assertEqual(discount_intent1["type"], str(DiscountType.GIFT))
         self.assertEqual(discount_intent1["event_id"], str(event.id))
 
         shopify_virtual_product_id = self.discount_service.get_discount_by_id(
@@ -424,7 +424,7 @@ class TestDiscounts(BaseTestCase):
         self.assert404(response)
         self.assertTrue("Look not found" in response.json["errors"])
 
-    def test_create_discount_intent_of_type_groom_full_pay_look_has_no_variants(self):
+    def test_create_discount_intent_of_type_full_pay_look_has_no_variants(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -493,7 +493,7 @@ class TestDiscounts(BaseTestCase):
 
         discount_intent = response.json[0]
         self.assertEqual(discount_intent["attendee_id"], str(attendee.id))
-        self.assertEqual(discount_intent["type"], str(DiscountType.GROOM_FULL_PAY))
+        self.assertEqual(discount_intent["type"], str(DiscountType.FULL_PAY))
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertEqual(discount_intent["amount"], discount_amount)
         self.assertIsNotNone(discount_intent["id"])
@@ -507,7 +507,7 @@ class TestDiscounts(BaseTestCase):
         self.assertIsNotNone(shopify_virtual_product)
         self.assertEqual(shopify_virtual_product["variants"][0]["price"], discount_amount)
 
-    def test_create_discount_intent_of_type_groom_full_pay_is_less_then_100(self):
+    def test_create_discount_intent_of_type_full_pay_is_less_then_100(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -582,12 +582,8 @@ class TestDiscounts(BaseTestCase):
         discount_intent1 = response.json[0]
         discount_intent2 = response.json[1]
         self.assertNotEqual(discount_intent1["type"], discount_intent2["type"])
-        self.assertEqual(
-            discount_intent1["type"] in [str(DiscountType.GROOM_FULL_PAY), str(DiscountType.GROOM_GIFT)], True
-        )
-        self.assertEqual(
-            discount_intent2["type"] in [str(DiscountType.GROOM_FULL_PAY), str(DiscountType.GROOM_GIFT)], True
-        )
+        self.assertEqual(discount_intent1["type"] in [str(DiscountType.FULL_PAY), str(DiscountType.GIFT)], True)
+        self.assertEqual(discount_intent2["type"] in [str(DiscountType.FULL_PAY), str(DiscountType.GIFT)], True)
         self.assertNotEqual(discount_intent1["amount"], discount_intent2["amount"])
         self.assertEqual(
             discount_intent1["amount"] in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.amount],
@@ -608,7 +604,7 @@ class TestDiscounts(BaseTestCase):
             variant1 * 10 + variant2 * 10 + created_discount_intent_request2.amount,
         )
 
-    def test_create_discount_intent_for_party_of_4_of_type_groom_gift_but_only_one_attendee_has_intents_set_no_tmg_discount_to_be_applied(
+    def test_create_discount_intent_for_party_of_4_of_type_gift_but_only_one_attendee_has_intents_set_no_tmg_discount_to_be_applied(
         self,
     ):
         # given
@@ -662,7 +658,7 @@ class TestDiscounts(BaseTestCase):
             created_discount_intent_request1.amount,
         )
 
-    def test_create_discount_intent_for_party_of_4_of_type_groom_gift_no_tmg_discount_to_be_applied(
+    def test_create_discount_intent_for_party_of_4_of_type_gift_no_tmg_discount_to_be_applied(
         self,
     ):
         # given
@@ -726,7 +722,7 @@ class TestDiscounts(BaseTestCase):
             + created_discount_intent_request4.amount,
         )
 
-    def test_create_discount_intent_for_party_of_4_of_type_groom_full_pay_but_only_one_attendee_has_intents_set_tmg_discount_of_100_off_to_be_applied(
+    def test_create_discount_intent_for_party_of_4_of_type_full_pay_but_only_one_attendee_has_intents_set_tmg_discount_of_100_off_to_be_applied(
         self,
     ):
         # given
@@ -787,7 +783,7 @@ class TestDiscounts(BaseTestCase):
             variant1 * 10 + variant2 * 10 - 100,  # tmg discount of 100 off
         )
 
-    def test_create_discount_intent_for_attendee_that_already_has_discount_intent_of_type_groom_gift_it_should_be_overwritten(
+    def test_create_discount_intent_for_attendee_that_already_has_discount_intent_of_type_gift_it_should_be_overwritten(
         self,
     ):
         # given
@@ -797,7 +793,7 @@ class TestDiscounts(BaseTestCase):
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id)
         )
-        self.app.discount_service.create_discount(event.id, attendee.id, 5, DiscountType.GROOM_GIFT)
+        self.app.discount_service.create_discount(event.id, attendee.id, 5, DiscountType.GIFT)
 
         # when
         created_discount_intent_request = fixtures.create_gift_discount_intent_request(attendee_id=str(attendee.id))
@@ -830,7 +826,7 @@ class TestDiscounts(BaseTestCase):
             created_discount_intent_request.amount,
         )
 
-    def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_groom_gift(
+    def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_gift(
         self,
     ):
         # given
@@ -844,9 +840,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(1, 9),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -895,7 +891,7 @@ class TestDiscounts(BaseTestCase):
         self.assertNotEqual(discount1.amount, discount2.amount)
         self.assertTrue(created_discount_intent_request.amount in [discount1.amount, discount2.amount])
 
-    def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_groom_full_pay(
+    def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_full_pay(
         self,
     ):
         # given
@@ -909,9 +905,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(300, 700),
-            DiscountType.GROOM_FULL_PAY,
+            DiscountType.FULL_PAY,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -936,7 +932,7 @@ class TestDiscounts(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertTrue("Groom full pay gift discount already issued for attendee" in response.json["errors"])
 
-    def test_create_discount_intent_of_type_groom_full_pay_for_attendee_that_already_has_discount_code(
+    def test_create_discount_intent_of_type_full_pay_for_attendee_that_already_has_discount_code(
         self,
     ):
         # given
@@ -955,9 +951,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(300, 700),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1091,7 +1087,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 1)
         self.assertTrue(response.json[0].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX))
 
-    def test_apply_discounts_with_groom_gift_discounts(self):
+    def test_apply_discounts_with_gift_discounts(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
@@ -1105,9 +1101,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 200),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1116,9 +1112,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(100, 400),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1127,9 +1123,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(100, 400),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             True,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1152,7 +1148,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 2)
         self.assertEqual(set(response.json), {discount1.shopify_discount_code, discount2.shopify_discount_code})
 
-    def test_apply_discounts_with_groom_gift_discounts_and_party_of_4(self):
+    def test_apply_discounts_with_gift_discounts_and_party_of_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
@@ -1178,9 +1174,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee1.id,
             random.randint(50, 200),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1212,7 +1208,7 @@ class TestDiscounts(BaseTestCase):
             )
         )
 
-    def test_apply_discounts_with_groom_full_pay_discounts(self):
+    def test_apply_discounts_with_full_pay_discounts(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
@@ -1226,9 +1222,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee.id,
             random.randint(50, 200),
-            DiscountType.GROOM_FULL_PAY,
+            DiscountType.FULL_PAY,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1251,7 +1247,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0], discount.shopify_discount_code)
 
-    def test_apply_discounts_with_groom_full_pay_discounts_and_party_of_4(self):
+    def test_apply_discounts_with_full_pay_discounts_and_party_of_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
@@ -1278,9 +1274,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee1.id,
             random.randint(50, 500),
-            DiscountType.GROOM_FULL_PAY,
+            DiscountType.FULL_PAY,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),
@@ -1303,7 +1299,7 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0], discount.shopify_discount_code)
 
-    def test_apply_discounts_with_groom_gift_discounts_and_party_of_4_when_tmg_discount_already_issued(self):
+    def test_apply_discounts_with_gift_discounts_and_party_of_4_when_tmg_discount_already_issued(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
@@ -1329,9 +1325,9 @@ class TestDiscounts(BaseTestCase):
             event.id,
             attendee1.id,
             random.randint(50, 200),
-            DiscountType.GROOM_GIFT,
+            DiscountType.GIFT,
             False,
-            f"{GROOM_GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),

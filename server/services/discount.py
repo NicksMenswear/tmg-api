@@ -24,9 +24,9 @@ from server.services.look import LookService
 from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
-GROOM_DISCOUNT_TYPES = {DiscountType.GROOM_GIFT, DiscountType.GROOM_FULL_PAY}
-GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "GROOM-DISCOUNT"
-GROOM_GIFT_DISCOUNT_CODE_PREFIX = "GROOM-GIFT"
+DISCOUNT_TYPES = {DiscountType.GIFT, DiscountType.FULL_PAY}
+DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "DISCOUNT"
+GIFT_DISCOUNT_CODE_PREFIX = "GIFT"
 TMG_GROUP_DISCOUNT_CODE_PREFIX = "TMG-GROUP-100-OFF"
 
 
@@ -73,7 +73,7 @@ class DiscountService:
         event_id,
         attendee_id,
         amount,
-        discount_type=DiscountType.GROOM_GIFT,
+        discount_type=DiscountType.GIFT,
         used=False,
         shopify_discount_code=None,
         shopify_discount_code_id=None,
@@ -146,7 +146,7 @@ class DiscountService:
 
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
-            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
             Discount.shopify_discount_code == None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
@@ -156,7 +156,7 @@ class DiscountService:
 
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
-            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
             Discount.shopify_discount_code != None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
@@ -177,7 +177,7 @@ class DiscountService:
         discounts = Discount.query.filter(
             Discount.shopify_virtual_product_id == product_id,
             Discount.shopify_discount_code == None,
-            or_(Discount.type == DiscountType.GROOM_GIFT, Discount.type == DiscountType.GROOM_FULL_PAY),
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
         ).all()
 
         return [DiscountModel.from_orm(discount) for discount in discounts]
@@ -210,7 +210,7 @@ class DiscountService:
 
         num_attendees = self.event_service.get_num_attendees_for_event(event_id)
         existing_discounts = self.get_discounts_for_event(event_id)
-        discounts_without_codes = self.__filter_groom_discounts_without_codes(existing_discounts)
+        discounts_without_codes = self.__filter_discounts_without_codes(existing_discounts)
 
         intents = []
         total_intent_amount = 0
@@ -257,13 +257,13 @@ class DiscountService:
                         event_id=event_id,
                         attendee_id=attendee.id,
                         amount=total_price_of_look,
-                        type=DiscountType.GROOM_FULL_PAY,
+                        type=DiscountType.FULL_PAY,
                     )
 
                     intents.append(discount_intent)
                 else:
                     if any(
-                        discount.shopify_discount_code and discount.type == DiscountType.GROOM_FULL_PAY
+                        discount.shopify_discount_code and discount.type == DiscountType.FULL_PAY
                         for discount in attendee_discounts
                     ):
                         raise BadRequestError(
@@ -276,7 +276,7 @@ class DiscountService:
                         event_id=event_id,
                         attendee_id=attendee.id,
                         amount=intent.amount,
-                        type=DiscountType.GROOM_GIFT,
+                        type=DiscountType.GIFT,
                     )
 
                     intents.append(discount_intent)
@@ -307,7 +307,7 @@ class DiscountService:
 
             for intent in intents:
                 attendee_user = self.user_service.get_user_for_attendee(intent.attendee_id)
-                type = "Full pay" if intent.type == DiscountType.GROOM_FULL_PAY else "Gift"
+                type = "Full pay" if intent.type == DiscountType.FULL_PAY else "Gift"
                 product_body += (
                     f"<li>{type} for {attendee_user.first_name} {attendee_user.last_name}: ${intent.amount}</li>"
                 )
@@ -321,9 +321,9 @@ class DiscountService:
                 title=f"{event.name} attendees discount",
                 body_html=product_body,
                 price=total_intent_amount,
-                sku=f"{GROOM_DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
+                sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
                 tags=",".join(
-                    ["virtual", "groom_discount", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]
+                    ["virtual", "gift_discount", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]
                 ),
             )
 
@@ -344,11 +344,9 @@ class DiscountService:
 
         return [DiscountModel.from_orm(intent) for intent in intents]
 
-    def __filter_groom_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
+    def __filter_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
         return [
-            discount
-            for discount in discounts
-            if not discount.shopify_discount_code and discount.type in GROOM_DISCOUNT_TYPES
+            discount for discount in discounts if not discount.shopify_discount_code and discount.type in DISCOUNT_TYPES
         ]
 
     def __filter_attendee_discounts(self, discounts: List[Discount], attendee_id: uuid.UUID):
@@ -411,10 +409,10 @@ class DiscountService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        discounts = self.user_service.get_grooms_gift_paid_but_not_used_discounts(attendee_id)
+        discounts = self.user_service.get_gift_paid_but_not_used_discounts(attendee_id)
 
-        groom_full_pay_discount_types = set([discount.type for discount in discounts])
-        can_apply_tmg_discount = False if DiscountType.GROOM_FULL_PAY in groom_full_pay_discount_types else True
+        full_pay_discount_types = set([discount.type for discount in discounts])
+        can_apply_tmg_discount = False if DiscountType.FULL_PAY in full_pay_discount_types else True
 
         if can_apply_tmg_discount:
             num_attendees = self.event_service.get_num_attendees_for_event(event_id)

@@ -554,8 +554,8 @@ class CartProduct(Base):
 
 @enum.unique
 class DiscountType(enum.Enum):
-    GROOM_GIFT = "groom_gift"
-    GROOM_FULL_PAY = "groom_full_pay"
+    GIFT = "gift"
+    FULL_PAY = "full_pay"
     PARTY_OF_FOUR = "party_of_four"
 
     def __str__(self):

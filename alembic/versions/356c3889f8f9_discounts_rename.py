@@ -8,10 +8,10 @@ Create Date: 2024-05-28 17:55:14.353491
 
 from typing import Sequence, Union
 
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "356c3889f8f9"
@@ -31,6 +31,9 @@ def upgrade() -> None:
     op.execute("UPDATE discounts SET type = 'FULL_PAY' WHERE type = 'GROOM_FULL_PAY'")
     op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE new_discounttype USING type::new_discounttype")
     op.alter_column("discounts", "amount", type_=sa.Float(), postgresql_using="amount::double precision")
+    op.alter_column("discounts", "created_at", existing_type=sa.DateTime(), nullable=False)
+    op.alter_column("discounts", "updated_at", existing_type=sa.DateTime(), nullable=False)
+    op.alter_column("events", "event_at", existing_type=sa.DateTime(), nullable=False)
 
     # Drop old enum type
     op.execute("DROP TYPE discounttype")
@@ -50,6 +53,9 @@ def downgrade() -> None:
     op.execute("UPDATE discounts SET type = 'GROOM_FULL_PAY' WHERE type = 'FULL_PAY'")
     op.execute("ALTER TABLE discounts ALTER COLUMN type TYPE old_discounttype USING type::old_discounttype")
     op.alter_column("discounts", "amount", type_=sa.Integer(), postgresql_using="amount::integer")
+    op.alter_column("discounts", "created_at", existing_type=sa.DateTime(), nullable=True)
+    op.alter_column("discounts", "updated_at", existing_type=sa.DateTime(), nullable=True)
+    op.alter_column("events", "event_at", existing_type=sa.DateTime(), nullable=True)
 
     # Drop new enum type
     op.execute("DROP TYPE discounttype")

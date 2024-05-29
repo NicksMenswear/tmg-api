@@ -251,7 +251,7 @@ class DiscountService:
                         raise BadRequestError("Total look items price must be greater than 100.")
 
                     if num_attendees >= 4:
-                        total_intent_amount -= 100
+                        total_intent_amount -= 100.0
 
                     discount_intent = Discount(
                         event_id=event_id,

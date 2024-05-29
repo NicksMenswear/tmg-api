@@ -84,7 +84,7 @@ class WebhookService:
                 logger.error(f"No shopify variants founds for look {look.id}. Can't create discount code")
                 return self.__error(f"No shopify variants founds for look {look.id}. Can't create discount code")
 
-            code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{discount.amount}-OFF-{random.randint(100000, 9999999)}"
+            code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
             discount_response = self.shopify_service.create_discount_code(
                 code,

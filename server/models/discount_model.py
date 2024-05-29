@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, PositiveFloat
 
 from server.database.models import DiscountType
 
@@ -12,7 +12,7 @@ class CreateDiscountIntent(BaseModel):
 
 
 class CreateDiscountIntentAmount(CreateDiscountIntent):
-    amount: PositiveInt
+    amount: PositiveFloat
 
 
 class CreateDiscountIntentPayFull(CreateDiscountIntent):
@@ -22,12 +22,12 @@ class CreateDiscountIntentPayFull(CreateDiscountIntent):
 class EventDiscountLookModel(BaseModel):
     id: UUID
     name: Optional[str] = None
-    price: Optional[int] = 0
+    price: Optional[float] = 0
 
 
 class EventDiscountCodeModel(BaseModel):
     code: str
-    amount: int
+    amount: float
     type: str
     used: bool
 
@@ -37,7 +37,7 @@ class EventDiscountModel(BaseModel):
     event_id: UUID
     first_name: str
     last_name: str
-    amount: int = 0
+    amount: float = 0
     look: Optional[EventDiscountLookModel] = None
     codes: List[EventDiscountCodeModel] = []
 
@@ -49,7 +49,7 @@ class DiscountModel(BaseModel):
     id: UUID
     event_id: UUID
     attendee_id: UUID
-    amount: Optional[int]
+    amount: Optional[float]
     type: DiscountType
     used: bool = False
     shopify_discount_code: Optional[str] = None

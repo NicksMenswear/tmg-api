@@ -38,7 +38,7 @@ def create_event_request(**create_event) -> CreateEventModel:
         event_at=create_event.get("event_at", (datetime.now() + timedelta(days=1)).isoformat()),
         user_id=create_event.get("user_id", uuid.uuid4()),
         is_active=create_event.get("is_active", True),
-        type=create_event.get("type", EventTypeModel.WEDDING),
+        type=create_event.get("type", EventTypeModel.OTHER),
     )
 
 

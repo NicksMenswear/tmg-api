@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from server import encoder
 from server.models.event_model import EventTypeModel
+from server.services.role import PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
 from server.test import BaseTestCase, fixtures
 
 
@@ -68,6 +69,10 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        unique_roles = set([role.name for role in roles])
+        self.assertEqual(unique_roles, set(PREDEFINED_WEDDING_ROLES))
+
     def test_create_prom_event(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -94,6 +99,10 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.PROM))
 
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        unique_roles = set([role.name for role in roles])
+        self.assertEqual(unique_roles, set(PREDEFINED_PROM_ROLES))
+
     def test_create_event_of_type_other(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -119,6 +128,8 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        self.assertEqual(roles, [])
 
     def test_create_event_without_type(self):
         # given

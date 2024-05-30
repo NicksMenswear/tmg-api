@@ -8,6 +8,19 @@ from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
+PREDEFINED_WEDDING_ROLES = [
+    "Bride",
+    "Groom",
+    "Groomsman",
+    "Best Man",
+    "Usher",
+    "Father of the Groom",
+    "Father of the Bride",
+    "Officiant",
+]
+PREDEFINED_PROM_ROLES = ["Attendee", "Attendee Parent or Chaperone"]
+
+
 # noinspection PyMethodMayBeStatic
 class RoleService:
     def __role_by_id(self, role_id: uuid.UUID) -> Role:

@@ -4,12 +4,17 @@ from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look, EventType
-from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
+from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus, EventTypeModel
+from server.models.role_model import CreateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError
+from server.services.role import RoleService, PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
 
 
 # noinspection PyMethodMayBeStatic
 class EventService:
+    def __init__(self, role_service: RoleService):
+        self.role_service = role_service
+
     def get_event_by_id(self, event_id: uuid.UUID) -> EventModel:
         event = Event.query.filter_by(id=event_id).first()
 
@@ -102,10 +107,19 @@ class EventService:
                 is_active=create_event.is_active,
                 type=EventType(str(create_event.type)),
             )
-
             db.session.add(db_event)
             db.session.commit()
             db.session.refresh(db_event)
+
+            predefined_roles = []
+
+            if create_event.type == EventTypeModel.WEDDING:
+                predefined_roles = PREDEFINED_WEDDING_ROLES
+            elif create_event.type == EventTypeModel.PROM:
+                predefined_roles = PREDEFINED_PROM_ROLES
+
+            for role in predefined_roles:
+                self.role_service.create_role(CreateRoleModel(name=role, event_id=db_event.id))
         except Exception as e:
             raise ServiceError("Failed to create event.", e)
 

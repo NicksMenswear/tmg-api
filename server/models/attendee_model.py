@@ -9,11 +9,11 @@ from server.models.user_model import UserRequestModel
 class CreateAttendeeModel(UserRequestModel):
     email: EmailStr
     event_id: UUID
-    style: int = 0
-    invite: int = 0
-    pay: int = 0
-    size: int = 0
-    ship: int = 0
+    style: bool = False
+    invite: bool = False
+    pay: bool = False
+    size: bool = False
+    ship: bool = False
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     is_active: bool = True
@@ -25,11 +25,11 @@ class AttendeeModel(BaseModel):
     event_id: UUID
     role_id: Optional[UUID]
     look_id: Optional[UUID]
-    style: int = 0
-    invite: int = 0
-    pay: int = 0
-    size: int = 0
-    ship: int = 0
+    style: bool
+    invite: bool
+    pay: bool
+    size: bool
+    ship: bool
     is_active: bool
 
     class Config:
@@ -68,11 +68,11 @@ class EnrichedAttendeeModel(AttendeeModel):
 
 
 class UpdateAttendeeModel(BaseModel):
-    style: int = 0
-    invite: int = 0
-    pay: int = 0
-    size: int = 0
-    ship: int = 0
+    style: bool = False
+    invite: bool = False
+    pay: bool = False
+    size: bool = False
+    ship: bool = False
     is_active: bool = True
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

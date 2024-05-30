@@ -1149,7 +1149,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Attendee'
+              $ref: '#/components/schemas/CreateAttendee'
         required: true
         x-body-name: create_attendee
       responses:
@@ -1671,7 +1671,7 @@ components:
         - name
       title: Role
       type: object
-    Attendee:
+    CreateAttendee:
       properties:
         email:
           title: email
@@ -1687,19 +1687,24 @@ components:
           type: string
         style:
           title: style
-          type: integer
+          type: boolean
+          default: false
         invite:
           title: invite
-          type: integer
+          type: boolean
+          default: false
         pay:
           title: pay
-          type: integer
+          type: boolean
+          default: false
         size:
           title: size
-          type: integer
+          type: boolean
+          default: false
         ship:
           title: ship
-          type: integer
+          type: boolean
+          default: false
         role_id:
           title: role
           type: string
@@ -1713,33 +1718,25 @@ components:
         - email
         - first_name
         - last_name
-      title: Attendee
+      title: CreateAttendee
       type: object
-    ShopifyWebhook:
-        title: ShopifyWebhook
-        type: object
     UpdateAttendee:
       properties:
         style:
-          format: int64
           title: style
-          type: integer
+          type: boolean
         invite:
-          format: int64
           title: invite
-          type: integer
+          type: boolean
         pay:
-          format: int64
           title: pay
-          type: integer
+          type: boolean
         size:
-          format: int64
           title: size
-          type: integer
+          type: boolean
         ship:
-          format: int64
           title: ship
-          type: integer
+          type: boolean
         role_id:
           title: role
           $ref: '#/components/schemas/uuid'
@@ -1756,7 +1753,55 @@ components:
         - ship
       title: UpdateAttendee
       type: object
-
+    Attendee:
+      properties:
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
+        event_id:
+          title: event_id
+          $ref: '#/components/schemas/uuid'
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        style:
+          title: style
+          type: boolean
+          default: false
+        invite:
+          title: invite
+          type: boolean
+          default: false
+        pay:
+          title: pay
+          type: boolean
+          default: false
+        size:
+          title: size
+          type: boolean
+          default: false
+        ship:
+          title: ship
+          type: boolean
+          default: false
+        role_id:
+          title: role
+          type: string
+          nullable: true
+        look_id:
+          title: look_id
+          $ref: '#/components/schemas/uuid'
+          nullable: true
+      required:
+        - event_id
+        - email
+        - first_name
+        - last_name
+      title: Attendee
+      type: object
     CreateDiscountIntent:
       properties:
         attendee_id:
@@ -1774,7 +1819,6 @@ components:
           default: false
       required:
         - attendee_id
-
     Discount:
       properties:
         id:
@@ -1796,7 +1840,6 @@ components:
         code:
           title: code
           type: string
-
     ApplyDiscountsRequest:
       properties:
         event_id:
@@ -1809,6 +1852,10 @@ components:
       required:
         - event_id
         - shopify_cart_id
+
+    ShopifyWebhook:
+        title: ShopifyWebhook
+        type: object
 
     AuditLog:
       example:

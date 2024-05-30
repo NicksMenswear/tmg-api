@@ -222,11 +222,11 @@ class TestAttendees(BaseTestCase):
             fixtures.create_attendee_request(
                 event_id=event.id,
                 email=user.email,
-                style=1,
-                invite=2,
-                pay=3,
-                size=4,
-                ship=5,
+                style=False,
+                invite=True,
+                pay=False,
+                size=True,
+                ship=False,
                 role_id=role1.id,
                 look_id=look1.id,
             )
@@ -234,11 +234,11 @@ class TestAttendees(BaseTestCase):
 
         # when
         update_attendee = fixtures.update_attendee_request(
-            style=attendee.style + 10,
-            invite=attendee.invite + 10,
-            pay=attendee.pay + 10,
-            size=attendee.size + 10,
-            ship=attendee.ship + 10,
+            style=not attendee.style,
+            invite=not attendee.invite,
+            pay=not attendee.pay,
+            size=not attendee.size,
+            ship=not attendee.ship,
             role_id=role2.id,
             look_id=look2.id,
         )
@@ -277,11 +277,11 @@ class TestAttendees(BaseTestCase):
     def test_update_attendee_non_existing(self):
         # when
         update_attendee = fixtures.update_attendee_request(
-            style=1,
-            invite=2,
-            pay=3,
-            size=4,
-            ship=5,
+            style=False,
+            invite=True,
+            pay=False,
+            size=False,
+            ship=False,
             role_id=None,
         )
 

@@ -34,6 +34,16 @@ class RoleService:
     def get_role_by_id(self, role_id: uuid.UUID) -> RoleModel:
         return RoleModel.from_orm(self.__role_by_id(role_id))
 
+    def create_roles(self, create_roles: List[CreateRoleModel]) -> List[RoleModel]:
+        roles = [Role(name=role.name, event_id=role.event_id, is_active=role.is_active) for role in create_roles]
+
+        for role in roles:
+            db.session.add(role)
+
+        db.session.flush()
+
+        return [RoleModel.from_orm(role) for role in roles]
+
     def create_role(self, create_role: CreateRoleModel) -> RoleModel:
         db_event = Event.query.filter(Event.id == create_role.event_id).first()
 
@@ -48,15 +58,11 @@ class RoleService:
             raise DuplicateError("Role already exists.")
 
         try:
-            db_role = Role(name=create_role.name, event_id=create_role.event_id, is_active=create_role.is_active)
-
-            db.session.add(db_role)
-            db.session.commit()
-            db.session.refresh(db_role)
+            role = self.create_roles([create_role])[0]
         except Exception as e:
             raise ServiceError("Failed to create role.", e)
 
-        return RoleModel.from_orm(db_role)
+        return role
 
     def update_role(self, role_id: uuid.UUID, update_role: UpdateRoleModel) -> RoleModel:
         db_role = self.__role_by_id(role_id)

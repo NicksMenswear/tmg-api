@@ -108,8 +108,7 @@ class EventService:
                 type=EventType(str(create_event.type)),
             )
             db.session.add(db_event)
-            db.session.commit()
-            db.session.refresh(db_event)
+            db.session.flush()
 
             predefined_roles = []
 
@@ -118,9 +117,12 @@ class EventService:
             elif create_event.type == EventTypeModel.PROM:
                 predefined_roles = PREDEFINED_PROM_ROLES
 
-            for role in predefined_roles:
-                self.role_service.create_role(CreateRoleModel(name=role, event_id=db_event.id))
+            roles = [CreateRoleModel(name=role, event_id=db_event.id) for role in predefined_roles]
+
+            self.role_service.create_roles(roles)
+            db.session.commit()
         except Exception as e:
+            db.session.rollback()
             raise ServiceError("Failed to create event.", e)
 
         return EventModel.from_orm(db_event)

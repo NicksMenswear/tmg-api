@@ -114,6 +114,13 @@ class RMAItemReason(enum.Enum):
     WRONG_ITEM = "Wrong Item"
 
 
+@enum.unique
+class EventType(enum.Enum):
+    WEDDING = "wedding"
+    PROM = "prom"
+    OTHER = "other"
+
+
 class Event(Base):
     __tablename__ = "events"
 
@@ -129,6 +136,7 @@ class Event(Base):
     event_at = Column(DateTime, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
+    type = Column(Enum(EventType), default=EventType.WEDDING, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -164,6 +172,7 @@ class Role(Base):
     )
     name = Column(String, index=True, nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

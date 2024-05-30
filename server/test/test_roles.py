@@ -68,6 +68,27 @@ class TestRoles(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
+    def test_create_role_with_same_name_as_existing_but_not_active(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
+
+        # when
+        create_role = fixtures.create_role_request(event_id=event.id, name=role.name)
+
+        response = self.client.open(
+            "/roles",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=create_role.json(),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
     def test_get_role_by_id(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -191,14 +212,10 @@ class TestRoles(BaseTestCase):
 
         # then
         self.assertStatus(response, 204)
-        role_in_db = None
-        try:
-            role_in_db = self.role_service.get_role_by_id(role.id)
-        except:
-            pass
-        self.assertIsNone(role_in_db)
+        role_in_db = self.role_service.get_role_by_id(role.id)
+        self.assertEqual(role_in_db.is_active, False)
 
-    def test_create_role_wiht_name_too_short(self):
+    def test_create_role_with_name_too_short(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))

@@ -10,7 +10,7 @@ from server.models.discount_model import (
     CreateDiscountIntentAmount,
     CreateDiscountIntentPayFull,
 )
-from server.models.event_model import CreateEventModel, UpdateEventModel
+from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
@@ -32,19 +32,20 @@ def update_user_request(**user_data) -> UpdateUserModel:
     )
 
 
-def create_event_request(**event_data) -> CreateEventModel:
+def create_event_request(**create_event) -> CreateEventModel:
     return CreateEventModel(
-        name=event_data.get("name", str(uuid.uuid4())),
-        event_at=event_data.get("event_at", (datetime.now() + timedelta(days=1)).isoformat()),
-        user_id=event_data.get("user_id", uuid.uuid4()),
-        is_active=event_data.get("is_active", True),
+        name=create_event.get("name", str(uuid.uuid4())),
+        event_at=create_event.get("event_at", (datetime.now() + timedelta(days=1)).isoformat()),
+        user_id=create_event.get("user_id", uuid.uuid4()),
+        is_active=create_event.get("is_active", True),
+        type=create_event.get("type", EventTypeModel.OTHER),
     )
 
 
-def update_event_request(**event_data) -> UpdateEventModel:
+def update_event_request(**update_event) -> UpdateEventModel:
     return UpdateEventModel(
-        name=event_data.get("name", str(uuid.uuid4())),
-        event_at=event_data.get("event_at", datetime.now().isoformat()),
+        name=update_event.get("name", str(uuid.uuid4())),
+        event_at=update_event.get("event_at", datetime.now().isoformat()),
     )
 
 
@@ -67,6 +68,7 @@ def create_role_request(**role_data):
     return CreateRoleModel(
         name=role_data.get("name", str(uuid.uuid4())),
         event_id=role_data.get("event_id", uuid.uuid4()),
+        is_active=role_data.get("is_active", True),
     )
 
 

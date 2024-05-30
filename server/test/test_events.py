@@ -5,6 +5,8 @@ import uuid
 from datetime import datetime, timedelta
 
 from server import encoder
+from server.models.event_model import EventTypeModel
+from server.services.role import PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
 from server.test import BaseTestCase, fixtures
 
 
@@ -41,12 +43,12 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
-    def test_create_event(self):
+    def test_create_wedding_event(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
-        event_request = fixtures.create_event_request(user_id=user.id)
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.WEDDING)
 
         response = self.client.open(
             "/events",
@@ -59,10 +61,104 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("name"), event_request.name)
-        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
+
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        unique_roles = set([role.name for role in roles])
+        self.assertEqual(unique_roles, set(PREDEFINED_WEDDING_ROLES))
+
+    def test_create_prom_event(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.PROM)
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=event_request.json(),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.PROM))
+
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        unique_roles = set([role.name for role in roles])
+        self.assertEqual(unique_roles, set(PREDEFINED_PROM_ROLES))
+
+    def test_create_event_of_type_other(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.OTHER)
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=event_request.json(),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
+        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        self.assertEqual(roles, [])
+
+    def test_create_event_without_type(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id)
+
+        data = event_request.model_dump()
+        del data["type"]
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(data, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
     def test_get_event_non_existing(self):
         # when
@@ -255,6 +351,29 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_role1.get("name"), role1.name)
         self.assertEqual(response_role2.get("id"), str(role2.id))
         self.assertEqual(response_role2.get("name"), role2.name)
+
+    def test_get_roles_but_only_one_active(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/roles",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        response_role = response.json[0]
+        self.assertEqual(response_role.get("id"), str(role1.id))
+        self.assertEqual(response_role.get("name"), role1.name)
 
     def test_get_roles_by_non_existing_event_id(self):
         # when

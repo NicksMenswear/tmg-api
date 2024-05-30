@@ -1741,7 +1741,7 @@ components:
           format: float
           title: amount
           type: number
-          default: 0
+          default: 0.0
         pay_full:
           title: pay_full
           type: boolean

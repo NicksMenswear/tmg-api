@@ -126,7 +126,7 @@ class Event(Base):
         nullable=False,
     )
     name = Column(String, nullable=False)
-    event_at = Column(DateTime)
+    event_at = Column(DateTime, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -554,8 +554,8 @@ class CartProduct(Base):
 
 @enum.unique
 class DiscountType(enum.Enum):
-    GROOM_GIFT = "groom_gift"
-    GROOM_FULL_PAY = "groom_full_pay"
+    GIFT = "gift"
+    FULL_PAY = "full_pay"
     PARTY_OF_FOUR = "party_of_four"
 
     def __str__(self):
@@ -573,12 +573,12 @@ class Discount(Base):
     )
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
     attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"), nullable=False)
-    amount = Column(Integer, nullable=False)
+    amount = Column(Float, nullable=False)
     type = Column(Enum(DiscountType), nullable=False)
     used = Column(Boolean, default=False, nullable=False)
     shopify_discount_code = Column(String)
     shopify_discount_code_id = Column(BigInteger)
     shopify_virtual_product_id = Column(BigInteger)
     shopify_virtual_product_variant_id = Column(BigInteger)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)

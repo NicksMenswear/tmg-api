@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from server import encoder
+from server.models.event_model import EventTypeModel
 from server.test import BaseTestCase, fixtures
 
 
@@ -41,12 +42,12 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
-    def test_create_event(self):
+    def test_create_wedding_event(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
-        event_request = fixtures.create_event_request(user_id=user.id)
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.WEDDING)
 
         response = self.client.open(
             "/events",
@@ -59,10 +60,94 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertIsNotNone(response.json.get("id"))
-        self.assertEqual(response.json.get("name"), event_request.name)
-        self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
+
+    def test_create_prom_event(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.PROM)
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=event_request.json(),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.PROM))
+
+    def test_create_event_of_type_other(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id, type=EventTypeModel.OTHER)
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=event_request.json(),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
+
+    def test_create_event_without_type(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id)
+
+        data = event_request.model_dump()
+        del data["type"]
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(data, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
+        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
     def test_get_event_non_existing(self):
         # when
@@ -261,7 +346,7 @@ class TestEvents(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
-        role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
+        self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
 
         # when
         response = self.client.open(

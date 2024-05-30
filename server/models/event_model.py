@@ -13,6 +13,15 @@ class EventUserStatus(str, Enum):
         return self.value
 
 
+class EventTypeModel(str, Enum):
+    WEDDING = "wedding"
+    PROM = "prom"
+    OTHER = "other"
+
+    def __str__(self):
+        return self.value
+
+
 class EventRequestModel(BaseModel):
     name: str
     event_at: datetime
@@ -36,6 +45,7 @@ class EventRequestModel(BaseModel):
 class CreateEventModel(EventRequestModel):
     user_id: UUID
     is_active: bool = True
+    type: EventTypeModel = EventTypeModel.WEDDING
 
 
 class EventModel(BaseModel):
@@ -45,12 +55,13 @@ class EventModel(BaseModel):
     event_at: datetime
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
+    type: EventTypeModel
 
     class Config:
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "user_id", "name", "event_at", "status"})
+        return self.dict(include={"id", "user_id", "name", "event_at", "status", "type"})
 
 
 class UpdateEventModel(EventRequestModel):

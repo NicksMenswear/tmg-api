@@ -1574,7 +1574,6 @@ components:
         - user_id
         - name
         - event_at
-        - type
       title: CreateEvent
       type: object
     Event:

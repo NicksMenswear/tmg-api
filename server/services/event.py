@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look
+from server.database.models import Event, User, Attendee, Look, EventType
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.services import ServiceError, NotFoundError, DuplicateError
 
@@ -100,6 +100,7 @@ class EventService:
                 event_at=create_event.event_at,
                 user_id=user.id,
                 is_active=create_event.is_active,
+                type=EventType(str(create_event.type)),
             )
 
             db.session.add(db_event)

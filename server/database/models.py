@@ -514,53 +514,6 @@ class RMAItem(Base):
     rma = relationship("RMA", backref="rma_items")
 
 
-class Cart(Base):
-    __tablename__ = "carts"
-
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("uuid_generate_v4()"),
-        nullable=False,
-    )
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
-    attendee_id = Column(UUID(as_uuid=True), ForeignKey("attendees.id"))
-    cart_products = relationship("CartProduct", back_populates="cart", lazy="dynamic")
-
-    def to_dict(self):
-        return {"id": self.id, "user_id": self.user_id, "event_id": self.event_id, "attendee_id": self.attendee_id}
-
-
-class CartProduct(Base):
-    __tablename__ = "cartproducts"
-
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("uuid_generate_v4()"),
-        nullable=False,
-    )
-    cart_id = Column(UUID(as_uuid=True), ForeignKey("carts.id"), nullable=False)
-    product_id = Column(BigInteger)
-    variation_id = Column(BigInteger)
-    category = Column(String)
-    quantity = Column(Integer)
-    cart = relationship("Cart", back_populates="cart_products")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "cart_id": self.cart_id,
-            "product_id": self.product_id,
-            "variation_id": self.variation_id,
-            "category": self.category,
-            "quantity": self.quantity,
-        }
-
-
 @enum.unique
 class DiscountType(enum.Enum):
     GIFT = "gift"

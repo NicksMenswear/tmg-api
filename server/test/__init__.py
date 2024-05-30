@@ -11,8 +11,6 @@ from server.database.models import (
     Role,
     Attendee,
     OrderItem,
-    Cart,
-    CartProduct,
     Discount,
 )
 from server.flask_app import FlaskApp
@@ -31,8 +29,6 @@ class BaseTestCase(TestCase):
         super(BaseTestCase, self).setUp()
 
         Discount.query.delete()
-        CartProduct.query.delete()
-        Cart.query.delete()
         Attendee.query.delete()
         Role.query.delete()
         Look.query.delete()

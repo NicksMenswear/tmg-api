@@ -164,6 +164,7 @@ class Role(Base):
     )
     name = Column(String, index=True, nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

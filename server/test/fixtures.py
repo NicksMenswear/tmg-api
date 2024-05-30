@@ -67,6 +67,7 @@ def create_role_request(**role_data):
     return CreateRoleModel(
         name=role_data.get("name", str(uuid.uuid4())),
         event_id=role_data.get("event_id", uuid.uuid4()),
+        is_active=role_data.get("is_active", True),
     )
 
 

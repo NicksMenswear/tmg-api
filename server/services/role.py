@@ -27,13 +27,15 @@ class RoleService:
         if not db_event:
             raise NotFoundError("Event not found.")
 
-        existing_role = Role.query.filter(Role.name == create_role.name, Role.event_id == create_role.event_id).first()
+        existing_role = Role.query.filter(
+            Role.name == create_role.name, Role.event_id == create_role.event_id, Role.is_active
+        ).first()
 
         if existing_role:
             raise DuplicateError("Role already exists.")
 
         try:
-            db_role = Role(name=create_role.name, event_id=create_role.event_id)
+            db_role = Role(name=create_role.name, event_id=create_role.event_id, is_active=create_role.is_active)
 
             db.session.add(db_role)
             db.session.commit()
@@ -68,7 +70,9 @@ class RoleService:
         role = self.__role_by_id(role_id)
 
         try:
-            db.session.delete(role)
+            role.is_active = False
+            role.updated_at = datetime.now()
+
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to delete role.", e)
@@ -79,6 +83,6 @@ class RoleService:
         if not event:
             raise NotFoundError("Event not found.")
 
-        roles = Role.query.filter(Role.event_id == event_id).order_by(Role.created_at.asc()).all()
+        roles = Role.query.filter(Role.event_id == event_id, Role.is_active).order_by(Role.created_at.asc()).all()
 
         return [RoleModel.from_orm(role) for role in roles]

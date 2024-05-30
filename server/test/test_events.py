@@ -256,6 +256,29 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_role2.get("id"), str(role2.id))
         self.assertEqual(response_role2.get("name"), role2.name)
 
+    def test_get_roles_but_only_one_active(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/roles",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        response_role = response.json[0]
+        self.assertEqual(response_role.get("id"), str(role1.id))
+        self.assertEqual(response_role.get("name"), role1.name)
+
     def test_get_roles_by_non_existing_event_id(self):
         # when
         response = self.client.open(

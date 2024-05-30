@@ -17,12 +17,14 @@ class RoleRequestModel(BaseModel):
 
 class CreateRoleModel(RoleRequestModel):
     event_id: UUID
+    is_active: bool = True
 
 
 class RoleModel(BaseModel):
     id: UUID
-    name: str
     event_id: UUID
+    name: str
+    is_active: bool
 
     class Config:
         from_attributes = True
@@ -32,4 +34,4 @@ class RoleModel(BaseModel):
 
 
 class UpdateRoleModel(RoleRequestModel):
-    pass
+    is_active: bool = True

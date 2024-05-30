@@ -34,4 +34,4 @@ class RoleModel(BaseModel):
 
 
 class UpdateRoleModel(RoleRequestModel):
-    is_active: bool = True
+    pass

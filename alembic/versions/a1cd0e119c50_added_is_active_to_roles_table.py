@@ -1,4 +1,4 @@
-"""roles
+"""added is active to roles table
 
 Revision ID: a1cd0e119c50
 Revises: 356c3889f8f9

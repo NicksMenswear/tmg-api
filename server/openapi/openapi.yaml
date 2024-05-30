@@ -332,7 +332,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Event"
+              $ref: "#/components/schemas/CreateEvent"
         required: true
         x-body-name: create_event
       responses:
@@ -1549,6 +1549,33 @@ components:
           title: account_status
           type: boolean
       title: UpdateUser
+      type: object
+    CreateEvent:
+      properties:
+        name:
+          type: string
+          title: name
+        event_at:
+          type: string
+          title: event_at
+          format: date-time
+        type:
+          type: string
+          title: type
+          enum:
+            - wedding
+            - prom
+            - other
+          default: wedding
+        user_id:
+          title: user_id
+          $ref: '#/components/schemas/uuid'
+      required:
+        - user_id
+        - name
+        - event_at
+        - type
+      title: CreateEvent
       type: object
     Event:
       properties:

@@ -15,6 +15,9 @@ def get_event_by_id(event_id, enriched=False):
 
     event = event_service.get_event_by_id(uuid.UUID(event_id), enriched=enriched)
 
+    if enriched:
+        return event.to_enriched_response(), 200
+
     return event.to_response(), 200
 
 

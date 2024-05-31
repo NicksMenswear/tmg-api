@@ -169,13 +169,9 @@ class EventService:
         if enriched:
             event_ids = [event.id for event in models]
             attendees = self.attendee_service.get_attendees_for_events(event_ids)
-            looks = self.look_service.get_looks_by_user_id(user_id)
-            roles = self.role_service.get_roles_for_events(event_ids)
 
             for event_model in models:
                 event_model.attendees = attendees.get(event_model.id, [])
-                event_model.looks = looks
-                event_model.roles = roles.get(event_model.id, [])
 
         return models
 

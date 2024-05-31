@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+from server.models.look_model import LookModel
+from server.models.role_model import RoleModel
 from server.models.user_model import UserRequestModel
 
 
@@ -58,11 +60,15 @@ class AttendeeUserModel(BaseModel):
 
 class EnrichedAttendeeModel(AttendeeModel):
     user: AttendeeUserModel
+    role: Optional[RoleModel] = None
+    look: Optional[LookModel] = None
 
     def to_response(self):
         attendee = super().to_response()
         user = self.user.to_response()
         attendee["user"] = user
+        attendee["role"] = self.role.to_response() if self.role else None
+        attendee["look"] = self.look.to_response() if self.look else None
 
         return attendee
 

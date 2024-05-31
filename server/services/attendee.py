@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User
+from server.database.models import Attendee, Event, User, Role, Look
 from server.models.attendee_model import (
     AttendeeModel,
     CreateAttendeeModel,
@@ -11,6 +11,8 @@ from server.models.attendee_model import (
     EnrichedAttendeeModel,
     AttendeeUserModel,
 )
+from server.models.look_model import LookModel
+from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.shopify import AbstractShopifyService
@@ -33,8 +35,10 @@ class AttendeeService:
 
     def get_attendees_for_events(self, event_ids: List[uuid.UUID]) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         db_attendees = (
-            db.session.query(Attendee, User)
+            db.session.query(Attendee, User, Role, Look)
             .join(User, User.id == Attendee.user_id)
+            .outerjoin(Role, Attendee.role_id == Role.id)
+            .outerjoin(Look, Attendee.look_id == Look.id)
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
         ).all()
@@ -44,7 +48,7 @@ class AttendeeService:
 
         attendees = dict()
 
-        for attendee, user in db_attendees:
+        for attendee, user, role, look in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
@@ -60,6 +64,8 @@ class AttendeeService:
                     ship=attendee.ship,
                     role_id=attendee.role_id,
                     look_id=attendee.look_id,
+                    role=RoleModel.from_orm(role) if role else None,
+                    look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     user=AttendeeUserModel(
                         first_name=user.first_name,

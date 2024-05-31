@@ -1,8 +1,13 @@
 from enum import Enum
 from datetime import datetime
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel, field_validator
+
+from server.models.attendee_model import AttendeeModel
+from server.models.look_model import LookModel
+from server.models.role_model import RoleModel
 
 
 class EventUserStatus(str, Enum):
@@ -56,12 +61,23 @@ class EventModel(BaseModel):
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
     type: EventTypeModel
+    attendees: Optional[List[AttendeeModel]] = []
+    looks: Optional[List[LookModel]] = []
+    roles: Optional[List[RoleModel]] = []
 
     class Config:
         from_attributes = True
 
     def to_response(self):
         return self.dict(include={"id", "user_id", "name", "event_at", "status", "type"})
+
+    def to_enriched_response(self):
+        response = self.dict(include={"id", "user_id", "name", "event_at", "status", "type"})
+        response["attendees"] = [attendee.to_response() for attendee in self.attendees]
+        response["looks"] = [look.to_response() for look in self.looks]
+        response["roles"] = [role.to_response() for role in self.roles]
+
+        return response
 
 
 class UpdateEventModel(EventRequestModel):

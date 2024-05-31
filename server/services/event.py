@@ -7,76 +7,36 @@ from server.database.models import Event, User, Attendee, Look, EventType
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus, EventTypeModel
 from server.models.role_model import CreateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError
+from server.services.attendee import AttendeeService
+from server.services.look import LookService
 from server.services.role import RoleService, PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
 
 
 # noinspection PyMethodMayBeStatic
 class EventService:
-    def __init__(self, role_service: RoleService):
+    def __init__(self, attendee_service: AttendeeService, role_service: RoleService, look_service: LookService):
         self.role_service = role_service
+        self.look_service = look_service
+        self.attendee_service = attendee_service
 
-    def get_event_by_id(self, event_id: uuid.UUID) -> EventModel:
+    def get_event_by_id(self, event_id: uuid.UUID, enriched=False) -> EventModel:
         event = Event.query.filter_by(id=event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
-        return EventModel.from_orm(event)
+        event_model = EventModel.from_orm(event)
 
-    # def get_enriched_event_by_id(self, event_id):
-    #     event = Event.query.filter_by(id=event_id).first()
-    #
-    #     if not event:
-    #         raise NotFoundError("Event not found.")
-    #
-    #     event = event.to_dict()
-    #
-    #     event["attendees"] = []
-    #
-    #     results = (
-    #         db.session.query(Attendee, User, Look, Role)
-    #         .join(Event, Event.id == Attendee.event_id)
-    #         .join(User, User.id == Attendee.user_id)
-    #         .outerjoin(Look, Look.id == Attendee.look_id)
-    #         .outerjoin(Role, Role.id == Attendee.role)
-    #         .filter(Event.id == event_id, Attendee.is_active)
-    #         .all()
-    #     )
-    #
-    #     for attendee, user, look, role in results:
-    #         attendee = {
-    #             "id": attendee.id,
-    #             "invite": attendee.invite,
-    #             "pay": attendee.pay,
-    #             "ship": attendee.ship,
-    #             "size": attendee.size,
-    #             "style": attendee.style,
-    #             "user": {
-    #                 "id": user.id,
-    #                 "first_name": user.first_name,
-    #                 "last_name": user.last_name,
-    #                 "email": user.email,
-    #             },
-    #             "look": None,
-    #             "role": None,
-    #         }
-    #
-    #         if look:
-    #             attendee["look"] = {
-    #                 "id": look.id,
-    #                 "name": look.name,
-    #                 "product_specs": look.product_specs,
-    #             }
-    #
-    #         if role:
-    #             attendee["role"] = {
-    #                 "id": role.id,
-    #                 "name": role.name,
-    #             }
-    #
-    #         event["attendees"].append(attendee)
-    #
-    #     return event
+        if enriched:
+            attendees = self.attendee_service.get_attendees_for_events([event_model.id])
+            looks = self.look_service.get_looks_by_user_id(event_model.user_id)
+            roles = self.role_service.get_roles_for_events([event_model.id])
+
+            event_model.attendees = attendees.get(event_model.id, [])
+            event_model.looks = looks
+            event_model.roles = roles.get(event_model.id, [])
+
+        return event_model
 
     def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
         db_event = Event.query.filter_by(id=event_id, is_active=True).first()
@@ -170,11 +130,29 @@ class EventService:
         except Exception as e:
             raise ServiceError("Failed to deactivate event.", e)
 
-    def get_user_owned_events(self, user_id: uuid.UUID) -> List[EventModel]:
-        return [EventModel.from_orm(event) for event in Event.query.filter_by(user_id=user_id, is_active=True).all()]
+    def get_user_owned_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
+        events = Event.query.filter_by(user_id=user_id, is_active=True).all()
 
-    def get_user_invited_events(self, user_id: uuid.UUID) -> List[EventModel]:
-        return [
+        if not events:
+            return []
+
+        models = [EventModel.from_orm(event) for event in events]
+
+        if enriched:
+            event_ids = [event.id for event in models]
+            attendees = self.attendee_service.get_attendees_for_events(event_ids)
+            looks = self.look_service.get_looks_by_user_id(user_id)
+            roles = self.role_service.get_roles_for_events(event_ids)
+
+            for event_model in models:
+                event_model.attendees = attendees.get(event_model.id, [])
+                event_model.looks = looks
+                event_model.roles = roles.get(event_model.id, [])
+
+        return models
+
+    def get_user_invited_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
+        events = [
             EventModel.from_orm(event)
             for event in (
                 Event.query.join(Attendee, Event.id == Attendee.event_id)
@@ -183,7 +161,23 @@ class EventService:
             )
         ]
 
-    def get_user_events(self, user_id: uuid.UUID, status: EventUserStatus = None) -> List[EventModel]:
+        if not events:
+            return []
+
+        models = [EventModel.from_orm(event) for event in events]
+
+        if enriched:
+            event_ids = [event.id for event in models]
+            attendees = self.attendee_service.get_attendees_for_events(event_ids)
+
+            for event_model in models:
+                event_model.attendees = attendees.get(event_model.id, [])
+
+        return models
+
+    def get_user_events(
+        self, user_id: uuid.UUID, status: EventUserStatus = None, enriched: bool = False
+    ) -> List[EventModel]:
         user = User.query.filter_by(id=user_id).first()
 
         if not user:
@@ -193,10 +187,10 @@ class EventService:
         invited_events = []
 
         if not status or status == EventUserStatus.OWNER:
-            owned_events = self.get_user_owned_events(user_id)
+            owned_events = self.get_user_owned_events(user_id, enriched)
 
         if not status or status == EventUserStatus.ATTENDEE:
-            invited_events = self.get_user_invited_events(user_id)
+            invited_events = self.get_user_invited_events(user_id, enriched)
 
         combined_events = owned_events + invited_events
 

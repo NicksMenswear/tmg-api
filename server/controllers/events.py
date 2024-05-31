@@ -10,10 +10,13 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def get_event_by_id(event_id):
+def get_event_by_id(event_id, enriched=False):
     event_service = FlaskApp.current().event_service
 
-    event = event_service.get_event_by_id(uuid.UUID(event_id))
+    event = event_service.get_event_by_id(uuid.UUID(event_id), enriched=enriched)
+
+    if enriched:
+        return event.to_enriched_response(), 200
 
     return event.to_response(), 200
 

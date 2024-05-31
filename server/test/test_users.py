@@ -4,6 +4,7 @@ import json
 import uuid
 
 from server import encoder
+from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
 from server.test import BaseTestCase, fixtures, utils
 
@@ -152,6 +153,112 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response.json[0]["name"], str(event1.name))
         self.assertEqual(response.json[1]["id"], str(event2.id))
         self.assertEqual(response.json[1]["name"], str(event2.name))
+
+    def test_get_all_events_for_user_owned_and_enriched(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
+        role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user1.email)
+        )
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user2.email, is_active=False)
+        )
+
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        event3 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
+
+        # when
+        response = self.client.open(
+            f"/users/{user.id}/events",
+            query_string={**self.hmac_query_params, "enriched": True},
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+
+        response_event1 = response.json[0]
+        self.assertEqual(response_event1["id"], str(event1.id))
+        self.assertEqual(response_event1["status"], str(EventUserStatus.OWNER))
+        self.assertEqual(len(response_event1["roles"]), 1)
+        self.assertEqual(response_event1["roles"][0]["id"], str(role11.id))
+        self.assertEqual(len(response_event1["looks"]), 1)
+        self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
+        self.assertEqual(len(response_event1["attendees"]), 1)
+        self.assertEqual(response_event1["attendees"][0]["id"], str(attendee1.id))
+        self.assertEqual(response_event1["attendees"][0]["user"]["email"], str(attendee_user1.email))
+
+        response_event2 = response.json[1]
+        self.assertEqual(response_event2["id"], str(event2.id))
+        self.assertEqual(response_event2["status"], str(EventUserStatus.OWNER))
+        self.assertEqual(len(response_event2["roles"]), 0)
+        self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
+        self.assertEqual(len(response_event1["attendees"]), 1)
+        self.assertEqual(len(response_event2["attendees"]), 0)
+
+    def test_get_all_events_for_user_invited_and_enriched(self):
+        # given
+        user1 = self.user_service.create_user(fixtures.create_user_request())
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
+        user2 = self.user_service.create_user(fixtures.create_user_request())
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
+        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
+        role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
+        role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
+        role21 = self.role_service.create_role(fixtures.create_role_request(event_id=event2.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event1.id, email=attendee_user.email, look_id=look1.id, role_id=role11.id
+            )
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/users/{attendee_user.id}/events",
+            query_string={**self.hmac_query_params, "enriched": True},
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+
+        response_event1 = response.json[0]
+        self.assertEqual(response_event1["id"], str(event1.id))
+        self.assertEqual(len(response_event1["attendees"]), 1)
+        response_attendee1 = response_event1["attendees"][0]
+        self.assertEqual(response_attendee1["id"], str(attendee1.id))
+        self.assertEqual(response_attendee1["look"]["id"], str(look1.id))
+        self.assertEqual(response_attendee1["role"]["id"], str(role11.id))
+        self.assertEqual(response_attendee1["user"]["email"], str(attendee_user.email))
+
+        response_event2 = response.json[1]
+        self.assertEqual(response_event2["id"], str(event2.id))
+        self.assertEqual(len(response_event2["attendees"]), 1)
+        response_attendee2 = response_event2["attendees"][0]
+        self.assertEqual(response_attendee2["id"], str(attendee2.id))
+        self.assertEqual(response_attendee2["look"]["id"], str(look2.id))
+        self.assertEqual(response_attendee2["role"]["id"], str(role21.id))
+        self.assertEqual(response_attendee2["user"]["email"], str(attendee_user.email))
 
     def test_get_invites_for_non_existing_user(self):
         # when

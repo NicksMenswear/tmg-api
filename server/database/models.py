@@ -155,6 +155,7 @@ class Look(Base):
     name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     product_specs = Column(JSON)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -279,7 +280,6 @@ class Address(Base):
         nullable=False,
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    # user_id = Column(Integer, ForeignKey('users.id'))
     address_type = Column(String)  # e.g., 'shipping' or 'billing'
     address_line1 = Column(String)  # Primary address line (e.g., street address, P.O. box)
     address_line2 = Column(String)  # Secondary address line (e.g., apartment, suite number)

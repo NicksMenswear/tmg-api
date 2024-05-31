@@ -245,7 +245,7 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 204)
         look_in_db = Look.query.filter(Look.id == look.id).first()
-        self.assertIsNone(look_in_db)
+        self.assertFalse(look_in_db.is_active)
 
     def test_create_look_with_name_too_long(self):
         # given

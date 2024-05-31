@@ -18,6 +18,7 @@ class LookRequest(BaseModel):
 class CreateLookModel(LookRequest):
     user_id: UUID
     product_specs: dict
+    is_active: bool = True
 
 
 class LookModel(BaseModel):
@@ -25,6 +26,7 @@ class LookModel(BaseModel):
     name: str
     user_id: UUID
     product_specs: dict
+    is_active: bool
 
     class Config:
         from_attributes = True

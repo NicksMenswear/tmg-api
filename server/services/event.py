@@ -19,13 +19,24 @@ class EventService:
         self.look_service = look_service
         self.attendee_service = attendee_service
 
-    def get_event_by_id(self, event_id: uuid.UUID) -> EventModel:
+    def get_event_by_id(self, event_id: uuid.UUID, enriched=False) -> EventModel:
         event = Event.query.filter_by(id=event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
-        return EventModel.from_orm(event)
+        event_model = EventModel.from_orm(event)
+
+        if enriched:
+            attendees = self.attendee_service.get_attendees_for_events([event_model.id])
+            looks = self.look_service.get_looks_by_user_id(event_model.user_id)
+            roles = self.role_service.get_roles_for_events([event_model.id])
+
+            event_model.attendees = attendees.get(event_model.id, [])
+            event_model.looks = looks
+            event_model.roles = roles.get(event_model.id, [])
+
+        return event_model
 
     def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
         db_event = Event.query.filter_by(id=event_id, is_active=True).first()
@@ -156,12 +167,15 @@ class EventService:
         models = [EventModel.from_orm(event) for event in events]
 
         if enriched:
-            attendees = self.attendee_service.get_attendees_for_events([event.id for event in models])
+            event_ids = [event.id for event in models]
+            attendees = self.attendee_service.get_attendees_for_events(event_ids)
             looks = self.look_service.get_looks_by_user_id(user_id)
+            roles = self.role_service.get_roles_for_events(event_ids)
 
             for event_model in models:
                 event_model.attendees = attendees.get(event_model.id, [])
                 event_model.looks = looks
+                event_model.roles = roles.get(event_model.id, [])
 
         return models
 

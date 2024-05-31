@@ -218,17 +218,18 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json.get("looks"), [])
         self.assertEqual(response.json.get("roles"), [])
 
-    def test_get_event_enriched_with_one_active_attendee_but_with_look_and_one_active_role(self):
+    def test_get_event_enriched_with_one_active_attendee_but_with_one_active_look_and_one_active_role(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id, is_active=False))
         role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event.id, email=attendee_user1.email, look_id=look.id, role_id=role1.id
+                event_id=event.id, email=attendee_user1.email, look_id=look1.id, role_id=role1.id
             )
         )
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
@@ -257,13 +258,13 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_attendee.get("id"), str(attendee1.id))
         self.assertEqual(response_attendee.get("user").get("email"), attendee_user1.email)
         self.assertEqual(response_attendee.get("look_id"), str(attendee1.look_id))
-        self.assertEqual(response_attendee.get("look").get("id"), str(look.id))
+        self.assertEqual(response_attendee.get("look").get("id"), str(look1.id))
         self.assertEqual(response_attendee.get("role_id"), str(role1.id))
         self.assertEqual(response_attendee.get("role").get("id"), str(role1.id))
 
         response_look = response.json.get("looks")[0]
-        self.assertEqual(response_look.get("id"), str(look.id))
-        self.assertEqual(response_look.get("name"), look.name)
+        self.assertEqual(response_look.get("id"), str(look1.id))
+        self.assertEqual(response_look.get("name"), look1.name)
 
         reponse_role = response.json.get("roles")[0]
         self.assertEqual(reponse_role.get("id"), str(role1.id))

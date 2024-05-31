@@ -25,11 +25,13 @@ class LookService:
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
         return [
             LookModel.from_orm(look)
-            for look in Look.query.filter(Look.user_id == user_id).order_by(Look.created_at.asc()).all()
+            for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
-        db_look: Look = Look.query.filter(Look.name == create_look.name, Look.user_id == create_look.user_id).first()
+        db_look: Look = Look.query.filter(
+            Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active
+        ).first()
 
         if db_look:
             raise DuplicateError("Look already exists with that name.")
@@ -40,6 +42,7 @@ class LookService:
                 name=create_look.name,
                 user_id=create_look.user_id,
                 product_specs=create_look.product_specs,
+                is_active=create_look.is_active,
             )
 
             db.session.add(db_look)
@@ -82,7 +85,9 @@ class LookService:
             raise NotFoundError("Look not found")
 
         try:
-            db.session.delete(look)
+            look.is_active = False
+            look.updated_at = datetime.now()
+
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)

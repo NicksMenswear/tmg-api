@@ -54,6 +54,7 @@ def create_look_request(**look_data) -> CreateLookModel:
         name=look_data.get("name", str(uuid.uuid4())),
         user_id=look_data.get("user_id", uuid.uuid4()),
         product_specs=look_data.get("product_specs", {}),
+        is_active=look_data.get("is_active", True),
     )
 
 

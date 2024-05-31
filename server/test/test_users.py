@@ -411,6 +411,7 @@ class TestUsers(BaseTestCase):
         user2 = self.user_service.create_user(fixtures.create_user_request())
         look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
         look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        look3 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id, is_active=False))
         self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
 
         # when

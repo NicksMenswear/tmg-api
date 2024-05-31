@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 from server.database.database_manager import db
 from server.database.models import Role, Event
@@ -96,12 +96,31 @@ class RoleService:
         except Exception as e:
             raise ServiceError("Failed to delete role.", e)
 
+    def get_roles_for_events(self, event_ids: List[uuid.UUID]) -> Dict[uuid.UUID, List[RoleModel]]:
+        db_roles = Role.query.filter(Role.event_id.in_(event_ids), Role.is_active).order_by(Role.created_at.asc()).all()
+
+        if not db_roles:
+            return dict()
+
+        roles = dict()
+
+        for role in db_roles:
+            if role.event_id not in roles:
+                roles[role.event_id] = list()
+
+            roles[role.event_id].append(RoleModel.from_orm(role))
+
+        return roles
+
     def get_roles_for_event(self, event_id: uuid.UUID) -> List[RoleModel]:
         event = Event.query.filter(Event.id == event_id).first()
 
         if not event:
             raise NotFoundError("Event not found.")
 
-        roles = Role.query.filter(Role.event_id == event_id, Role.is_active).order_by(Role.created_at.asc()).all()
+        roles = self.get_roles_for_events([event_id])
 
-        return [RoleModel.from_orm(role) for role in roles]
+        if not roles:
+            return []
+
+        return roles[event_id]

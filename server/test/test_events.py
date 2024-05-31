@@ -69,7 +69,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
-        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
         self.assertEqual(unique_roles, set(PREDEFINED_WEDDING_ROLES))
 
@@ -99,7 +99,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.PROM))
 
-        roles = self.role_service.get_roles_for_event(created_event.get("id"))
+        roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
         self.assertEqual(unique_roles, set(PREDEFINED_PROM_ROLES))
 

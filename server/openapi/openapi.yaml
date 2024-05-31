@@ -210,6 +210,11 @@ paths:
               - owner
               - attendee
         - in: query
+          name: enriched
+          schema:
+            type: boolean
+          required: false
+        - in: query
           name: logged_in_customer_id
           schema:
             type: string

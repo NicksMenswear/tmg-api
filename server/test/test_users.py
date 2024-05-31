@@ -153,6 +153,41 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response.json[1]["id"], str(event2.id))
         self.assertEqual(response.json[1]["name"], str(event2.name))
 
+    def test_get_all_events_for_user_enriched(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user1.email)
+        )
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user2.email)
+        )
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user3.email)
+        )
+
+        # when
+        query_params = {**self.hmac_query_params, "enriched": True}
+
+        response = self.client.open(
+            f"/users/{user.id}/events",
+            query_string=query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 2)
+
     def test_get_invites_for_non_existing_user(self):
         # when
         response = self.client.open(

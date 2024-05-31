@@ -1,8 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List
-
-from sqlalchemy.orm import joinedload
+from typing import List, Dict
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User
@@ -15,22 +13,15 @@ from server.models.attendee_model import (
 )
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.event import EventService
 from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
 
 # noinspection PyMethodMayBeStatic
 class AttendeeService:
-    def __init__(
-        self,
-        shopify_service: AbstractShopifyService,
-        user_service: UserService,
-        event_service: EventService,
-    ):
+    def __init__(self, shopify_service: AbstractShopifyService, user_service: UserService):
         self.shopify_service = shopify_service
         self.user_service = user_service
-        self.event_service = event_service
 
     def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
@@ -40,23 +31,24 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def get_attendees_for_event(self, event_id: uuid.UUID) -> List[AttendeeModel]:
-        event = Event.query.filter_by(id=event_id).first()
-
-        if not event:
-            raise NotFoundError("Event not found.")
-
+    def get_attendees_for_events(self, event_ids: List[uuid.UUID]) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         db_attendees = (
             db.session.query(Attendee, User)
-            .join(Attendee, User.id == Attendee.user_id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active)
+            .join(User, User.id == Attendee.user_id)
+            .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
         ).all()
 
-        attendees = []
+        if not db_attendees:
+            return dict()
+
+        attendees = dict()
 
         for attendee, user in db_attendees:
-            attendees.append(
+            if attendee.event_id not in attendees:
+                attendees[attendee.event_id] = list()
+
+            attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
                     id=attendee.id,
                     user_id=attendee.user_id,
@@ -78,6 +70,19 @@ class AttendeeService:
             )
 
         return attendees
+
+    def get_attendees_for_event(self, event_id: uuid.UUID) -> List[AttendeeModel]:
+        event = Event.query.filter_by(id=event_id).first()
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        attendees: Dict[uuid.UUID, List[AttendeeModel]]() = self.get_attendees_for_events([event_id])
+
+        if not attendees:
+            return []
+
+        return attendees[event_id]
 
     def create_attendee(self, create_attendee: CreateAttendeeModel) -> AttendeeModel:
         event = Event.query.filter(Event.id == create_attendee.event_id, Event.is_active).first()

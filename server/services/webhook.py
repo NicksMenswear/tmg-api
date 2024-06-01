@@ -1,6 +1,11 @@
 import logging
 import random
+import uuid
+from datetime import datetime
 
+from server.database.models import SourceType, OrderType, StoreLocation
+from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
+from server.models.user_model import UserModel
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
@@ -8,6 +13,7 @@ from server.services.discount import (
     GIFT_DISCOUNT_CODE_PREFIX,
 )
 from server.services.look import LookService
+from server.services.order import OrderService
 from server.services.shopify import ShopifyService
 from server.services.user import UserService
 
@@ -23,12 +29,14 @@ class WebhookService:
         discount_service: DiscountService,
         look_service: LookService,
         shopify_service: ShopifyService,
+        order_service: OrderService,
     ):
         self.user_service = user_service
         self.attendee_service = attendee_service
         self.discount_service = discount_service
         self.look_service = look_service
         self.shopify_service = shopify_service
+        self.order_service = order_service
 
     def __error(self, message):
         return {"errors": message}
@@ -45,8 +53,14 @@ class WebhookService:
             logger.debug(f"Found paid discount order with sku '{sku}'")
             return self.handle_gift_discount(payload)
 
+        used_discount_codes = []
+
         if len(payload.get("discount_codes")) > 0:
-            return self.handle_used_discount_code(payload)
+            used_discount_codes = self.handle_used_discount_code(payload)
+
+        logger.debug(f"Used discount codes: {used_discount_codes}")
+
+        return self.handle_order(payload)
 
     def handle_gift_discount(self, payload):
         product = payload.get("line_items")[0]
@@ -123,3 +137,62 @@ class WebhookService:
                 logger.info(f"Marked discount with code '{shopify_discount_code}' with id '{discount.id}' as paid")
 
         return used_discount_codes
+
+    def handle_order(self, payload):
+        shopify_customer_email = payload.get("customer").get("email")
+
+        if shopify_customer_email != "john@example.com":
+            user = self.user_service.get_user_by_email(shopify_customer_email)
+
+            if not user:
+                logger.error(
+                    f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}"
+                )
+
+        order_number = (
+            random.randint(1, 1000000) if payload.get("order_number") == 1234 else payload.get("order_number")
+        )
+        created_at = datetime.fromisoformat(payload.get("created_at"))
+        shipping_address = payload.get("shipping_address")
+        shipping_address = AddressModel(
+            line1=shipping_address.get("address1"),
+            line2=shipping_address.get("address2"),
+            city=shipping_address.get("city"),
+            state=shipping_address.get("province"),
+            zip_code=shipping_address.get("zip"),
+            country=shipping_address.get("country"),
+        )
+
+        create_products = []
+
+        if payload.get("line_items"):
+            for line_item in payload.get("line_items"):
+                create_product = CreateProductModel(
+                    name=line_item.get("name"),
+                    sku=line_item.get("sku"),
+                    price=line_item.get("price"),
+                    quantity=line_item.get("quantity"),
+                    meta={"webhook_line_item_id": line_item.get("id")},
+                )
+
+                create_products.append(create_product)
+
+        try:
+            create_order = CreateOrderModel(
+                user_id=(
+                    user.id if shopify_customer_email != "john@example.com" else "9ae0c962-7ab0-475e-9877-9cc2f4180a49"
+                ),
+                order_number=str(order_number),
+                order_origin=SourceType.TMG.value,
+                order_date=created_at,
+                order_type=[OrderType.NEW_ORDER.value],
+                shipping_address=shipping_address,
+                store_location=StoreLocation.ONLINE.value,
+                products=create_products,
+                meta=payload,
+            )
+
+            return self.order_service.create_order(create_order)
+        except Exception as e:
+            logger.error(f"Error creating order: {e}")
+            return self.__error("Error creating order")

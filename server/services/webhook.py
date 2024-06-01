@@ -6,6 +6,7 @@ from datetime import datetime
 from server.database.models import SourceType, OrderType, StoreLocation
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
 from server.models.user_model import UserModel
+from server.services import ServiceError
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
@@ -141,17 +142,13 @@ class WebhookService:
     def handle_order(self, payload):
         shopify_customer_email = payload.get("customer").get("email")
 
-        if shopify_customer_email != "john@example.com":
-            user = self.user_service.get_user_by_email(shopify_customer_email)
+        user = self.user_service.get_user_by_email(shopify_customer_email)
 
-            if not user:
-                logger.error(
-                    f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}"
-                )
+        if not user:
+            logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
+            return self.__error(f"No user found for email '{shopify_customer_email}'")
 
-        order_number = (
-            random.randint(1, 1000000) if payload.get("order_number") == 1234 else payload.get("order_number")
-        )
+        order_number = payload.get("order_number")
         created_at = datetime.fromisoformat(payload.get("created_at"))
         shipping_address = payload.get("shipping_address")
         shipping_address = AddressModel(
@@ -177,22 +174,20 @@ class WebhookService:
 
                 create_products.append(create_product)
 
-        try:
-            create_order = CreateOrderModel(
-                user_id=(
-                    user.id if shopify_customer_email != "john@example.com" else "9ae0c962-7ab0-475e-9877-9cc2f4180a49"
-                ),
-                order_number=str(order_number),
-                order_origin=SourceType.TMG.value,
-                order_date=created_at,
-                order_type=[OrderType.NEW_ORDER.value],
-                shipping_address=shipping_address,
-                store_location=StoreLocation.ONLINE.value,
-                products=create_products,
-                meta=payload,
-            )
+        create_order = CreateOrderModel(
+            user_id=user.id,
+            order_number=str(order_number),
+            order_origin=SourceType.TMG.value,
+            order_date=created_at,
+            order_type=[OrderType.NEW_ORDER.value],
+            shipping_address=shipping_address,
+            store_location=StoreLocation.ONLINE.value,
+            products=create_products,
+            meta=payload,
+        )
 
+        try:
             return self.order_service.create_order(create_order)
         except Exception as e:
             logger.error(f"Error creating order: {e}")
-            return self.__error("Error creating order")
+            return self.__error(f"Error creating order: {str(e)}")

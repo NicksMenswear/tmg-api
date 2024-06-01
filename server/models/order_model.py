@@ -5,30 +5,6 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from server.database.models import Product
-
-
-#  legacy_id              | character varying           |           |          |                    | extended |             |              |
-#  user_id                | uuid                        |           |          |                    | plain    |             |              |
-#  event_id               | uuid                        |           |          |                    | plain    |             |              |
-#  order_number           | character varying           |           |          |                    | extended |             |              |
-#  order_origin           | sourcetype                  |           |          |                    | plain    |             |              |
-#  order_date             | timestamp without time zone |           |          |                    | plain    |             |              |
-#  status                 | character varying           |           |          |                    | extended |             |              |
-#  shipped_date           | timestamp without time zone |           |          |                    | plain    |             |              |
-#  received_date          | timestamp without time zone |           |          |                    | plain    |             |              |
-#  ship_by_date           | timestamp without time zone |           |          |                    | plain    |             |              |
-#  shipping_method        | character varying           |           |          |                    | extended |             |              |
-#  outbound_tracking      | character varying           |           |          |                    | extended |             |              |
-#  store_location         | storelocation               |           |          |                    | plain    |             |              |
-#  order_type             | ordertype[]                 |           |          |                    | extended |             |              |
-#  shipping_address_line1 | character varying           |           |          |                    | extended |             |              |
-#  shipping_address_line2 | character varying           |           |          |                    | extended |             |              |
-#  shipping_city          | character varying           |           |          |                    | extended |             |              |
-#  shipping_state         | character varying           |           |          |                    | extended |             |              |
-#  shipping_zip_code      | character varying           |           |          |                    | extended |             |              |
-#  shipping_country       | character varying           |           |          |                    | extended |             |              |
-
 
 class AddressTypeModel(str, Enum):
     SHIPPING = "shipping"

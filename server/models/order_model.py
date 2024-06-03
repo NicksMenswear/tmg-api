@@ -69,7 +69,8 @@ class ProductModel(BaseModel):
 
 class OrderModel(BaseModel):
     id: UUID
-    products: List[ProductModel]
+    products: List[ProductModel] = []
+    discount_codes: List[str] = []
 
     class Config:
         from_attributes = True
@@ -77,5 +78,6 @@ class OrderModel(BaseModel):
     def to_response(self):
         data = self.dict(include={"id"})
         data["products"] = [product.to_response() for product in self.products]
+        data["discount_codes"] = self.discount_codes
 
         return data

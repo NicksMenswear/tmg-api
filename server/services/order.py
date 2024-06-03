@@ -46,6 +46,8 @@ class OrderService:
             db.session.add(order)
             db.session.flush()
 
+            products = []
+
             for create_product in create_order.products:
                 product = Product(
                     sku=create_product.sku,
@@ -56,6 +58,8 @@ class OrderService:
                 )
                 db.session.add(product)
                 db.session.flush()
+
+                products.append(product)
 
                 order_item = OrderItem(
                     order_id=order.id,
@@ -71,6 +75,6 @@ class OrderService:
             raise ServiceError("Failed to create order.", e)
 
         created_order = OrderModel.from_orm(order)
-        created_order.products = [ProductModel.from_orm(product) for product in order.products]
+        created_order.products = [ProductModel.from_orm(product) for product in products]
 
         return created_order

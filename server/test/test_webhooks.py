@@ -5,7 +5,7 @@ import uuid
 from server import encoder
 from server.database.models import DiscountType
 from server.services.discount import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
-from server.test import BaseTestCase
+from server.test import BaseTestCase, utils
 from . import fixtures
 
 PAID_ORDER_REQUEST_HEADERS = {
@@ -56,19 +56,22 @@ class TestWebhooks(BaseTestCase):
         self.assertTrue("No items in order" in response.json["errors"])
 
     def test_paid_order_for_non_gift_virtual_product(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+
         # when
-        response = self.__post(fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts())
+        response = self.__post(
+            fixtures.shopify_paid_order(customer_email=user.email, sku=f"product-{utils.generate_unique_string()}")
+        )
 
         # then
         self.assert200(response)
-        self.assertEqual(response.text, "")
+        self.assertEqual(response.json["discount_codes"], [])
 
     def test_paid_order_with_gift_virtual_product_sku(self):
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
-            )
+            fixtures.shopify_paid_order(f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
         )
 
         # then
@@ -94,7 +97,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order(
                 f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
@@ -123,7 +126,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order(
                 f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
@@ -156,7 +159,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order(
                 f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
@@ -204,7 +207,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order(
                 f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
@@ -273,7 +276,7 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_gift_virtual_product_pay_for_discounts(
+            fixtures.shopify_paid_order(
                 f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
             )
         )
@@ -289,20 +292,26 @@ class TestWebhooks(BaseTestCase):
         self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent3.amount)}-OFF"))
 
     def test_paid_order_with_empty_list_of_discount_codes(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+
         # when
-        response = self.__post(fixtures.shopify_paid_order_user_pays_for_order_with_discounts([]))
+        response = self.__post(fixtures.shopify_paid_order(discounts=[], customer_email=user.email))
 
         # then
         self.assert200(response)
-        self.assertEqual(response.text, "")
+        self.assertEqual(response.json["discount_codes"], [])
 
     def test_paid_order_with_non_existing_discount_codes(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+
         # when
-        response = self.__post(fixtures.shopify_paid_order_user_pays_for_order_with_discounts(["ASDF1234"]))
+        response = self.__post(fixtures.shopify_paid_order(discounts=["ASDF1234"], customer_email=user.email))
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json), 0)
+        self.assertEqual(len(response.json["discount_codes"]), 0)
 
     def test_paid_order_with_discount_code(self):
         # given
@@ -331,13 +340,12 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_user_pays_for_order_with_discounts([discount.shopify_discount_code])
+            fixtures.shopify_paid_order(customer_email=user.email, discounts=[discount.shopify_discount_code])
         )
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json), 1)
-        self.assertEqual(response.json[0], discount.shopify_discount_code)
+        self.assertEqual(response.json["discount_codes"][0], discount.shopify_discount_code)
 
         discount_in_db = self.discount_service.get_discount_by_shopify_code(discount.shopify_discount_code)
         self.assertTrue(discount_in_db.used)
@@ -381,14 +389,16 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order_user_pays_for_order_with_discounts(
-                [discount1.shopify_discount_code, discount2.shopify_discount_code]
+            fixtures.shopify_paid_order(
+                customer_email=user.email, discounts=[discount1.shopify_discount_code, discount2.shopify_discount_code]
             )
         )
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json), 2)
+
+        discount_codes = response.json["discount_codes"]
+        self.assertEqual(len(discount_codes), 2)
         self.assertEqual(
-            {response.json[0], response.json[1]}, {discount1.shopify_discount_code, discount2.shopify_discount_code}
+            {discount_codes[0], discount_codes[1]}, {discount1.shopify_discount_code, discount2.shopify_discount_code}
         )

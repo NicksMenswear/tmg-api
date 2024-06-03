@@ -124,31 +124,31 @@ def create_full_pay_discount_intent_request(**create_discount_intent):
     )
 
 
-def shopify_paid_order_gift_virtual_product_pay_for_discounts(sku="", customer_id=None, product_id=None):
-    return {
-        "id": random.randint(1000, 1000000),
-        "discount_codes": [],
-        "customer": {
-            "id": customer_id if customer_id else random.randint(1000, 1000000),
-            "email": "test@example.com",
-        },
-        "line_items": [
-            {
-                "product_id": product_id if product_id else random.randint(1000, 1000000),
-                "sku": sku,
-            }
-        ],
-    }
-
-
-def shopify_paid_order_user_pays_for_order_with_discounts(discounts: List[str]):
+def shopify_paid_order(sku="", customer_email=None, customer_id=None, product_id=None, discounts=[]):
     return {
         "id": random.randint(1000, 1000000),
         "discount_codes": [{"code": discount} for discount in discounts],
+        "customer": {
+            "id": customer_id if customer_id else random.randint(1000, 1000000),
+            "email": customer_email if customer_email else "test@example.com",
+        },
+        "order_number": random.randint(1000, 1000000),
+        "created_at": datetime.now().isoformat(),
+        "shipping_address": {
+            "address1": "123 Shipping Address",
+            "city": "City",
+            "province": "Province",
+            "zip": "12345",
+            "country": "US",
+        },
         "line_items": [
             {
                 "id": random.randint(1000, 1000000),
-                "sku": "PRODUCT_SKU",
+                "product_id": product_id if product_id else random.randint(1000, 1000000),
+                "sku": sku,
+                "name": f"product-{utils.generate_unique_string()}",
+                "price": random.randint(10, 100),
+                "quantity": random.randint(1, 5),
             }
         ],
     }

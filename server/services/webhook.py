@@ -52,18 +52,11 @@ class WebhookService:
         if len(items) == 1 and items[0].get("sku") and items[0].get("sku").startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
             sku = items[0].get("sku")
             logger.debug(f"Found paid discount order with sku '{sku}'")
-            return self.handle_gift_discount(payload)
+            return self.process_gift_discount(payload)
 
-        used_discount_codes = []
+        return self.process_paid_order(payload)
 
-        if len(payload.get("discount_codes")) > 0:
-            used_discount_codes = self.handle_used_discount_code(payload)
-
-        logger.debug(f"Used discount codes: {used_discount_codes}")
-
-        return self.handle_order(payload)
-
-    def handle_gift_discount(self, payload):
+    def process_gift_discount(self, payload):
         product = payload.get("line_items")[0]
         customer = payload.get("customer")
 
@@ -119,12 +112,12 @@ class WebhookService:
 
         return {"discount_codes": discounts_codes}
 
-    def handle_used_discount_code(self, payload):
+    def process_used_discount_code(self, payload):
         discount_codes = payload.get("discount_codes", [])
 
         if len(discount_codes) == 0:
             logger.debug(f"No discount codes found in payload")
-            return {}
+            return []
 
         used_discount_codes = []
 
@@ -139,7 +132,7 @@ class WebhookService:
 
         return used_discount_codes
 
-    def handle_order(self, payload):
+    def process_paid_order(self, payload):
         shopify_customer_email = payload.get("customer").get("email")
 
         user = self.user_service.get_user_by_email(shopify_customer_email)
@@ -147,6 +140,8 @@ class WebhookService:
         if not user:
             logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
             return self.__error(f"No user found for email '{shopify_customer_email}'")
+
+        tmg_issued_discount_codes = self.process_used_discount_code(payload)
 
         order_number = payload.get("order_number")
         created_at = datetime.fromisoformat(payload.get("created_at"))
@@ -187,7 +182,10 @@ class WebhookService:
         )
 
         try:
-            return self.order_service.create_order(create_order)
+            order_model = self.order_service.create_order(create_order)
+            order_model.discount_codes = tmg_issued_discount_codes
+
+            return order_model.to_response()
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             return self.__error(f"Error creating order: {str(e)}")

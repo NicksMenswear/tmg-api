@@ -1,7 +1,6 @@
 import logging
 import os
 
-from server.controllers.registration_email import send_email
 from server.controllers.util import hmac_verification
 from server.database.database_manager import db
 from server.database.models import User
@@ -18,6 +17,7 @@ password = os.getenv("sender_password")
 def send_invite(invite_data):
     try:
         shopify_service = FlaskApp.current().shopify_service
+        email_service = FlaskApp.current().email_service
 
         if "data" in invite_data:
             for attendee in invite_data["data"]:
@@ -30,7 +30,7 @@ def send_invite(invite_data):
                     sender_password = password
                     reciever = attendee["email"]
                     subject = "Wedding Invite"
-                    send_email(subject, body, sender_email, reciever, sender_password)
+                    email_service.send_email(subject, body, sender_email, reciever, sender_password)
                     existing_user.account_status = True
                     db.session.commit()
                 else:
@@ -41,7 +41,7 @@ def send_invite(invite_data):
                     sender_password = password
                     reciever = attendee["email"]
                     subject = "Wedding Invite"
-                    send_email(subject, body, sender_email, reciever, sender_password)
+                    email_service.send_email(subject, body, sender_email, reciever, sender_password)
             return "Email sent successfully", 200
         else:
             return "Data is missing or not in the correct format", 204

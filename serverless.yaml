@@ -30,7 +30,6 @@ functions:
       # General
       STAGE: ${sls:stage}
       API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
-      ACTIVE_CAMPAIGN_API_KEY: ${ssm:/${sls:stage}/active_campaign/api_key}
       # SQLAlchemy Env Variables
       DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
       DB_PORT: 5432
@@ -39,8 +38,6 @@ functions:
       DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
       # Shopify Env Variables
       API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
-      sender_email: "automation@themoderngroom.com"
-      sender_password: ${ssm:/${sls:stage}/shopify/sender_password}
       api_version: "2024-01"
       shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
       client_id: ${ssm:/${sls:stage}/shopify/client_id}
@@ -48,6 +45,9 @@ functions:
       webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
       admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
       storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
+      # Active Campaign Env Variables
+      ACTIVE_CAMPAIGN_URL: "https://themoderngroom.api-us1.com"
+      ACTIVE_CAMPAIGN_API_KEY: ${ssm:/${sls:stage}/active_campaign/api_key}
 
 plugins:
   - serverless-python-requirements

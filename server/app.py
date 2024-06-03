@@ -15,7 +15,7 @@ from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
 from server.services.attendee import AttendeeService
 from server.services.discount import DiscountService
-from server.services.emails import EmailService, FakeEmailService
+from server.services.email import EmailService, FakeEmailService
 from server.services.event import EventService
 from server.services.look import LookService
 from server.services.order import OrderService
@@ -93,7 +93,7 @@ def init_app(is_testing=False):
 
 def init_services(app, is_testing=False):
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
-    app.email_service = FakeEmailService() if is_testing else EmailService()
+    app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service)

@@ -1750,12 +1750,6 @@ components:
           title: look_id
           $ref: '#/components/schemas/uuid'
           nullable: true
-      required:
-        - style
-        - invite
-        - pay
-        - size
-        - ship
       title: UpdateAttendee
       type: object
     Attendee:

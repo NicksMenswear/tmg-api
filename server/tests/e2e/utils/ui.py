@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from playwright.sync_api import Page
 
 from server.tests.e2e import REQUIRE_STORE_PASSWORD, STORE_URL, STORE_PASSWORD
@@ -17,17 +19,13 @@ def login(page: Page, email: str, password: str):
     page.get_by_role("button", name="Login").click()
 
 
-def create_new_event(
-    page: Page, event_name: str, event_date: str, attendee_first_name: str, attendee_last_name: str, attendee_email: str
-):
-    page.get_by_role("link", name="NEW EVENT").click()
-    page.get_by_label("Event Name:").fill(event_name)
-    page.get_by_label("Event Date:").fill(event_date)
-    page.get_by_role("button", name="Save").click()
-    page.locator('input[name="attendees_first_name"]').fill(attendee_first_name)
-    page.locator('input[name="attendees_last_name"]').fill(attendee_last_name)
-    page.locator('input[name="attendees_email"]').fill(attendee_email)
-    page.get_by_role("button", name="Save").click()
+def create_new_event(page: Page, event_name: str, event_date: str = None):
+    page.get_by_role("button", name="New Event ").first.click()
+    page.locator("#eventName").fill(event_name)
+    page.locator("#eventDate").fill(
+        event_date if event_date else (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+    )
+    page.get_by_role("button", name="Create").click()
 
 
 def add_participant(page: Page, attendee_first_name: str, attendee_last_name: str, attendee_email: str):

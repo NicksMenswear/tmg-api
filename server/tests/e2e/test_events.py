@@ -1,30 +1,32 @@
 from playwright.sync_api import Page, expect
 
-# from utils import api, string, ui, email, EMAIL_FROM, STORE_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD
-#
-#
-# def test_basic_create_event(page: Page):
-#     event_name = f"test-event-{string.rnd_str()}"
-#     attendee_first_name = "f-" + string.rnd_str(4)
-#     attendee_last_name = "l-" + string.rnd_str(4)
-#     attendee_email = f"test-{string.rnd_str()}@example.com"
-#
-#     api.delete_all_events(TEST_USER_EMAIL)
-#     ui.access_store(page)
-#     ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
-#
-#     expect(page.get_by_text("No Upcoming Events").first).to_be_visible()
-#
-#     ui.create_new_event(page, event_name, "2028-04-18", attendee_first_name, attendee_last_name, attendee_email)
-#
-#     expect(page.get_by_text(event_name).first).to_be_visible()
-#     expect(page.get_by_text("TUESDAY 18, APR 2028").first).to_be_visible()
-#     expect(page.get_by_role("button", name="ADD PARTICIPANT")).to_be_visible()
-#     expect(page.get_by_role("button", name="SEND INVITE")).to_be_visible()
-#     expect(page.get_by_text("No Upcoming Events").first).not_to_be_visible()
-#     expect(page.get_by_role("heading", name=f"{attendee_first_name} {attendee_last_name}")).to_be_visible()
-#
-#
+from server.tests import utils
+from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD
+from server.tests.e2e.utils import api, ui
+
+
+def test_basic_create_event(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_unique_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+
+    ui.create_new_event(page, event_name, "2028-04-18")
+
+    expect(page.get_by_text(event_name).first).to_be_visible()
+    expect(page.get_by_text("TUESDAY 18, APR 2028").first).to_be_visible()
+    expect(page.get_by_role("button", name="ADD PARTICIPANT")).to_be_visible()
+    expect(page.get_by_role("button", name="SEND INVITE")).to_be_visible()
+    expect(page.get_by_text("No Upcoming Events").first).not_to_be_visible()
+    expect(page.get_by_role("heading", name=f"{attendee_first_name} {attendee_last_name}")).to_be_visible()
+
+
 # def test_create_multiple_events(page: Page):
 #     event_name_1 = f"test-event-{string.rnd_str()}"
 #     attendee_first_name_1 = "f-" + string.rnd_str(4)

@@ -48,7 +48,7 @@ def delete_attendee(attendee_id):
     return None, 204
 
 
-# @hmac_verification
+@hmac_verification
 @error_handler
 def apply_discounts(attendee_id, apply_discounts_request):
     discount_service = FlaskApp.current().discount_service

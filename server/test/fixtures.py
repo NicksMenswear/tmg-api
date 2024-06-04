@@ -124,7 +124,19 @@ def create_full_pay_discount_intent_request(**create_discount_intent):
     )
 
 
-def shopify_paid_order(sku="", customer_email=None, customer_id=None, variant_id=None, discounts=None):
+def shopify_line_item(product_id=None, variant_id=None, sku=""):
+    return {
+        "id": random.randint(1000, 1000000),
+        "product_id": product_id if product_id else random.randint(1000, 1000000),
+        "variant_id": variant_id if variant_id else random.randint(1000, 1000000),
+        "sku": sku,
+        "name": f"product-{utils.generate_unique_string()}",
+        "price": random.randint(10, 100),
+        "quantity": random.randint(1, 5),
+    }
+
+
+def shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None):
     return {
         "id": random.randint(1000, 1000000),
         "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
@@ -141,16 +153,7 @@ def shopify_paid_order(sku="", customer_email=None, customer_id=None, variant_id
             "zip": "12345",
             "country": "US",
         },
-        "line_items": [
-            {
-                "id": random.randint(1000, 1000000),
-                "variant_id": variant_id if variant_id else random.randint(1000, 1000000),
-                "sku": sku,
-                "name": f"product-{utils.generate_unique_string()}",
-                "price": random.randint(10, 100),
-                "quantity": random.randint(1, 5),
-            }
-        ],
+        "line_items": [] if not line_items else line_items,
     }
 
 

@@ -61,16 +61,21 @@ class WebhookService:
         customer = payload.get("customer")
 
         shopify_product_id = product.get("product_id")
+        shopify_variant_id = product.get("variant_id")
         shopify_customer_id = customer.get("id")
 
-        logger.info(f"Handling discount for product_id '{shopify_product_id}' and customer_id '{shopify_customer_id}'")
+        logger.info(
+            f"Handling discount for variant_id '{shopify_product_id}/{shopify_variant_id}' and customer_id '{shopify_customer_id}'"
+        )
 
         try:
             self.shopify_service.archive_product(shopify_product_id)
         except Exception as e:
-            logger.error(f"Error archiving product with id '{shopify_product_id}': {e}")  # log but proceed
+            logger.error(
+                f"Error archiving product with id '{shopify_product_id}/{shopify_variant_id}': {e}"
+            )  # log but proceed
 
-        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_product_id)
+        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_variant_id)
 
         if not discounts:
             logger.error(f"No discounts found for product_id: {shopify_product_id}")

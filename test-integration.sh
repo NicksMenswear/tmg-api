@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker-compose up --build --abort-on-container-exit test-api
+docker-compose up --build --abort-on-container-exit test-integration

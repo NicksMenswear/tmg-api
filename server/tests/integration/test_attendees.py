@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import uuid
 
 from server.models.attendee_model import CreateAttendeeModel
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestAttendees(BaseTestCase):

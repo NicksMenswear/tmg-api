@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from server import encoder
 from server.models.event_model import EventTypeModel
 from server.services.role import PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestEvents(BaseTestCase):

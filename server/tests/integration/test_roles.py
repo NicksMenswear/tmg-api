@@ -4,7 +4,7 @@ import json
 import uuid
 
 from server import encoder
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestRoles(BaseTestCase):

@@ -1,8 +1,6 @@
 import random
 import uuid
 from datetime import datetime, timedelta
-from typing import List
-from server.test import utils
 
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.discount_model import (
@@ -14,6 +12,7 @@ from server.models.event_model import CreateEventModel, UpdateEventModel, EventT
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.tests import utils
 
 
 def create_user_request(**user_data) -> CreateUserModel:

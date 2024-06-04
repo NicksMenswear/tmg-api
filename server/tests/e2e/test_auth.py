@@ -6,8 +6,8 @@ import uuid
 import pytest
 from playwright.sync_api import Page, expect
 
-from server.test import utils
-from utils import string, api, ui, email, TEST_USER_EMAIL, TEST_USER_PASSWORD, EMAIL_FROM
+from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD
+from server.tests.e2e.utils import ui
 
 
 def test_login(page: Page):

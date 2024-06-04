@@ -1,6 +1,6 @@
 from playwright.sync_api import Page
 
-from . import STORE_PASSWORD, REQUIRE_STORE_PASSWORD, STORE_URL
+from server.tests.e2e import REQUIRE_STORE_PASSWORD, STORE_URL, STORE_PASSWORD
 
 
 def access_store(page: Page):

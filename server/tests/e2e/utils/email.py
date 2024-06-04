@@ -1,10 +1,11 @@
 import email
 import imaplib
+import re
 from datetime import datetime
 from email import policy
 from time import time, sleep
 
-from . import EMAIL_ACCOUNT_USERNAME, EMAIL_ACCOUNT_PASSWORD, IMAP_HOST, IMAP_PORT
+from server.tests.e2e import IMAP_HOST, IMAP_PORT, EMAIL_ACCOUNT_PASSWORD, EMAIL_ACCOUNT_USERNAME
 
 
 def look_for_email(subject, email_from, email_to, timeout_seconds=120):
@@ -67,3 +68,13 @@ def get_email_body(msg):
             content = msg.get_payload()
 
     return content
+
+
+def link_from_email(email_body: str, link_text: str = "Click Me"):
+    pattern = r'<a href="([^"]+)">' + link_text + "</a>"
+    match = re.search(pattern, email_body, re.IGNORECASE)
+
+    if match:
+        return match.group(1)
+
+    return None

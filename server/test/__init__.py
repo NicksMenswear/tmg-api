@@ -12,6 +12,7 @@ from server.database.models import (
     Attendee,
     OrderItem,
     Discount,
+    Product,
 )
 from server.flask_app import FlaskApp
 
@@ -34,7 +35,7 @@ class BaseTestCase(TestCase):
         Look.query.delete()
         OrderItem.query.delete()
         Order.query.delete()
-        ProductItem.query.delete()
+        Product.query.delete()
         Event.query.delete()
         User.query.delete()
         db.session.commit()
@@ -56,6 +57,7 @@ class BaseTestCase(TestCase):
         self.role_service = self.app.role_service
         self.look_service = self.app.look_service
         self.event_service = self.app.event_service
+        self.order_service = self.app.order_service
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service

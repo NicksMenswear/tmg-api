@@ -346,6 +346,9 @@ class Order(Base):
     shipping_state = Column(String)
     shipping_zip_code = Column(String)
     shipping_country = Column(String, default="US")
+    meta = Column(JSON, default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def to_dict(self):
         return {
@@ -376,6 +379,8 @@ class OrderItem(Base):
     order = relationship("Order", backref="order_items")
     product = relationship("Product", backref="order_items")
     price = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def to_dict(self):
         return {
@@ -458,6 +463,9 @@ class Product(Base):
     price = Column(Numeric)
     on_hand = Column(Integer, nullable=False, default=0)
     reserve_inventory = Column(Integer, nullable=False, default=0)
+    meta = Column(JSON, default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class RMA(Base):

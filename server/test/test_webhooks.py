@@ -98,7 +98,7 @@ class TestWebhooks(BaseTestCase):
         # when
         response = self.__post(
             fixtures.shopify_paid_order(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", variant_id=product_id
             )
         )
 
@@ -127,7 +127,7 @@ class TestWebhooks(BaseTestCase):
         # when
         response = self.__post(
             fixtures.shopify_paid_order(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", variant_id=product_id
             )
         )
 
@@ -135,7 +135,7 @@ class TestWebhooks(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No shopify variants founds for look" in response.json["errors"])
 
-    def test_paid_order(self):
+    def test_paid_order_with_one_discount_code(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -160,7 +160,7 @@ class TestWebhooks(BaseTestCase):
         # when
         response = self.__post(
             fixtures.shopify_paid_order(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", variant_id=product_id
             )
         )
 
@@ -208,7 +208,7 @@ class TestWebhooks(BaseTestCase):
         # when
         response = self.__post(
             fixtures.shopify_paid_order(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", variant_id=product_id
             )
         )
 
@@ -277,7 +277,7 @@ class TestWebhooks(BaseTestCase):
         # when
         response = self.__post(
             fixtures.shopify_paid_order(
-                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", product_id=product_id
+                f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}", variant_id=product_id
             )
         )
 
@@ -402,3 +402,28 @@ class TestWebhooks(BaseTestCase):
         self.assertEqual(
             {discount_codes[0], discount_codes[1]}, {discount1.shopify_discount_code, discount2.shopify_discount_code}
         )
+
+    def test_order_paid_one_product(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        webhook_request = fixtures.shopify_paid_order(
+            customer_email=user.email, sku=f"product-{utils.generate_unique_string()}"
+        )
+
+        response = self.__post(webhook_request)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        self.assertIsNotNone(order)
+        self.assertEqual(len(order.products), 1)
+        self.assertEqual(order.order_number, str(webhook_request["order_number"]))
+        self.assertEqual(order.order_date.isoformat(), webhook_request["created_at"])
+
+        response_product = response.json["products"][0]
+        request_line_item = webhook_request["line_items"][0]
+        self.assertEqual(response_product["name"], request_line_item["name"])
+        self.assertEqual(response_product["sku"], request_line_item["sku"])

@@ -124,10 +124,10 @@ def create_full_pay_discount_intent_request(**create_discount_intent):
     )
 
 
-def shopify_paid_order(sku="", customer_email=None, customer_id=None, product_id=None, discounts=[]):
+def shopify_paid_order(sku="", customer_email=None, customer_id=None, variant_id=None, discounts=None):
     return {
         "id": random.randint(1000, 1000000),
-        "discount_codes": [{"code": discount} for discount in discounts],
+        "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
         "customer": {
             "id": customer_id if customer_id else random.randint(1000, 1000000),
             "email": customer_email if customer_email else "test@example.com",
@@ -144,7 +144,7 @@ def shopify_paid_order(sku="", customer_email=None, customer_id=None, product_id
         "line_items": [
             {
                 "id": random.randint(1000, 1000000),
-                "product_id": product_id if product_id else random.randint(1000, 1000000),
+                "variant_id": variant_id if variant_id else random.randint(1000, 1000000),
                 "sku": sku,
                 "name": f"product-{utils.generate_unique_string()}",
                 "price": random.randint(10, 100),

@@ -1,3 +1,6 @@
+import uuid
+from typing import List
+
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType, StoreLocation
 from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
@@ -10,13 +13,23 @@ class OrderService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def get_order_by_id(self, order_id):
+    def get_order_by_id(self, order_id: uuid.UUID) -> OrderModel:
         order = Order.query.filter(Order.id == order_id).first()
 
         if not order:
             raise NotFoundError("Order not found")
 
-        return order
+        order_model = OrderModel.from_orm(order)
+        products = Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
+        order_model.products = [ProductModel.from_orm(product) for product in products]
+
+        return order_model
+
+    def get_products_for_order(self, order_id: uuid.UUID) -> List[ProductModel]:
+        return [
+            ProductModel.from_orm(product)
+            for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
+        ]
 
     def create_order(self, create_order: CreateOrderModel) -> OrderModel:
         try:

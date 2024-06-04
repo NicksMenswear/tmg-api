@@ -69,6 +69,8 @@ class ProductModel(BaseModel):
 
 class OrderModel(BaseModel):
     id: UUID
+    order_number: str
+    order_date: datetime
     products: List[ProductModel] = []
     discount_codes: List[str] = []
 

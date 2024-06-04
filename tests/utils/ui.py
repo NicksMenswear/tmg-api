@@ -13,7 +13,7 @@ def access_store(page: Page):
 def login(page: Page, email: str, password: str):
     page.get_by_role("link", name="Login").click()
     page.get_by_role("textbox", name="Email address", exact=True).fill(email)
-    page.get_by_placeholder("Password").fill(password)
+    page.get_by_role("textbox", name="Password").fill(password)
     page.get_by_role("button", name="Login").click()
 
 

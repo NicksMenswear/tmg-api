@@ -1,10 +1,12 @@
 import email
 import quopri
 import re
+import uuid
 
 import pytest
 from playwright.sync_api import Page, expect
 
+from server.test import utils
 from utils import string, api, ui, email, TEST_USER_EMAIL, TEST_USER_PASSWORD, EMAIL_FROM
 
 
@@ -21,10 +23,10 @@ def test_login(page: Page):
 
 
 def test_signup_form(page: Page):
-    first_name = f"f-{string.rnd_str(12)}"
-    last_name = f"l-{string.rnd_str(12)}"
-    user_email = f"e2etmg+{string.rnd_str(12)}@hotmail.com"
-    password = string.rnd_str(12)
+    first_name = f"f-{utils.generate_unique_name(8, 12)}"
+    last_name = f"l-{utils.generate_unique_name(8, 12)}"
+    user_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    password = str(uuid.uuid4())
 
     ui.access_store(page)
 

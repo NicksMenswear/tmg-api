@@ -73,7 +73,7 @@ services:
       - app
 
   test-e2e:
-    image: mcr.microsoft.com/playwright/python:v1.43.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.44.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/

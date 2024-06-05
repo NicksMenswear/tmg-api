@@ -18,11 +18,17 @@ def test_basic_create_event(page: Page):
     expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
 
     ui.create_new_event(page, event_name, "2028-04-18")
-
-    expect(page.get_by_text(event_name).first).to_be_visible()
+    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
     expect(page.get_by_text("TUESDAY 18, APR 2028").first).to_be_visible()
-    expect(page.get_by_role("button", name="ADD PARTICIPANT")).to_be_visible()
-    expect(page.get_by_role("button", name="SEND INVITE")).to_be_visible()
+
+    page.get_by_role("heading", name=event_name).click()
+    expect(page.get_by_role("button", name="Add Participant")).to_be_visible()
+    expect(page.get_by_role("button", name="Send Invite")).to_be_visible()
+    expect(page.get_by_role("button", name="Pay")).to_be_visible()
+
+    # ui.open_event(page, event_name)
+    ui.add_participant(page, attendee_first_name, attendee_last_name, attendee_email)
+
     expect(page.get_by_text("No Upcoming Events").first).not_to_be_visible()
     expect(page.get_by_role("heading", name=f"{attendee_first_name} {attendee_last_name}")).to_be_visible()
 

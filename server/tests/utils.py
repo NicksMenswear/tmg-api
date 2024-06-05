@@ -14,8 +14,12 @@ def generate_unique_name(min_length: int = 5, max_length: int = 10) -> str:
     return name.capitalize()
 
 
-def generate_unique_email() -> str:
-    name = generate_unique_string()
-    host = generate_unique_string()
+def generate_event_name(min_length: int = 5, max_length: int = 10) -> str:
+    return f"Test Event {generate_unique_string(min_length, max_length)}"
 
-    return f"{name}@{host}.com"
+
+def generate_email(host: str = None) -> str:
+    name = generate_unique_string()
+    host = host if host else "example.com"
+
+    return f"{name}@{host}"

@@ -5,7 +5,7 @@ import uuid
 
 from server import encoder
 from server.database.models import Look
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestLooks(BaseTestCase):

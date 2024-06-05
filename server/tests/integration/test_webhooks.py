@@ -5,8 +5,8 @@ import uuid
 from server import encoder
 from server.database.models import DiscountType
 from server.services.discount import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
-from server.test import BaseTestCase, utils
-from . import fixtures
+from server.tests import utils
+from server.tests.integration import BaseTestCase, fixtures
 
 PAID_ORDER_REQUEST_HEADERS = {
     "Accept": "application/json",

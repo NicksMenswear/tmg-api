@@ -53,7 +53,7 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
 
       - name: Build and run end-to-end tests
-        run: ./test-end-to-end.sh
+        run: ./test-e2e.sh
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}

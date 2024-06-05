@@ -6,7 +6,8 @@ import uuid
 from server import encoder
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
-from server.test import BaseTestCase, fixtures, utils
+from server.tests import utils
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestUsers(BaseTestCase):

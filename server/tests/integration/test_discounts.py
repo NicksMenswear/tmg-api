@@ -7,7 +7,7 @@ import uuid
 from server import encoder
 from server.database.models import DiscountType
 from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestDiscounts(BaseTestCase):

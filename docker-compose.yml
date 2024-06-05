@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  test-api:
+  test-integration:
     image: python:3.12
     volumes:
       - .:/usr/src/app
@@ -31,7 +31,7 @@ services:
       . .tox/tmg-dev/bin/activate && 
       pip install --upgrade psycopg2 &&
       ./scripts/reset_db.sh &&
-      cd server/ &&
+      cd server/tests/integration/ &&
       pytest --verbose"
     depends_on:
       - db
@@ -72,11 +72,11 @@ services:
       - db
       - app
 
-  test-end-to-end:
+  test-e2e:
     image: mcr.microsoft.com/playwright/python:v1.43.0-jammy
     volumes:
       - .:/usr/src/app
-    working_dir: /usr/src/app/tests
+    working_dir: /usr/src/app/server/tests/e2e/
     environment:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}

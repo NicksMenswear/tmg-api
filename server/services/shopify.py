@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 class AbstractShopifyService(ABC):
     @abstractmethod
+    def get_customer_by_email(self, email: str) -> dict:
+        return {}
+
+    @abstractmethod
     def create_customer(self, first_name, last_name, email):
         pass
 
@@ -49,7 +53,13 @@ class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None):
         self.shopify_virtual_products = shopify_virtual_products if shopify_virtual_products else {}
 
+    def get_customer_by_email(self, email: str) -> dict:
+        return {"id": random.randint(1000, 100000)}
+
     def create_customer(self, first_name, last_name, email):
+        if email.endswith("@shopify-user-exists.com"):
+            raise DuplicateError("Shopify customer with this email address already exists.")
+
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
     def get_product_by_id(self, product_id):
@@ -156,6 +166,19 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError("Failed to create shopify customer.")
 
         return body.get("account_activation_url")
+
+    def get_customer_by_email(self, email: str) -> dict:
+        status, body = self.admin_api_request(
+            "GET", f"{self.__shopify_rest_admin_api_endpoint}/customers/search.json?query=email:{email}"
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to get customer")
+
+        if body.get("customers") and len(body["customers"]) > 0:
+            return body["customers"][0]
+        else:
+            raise NotFoundError("Customer not found.")
 
     def create_customer(self, first_name, last_name, email):
         status, body = self.admin_api_request(

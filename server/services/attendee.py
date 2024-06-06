@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User, Role, Look
@@ -33,15 +33,22 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def get_attendees_for_events(self, event_ids: List[uuid.UUID]) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
-        db_attendees = (
+    def get_attendees_for_events(
+        self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
+    ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
+        query = (
             db.session.query(Attendee, User, Role, Look)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
-        ).all()
+        )
+
+        if user_id is not None:
+            query = query.filter(Attendee.user_id == user_id)
+
+        db_attendees = query.all()
 
         if not db_attendees:
             return dict()

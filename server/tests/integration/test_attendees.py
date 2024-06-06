@@ -100,6 +100,28 @@ class TestAttendees(BaseTestCase):
         self.assertTrue(response.json["role_id"], str(role.id))
         self.assertIsNone(response.json.get("look_id"))
 
+    def test_create_attendee_for_existing_user(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        user2 = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, email=user2.email)
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertEqual(str(user2.id), response.json["user_id"])
+
     def test_create_attendee_with_role_and_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

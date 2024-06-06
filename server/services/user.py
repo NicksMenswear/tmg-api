@@ -48,6 +48,10 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(db_user)
+        except DuplicateError as e:
+            db.session.rollback()
+            logger.debug(e)
+            raise
         except Exception as e:
             db.session.rollback()
             logger.exception(e)

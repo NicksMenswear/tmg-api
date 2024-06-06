@@ -261,6 +261,43 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_attendee2["role"]["id"], str(role21.id))
         self.assertEqual(response_attendee2["user"]["email"], str(attendee_user.email))
 
+    def test_get_all_events_for_user_invited(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email)
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email)
+        )
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user3.email)
+        )
+
+        # when
+        response = self.client.open(
+            f"/users/{attendee_user2.id}/events",
+            query_string={**self.hmac_query_params, "enriched": True, "status": "attendee"},
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+
+        response_event = response.json[0]
+        self.assertEqual(response_event["id"], str(event.id))
+        self.assertEqual(len(response_event["attendees"]), 1)
+        response_attendee = response_event["attendees"][0]
+        self.assertEqual(response_attendee["id"], str(attendee2.id))
+        self.assertEqual(response_attendee["user"]["email"], str(attendee_user2.email))
+
     def test_get_invites_for_non_existing_user(self):
         # when
         response = self.client.open(

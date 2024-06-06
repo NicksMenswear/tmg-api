@@ -31,7 +31,7 @@ class UserService:
             shopify_customer_id = self.shopify_service.create_customer(
                 create_user.first_name, create_user.last_name, create_user.email
             )["id"]
-            send_invite = create_user.account_status
+            send_invite = True
         except DuplicateError as e:
             # If the user already exists in Shopify, we should still create a user in our database
             logger.exception(e)

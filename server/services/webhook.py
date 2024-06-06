@@ -1,6 +1,12 @@
 import logging
 import random
+import uuid
+from datetime import datetime
 
+from server.database.models import SourceType, OrderType, StoreLocation
+from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
+from server.models.user_model import UserModel
+from server.services import ServiceError
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
@@ -8,6 +14,7 @@ from server.services.discount import (
     GIFT_DISCOUNT_CODE_PREFIX,
 )
 from server.services.look import LookService
+from server.services.order import OrderService
 from server.services.shopify import ShopifyService
 from server.services.user import UserService
 
@@ -23,12 +30,14 @@ class WebhookService:
         discount_service: DiscountService,
         look_service: LookService,
         shopify_service: ShopifyService,
+        order_service: OrderService,
     ):
         self.user_service = user_service
         self.attendee_service = attendee_service
         self.discount_service = discount_service
         self.look_service = look_service
         self.shopify_service = shopify_service
+        self.order_service = order_service
 
     def __error(self, message):
         return {"errors": message}
@@ -43,26 +52,30 @@ class WebhookService:
         if len(items) == 1 and items[0].get("sku") and items[0].get("sku").startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
             sku = items[0].get("sku")
             logger.debug(f"Found paid discount order with sku '{sku}'")
-            return self.handle_gift_discount(payload)
+            return self.process_gift_discount(payload)
 
-        if len(payload.get("discount_codes")) > 0:
-            return self.handle_used_discount_code(payload)
+        return self.process_paid_order(payload)
 
-    def handle_gift_discount(self, payload):
+    def process_gift_discount(self, payload):
         product = payload.get("line_items")[0]
         customer = payload.get("customer")
 
         shopify_product_id = product.get("product_id")
+        shopify_variant_id = product.get("variant_id")
         shopify_customer_id = customer.get("id")
 
-        logger.info(f"Handling discount for product_id '{shopify_product_id}' and customer_id '{shopify_customer_id}'")
+        logger.info(
+            f"Handling discount for variant_id '{shopify_product_id}/{shopify_variant_id}' and customer_id '{shopify_customer_id}'"
+        )
 
         try:
             self.shopify_service.archive_product(shopify_product_id)
         except Exception as e:
-            logger.error(f"Error archiving product with id '{shopify_product_id}': {e}")  # log but proceed
+            logger.error(
+                f"Error archiving product with id '{shopify_product_id}/{shopify_variant_id}': {e}"
+            )  # log but proceed
 
-        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_product_id)
+        discounts = self.discount_service.get_gift_discount_intents_for_product(shopify_variant_id)
 
         if not discounts:
             logger.error(f"No discounts found for product_id: {shopify_product_id}")
@@ -104,12 +117,12 @@ class WebhookService:
 
         return {"discount_codes": discounts_codes}
 
-    def handle_used_discount_code(self, payload):
+    def process_used_discount_code(self, payload):
         discount_codes = payload.get("discount_codes", [])
 
         if len(discount_codes) == 0:
             logger.debug(f"No discount codes found in payload")
-            return {}
+            return []
 
         used_discount_codes = []
 
@@ -123,3 +136,61 @@ class WebhookService:
                 logger.info(f"Marked discount with code '{shopify_discount_code}' with id '{discount.id}' as paid")
 
         return used_discount_codes
+
+    def process_paid_order(self, payload):
+        shopify_customer_email = payload.get("customer").get("email")
+
+        user = self.user_service.get_user_by_email(shopify_customer_email)
+
+        if not user:
+            logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
+            return self.__error(f"No user found for email '{shopify_customer_email}'")
+
+        tmg_issued_discount_codes = self.process_used_discount_code(payload)
+
+        order_number = payload.get("order_number")
+        created_at = datetime.fromisoformat(payload.get("created_at"))
+        shipping_address = payload.get("shipping_address")
+        shipping_address = AddressModel(
+            line1=shipping_address.get("address1"),
+            line2=shipping_address.get("address2"),
+            city=shipping_address.get("city"),
+            state=shipping_address.get("province"),
+            zip_code=shipping_address.get("zip"),
+            country=shipping_address.get("country"),
+        )
+
+        create_products = []
+
+        if payload.get("line_items"):
+            for line_item in payload.get("line_items"):
+                create_product = CreateProductModel(
+                    name=line_item.get("name"),
+                    sku=line_item.get("sku"),
+                    price=line_item.get("price"),
+                    quantity=line_item.get("quantity"),
+                    meta={"webhook_line_item_id": line_item.get("id")},
+                )
+
+                create_products.append(create_product)
+
+        create_order = CreateOrderModel(
+            user_id=user.id,
+            order_number=str(order_number),
+            order_origin=SourceType.TMG.value,
+            order_date=created_at,
+            order_type=[OrderType.NEW_ORDER.value],
+            shipping_address=shipping_address,
+            store_location=StoreLocation.ONLINE.value,
+            products=create_products,
+            meta=payload,
+        )
+
+        try:
+            order_model = self.order_service.create_order(create_order)
+            order_model.discount_codes = tmg_issued_discount_codes
+
+            return order_model.to_response()
+        except Exception as e:
+            logger.error(f"Error creating order: {e}")
+            return self.__error(f"Error creating order: {str(e)}")

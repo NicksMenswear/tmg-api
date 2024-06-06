@@ -173,9 +173,9 @@ class DiscountService:
 
         return list(gift_discounts.values())
 
-    def get_gift_discount_intents_for_product(self, product_id: str) -> List[DiscountModel]:
+    def get_gift_discount_intents_for_product(self, variant_id: str) -> List[DiscountModel]:
         discounts = Discount.query.filter(
-            Discount.shopify_virtual_product_id == product_id,
+            Discount.shopify_virtual_product_variant_id == variant_id,
             Discount.shopify_discount_code == None,
             or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
         ).all()
@@ -220,7 +220,7 @@ class DiscountService:
 
         try:
             for discount in discounts_without_codes:
-                if discount.shopify_virtual_product_id:
+                if discount.shopify_virtual_product_variant_id:
                     shopify_products_to_remove.add(discount.shopify_virtual_product_id)
 
                 db.session.delete(discount)

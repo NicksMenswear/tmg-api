@@ -168,7 +168,7 @@ class EventService:
 
         if enriched:
             event_ids = [event.id for event in models]
-            attendees = self.attendee_service.get_attendees_for_events(event_ids)
+            attendees = self.attendee_service.get_attendees_for_events(event_ids, user_id)
 
             for event_model in models:
                 event_model.attendees = attendees.get(event_model.id, [])

@@ -1,8 +1,6 @@
 import random
 import uuid
 from datetime import datetime, timedelta
-from typing import List
-from server.test import utils
 
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.discount_model import (
@@ -14,13 +12,14 @@ from server.models.event_model import CreateEventModel, UpdateEventModel, EventT
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.tests import utils
 
 
 def create_user_request(**user_data) -> CreateUserModel:
     return CreateUserModel(
         first_name=user_data.get("first_name", utils.generate_unique_name()),
         last_name=user_data.get("last_name", utils.generate_unique_name()),
-        email=user_data.get("email", utils.generate_unique_email()),
+        email=user_data.get("email", utils.generate_email()),
         account_status=user_data.get("account_status", True),
     )
 
@@ -81,7 +80,7 @@ def update_role_request(**role_data):
 
 def create_attendee_request(**attendee_data):
     return CreateAttendeeModel(
-        email=attendee_data.get("email", utils.generate_unique_email()),
+        email=attendee_data.get("email", utils.generate_email()),
         first_name=attendee_data.get("first_name", utils.generate_unique_name()),
         last_name=attendee_data.get("last_name", utils.generate_unique_name()),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
@@ -124,33 +123,36 @@ def create_full_pay_discount_intent_request(**create_discount_intent):
     )
 
 
-def shopify_paid_order_gift_virtual_product_pay_for_discounts(sku="", customer_id=None, product_id=None):
+def shopify_line_item(product_id=None, variant_id=None, sku=""):
     return {
         "id": random.randint(1000, 1000000),
-        "discount_codes": [],
-        "customer": {
-            "id": customer_id if customer_id else random.randint(1000, 1000000),
-            "email": "test@example.com",
-        },
-        "line_items": [
-            {
-                "product_id": product_id if product_id else random.randint(1000, 1000000),
-                "sku": sku,
-            }
-        ],
+        "product_id": product_id if product_id else random.randint(1000, 1000000),
+        "variant_id": variant_id if variant_id else random.randint(1000, 1000000),
+        "sku": sku,
+        "name": f"product-{utils.generate_unique_string()}",
+        "price": random.randint(10, 100),
+        "quantity": random.randint(1, 5),
     }
 
 
-def shopify_paid_order_user_pays_for_order_with_discounts(discounts: List[str]):
+def shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None):
     return {
         "id": random.randint(1000, 1000000),
-        "discount_codes": [{"code": discount} for discount in discounts],
-        "line_items": [
-            {
-                "id": random.randint(1000, 1000000),
-                "sku": "PRODUCT_SKU",
-            }
-        ],
+        "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
+        "customer": {
+            "id": customer_id if customer_id else random.randint(1000, 1000000),
+            "email": customer_email if customer_email else "test@example.com",
+        },
+        "order_number": random.randint(1000, 1000000),
+        "created_at": datetime.now().isoformat(),
+        "shipping_address": {
+            "address1": "123 Shipping Address",
+            "city": "City",
+            "province": "Province",
+            "zip": "12345",
+            "country": "US",
+        },
+        "line_items": [] if not line_items else line_items,
     }
 
 

@@ -18,6 +18,7 @@ from server.services.discount import DiscountService
 from server.services.email import EmailService, FakeEmailService
 from server.services.event import EventService
 from server.services.look import LookService
+from server.services.order import OrderService
 from server.services.role import RoleService
 from server.services.shopify import ShopifyService, FakeShopifyService
 from server.services.user import UserService
@@ -97,6 +98,7 @@ def init_services(app, is_testing=False):
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service)
     app.attendee_service = AttendeeService(app.shopify_service, app.user_service)
+    app.order_service = OrderService(user_service=app.user_service)
     app.event_service = EventService(
         attendee_service=app.attendee_service, role_service=app.role_service, look_service=app.look_service
     )
@@ -104,7 +106,12 @@ def init_services(app, is_testing=False):
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
     app.webhook_service = WebhookService(
-        app.user_service, app.attendee_service, app.discount_service, app.look_service, app.shopify_service
+        app.user_service,
+        app.attendee_service,
+        app.discount_service,
+        app.look_service,
+        app.shopify_service,
+        app.order_service,
     )
 
 

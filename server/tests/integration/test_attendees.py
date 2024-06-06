@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import uuid
 
 from server.models.attendee_model import CreateAttendeeModel
-from server.test import BaseTestCase, fixtures
+from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestAttendees(BaseTestCase):
@@ -99,6 +99,55 @@ class TestAttendees(BaseTestCase):
         self.assert_equal_attendee(create_attendee, response.json)
         self.assertTrue(response.json["role_id"], str(role.id))
         self.assertIsNone(response.json.get("look_id"))
+
+    def test_create_attendee_for_existing_user(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        user2 = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, email=user2.email)
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertEqual(str(user2.id), response.json["user_id"])
+
+    def test_create_attendee_for_the_user_that_exists_in_shopify_but_not_in_our_db(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+
+        # when
+        create_attendee = fixtures.create_attendee_request(
+            event_id=event.id, email=f"{uuid.uuid4()}@shopify-user-exists.com"
+        )
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        new_user = self.user_service.get_user_by_email(create_attendee.email)
+        self.assertEqual(response.json["user_id"], str(new_user.id))
+        self.assertEqual(create_attendee.first_name, new_user.first_name)
+        self.assertEqual(create_attendee.last_name, new_user.last_name)
+        self.assertEqual(create_attendee.email, new_user.email)
 
     def test_create_attendee_with_role_and_look(self):
         # given

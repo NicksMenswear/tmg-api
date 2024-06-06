@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from . import API_PARAMS, ACTIVE_ENV, API_HEADERS
+from server.tests.e2e import API_PARAMS, ACTIVE_ENV, API_HEADERS
 
 BASE_API_URL = API_PARAMS[ACTIVE_ENV]["url"]
 API_HMAC_QUERY_PARAMS = API_PARAMS[ACTIVE_ENV]["hmac"]

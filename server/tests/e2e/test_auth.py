@@ -20,8 +20,8 @@ def test_login(page: Page):
 
 
 def test_signup_form(page: Page):
-    first_name = f"f-{utils.generate_unique_name(8, 12)}"
-    last_name = f"l-{utils.generate_unique_name(8, 12)}"
+    first_name = f"{utils.generate_unique_name(8, 12)}"
+    last_name = f"{utils.generate_unique_name(8, 12)}"
     user_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
     password = str(uuid.uuid4())
 

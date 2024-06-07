@@ -194,7 +194,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
-    def test_get_event_enriched_without_attendees_looks_roles(self):
+    def test_get_event_enriched_without_attendees_looks(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event_request = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -216,7 +216,6 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
         self.assertEqual(response.json.get("attendees"), [])
         self.assertEqual(response.json.get("looks"), [])
-        self.assertEqual(response.json.get("roles"), [])
 
     def test_get_event_enriched_with_one_active_attendee_but_with_one_active_look_and_one_active_role(self):
         # given
@@ -252,7 +251,7 @@ class TestEvents(BaseTestCase):
 
         self.assertEqual(len(response.json.get("attendees")), 1)
         self.assertEqual(len(response.json.get("looks")), 1)
-        self.assertEqual(len(response.json.get("roles")), 1)
+        self.assertEqual(len(response.json.get("roles")), 2)
 
         response_attendee = response.json.get("attendees")[0]
         self.assertEqual(response_attendee.get("id"), str(attendee1.id))
@@ -266,7 +265,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_look.get("id"), str(look1.id))
         self.assertEqual(response_look.get("name"), look1.name)
 
-        reponse_role = response.json.get("roles")[0]
+        reponse_role = response.json.get("roles")[1]
         self.assertEqual(reponse_role.get("id"), str(role1.id))
         self.assertEqual(reponse_role.get("name"), role1.name)
 

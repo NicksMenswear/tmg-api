@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from server import encoder
 from server.models.event_model import EventTypeModel
-from server.services.role import PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
+from server.services.role import PREDEFINED_ROLES
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -71,7 +71,7 @@ class TestEvents(BaseTestCase):
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
-        self.assertEqual(unique_roles, set(PREDEFINED_WEDDING_ROLES))
+        self.assertEqual(unique_roles, set(PREDEFINED_ROLES[EventTypeModel.WEDDING]))
 
     def test_create_prom_event(self):
         # given
@@ -101,7 +101,7 @@ class TestEvents(BaseTestCase):
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
-        self.assertEqual(unique_roles, set(PREDEFINED_PROM_ROLES))
+        self.assertEqual(unique_roles, set(PREDEFINED_ROLES[EventTypeModel.PROM]))
 
     def test_create_event_of_type_other(self):
         # given

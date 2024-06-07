@@ -3,13 +3,14 @@ from datetime import datetime
 from typing import List, Dict
 
 from server.database.database_manager import db
-from server.database.models import Role, EventType
+from server.database.models import Role
 from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
+from server.models.event_model import EventTypeModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
 PREDEFINED_ROLES = {
-    EventType.WEDDING: [
+    EventTypeModel.WEDDING: [
         "Bride",
         "Groom",
         "Groomsman",
@@ -19,8 +20,8 @@ PREDEFINED_ROLES = {
         "Father of the Bride",
         "Officiant",
     ],
-    EventType.PROM: ["Attendee", "Attendee Parent or Chaperone"],
-    EventType.OTHER: [
+    EventTypeModel.PROM: ["Attendee", "Attendee Parent or Chaperone"],
+    EventTypeModel.OTHER: [
         "Attendee",
     ],
 }

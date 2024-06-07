@@ -19,12 +19,14 @@ def login(page: Page, email: str, password: str):
     page.get_by_role("button", name="Login").click()
 
 
-def create_new_event(page: Page, event_name: str, event_date: str = None):
+def create_new_event(page: Page, event_name: str, event_date: str = None, event_type: str = "wedding"):
     page.get_by_role("button", name="New Event ").first.click()
+    page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
     page.locator("#eventDate").fill(
         event_date if event_date else (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
     )
+    page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
     event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
     event_item.wait_for(state="visible")
@@ -89,3 +91,7 @@ def delete_attendee(page: Page, attendee_id: str):
 
     attendee_item = page.locator(f'div.tmg-attendees-item[data-attendee-id="{attendee_id}"]')
     attendee_item.wait_for(state="hidden")
+
+
+def logout(page: Page):
+    page.get_by_role("link", name="Logout").click()

@@ -1,6 +1,7 @@
+import re
 from datetime import datetime, timedelta
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
 from server.tests.e2e import REQUIRE_STORE_PASSWORD, STORE_URL, STORE_PASSWORD
 
@@ -95,3 +96,17 @@ def delete_attendee(page: Page, attendee_id: str):
 
 def logout(page: Page):
     page.get_by_role("link", name="Logout").click()
+
+
+def select_role_for_attendee(page: Page, event_id, attendee_id, role_name: str):
+    page.locator(
+        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"] div.tmg-select'
+    ).first.click()
+
+    page.locator(
+        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"] ul.tmg-select-items li.tmg-select-item >> text="{role_name}"'
+    ).first.click()
+
+    return page.locator(
+        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"]'
+    ).first.get_attribute("data-role-id")

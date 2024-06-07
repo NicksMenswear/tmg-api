@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import Page, expect
 
 from server.tests import utils
@@ -289,5 +291,29 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     )
 
 
-def test_roles_persistence_test():
-    pass
+def test_roles_persistence_test(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+
+    event_id = ui.create_new_event(page, event_name, EVENT_DATE, "prom")
+    ui.open_event_accordion(page, event_id)
+    attendee_id = ui.add_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
+    assert attendee_id is not None
+
+    role_name = "Attendee Parent or Chaperone"
+    role_id = ui.select_role_for_attendee(page, event_id, attendee_id, role_name)
+
+    page.reload()
+
+    ui.open_event_accordion(page, event_id)
+    assert role_id == page.locator(
+        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"]'
+    ).first.get_attribute("data-role-id")

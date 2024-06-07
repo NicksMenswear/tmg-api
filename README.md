@@ -56,6 +56,38 @@ http://localhost:8080/openapi.json
 tox
 ```
 
+#### Run integration tests
+
+In order to run integration tests agains local db:
+
+```sh
+./test-integration.sh
+```
+
+#### Run e2e tests
+
+```sh
+./test-e2e.sh
+```
+
+run against `stg` environment and browser `firefox`:
+
+```sh
+ACTIVE_ENV=stg BROWSER=firefox ./test-e2e.sh
+````
+
+run/debug particular test
+
+```sh
+PWDEBUG=1 pytest --headed -s -k <test-function-name>
+```
+
+for example:
+
+```sh
+PWDEBUG=1 pytest --headed -s -k test_roles_persistence 
+```
+
 ## Migrations with "alembic"
 
 ### Select migration environment

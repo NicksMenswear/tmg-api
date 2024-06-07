@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import Page, expect
 
 from server.tests import utils
@@ -183,3 +185,135 @@ def test_delete_all_events(page: Page):
     ui.delete_event(page, event_id)
 
     expect(page.get_by_role("heading", name=event_name).first).not_to_be_visible()
+
+
+def test_delete_all_attendees(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name1 = utils.generate_unique_name()
+    attendee_last_name1 = utils.generate_unique_name()
+    attendee_email1 = utils.generate_email()
+    attendee_first_name2 = utils.generate_unique_name()
+    attendee_last_name2 = utils.generate_unique_name()
+    attendee_email2 = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+
+    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+
+    ui.open_event_accordion(page, event_id)
+
+    attendee_id1 = ui.add_attendee(page, event_id, attendee_first_name1, attendee_last_name1, attendee_email1)
+    assert attendee_id1 is not None
+
+    attendee_id2 = ui.add_attendee(page, event_id, attendee_first_name2, attendee_last_name2, attendee_email2)
+    assert attendee_id2 is not None
+
+    ui.delete_attendee(page, attendee_id1)
+    ui.delete_attendee(page, attendee_id2)
+
+    expect(page.get_by_text("No attendees added.").first).to_be_visible()
+
+
+def test_create_all_types_of_events_and_check_roles(page: Page):
+    event_name1 = utils.generate_event_name()
+    attendee_first_name1 = utils.generate_unique_name()
+    attendee_last_name1 = utils.generate_unique_name()
+    attendee_email1 = utils.generate_email()
+
+    event_name2 = utils.generate_event_name()
+    attendee_first_name2 = utils.generate_unique_name()
+    attendee_last_name2 = utils.generate_unique_name()
+    attendee_email2 = utils.generate_email()
+
+    event_name3 = utils.generate_event_name()
+    attendee_first_name3 = utils.generate_unique_name()
+    attendee_last_name3 = utils.generate_unique_name()
+    attendee_email3 = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+
+    event_id1 = ui.create_new_event(page, event_name1, EVENT_DATE, "wedding")
+    ui.open_event_accordion(page, event_id1)
+    attendee_id1 = ui.add_attendee(page, event_id1, attendee_first_name1, attendee_last_name1, attendee_email1)
+    assert attendee_id1 is not None
+    wedding_roles = {
+        role.inner_text().strip()
+        for role in page.locator(
+            f'div.tmg-attendees-item[data-attendee-id="{attendee_id1}"] div.tmg-attendees-role li.tmg-select-item'
+        ).all()
+    }
+    assert {
+        "Best Man",
+        "Bride",
+        "Father of the Bride",
+        "Father of the Groom",
+        "Groom",
+        "Groomsman",
+        "Officiant",
+        "Usher",
+    } == wedding_roles
+    assert (
+        page.locator(f'div.tmg-item[data-event-id="{event_id1}"] >> div.tmg-item-header-type').first.inner_text()
+        == "Wedding"
+    )
+
+    event_id2 = ui.create_new_event(page, event_name2, EVENT_DATE, "prom")
+    ui.open_event_accordion(page, event_id2)
+    attendee_id2 = ui.add_attendee(page, event_id2, attendee_first_name2, attendee_last_name2, attendee_email2)
+    assert attendee_id2 is not None
+    prom_roles = {
+        role.inner_text().strip()
+        for role in page.locator(
+            f'div.tmg-attendees-item[data-attendee-id="{attendee_id2}"] div.tmg-attendees-role li.tmg-select-item'
+        ).all()
+    }
+    assert {"Attendee", "Attendee Parent or Chaperone"} == prom_roles
+    assert (
+        page.locator(f'div.tmg-item[data-event-id="{event_id2}"] >> div.tmg-item-header-type').first.inner_text()
+        == "Prom"
+    )
+
+    event_id3 = ui.create_new_event(page, event_name3, EVENT_DATE, "other")
+    ui.open_event_accordion(page, event_id3)
+    attendee_id3 = ui.add_attendee(page, event_id3, attendee_first_name3, attendee_last_name3, attendee_email3)
+    assert attendee_id3 is not None
+    assert (
+        page.locator(f'div.tmg-item[data-event-id="{event_id3}"] >> div.tmg-item-header-type').first.inner_text()
+        == "Other"
+    )
+
+
+def test_roles_persistence(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    ui.access_store(page)
+    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+
+    event_id = ui.create_new_event(page, event_name, EVENT_DATE, "prom")
+    ui.open_event_accordion(page, event_id)
+    attendee_id = ui.add_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
+    assert attendee_id is not None
+
+    role_name = "Attendee Parent or Chaperone"
+    role_id = ui.select_role_for_attendee(page, event_id, attendee_id, role_name)
+
+    page.reload()
+
+    ui.open_event_accordion(page, event_id)
+    assert role_id == page.locator(
+        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"]'
+    ).first.get_attribute("data-role-id")

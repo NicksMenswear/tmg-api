@@ -86,11 +86,6 @@ def create_attendee_request(**attendee_data):
         event_id=attendee_data.get("event_id", uuid.uuid4()),
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
-        style=attendee_data.get("style", False),
-        invite=attendee_data.get("invite", False),
-        pay=attendee_data.get("pay", False),
-        size=attendee_data.get("size", False),
-        ship=attendee_data.get("ship", False),
         is_active=attendee_data.get("is_active", True),
     )
 
@@ -100,11 +95,6 @@ def update_attendee_request(**attendee_data):
         event_id=attendee_data.get("event_id", uuid.uuid4()),
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
-        style=attendee_data.get("style", False),
-        invite=attendee_data.get("invite", False),
-        pay=attendee_data.get("pay", False),
-        size=attendee_data.get("size", False),
-        ship=attendee_data.get("ship", False),
         is_active=attendee_data.get("is_active", True),
     )
 

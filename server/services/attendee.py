@@ -134,11 +134,6 @@ class AttendeeService:
                     id=uuid.uuid4(),
                     user_id=attendee_user.id,
                     event_id=create_attendee.event_id,
-                    style=create_attendee.style,
-                    invite=create_attendee.invite,
-                    pay=create_attendee.pay,
-                    size=create_attendee.size,
-                    ship=create_attendee.ship,
                     role_id=create_attendee.role_id,
                     look_id=create_attendee.look_id,
                     is_active=create_attendee.is_active,
@@ -158,13 +153,9 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        attendee.style = update_attendee.style
-        attendee.invite = update_attendee.invite
-        attendee.pay = update_attendee.pay
-        attendee.size = update_attendee.size
-        attendee.ship = update_attendee.ship
-        attendee.role_id = update_attendee.role_id
-        attendee.look_id = update_attendee.look_id
+        attendee.role_id = update_attendee.role_id if update_attendee.role_id else attendee.role_id
+        attendee.look_id = update_attendee.look_id if update_attendee.look_id else attendee.look_id
+        attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()
 
         try:

@@ -156,6 +156,9 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
+    def get_account_login_url(self):
+        return f"https://{self.__shopify_store}.myshopify.com/account/login"
+
     def get_activation_url(self, customer_id):
         status, body = self.admin_api_request(
             "POST",

@@ -45,14 +45,16 @@ class UserService:
                 first_name=create_user.first_name,
                 last_name=create_user.last_name,
                 email=create_user.email,
-                shopify_id=shopify_customer_id,
+                shopify_id=str(shopify_customer_id),
                 account_status=create_user.account_status,
             )
 
             db.session.add(db_user)
 
+            user_model = UserModel.from_orm(db_user)
+
             if send_invite:
-                self.email_service.send_activation_url(db_user.email, shopify_customer_id)
+                self.email_service.send_activation_email(user_model)
 
             db.session.commit()
             db.session.refresh(db_user)
@@ -61,7 +63,7 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to create user.")
 
-        return UserModel.from_orm(db_user)
+        return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
         db_user = User.query.filter_by(email=email).first()

@@ -175,6 +175,9 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
+    def send_invite(self, attendee_id: uuid.UUID) -> None:
+        pass
+
     def delete_attendee(self, attendee_id: uuid.UUID) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 

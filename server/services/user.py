@@ -31,13 +31,13 @@ class UserService:
             shopify_customer_id = self.shopify_service.create_customer(
                 create_user.first_name, create_user.last_name, create_user.email
             )["id"]
-            send_invite = True
+            send_activation_email = create_user.account_status
         except DuplicateError as e:
             # If the user already exists in Shopify, we should still create a user in our database
             logger.exception(e)
 
             shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
-            send_invite = False
+            send_activation_email = False
 
         try:
             db_user = User(
@@ -53,7 +53,7 @@ class UserService:
 
             user_model = UserModel.from_orm(db_user)
 
-            if send_invite:
+            if send_activation_email:
                 self.email_service.send_activation_email(user_model)
 
             db.session.commit()

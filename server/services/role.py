@@ -3,11 +3,10 @@ from datetime import datetime
 from typing import List, Dict
 
 from server.database.database_manager import db
-from server.database.models import Role, Event
+from server.database.models import Role, Event, Attendee
 from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.models.event_model import EventTypeModel
-from server.services import ServiceError, NotFoundError, DuplicateError
-
+from server.services import ServiceError, NotFoundError, DuplicateError, BadRequestError
 
 PREDEFINED_ROLES = {
     EventTypeModel.WEDDING: [
@@ -93,6 +92,11 @@ class RoleService:
 
     def delete_role(self, role_id: uuid.UUID) -> None:
         role = self.__role_by_id(role_id)
+
+        num_attendees = Attendee.query.filter(Attendee.role_id == role_id).count()
+
+        if num_attendees > 0:
+            raise BadRequestError("Can't delete role associated to attendee")
 
         try:
             role.is_active = False

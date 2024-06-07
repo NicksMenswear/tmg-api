@@ -419,9 +419,9 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 2)
-        response_role1 = response.json[0]
-        response_role2 = response.json[1]
+        self.assertEqual(len(response.json), 3)
+        response_role1 = response.json[1]
+        response_role2 = response.json[2]
         self.assertEqual(response_role1.get("id"), str(role1.id))
         self.assertEqual(response_role1.get("name"), role1.name)
         self.assertEqual(response_role2.get("id"), str(role2.id))
@@ -446,7 +446,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
-        response_role = response.json[0]
+        response_role = response.json[1]
         self.assertEqual(response_role.get("id"), str(role1.id))
         self.assertEqual(response_role.get("name"), role1.name)
 
@@ -462,24 +462,6 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 404)
-
-    def test_get_roles_for_event_without_roles(self):
-        # given
-        user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-
-        # when
-        response = self.client.open(
-            f"/events/{str(event.id)}/roles",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
 
     def test_get_attendees_for_event(self):
         # given

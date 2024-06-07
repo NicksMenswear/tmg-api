@@ -9,7 +9,7 @@ from server.models.role_model import CreateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.attendee import AttendeeService
 from server.services.look import LookService
-from server.services.role import RoleService, PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
+from server.services.role import RoleService, PREDEFINED_ROLES
 
 
 # noinspection PyMethodMayBeStatic
@@ -70,15 +70,9 @@ class EventService:
             db.session.add(db_event)
             db.session.flush()
 
-            predefined_roles = []
-
-            if create_event.type == EventTypeModel.WEDDING:
-                predefined_roles = PREDEFINED_WEDDING_ROLES
-            elif create_event.type == EventTypeModel.PROM:
-                predefined_roles = PREDEFINED_PROM_ROLES
-
-            roles = [CreateRoleModel(name=role, event_id=db_event.id) for role in predefined_roles]
-
+            roles = [
+                CreateRoleModel(name=role, event_id=db_event.id) for role in PREDEFINED_ROLES.get(create_event.type, [])
+            ]
             self.role_service.create_roles(roles)
             db.session.commit()
         except Exception as e:

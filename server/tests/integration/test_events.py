@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from server import encoder
 from server.models.event_model import EventTypeModel
-from server.services.role import PREDEFINED_WEDDING_ROLES, PREDEFINED_PROM_ROLES
+from server.services.role import PREDEFINED_ROLES
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -71,7 +71,7 @@ class TestEvents(BaseTestCase):
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
-        self.assertEqual(unique_roles, set(PREDEFINED_WEDDING_ROLES))
+        self.assertEqual(unique_roles, set(PREDEFINED_ROLES[EventTypeModel.WEDDING]))
 
     def test_create_prom_event(self):
         # given
@@ -101,7 +101,7 @@ class TestEvents(BaseTestCase):
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
-        self.assertEqual(unique_roles, set(PREDEFINED_PROM_ROLES))
+        self.assertEqual(unique_roles, set(PREDEFINED_ROLES[EventTypeModel.PROM]))
 
     def test_create_event_of_type_other(self):
         # given
@@ -128,8 +128,9 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
-        roles = self.role_service.get_roles_for_event(created_event.get("id"))
-        self.assertEqual(roles, [])
+        roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
+        unique_roles = set([role.name for role in roles])
+        self.assertEqual(unique_roles, set(PREDEFINED_ROLES[EventTypeModel.OTHER]))
 
     def test_create_event_without_type(self):
         # given
@@ -194,7 +195,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
 
-    def test_get_event_enriched_without_attendees_looks_roles(self):
+    def test_get_event_enriched_without_attendees_looks(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event_request = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -216,7 +217,6 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
         self.assertEqual(response.json.get("attendees"), [])
         self.assertEqual(response.json.get("looks"), [])
-        self.assertEqual(response.json.get("roles"), [])
 
     def test_get_event_enriched_with_one_active_attendee_but_with_one_active_look_and_one_active_role(self):
         # given
@@ -252,7 +252,7 @@ class TestEvents(BaseTestCase):
 
         self.assertEqual(len(response.json.get("attendees")), 1)
         self.assertEqual(len(response.json.get("looks")), 1)
-        self.assertEqual(len(response.json.get("roles")), 1)
+        self.assertEqual(len(response.json.get("roles")), 2)
 
         response_attendee = response.json.get("attendees")[0]
         self.assertEqual(response_attendee.get("id"), str(attendee1.id))
@@ -266,7 +266,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_look.get("id"), str(look1.id))
         self.assertEqual(response_look.get("name"), look1.name)
 
-        reponse_role = response.json.get("roles")[0]
+        reponse_role = response.json.get("roles")[1]
         self.assertEqual(reponse_role.get("id"), str(role1.id))
         self.assertEqual(reponse_role.get("name"), role1.name)
 
@@ -420,9 +420,9 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 2)
-        response_role1 = response.json[0]
-        response_role2 = response.json[1]
+        self.assertEqual(len(response.json), 3)
+        response_role1 = response.json[1]
+        response_role2 = response.json[2]
         self.assertEqual(response_role1.get("id"), str(role1.id))
         self.assertEqual(response_role1.get("name"), role1.name)
         self.assertEqual(response_role2.get("id"), str(role2.id))
@@ -446,8 +446,8 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 1)
-        response_role = response.json[0]
+        self.assertEqual(len(response.json), 2)
+        response_role = response.json[1]
         self.assertEqual(response_role.get("id"), str(role1.id))
         self.assertEqual(response_role.get("name"), role1.name)
 
@@ -463,24 +463,6 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 404)
-
-    def test_get_roles_for_event_without_roles(self):
-        # given
-        user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-
-        # when
-        response = self.client.open(
-            f"/events/{str(event.id)}/roles",
-            query_string=self.hmac_query_params,
-            method="GET",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 200)
-        self.assertEqual(response.json, [])
 
     def test_get_attendees_for_event(self):
         # given

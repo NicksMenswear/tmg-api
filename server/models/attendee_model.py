@@ -11,11 +11,6 @@ from server.models.user_model import UserRequestModel
 class CreateAttendeeModel(UserRequestModel):
     email: EmailStr
     event_id: UUID
-    style: bool = False
-    invite: bool = False
-    pay: bool = False
-    size: bool = False
-    ship: bool = False
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     is_active: bool = True
@@ -74,11 +69,6 @@ class EnrichedAttendeeModel(AttendeeModel):
 
 
 class UpdateAttendeeModel(BaseModel):
-    style: bool = False
-    invite: bool = False
-    pay: bool = False
-    size: bool = False
-    ship: bool = False
     is_active: bool = True
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

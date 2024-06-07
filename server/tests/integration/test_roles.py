@@ -215,6 +215,26 @@ class TestRoles(BaseTestCase):
         role_in_db = self.role_service.get_role_by_id(role.id)
         self.assertEqual(role_in_db.is_active, False)
 
+    def test_delete_role_associated_to_attendee(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, role_id=role.id))
+
+        # when
+        response = self.client.open(
+            f"/roles/{role.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Can't delete role associated to attendee")
+
     def test_create_role_with_name_too_short(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

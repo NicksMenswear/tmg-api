@@ -172,6 +172,7 @@ def _log_request(method, *args, **kwargs):
         "X-Shopify-Storefront-Access-Token",
         "Api-Token",
         "X-Api-Access-Token",
+        "X-Postmark-Server-Token",
     ]
     for h in redact_headers:
         if h in headers:

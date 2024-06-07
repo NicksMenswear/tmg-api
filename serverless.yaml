@@ -47,7 +47,7 @@ functions:
       storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
       # Postmark Env Variables
       POSTMARK_API_URL: "https://api.postmarkapp.com"
-      POSTMARK_API_KEY: ${ssm:/${sls:stage}/active_campaign/api_key}
+      POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
 
 plugins:
   - serverless-python-requirements

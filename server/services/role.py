@@ -5,20 +5,26 @@ from typing import List, Dict
 from server.database.database_manager import db
 from server.database.models import Role, Event
 from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
+from server.models.event_model import EventTypeModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 
-PREDEFINED_WEDDING_ROLES = [
-    "Bride",
-    "Groom",
-    "Groomsman",
-    "Best Man",
-    "Usher",
-    "Father of the Groom",
-    "Father of the Bride",
-    "Officiant",
-]
-PREDEFINED_PROM_ROLES = ["Attendee", "Attendee Parent or Chaperone"]
+PREDEFINED_ROLES = {
+    EventTypeModel.WEDDING: [
+        "Bride",
+        "Groom",
+        "Groomsman",
+        "Best Man",
+        "Usher",
+        "Father of the Groom",
+        "Father of the Bride",
+        "Officiant",
+    ],
+    EventTypeModel.PROM: ["Attendee", "Attendee Parent or Chaperone"],
+    EventTypeModel.OTHER: [
+        "Attendee",
+    ],
+}
 
 
 # noinspection PyMethodMayBeStatic

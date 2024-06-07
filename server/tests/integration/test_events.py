@@ -129,7 +129,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
         roles = self.role_service.get_roles_for_event(created_event.get("id"))
-        self.assertEqual(roles, [])
+        self.assertEqual(roles, set(PREDEFINED_ROLES[EventTypeModel.OTHER]))
 
     def test_create_event_without_type(self):
         # given

@@ -291,7 +291,7 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     )
 
 
-def test_roles_persistence_test(page: Page):
+def test_roles_persistence(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()

@@ -38,10 +38,11 @@ class EmailService(AbstractEmailService):
         self.shopify_service = shopify_service
 
     def _postmark_request(self, method, path, json):
+        headers = {"X-Postmark-Server-Token": POSTMARK_API_KEY, "Content-Type": "application/json"}
         response = http(
             method,
             f"{POSTMARK_API_URL}/{path}",
-            headers={"X-Postmark-Server-Token": POSTMARK_API_KEY, "Content-Type": "application/json"},
+            headers=headers,
             json=json,
         )
         if response.status_code >= 400:

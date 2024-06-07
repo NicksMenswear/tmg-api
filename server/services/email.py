@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from server.controllers.util import http
 from server.services import ServiceError
+from server.models.user_model import UserModel
 from server.services.shopify import AbstractShopifyService
 
 POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
@@ -17,19 +18,19 @@ class PostmarkTemplates:
 
 class AbstractEmailService(ABC):
     @abstractmethod
-    def send_activation_email(self, email, shopify_customer_id):
+    def send_activation_email(self, user: UserModel):
         pass
 
     @abstractmethod
-    def send_invite_email(self, email, shopify_customer_id):
+    def send_invite_email(self, user: UserModel):
         pass
 
 
 class FakeEmailService(AbstractEmailService):
-    def send_activation_url(self, email, shopify_customer_id):
+    def send_activation_url(self, user: UserModel):
         pass
 
-    def send_invite_email(self, email, shopify_customer_id):
+    def send_invite_email(self, user: UserModel):
         pass
 
 
@@ -48,15 +49,15 @@ class EmailService(AbstractEmailService):
         if response.status_code >= 400:
             raise ServiceError(f"Error sending email: {response.text}")
 
-    def send_activation_url(self, email, first_name, last_name, shopify_customer_id):
-        activation_url = self.shopify_service.get_activation_url(shopify_customer_id)
+    def send_activation_url(self, user: UserModel):
+        activation_url = self.shopify_service.get_activation_url(user.shopify_id)
         body = {
             "From": FROM_EMAIL,
-            "To": email,
+            "To": user.email,
             "TemplateId": PostmarkTemplates.ACTIVATION,
-            "TemplateModel": {"first_name": first_name, "shopify_url": activation_url},
+            "TemplateModel": {"first_name": user.first_name, "shopify_url": activation_url},
         }
         self._postmark_request("POST", "email/withTemplate", body)
 
-    def send_invite_email(self, email, first_name, last_name, shopify_customer_id):
+    def send_invite_email(self, user: UserModel):
         pass

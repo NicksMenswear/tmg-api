@@ -45,9 +45,9 @@ functions:
       webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
       admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
       storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
-      # Active Campaign Env Variables
-      ACTIVE_CAMPAIGN_URL: "https://themoderngroom.api-us1.com"
-      ACTIVE_CAMPAIGN_API_KEY: ${ssm:/${sls:stage}/active_campaign/api_key}
+      # Postmark Env Variables
+      POSTMARK_API_URL: "https://api.postmarkapp.com"
+      POSTMARK_API_KEY: ${ssm:/${sls:stage}/active_campaign/api_key}
 
 plugins:
   - serverless-python-requirements

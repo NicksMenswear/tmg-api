@@ -153,9 +153,9 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        attendee.role_id = update_attendee.role_id if update_attendee.role_id else attendee.role_id
-        attendee.look_id = update_attendee.look_id if update_attendee.look_id else attendee.look_id
-        attendee.style = True if attendee.role_id and attendee.look_id else False
+        attendee.role_id = update_attendee.role_id or attendee.role_id
+        attendee.look_id = update_attendee.look_id or update_attendee.look_id
+        attendee.style = attendee.role_id and attendee.look_id
         attendee.updated_at = datetime.now()
 
         try:

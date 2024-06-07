@@ -445,7 +445,7 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 2)
         response_role = response.json[0]
         self.assertEqual(response_role.get("id"), str(role1.id))
         self.assertEqual(response_role.get("name"), role1.name)

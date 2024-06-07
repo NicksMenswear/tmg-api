@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Look
+from server.database.models import Look, Attendee
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
-from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.user import UserService
 
 
@@ -83,6 +83,11 @@ class LookService:
 
         if not look:
             raise NotFoundError("Look not found")
+
+        num_attendees = Attendee.query.filter(Attendee.look_id == look_id).count()
+
+        if num_attendees > 0:
+            raise BadRequestError("Can't delete look associated to attendee")
 
         try:
             look.is_active = False

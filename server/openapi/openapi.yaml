@@ -1647,26 +1647,6 @@ components:
         last_name:
           title: last_name
           type: string
-        style:
-          title: style
-          type: boolean
-          default: false
-        invite:
-          title: invite
-          type: boolean
-          default: false
-        pay:
-          title: pay
-          type: boolean
-          default: false
-        size:
-          title: size
-          type: boolean
-          default: false
-        ship:
-          title: ship
-          type: boolean
-          default: false
         role_id:
           title: role
           type: string
@@ -1684,21 +1664,6 @@ components:
       type: object
     UpdateAttendee:
       properties:
-        style:
-          title: style
-          type: boolean
-        invite:
-          title: invite
-          type: boolean
-        pay:
-          title: pay
-          type: boolean
-        size:
-          title: size
-          type: boolean
-        ship:
-          title: ship
-          type: boolean
         role_id:
           title: role
           $ref: '#/components/schemas/uuid'

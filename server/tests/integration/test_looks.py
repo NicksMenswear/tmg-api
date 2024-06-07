@@ -247,6 +247,26 @@ class TestLooks(BaseTestCase):
         look_in_db = Look.query.filter(Look.id == look.id).first()
         self.assertFalse(look_in_db.is_active)
 
+    def test_delete_look_associated_to_attendee(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, look_id=look.id))
+
+        # when
+        response = self.client.open(
+            f"/looks/{look.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Can't delete look associated to attendee")
+
     def test_create_look_with_name_too_long(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

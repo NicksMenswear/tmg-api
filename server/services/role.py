@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict
 
 from server.database.database_manager import db
-from server.database.models import Role
+from server.database.models import Role, Event
 from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.models.event_model import EventTypeModel
 from server.services import ServiceError, NotFoundError, DuplicateError

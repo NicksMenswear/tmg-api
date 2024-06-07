@@ -50,8 +50,8 @@ def test_invite_attendee(page: Page):
     page.goto(f"{STORE_URL}/account")
 
     event_item = page.locator(f'.tmg-invite-event-name:has-text("{event_name}")')
-    event_item.wait_for(state="visible")
     event_item.scroll_into_view_if_needed()
+    event_item.wait_for(state="visible")
 
 
 def test_set_role_and_verify_it_showed_up_for_attendee(page: Page):
@@ -96,7 +96,7 @@ def test_set_role_and_verify_it_showed_up_for_attendee(page: Page):
     page.goto(f"{STORE_URL}/account")
 
     event_item = page.locator(f'.tmg-invite-event-name:has-text("{event_name}")')
-    event_item.wait_for(state="visible")
     event_item.scroll_into_view_if_needed()
+    event_item.wait_for(state="visible")
 
     expect(page.get_by_text(role_name)).to_be_visible()

@@ -30,23 +30,23 @@ def create_new_event(page: Page, event_name: str, event_date: str = None, event_
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
     event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
-    event_item.wait_for(state="visible")
     event_item.scroll_into_view_if_needed()
+    event_item.wait_for(state="visible")
 
     return event_item.get_attribute("data-event-id")
 
 
 def open_event_accordion(page: Page, event_id: str):
     event_item = page.locator(f'.tmg-item[data-event-id="{event_id}"]')
-    event_item.wait_for(state="visible")
     event_item.scroll_into_view_if_needed()
+    event_item.wait_for(state="visible")
     event_item.click()
 
 
 def add_attendee(page: Page, event_id: str, attendee_first_name: str, attendee_last_name: str, attendee_email: str):
     add_participant_button = page.locator(f'button.addAttendees[data-event-id="{event_id}"]')
-    add_participant_button.wait_for(state="visible")
     add_participant_button.scroll_into_view_if_needed()
+    add_participant_button.wait_for(state="visible")
     add_participant_button.click()
 
     attendees_first_name_element = page.locator(".attendeesFirstName").first
@@ -62,13 +62,14 @@ def add_attendee(page: Page, event_id: str, attendee_first_name: str, attendee_l
     attendees_email_element.fill(attendee_email)
 
     add_attendee_button = page.locator(f'//button[@class="tmg-btn" and contains(text(), "Add Attendee")]')
-    add_attendee_button.wait_for(state="visible")
     add_attendee_button.scroll_into_view_if_needed()
+    add_attendee_button.wait_for(state="visible")
     add_attendee_button.click()
 
     attendee_item = page.locator(
         f'//div[contains(@class, "tmg-attendees-item")]//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]//ancestor::div[@class="tmg-attendees-item"]'
     ).first
+    attendee_item.scroll_into_view_if_needed()
     attendee_item.wait_for(state="visible")
 
     return attendee_item.get_attribute("data-attendee-id")

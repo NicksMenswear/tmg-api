@@ -8,6 +8,9 @@ from pydantic import BaseModel, EmailStr, field_validator
 class UserRequestModel(BaseModel):
     first_name: str
     last_name: str
+    account_status: Optional[bool] = False
+    shopify_id: Optional[str] = None
+    phone_number: Optional[str] = None
 
     @field_validator("first_name", "last_name")
     @classmethod
@@ -23,7 +26,6 @@ class UserRequestModel(BaseModel):
 
 class CreateUserModel(UserRequestModel):
     email: EmailStr
-    account_status: bool = True
 
 
 class UserModel(BaseModel):

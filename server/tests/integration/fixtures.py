@@ -21,6 +21,8 @@ def create_user_request(**user_data) -> CreateUserModel:
         last_name=user_data.get("last_name", utils.generate_unique_name()),
         email=user_data.get("email", utils.generate_email()),
         account_status=user_data.get("account_status", True),
+        phone_number=user_data.get("phone_number", None),
+        shopify_id=user_data.get("shopify_id", None),
     )
 
 
@@ -113,7 +115,7 @@ def create_full_pay_discount_intent_request(**create_discount_intent):
     )
 
 
-def shopify_line_item(product_id=None, variant_id=None, sku=""):
+def webhook_shopify_line_item(product_id=None, variant_id=None, sku=""):
     return {
         "id": random.randint(1000, 1000000),
         "product_id": product_id if product_id else random.randint(1000, 1000000),
@@ -125,7 +127,7 @@ def shopify_line_item(product_id=None, variant_id=None, sku=""):
     }
 
 
-def shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None):
+def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None):
     return {
         "id": random.randint(1000, 1000000),
         "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
@@ -143,6 +145,19 @@ def shopify_paid_order(customer_email=None, customer_id=None, discounts=None, li
             "country": "US",
         },
         "line_items": [] if not line_items else line_items,
+    }
+
+
+def webhook_customer_update(
+    shopify_id=None, email: str = None, first_name=None, last_name=None, account_status=True, phone=None
+):
+    return {
+        "id": shopify_id if shopify_id else random.randint(1000, 1000000),
+        "email": email if email else utils.generate_email(),
+        "first_name": first_name if first_name else utils.generate_unique_name(),
+        "last_name": last_name if last_name else utils.generate_unique_name(),
+        "state": "enabled" if account_status else "disabled",
+        "phone": phone if phone else "",
     }
 
 

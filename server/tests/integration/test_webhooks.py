@@ -9,26 +9,41 @@ from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
 PAID_ORDER_REQUEST_HEADERS = {
-    "Accept": "application/json",
     "X-Shopify-Topic": "orders/paid",
+}
+
+CUSTOMERS_CREATE_REQUEST_HEADERS = {
+    "X-Shopify-Topic": "customers/create",
+}
+
+CUSTOMERS_UPDATE_REQUEST_HEADERS = {
+    "X-Shopify-Topic": "customers/update",
+}
+
+CUSTOMERS_ENABLE_REQUEST_HEADERS = {
+    "X-Shopify-Topic": "customers/enable",
+}
+
+CUSTOMERS_DISABLE_REQUEST_HEADERS = {
+    "X-Shopify-Topic": "customers/disable",
 }
 
 WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
 
 
 class TestWebhooks(BaseTestCase):
-    def __post(self, payload, headers=None):
+    def __post(self, payload, headers):
         return self.client.open(
             WEBHOOK_SHOPIFY_ENDPOINT,
             method="POST",
             data=json.dumps(payload, cls=encoder.CustomJSONEncoder),
-            headers=PAID_ORDER_REQUEST_HEADERS if not headers else headers,
+            headers={**self.request_headers, **headers},
             content_type=self.content_type,
         )
 
     def test_webhook_without_topic_header(self):
         # when
-        response = self.__post({}, self.request_headers)
+        response = self.__post({}, {})
 
         # then
         self.assert400(response)
@@ -38,7 +53,6 @@ class TestWebhooks(BaseTestCase):
         response = self.__post(
             {},
             {
-                "Accept": "application/json",
                 "X-Shopify-Topic": f"orders/{uuid.uuid4()}",
             },
         )
@@ -47,9 +61,96 @@ class TestWebhooks(BaseTestCase):
         self.assert200(response)
         self.assertEqual(len(response.json), 0)
 
+    def test_customers_create_event(self):
+        # when
+        webhook_customer = fixtures.webhook_customer_update(phone=random.randint(1000000000, 9999999999))
+        response = self.__post(webhook_customer, CUSTOMERS_CREATE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, webhook_customer["email"])
+        self.assertEqual(user.phone_number, str(webhook_customer["phone"]))
+        self.assertEqual(user.first_name, webhook_customer["first_name"])
+        self.assertEqual(user.last_name, webhook_customer["last_name"])
+        self.assertEqual(user.shopify_id, str(webhook_customer["id"]))
+        self.assertEqual(user.account_status, webhook_customer["state"] == "enabled")
+
+    def test_customers_update_event(self):
+        # given
+        user = self.app.user_service.create_user(
+            fixtures.create_user_request(
+                shopify_id=str(random.randint(1000, 1000000)), phone_number=utils.generate_phone_number()
+            )
+        )
+
+        # when
+        webhook_customer = fixtures.webhook_customer_update(
+            shopify_id=int(user.shopify_id),
+            email=user.email,
+            phone=random.randint(1000000000, 9999999999),
+            account_status=not user.account_status,
+        )
+        response = self.__post(webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, webhook_customer["email"])
+        self.assertEqual(user.phone_number, str(webhook_customer["phone"]))
+        self.assertEqual(user.first_name, webhook_customer["first_name"])
+        self.assertEqual(user.last_name, webhook_customer["last_name"])
+        self.assertEqual(user.shopify_id, str(webhook_customer["id"]))
+        self.assertEqual(user.account_status, webhook_customer["state"] == "enabled")
+
+    def test_customers_disable_event(self):
+        # given
+        user = self.app.user_service.create_user(
+            fixtures.create_user_request(shopify_id=str(random.randint(1000, 1000000)), account_status=True)
+        )
+
+        # when
+        webhook_customer = fixtures.webhook_customer_update(
+            shopify_id=int(user.shopify_id),
+            email=user.email,
+            account_status=False,
+        )
+        response = self.__post(webhook_customer, CUSTOMERS_DISABLE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+
+        self.assertIsNotNone(user)
+        self.assertEqual(user.account_status, False)
+
+    def test_customers_enable_event(self):
+        # given
+        user = self.app.user_service.create_user(
+            fixtures.create_user_request(shopify_id=str(random.randint(1000, 1000000)), account_status=False)
+        )
+
+        # when
+        webhook_customer = fixtures.webhook_customer_update(
+            shopify_id=int(user.shopify_id),
+            email=user.email,
+            account_status=True,
+        )
+        response = self.__post(webhook_customer, CUSTOMERS_ENABLE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+
+        self.assertIsNotNone(user)
+        self.assertEqual(user.account_status, True)
+
     def test_paid_order_without_items(self):
         # when
-        response = self.__post({})
+        response = self.__post({}, PAID_ORDER_REQUEST_HEADERS)
 
         # then
         self.assert200(response)
@@ -61,10 +162,11 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
-                line_items=[fixtures.shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
-            )
+                line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -77,12 +179,15 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}")
+                    fixtures.webhook_shopify_line_item(
+                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
+                    )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -110,16 +215,17 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(
+                    fixtures.webhook_shopify_line_item(
                         sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -148,16 +254,17 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(
+                    fixtures.webhook_shopify_line_item(
                         sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -190,16 +297,17 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(
+                    fixtures.webhook_shopify_line_item(
                         sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -247,16 +355,17 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(
+                    fixtures.webhook_shopify_line_item(
                         sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -327,16 +436,17 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.shopify_line_item(
+                    fixtures.webhook_shopify_line_item(
                         sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
                 ],
-            )
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -355,9 +465,10 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
-                discounts=[], customer_email=user.email, line_items=[fixtures.shopify_line_item()]
-            )
+            fixtures.webhook_shopify_paid_order(
+                discounts=[], customer_email=user.email, line_items=[fixtures.webhook_shopify_line_item()]
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -370,9 +481,10 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
-                discounts=["ASDF1234"], customer_email=user.email, line_items=[fixtures.shopify_line_item()]
-            )
+            fixtures.webhook_shopify_paid_order(
+                discounts=["ASDF1234"], customer_email=user.email, line_items=[fixtures.webhook_shopify_line_item()]
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -406,11 +518,12 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 discounts=[discount.shopify_discount_code],
-                line_items=[fixtures.shopify_line_item()],
-            )
+                line_items=[fixtures.webhook_shopify_line_item()],
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -459,11 +572,12 @@ class TestWebhooks(BaseTestCase):
 
         # when
         response = self.__post(
-            fixtures.shopify_paid_order(
+            fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 discounts=[discount1.shopify_discount_code, discount2.shopify_discount_code],
-                line_items=[fixtures.shopify_line_item()],
-            )
+                line_items=[fixtures.webhook_shopify_line_item()],
+            ),
+            PAID_ORDER_REQUEST_HEADERS,
         )
 
         # then
@@ -480,12 +594,12 @@ class TestWebhooks(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
 
         # when
-        webhook_request = fixtures.shopify_paid_order(
+        webhook_request = fixtures.webhook_shopify_paid_order(
             customer_email=user.email,
-            line_items=[fixtures.shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
         )
 
-        response = self.__post(webhook_request)
+        response = self.__post(webhook_request, PAID_ORDER_REQUEST_HEADERS)
 
         # then
         self.assert200(response)

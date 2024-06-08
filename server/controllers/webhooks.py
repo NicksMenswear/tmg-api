@@ -23,8 +23,16 @@ def shopify_webhook(payload):
     response_payload = {}
 
     try:
-        if topic == "orders/paid":
-            response_payload = webhook_service.handle_orders_paid(payload)
+        topic_handlers = {
+            "orders/paid": webhook_service.handle_orders_paid,
+            "customers/create": webhook_service.handle_customer_update,
+            "customers/update": webhook_service.handle_customer_update,
+            "customers/enable": webhook_service.handle_customer_update,
+            "customers/disable": webhook_service.handle_customer_update,
+        }
+
+        if topic in topic_handlers:
+            response_payload = topic_handlers[topic](payload)
         else:
             logger.debug(f"Unhandled Shopify webhook topic: {topic}")
     finally:

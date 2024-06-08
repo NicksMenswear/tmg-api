@@ -47,7 +47,7 @@ class EmailService(AbstractEmailService):
             json=json,
         )
         if response.status >= 400:
-            raise ServiceError(f"Error sending email.")
+            raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
     def send_activation_email(self, user: UserModel):
         activation_url = self.shopify_service.get_activation_url(user.shopify_id)

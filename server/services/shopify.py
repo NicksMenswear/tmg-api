@@ -124,11 +124,12 @@ class FakeShopifyService(AbstractShopifyService):
 class ShopifyService(AbstractShopifyService):
     def __init__(self):
         self.__shopify_store = os.getenv("shopify_store")
+        self.__shopify_store_host = f"{self.__shopify_store}.myshopify.com"
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
         self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
-        self.__shopify_rest_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
-        self.__shopify_graphql_admin_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/admin/api/2024-01"
-        self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store}.myshopify.com/api/2024-01"
+        self.__shopify_rest_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
+        self.__shopify_graphql_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
+        self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store_host}/api/2024-01"
 
     def admin_api_request(self, method, endpoint, body=None):
         response = http(
@@ -157,7 +158,7 @@ class ShopifyService(AbstractShopifyService):
         return response.status, json.loads(response.data.decode("utf-8"))
 
     def get_account_login_url(self):
-        return f"https://{self.__shopify_store}.myshopify.com/account/login"
+        return f"https://{self.__shopify_store_host}/account/login"
 
     def get_activation_url(self, customer_id):
         status, body = self.admin_api_request(

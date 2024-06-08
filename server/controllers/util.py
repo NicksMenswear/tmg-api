@@ -166,11 +166,17 @@ def _log_request(method, *args, **kwargs):
     log_kwargs = deepcopy(kwargs)
     headers = log_kwargs.get("headers", {})
 
-    if "X-Shopify-Access-Token" in headers:
-        headers["X-Shopify-Access-Token"] = "***"
-
-    if "X-Shopify-Storefront-Access-Token" in headers:
-        headers["X-Shopify-Storefront-Access-Token"] = "***"
+    redact_headers = [
+        "Authorization",
+        "X-Shopify-Access-Token",
+        "X-Shopify-Storefront-Access-Token",
+        "Api-Token",
+        "X-Api-Access-Token",
+        "X-Postmark-Server-Token",
+    ]
+    for h in redact_headers:
+        if h in headers:
+            headers[h] = "***"
 
     logger.debug(f"Making {method} request with args {args} {log_kwargs}")
 

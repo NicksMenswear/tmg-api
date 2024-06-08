@@ -9,7 +9,7 @@ from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.emails import AbstractEmailService
+from server.services.email import AbstractEmailService
 from server.services.shopify import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
@@ -31,13 +31,13 @@ class UserService:
             shopify_customer_id = self.shopify_service.create_customer(
                 create_user.first_name, create_user.last_name, create_user.email
             )["id"]
-            send_invite = True
+            send_activation_email = create_user.account_status
         except DuplicateError as e:
             # If the user already exists in Shopify, we should still create a user in our database
             logger.exception(e)
 
             shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
-            send_invite = False
+            send_activation_email = False
 
         try:
             db_user = User(
@@ -45,14 +45,16 @@ class UserService:
                 first_name=create_user.first_name,
                 last_name=create_user.last_name,
                 email=create_user.email,
-                shopify_id=shopify_customer_id,
+                shopify_id=str(shopify_customer_id),
                 account_status=create_user.account_status,
             )
 
             db.session.add(db_user)
 
-            if send_invite:
-                self.email_service.send_activation_url(db_user.email, shopify_customer_id)
+            user_model = UserModel.from_orm(db_user)
+
+            if send_activation_email:
+                self.email_service.send_activation_email(user_model)
 
             db.session.commit()
             db.session.refresh(db_user)
@@ -61,7 +63,7 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to create user.")
 
-        return UserModel.from_orm(db_user)
+        return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
         db_user = User.query.filter_by(email=email).first()

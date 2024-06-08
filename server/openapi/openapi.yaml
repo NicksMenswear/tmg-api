@@ -1460,49 +1460,6 @@ paths:
       tags:
         - Login
       x-openapi-router-controller: server.controllers.login
-  /invite:
-    post:
-      operationId: send_invite
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Invite'
-        required: true
-        x-body-name: invite_data
-      responses:
-        "201":
-          description: Invite created
-      summary: Create Invite
-      tags:
-        - Invites
-      x-openapi-router-controller: server.controllers.invites
 
 components:
   schemas:
@@ -1830,29 +1787,4 @@ components:
           type: integer
       title: AuditLog
       type: object
-    Invite:
-      properties:
-        email:
-          title: email
-          $ref: '#/components/schemas/email'
-        first_name:
-          title: first_name
-          type: string
-        last_name:
-          title: last_name
-          type: string
-        name:
-          title: name
-          type: string
-        event_id:
-          title: event_id
-          $ref: '#/components/schemas/uuid'
-        data:
-          title: data
-          type: array
-          items:
-            type: object
-      required:
-        - event_id
-      title: Invite
-      type: object
+

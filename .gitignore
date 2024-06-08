@@ -163,3 +163,5 @@ node_modules
 .serverless/
 .vscode/
 
+*.jar
+

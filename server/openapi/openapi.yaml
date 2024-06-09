@@ -1489,6 +1489,7 @@ components:
         shopify_id:
           title: shopify_id
           type: string
+          nullable: true
         account_status:
           title: account_status
           type: boolean
@@ -1507,6 +1508,7 @@ components:
         shopify_id:
           title: shopify_id
           type: string
+          nullable: true
         account_status:
           title: account_status
           type: boolean

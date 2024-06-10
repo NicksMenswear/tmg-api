@@ -19,7 +19,7 @@ class CreateDiscountIntentPayFull(CreateDiscountIntent):
     pay_full: bool = True
 
 
-class EventDiscountCodeModel(BaseModel):
+class DiscountGiftCodeModel(BaseModel):
     code: str
     amount: float
     type: str
@@ -76,7 +76,7 @@ class DiscountLookModel(BaseModel):
         return self.model_dump()
 
 
-class DiscountAttendeeStatusModel(BaseModel):
+class DiscountStatusModel(BaseModel):
     style: bool
     invite: bool
     pay: bool
@@ -85,38 +85,26 @@ class DiscountAttendeeStatusModel(BaseModel):
         return self.model_dump()
 
 
-class DiscountAttendeeModel(BaseModel):
-    id: UUID
+class EventDiscountModel(BaseModel):
+    event_id: UUID
+    amount: float = 0.0
+    type: DiscountType
+    attendee_id: UUID
     user_id: UUID
     first_name: str
     last_name: str
-    status: DiscountAttendeeStatusModel
+    status: DiscountStatusModel
     look: Optional[DiscountLookModel] = None
-    codes: List[EventDiscountCodeModel] = []
+    gift_codes: List[DiscountGiftCodeModel] = []
 
     def to_response(self):
-        response = self.dict(include={"id", "user_id", "first_name", "last_name"})
+        response = self.dict(
+            include={"event_id", "amount", "attendee_id", "user_id", "first_name", "last_name", "event_id", "amount"}
+        )
+        response["type"] = self.type.value
         response["status"] = self.status.to_response()
         response["look"] = self.look.to_response() if self.look else None
-        response["codes"] = [code.to_response() for code in self.codes]
-
-        return response
-
-
-class EventDiscountModel(BaseModel):
-    id: Optional[UUID] = None
-    event_id: UUID
-    attendee: DiscountAttendeeModel
-    amount: float = 0.0
-    type: DiscountType
-
-    def to_response(self):
-        response = self.dict(include={"event_id", "amount"})
-
-        if self.id:
-            response["id"] = self.id
-        response["type"] = self.type.value
-        response["attendee"] = self.attendee.to_response()
+        response["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
 
         return response
 

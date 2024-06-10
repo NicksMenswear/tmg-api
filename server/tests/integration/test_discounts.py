@@ -11,7 +11,7 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestDiscounts(BaseTestCase):
-    def test_get_discounts_for_invalid_event(self):
+    def test_get_owner_discounts_for_invalid_event(self):
         # when
         response = self.client.open(
             f"/events/{str(uuid.uuid4())}/discounts",
@@ -25,7 +25,7 @@ class TestDiscounts(BaseTestCase):
         self.assert404(response)
         self.assertTrue("Event not found" in response.json["errors"])
 
-    def test_get_gift_discounts_from_event_without_attendees(self):
+    def test_get_owner_discounts_from_event_without_attendees(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -43,7 +43,7 @@ class TestDiscounts(BaseTestCase):
         self.assert200(response)
         self.assertEqual(len(response.json), 0)
 
-    def test_get_gift_discounts_from_event_with_attendees_and_looks_but_without_any_discounts(self):
+    def test_get_owner_discounts_from_event_with_attendees_and_looks_but_without_any_discounts(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -80,38 +80,36 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 2)
 
         sorted_attendees = sorted(attendees, key=lambda x: str(x["attendee"].id))
-        sorted_response_json = sorted(response.json, key=lambda x: str(x["attendee"]["id"]))
+        sorted_response_json = sorted(response.json, key=lambda x: str(x["attendee_id"]))
 
         attendee1 = sorted_attendees[0]
         attendee2 = sorted_attendees[1]
         discount_item1 = sorted_response_json[0]
         discount_item2 = sorted_response_json[1]
-        response_attendee1 = discount_item1["attendee"]
-        response_attendee2 = discount_item2["attendee"]
 
-        self.assertEqual(response_attendee1["id"], str(attendee1["attendee"].id))
-        self.assertEqual(response_attendee1["first_name"], attendee1["user"].first_name)
-        self.assertEqual(response_attendee1["last_name"], attendee1["user"].last_name)
-        self.assertEqual(response_attendee1["status"]["style"], attendee1["attendee"].style)
-        self.assertEqual(response_attendee1["status"]["pay"], attendee1["attendee"].pay)
-        self.assertEqual(response_attendee1["status"]["invite"], attendee1["attendee"].invite)
+        self.assertEqual(discount_item1["attendee_id"], str(attendee1["attendee"].id))
+        self.assertEqual(discount_item1["first_name"], attendee1["user"].first_name)
+        self.assertEqual(discount_item1["last_name"], attendee1["user"].last_name)
+        self.assertEqual(discount_item1["status"]["style"], attendee1["attendee"].style)
+        self.assertEqual(discount_item1["status"]["pay"], attendee1["attendee"].pay)
+        self.assertEqual(discount_item1["status"]["invite"], attendee1["attendee"].invite)
         self.assertEqual(discount_item1["event_id"], str(event.id))
         self.assertEqual(discount_item1["amount"], 0)
-        self.assertEqual(len(response_attendee1["codes"]), 0)
-        self.assertEqual(response_attendee1["look"]["id"], str(attendee1["look"].id))
-        self.assertEqual(response_attendee1["look"]["name"], attendee1["look"].name)
+        self.assertEqual(len(discount_item1["gift_codes"]), 0)
+        self.assertEqual(discount_item1["look"]["id"], str(attendee1["look"].id))
+        self.assertEqual(discount_item1["look"]["name"], attendee1["look"].name)
 
-        self.assertEqual(response_attendee2["id"], str(attendee2["attendee"].id))
-        self.assertEqual(response_attendee2["first_name"], attendee2["user"].first_name)
-        self.assertEqual(response_attendee2["last_name"], attendee2["user"].last_name)
-        self.assertEqual(response_attendee2["status"]["style"], attendee2["attendee"].style)
-        self.assertEqual(response_attendee2["status"]["pay"], attendee2["attendee"].pay)
-        self.assertEqual(response_attendee2["status"]["invite"], attendee2["attendee"].invite)
+        self.assertEqual(discount_item2["attendee_id"], str(attendee2["attendee"].id))
+        self.assertEqual(discount_item2["first_name"], attendee2["user"].first_name)
+        self.assertEqual(discount_item2["last_name"], attendee2["user"].last_name)
+        self.assertEqual(discount_item2["status"]["style"], attendee2["attendee"].style)
+        self.assertEqual(discount_item2["status"]["pay"], attendee2["attendee"].pay)
+        self.assertEqual(discount_item2["status"]["invite"], attendee2["attendee"].invite)
         self.assertEqual(discount_item2["event_id"], str(event.id))
         self.assertEqual(discount_item2["amount"], 0)
-        self.assertEqual(len(response_attendee2["codes"]), 0)
-        self.assertEqual(response_attendee2["look"]["id"], str(attendee2["look"].id))
-        self.assertEqual(response_attendee2["look"]["name"], attendee2["look"].name)
+        self.assertEqual(len(discount_item2["gift_codes"]), 0)
+        self.assertEqual(discount_item2["look"]["id"], str(attendee2["look"].id))
+        self.assertEqual(discount_item2["look"]["name"], attendee2["look"].name)
 
     def test_create_discount_intent_for_non_active_event(self):
         # given

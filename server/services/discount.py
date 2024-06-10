@@ -12,12 +12,11 @@ from server.models.attendee_model import AttendeeModel
 from server.models.discount_model import (
     DiscountModel,
     CreateDiscountIntent,
-    EventDiscountCodeModel,
+    DiscountGiftCodeModel,
     CreateDiscountIntentPayFull,
     EventDiscountModel,
     DiscountLookModel,
-    DiscountAttendeeModel,
-    DiscountAttendeeStatusModel,
+    DiscountStatusModel,
     DiscountPayResponseModel,
 )
 from server.services import ServiceError, NotFoundError, BadRequestError
@@ -144,17 +143,16 @@ class DiscountService:
                 else None
             )
 
-            attendee_model = DiscountAttendeeModel(
-                id=attendee.id,
+            owner_discounts[attendee.id] = EventDiscountModel(
+                event_id=event_id,
+                amount=0.0,
+                type=DiscountType.GIFT,
+                attendee_id=attendee.id,
                 user_id=user.id,
                 first_name=user.first_name,
                 last_name=user.last_name,
                 look=look_model,
-                status=DiscountAttendeeStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
-            )
-
-            owner_discounts[attendee.id] = EventDiscountModel(
-                event_id=event_id, attendee=attendee_model, amount=0.0, type=DiscountType.GIFT
+                status=DiscountStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
             )
 
         attendee_ids = owner_discounts.keys()
@@ -181,7 +179,7 @@ class DiscountService:
 
         for paid_discount in paid_discounts:
             owner_discounts[paid_discount.attendee_id].codes.append(
-                EventDiscountCodeModel(
+                DiscountGiftCodeModel(
                     code=paid_discount.shopify_discount_code,
                     amount=paid_discount.amount,
                     type=str(paid_discount.type),

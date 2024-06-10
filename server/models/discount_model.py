@@ -19,30 +19,14 @@ class CreateDiscountIntentPayFull(CreateDiscountIntent):
     pay_full: bool = True
 
 
-class EventDiscountLookModel(BaseModel):
-    id: UUID
-    name: Optional[str] = None
-    price: Optional[float] = 0
-
-
 class EventDiscountCodeModel(BaseModel):
     code: str
     amount: float
     type: str
     used: bool
 
-
-class EventDiscountModel(BaseModel):
-    attendee_id: UUID
-    event_id: UUID
-    first_name: str
-    last_name: str
-    amount: float = 0
-    look: Optional[EventDiscountLookModel] = None
-    codes: List[EventDiscountCodeModel] = []
-
     def to_response(self):
-        return self.model_dump()
+        return self.dict()
 
 
 class DiscountModel(BaseModel):
@@ -81,3 +65,59 @@ class DiscountModel(BaseModel):
 class ApplyDiscountModel(BaseModel):
     event_id: UUID
     shopify_cart_id: str
+
+
+class EventDiscountLookModel(BaseModel):
+    id: UUID
+    name: str
+    price: float
+
+    def to_response(self):
+        return self.model_dump()
+
+
+class EventDiscountAttendeeModel(BaseModel):
+    id: UUID
+    user_id: UUID
+    first_name: str
+    last_name: str
+    look: Optional[EventDiscountLookModel] = None
+
+    def to_response(self):
+        response = self.dict(
+            include={
+                "id",
+                "user_id",
+                "first_name",
+                "last_name",
+            }
+        )
+
+        response["look"] = self.look.to_response() if self.look else None
+
+        return response
+
+
+class EventDiscountModel(BaseModel):
+    id: Optional[UUID] = None
+    event_id: UUID
+    attendee: EventDiscountAttendeeModel
+    amount: float = 0.0
+    type: DiscountType
+    codes: List[EventDiscountCodeModel] = []
+
+    def to_response(self):
+        response = self.dict(
+            include={
+                "event_id",
+                "amount",
+            }
+        )
+
+        if self.id:
+            response["id"] = self.id
+        response["type"] = self.type.value
+        response["attendee"] = self.attendee.to_response()
+        response["codes"] = [code.to_response() for code in self.codes]
+
+        return response

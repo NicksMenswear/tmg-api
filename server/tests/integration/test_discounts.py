@@ -80,31 +80,33 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 2)
 
         sorted_attendees = sorted(attendees, key=lambda x: str(x["attendee"].id))
-        sorted_response_json = sorted(response.json, key=lambda x: str(x["attendee_id"]))
+        sorted_response_json = sorted(response.json, key=lambda x: str(x["attendee"]["id"]))
 
         attendee1 = sorted_attendees[0]
         attendee2 = sorted_attendees[1]
         discount_item1 = sorted_response_json[0]
         discount_item2 = sorted_response_json[1]
+        response_attendee1 = discount_item1["attendee"]
+        response_attendee2 = discount_item2["attendee"]
 
-        self.assertEqual(discount_item1["attendee_id"], str(attendee1["attendee"].id))
-        self.assertEqual(discount_item1["first_name"], attendee1["user"].first_name)
-        self.assertEqual(discount_item1["last_name"], attendee1["user"].last_name)
+        self.assertEqual(response_attendee1["id"], str(attendee1["attendee"].id))
+        self.assertEqual(response_attendee1["first_name"], attendee1["user"].first_name)
+        self.assertEqual(response_attendee1["last_name"], attendee1["user"].last_name)
         self.assertEqual(discount_item1["event_id"], str(event.id))
         self.assertEqual(discount_item1["amount"], 0)
         self.assertEqual(len(discount_item1["codes"]), 0)
-        self.assertEqual(discount_item1["look"]["id"], str(attendee1["look"].id))
-        self.assertEqual(discount_item1["look"]["name"], attendee1["look"].name)
+        self.assertEqual(response_attendee1["look"]["id"], str(attendee1["look"].id))
+        self.assertEqual(response_attendee1["look"]["name"], attendee1["look"].name)
         self.assertEqual(len(discount_item1["codes"]), 0)
 
-        self.assertEqual(discount_item2["attendee_id"], str(attendee2["attendee"].id))
-        self.assertEqual(discount_item2["first_name"], attendee2["user"].first_name)
-        self.assertEqual(discount_item2["last_name"], attendee2["user"].last_name)
+        self.assertEqual(response_attendee2["id"], str(attendee2["attendee"].id))
+        self.assertEqual(response_attendee2["first_name"], attendee2["user"].first_name)
+        self.assertEqual(response_attendee2["last_name"], attendee2["user"].last_name)
         self.assertEqual(discount_item2["event_id"], str(event.id))
         self.assertEqual(discount_item2["amount"], 0)
         self.assertEqual(len(discount_item2["codes"]), 0)
-        self.assertEqual(discount_item2["look"]["id"], str(attendee2["look"].id))
-        self.assertEqual(discount_item2["look"]["name"], attendee2["look"].name)
+        self.assertEqual(response_attendee2["look"]["id"], str(attendee2["look"].id))
+        self.assertEqual(response_attendee2["look"]["name"], attendee2["look"].name)
         self.assertEqual(len(discount_item2["codes"]), 0)
 
     def test_create_discount_intent_for_non_active_event(self):
@@ -328,13 +330,12 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 1)
 
         discount_intent = response.json[0]
-        self.assertEqual(discount_intent["attendee_id"], str(attendee.id))
+        self.assertEqual(discount_intent["attendee"]["id"], str(attendee.id))
         self.assertEqual(discount_intent["amount"], created_discount_intent_request["amount"])
         self.assertEqual(discount_intent["type"], str(DiscountType.GIFT))
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertIsNotNone(discount_intent["id"])
-        self.assertIsNone(discount_intent["shopify_discount_code"])
-        self.assertFalse(discount_intent["used"])
+        self.assertEqual(len(discount_intent["codes"]), 0)
 
         shopify_virtual_product_id = self.discount_service.get_discount_by_id(
             discount_intent["id"]
@@ -492,13 +493,12 @@ class TestDiscounts(BaseTestCase):
         discount_amount = (variant1 + variant2 + variant3) * 10
 
         discount_intent = response.json[0]
-        self.assertEqual(discount_intent["attendee_id"], str(attendee.id))
+        self.assertEqual(discount_intent["attendee"]["id"], str(attendee.id))
         self.assertEqual(discount_intent["type"], str(DiscountType.FULL_PAY))
         self.assertEqual(discount_intent["event_id"], str(event.id))
         self.assertEqual(discount_intent["amount"], discount_amount)
         self.assertIsNotNone(discount_intent["id"])
-        self.assertIsNone(discount_intent["shopify_discount_code"])
-        self.assertFalse(discount_intent["used"])
+        self.assertTrue(len(discount_intent["codes"]) == 0)
 
         shopify_virtual_product_id = self.discount_service.get_discount_by_id(
             discount_intent["id"]
@@ -644,9 +644,13 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 4)
 
-        discount_intent = response.json[0]
+        discount_intent = None
+        for intent in response.json:
+            if intent["amount"] > 0:
+                discount_intent = intent
+                break
 
         shopify_virtual_product_id = self.discount_service.get_discount_by_id(
             discount_intent["id"]
@@ -769,9 +773,13 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 4)
 
-        discount_intent = response.json[0]
+        discount_intent = None
+        for intent in response.json:
+            if intent["amount"] > 0:
+                discount_intent = intent
+                break
 
         shopify_virtual_product_id = self.discount_service.get_discount_by_id(
             discount_intent["id"]

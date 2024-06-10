@@ -608,7 +608,7 @@ paths:
       x-openapi-router-controller: server.controllers.events
   /events/{event_id}/discounts:
     get:
-      operationId: get_gift_discounts
+      operationId: get_owner_discounts_for_event
       parameters:
         - description: ID of the event
           explode: false
@@ -649,7 +649,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: "#/components/schemas/Discount"
+                  $ref: "#/components/schemas/EventDiscount"
                 type: array
           description: Collection of discounts for event
       summary: Get a collection of discounts by event id
@@ -705,7 +705,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: "#/components/schemas/Discount"
+                  $ref: "#/components/schemas/EventDiscount"
                 type: array
           description: An array of discounts created
       summary: Create discount intents
@@ -1742,27 +1742,79 @@ components:
           default: false
       required:
         - attendee_id
-    Discount:
+    EventDiscountCode:
+      properties:
+        code:
+          title: code
+          type: string
+        amount:
+          title: amount
+          type: number
+          format: float
+        type:
+          title: type
+          type: string
+        used:
+          title: used
+          type: boolean
+    EventDiscountAttendeeLook:
       properties:
         id:
           title: id
           $ref: '#/components/schemas/uuid'
           type: string
+        name:
+          title: name
+          type: string
+        price:
+          title: price
+          type: number
+          format: float
+    EventDiscountAttendee:
+      properties:
+        id:
+          title: id
+          $ref: '#/components/schemas/uuid'
+          type: string
+        user_id:
+          title: event_id
+          $ref: '#/components/schemas/uuid'
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        look:
+          title: look
+          $ref: '#/components/schemas/EventDiscountAttendeeLook'
+          type: object
+          nullable: true
+    EventDiscount:
+      properties:
+        id:
+          title: id
+          $ref: '#/components/schemas/uuid'
+          type: string
+          nullable: true
         event_id:
           title: event_id
           $ref: '#/components/schemas/uuid'
           type: string
-        attendee_id:
+        attendee:
           title: attendee_id
-          $ref: '#/components/schemas/uuid'
-          type: string
+          $ref: '#/components/schemas/EventDiscountAttendee'
         amount:
           format: float
           title: amount
           type: number
-        code:
-          title: code
-          type: string
+        codes:
+          title: codes
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDiscountCode'
+          default: []
     ApplyDiscountsRequest:
       properties:
         event_id:

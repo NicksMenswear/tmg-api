@@ -76,23 +76,26 @@ class EventDiscountLookModel(BaseModel):
         return self.model_dump()
 
 
+class EventDiscountAttendeeStatusModel(BaseModel):
+    style: bool
+    invite: bool
+    pay: bool
+
+    def to_response(self):
+        return self.model_dump()
+
+
 class EventDiscountAttendeeModel(BaseModel):
     id: UUID
     user_id: UUID
     first_name: str
     last_name: str
+    status: EventDiscountAttendeeStatusModel
     look: Optional[EventDiscountLookModel] = None
 
     def to_response(self):
-        response = self.dict(
-            include={
-                "id",
-                "user_id",
-                "first_name",
-                "last_name",
-            }
-        )
-
+        response = self.dict(include={"id", "user_id", "first_name", "last_name"})
+        response["status"] = self.status.to_response()
         response["look"] = self.look.to_response() if self.look else None
 
         return response

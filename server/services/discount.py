@@ -17,6 +17,7 @@ from server.models.discount_model import (
     EventDiscountModel,
     EventDiscountLookModel,
     EventDiscountAttendeeModel,
+    EventDiscountAttendeeStatusModel,
 )
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee import AttendeeService
@@ -148,6 +149,7 @@ class DiscountService:
                 first_name=user.first_name,
                 last_name=user.last_name,
                 look=look_model,
+                status=EventDiscountAttendeeStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
             )
 
             owner_discounts[attendee.id] = EventDiscountModel(

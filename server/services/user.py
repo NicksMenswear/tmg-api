@@ -27,16 +27,20 @@ class UserService:
         if user:
             raise DuplicateError("User already exists with that email address.")
 
-        try:
-            shopify_customer_id = self.shopify_service.create_customer(
-                create_user.first_name, create_user.last_name, create_user.email
-            )["id"]
-            send_activation_email = create_user.account_status
-        except DuplicateError as e:
-            # If the user already exists in Shopify, we should still create a user in our database
-            logger.exception(e)
+        if not create_user.shopify_id:
+            try:
+                shopify_customer_id = self.shopify_service.create_customer(
+                    create_user.first_name, create_user.last_name, create_user.email
+                )["id"]
+                send_activation_email = create_user.account_status
+            except DuplicateError as e:
+                # If the user already exists in Shopify, we should still create a user in our database
+                logger.debug(e)
 
-            shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
+                shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
+                send_activation_email = False
+        else:
+            shopify_customer_id = create_user.shopify_id
             send_activation_email = False
 
         try:
@@ -46,6 +50,7 @@ class UserService:
                 last_name=create_user.last_name,
                 email=create_user.email,
                 shopify_id=str(shopify_customer_id),
+                phone_number=create_user.phone_number,
                 account_status=create_user.account_status,
             )
 
@@ -101,6 +106,9 @@ class UserService:
         try:
             user.first_name = update_user.first_name
             user.last_name = update_user.last_name
+            user.account_status = update_user.account_status
+            user.shopify_id = update_user.shopify_id
+            user.phone_number = update_user.phone_number
             user.updated_at = datetime.now()
 
             db.session.commit()

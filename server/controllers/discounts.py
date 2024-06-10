@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def get_gift_discounts(event_id):
+def get_owner_discounts_for_event(event_id):
     discount_service = FlaskApp.current().discount_service
 
-    discounts = discount_service.get_gift_discounts(uuid.UUID(event_id))
+    discounts = discount_service.get_owner_discounts_for_event(uuid.UUID(event_id))
 
     return [discount.to_response() for discount in discounts], 200
 
@@ -33,6 +33,4 @@ def create_discount_intents(event_id, intents):
         else:
             raise ValueError("Invalid discount intent")
 
-    discounts = discount_service.create_discount_intents(uuid.UUID(event_id), discount_intents)
-
-    return [discount.to_response() for discount in discounts], 201
+    return discount_service.create_discount_intents(uuid.UUID(event_id), discount_intents).to_response(), 201

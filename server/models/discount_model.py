@@ -19,30 +19,14 @@ class CreateDiscountIntentPayFull(CreateDiscountIntent):
     pay_full: bool = True
 
 
-class EventDiscountLookModel(BaseModel):
-    id: UUID
-    name: Optional[str] = None
-    price: Optional[float] = 0
-
-
-class EventDiscountCodeModel(BaseModel):
+class DiscountGiftCodeModel(BaseModel):
     code: str
     amount: float
     type: str
     used: bool
 
-
-class EventDiscountModel(BaseModel):
-    attendee_id: UUID
-    event_id: UUID
-    first_name: str
-    last_name: str
-    amount: float = 0
-    look: Optional[EventDiscountLookModel] = None
-    codes: List[EventDiscountCodeModel] = []
-
     def to_response(self):
-        return self.model_dump()
+        return self.dict()
 
 
 class DiscountModel(BaseModel):
@@ -81,3 +65,52 @@ class DiscountModel(BaseModel):
 class ApplyDiscountModel(BaseModel):
     event_id: UUID
     shopify_cart_id: str
+
+
+class DiscountLookModel(BaseModel):
+    id: UUID
+    name: str
+    price: float
+
+    def to_response(self):
+        return self.model_dump()
+
+
+class DiscountStatusModel(BaseModel):
+    style: bool
+    invite: bool
+    pay: bool
+
+    def to_response(self):
+        return self.model_dump()
+
+
+class EventDiscountModel(BaseModel):
+    event_id: UUID
+    amount: float = 0.0
+    type: DiscountType
+    attendee_id: UUID
+    user_id: UUID
+    first_name: str
+    last_name: str
+    status: DiscountStatusModel
+    look: Optional[DiscountLookModel] = None
+    gift_codes: List[DiscountGiftCodeModel] = []
+
+    def to_response(self):
+        response = self.dict(
+            include={"event_id", "amount", "attendee_id", "user_id", "first_name", "last_name", "event_id", "amount"}
+        )
+        response["type"] = self.type.value
+        response["status"] = self.status.to_response()
+        response["look"] = self.look.to_response() if self.look else None
+        response["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
+
+        return response
+
+
+class DiscountPayResponseModel(BaseModel):
+    variant_id: int
+
+    def to_response(self):
+        return self.model_dump()

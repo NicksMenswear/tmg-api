@@ -50,8 +50,11 @@ class AbstractShopifyService(ABC):
 
 
 class FakeShopifyService(AbstractShopifyService):
-    def __init__(self, shopify_virtual_products=None):
+    def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None):
         self.shopify_virtual_products = shopify_virtual_products if shopify_virtual_products else {}
+        self.shopify_virtual_product_variants = (
+            shopify_virtual_product_variants if shopify_virtual_product_variants else {}
+        )
 
     def get_customer_by_email(self, email: str) -> dict:
         return {"id": random.randint(1000, 100000)}
@@ -79,6 +82,8 @@ class FakeShopifyService(AbstractShopifyService):
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         virtual_product_id = random.randint(1000, 100000)
+        virtual_product_variant_id = random.randint(1000, 100000)
+        virtual_product_variant = {"id": virtual_product_variant_id, "title": title, "price": price, "sku": sku}
 
         virtual_product = {
             "id": virtual_product_id,
@@ -86,10 +91,11 @@ class FakeShopifyService(AbstractShopifyService):
             "vendor": vendor,
             "body_html": body_html,
             "images": [{"src": "https://via.placeholder.com/150"}],
-            "variants": [{"id": random.randint(1000, 100000), "title": title, "price": price, "sku": sku}],
+            "variants": [virtual_product_variant],
         }
 
         self.shopify_virtual_products[virtual_product_id] = virtual_product
+        self.shopify_virtual_product_variants[virtual_product_variant_id] = virtual_product_variant
 
         return virtual_product
 

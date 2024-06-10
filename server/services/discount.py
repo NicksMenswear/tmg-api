@@ -15,9 +15,10 @@ from server.models.discount_model import (
     EventDiscountCodeModel,
     CreateDiscountIntentPayFull,
     EventDiscountModel,
-    EventDiscountLookModel,
-    EventDiscountAttendeeModel,
-    EventDiscountAttendeeStatusModel,
+    DiscountLookModel,
+    DiscountAttendeeModel,
+    DiscountAttendeeStatusModel,
+    DiscountPayResponseModel,
 )
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee import AttendeeService
@@ -134,7 +135,7 @@ class DiscountService:
                 look_price = self.shopify_service.get_total_price_for_variants(variant_ids)
 
             look_model = (
-                EventDiscountLookModel(
+                DiscountLookModel(
                     id=look.id,
                     name=look.name,
                     price=float(look_price),
@@ -143,13 +144,13 @@ class DiscountService:
                 else None
             )
 
-            attendee_model = EventDiscountAttendeeModel(
+            attendee_model = DiscountAttendeeModel(
                 id=attendee.id,
                 user_id=user.id,
                 first_name=user.first_name,
                 last_name=user.last_name,
                 look=look_model,
-                status=EventDiscountAttendeeStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
+                status=DiscountAttendeeStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
             )
 
             owner_discounts[attendee.id] = EventDiscountModel(
@@ -190,7 +191,7 @@ class DiscountService:
 
         return list(owner_discounts.values())
 
-    def get_gift_discount_intents_for_product(self, variant_id: str) -> List[DiscountModel]:
+    def get_gift_discount_intents_for_product_variant(self, variant_id: str) -> List[DiscountModel]:
         discounts = Discount.query.filter(
             Discount.shopify_virtual_product_variant_id == variant_id,
             Discount.shopify_discount_code == None,
@@ -213,12 +214,10 @@ class DiscountService:
         return DiscountModel.from_orm(discount)
 
     def create_discount_intents(
-        self,
-        event_id: uuid.UUID,
-        discount_intents: List[CreateDiscountIntent],
-    ) -> List[EventDiscountModel]:
+        self, event_id: uuid.UUID, discount_intents: List[CreateDiscountIntent]
+    ) -> DiscountPayResponseModel:
         if not discount_intents:
-            return []
+            raise BadRequestError("No discount intents provided.")
 
         event = self.event_service.get_event_by_id(event_id)
 
@@ -324,9 +323,9 @@ class DiscountService:
 
             for intent in intents:
                 attendee_user = self.user_service.get_user_for_attendee(intent.attendee_id)
-                type = "Full pay" if intent.type == DiscountType.FULL_PAY else "Gift"
+                invite_type = "Full pay" if intent.type == DiscountType.FULL_PAY else "Gift"
                 product_body += (
-                    f"<li>{type} for {attendee_user.first_name} {attendee_user.last_name}: ${intent.amount}</li>"
+                    f"<li>{invite_type} for {attendee_user.first_name} {attendee_user.last_name}: ${intent.amount}</li>"
                 )
 
             if num_attendees >= 4:
@@ -359,7 +358,7 @@ class DiscountService:
 
             raise ServiceError("Failed to create discount product in Shopify.", e)
 
-        return self.get_owner_discounts_for_event(event_id)
+        return DiscountPayResponseModel(variant_id=shopify_product["variants"][0]["id"])
 
     def __filter_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
         return [

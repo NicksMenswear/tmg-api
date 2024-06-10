@@ -67,7 +67,7 @@ class ApplyDiscountModel(BaseModel):
     shopify_cart_id: str
 
 
-class EventDiscountLookModel(BaseModel):
+class DiscountLookModel(BaseModel):
     id: UUID
     name: str
     price: float
@@ -76,7 +76,7 @@ class EventDiscountLookModel(BaseModel):
         return self.model_dump()
 
 
-class EventDiscountAttendeeStatusModel(BaseModel):
+class DiscountAttendeeStatusModel(BaseModel):
     style: bool
     invite: bool
     pay: bool
@@ -85,18 +85,20 @@ class EventDiscountAttendeeStatusModel(BaseModel):
         return self.model_dump()
 
 
-class EventDiscountAttendeeModel(BaseModel):
+class DiscountAttendeeModel(BaseModel):
     id: UUID
     user_id: UUID
     first_name: str
     last_name: str
-    status: EventDiscountAttendeeStatusModel
-    look: Optional[EventDiscountLookModel] = None
+    status: DiscountAttendeeStatusModel
+    look: Optional[DiscountLookModel] = None
+    codes: List[EventDiscountCodeModel] = []
 
     def to_response(self):
         response = self.dict(include={"id", "user_id", "first_name", "last_name"})
         response["status"] = self.status.to_response()
         response["look"] = self.look.to_response() if self.look else None
+        response["codes"] = [code.to_response() for code in self.codes]
 
         return response
 
@@ -104,23 +106,23 @@ class EventDiscountAttendeeModel(BaseModel):
 class EventDiscountModel(BaseModel):
     id: Optional[UUID] = None
     event_id: UUID
-    attendee: EventDiscountAttendeeModel
+    attendee: DiscountAttendeeModel
     amount: float = 0.0
     type: DiscountType
-    codes: List[EventDiscountCodeModel] = []
 
     def to_response(self):
-        response = self.dict(
-            include={
-                "event_id",
-                "amount",
-            }
-        )
+        response = self.dict(include={"event_id", "amount"})
 
         if self.id:
             response["id"] = self.id
         response["type"] = self.type.value
         response["attendee"] = self.attendee.to_response()
-        response["codes"] = [code.to_response() for code in self.codes]
 
         return response
+
+
+class DiscountPayResponseModel(BaseModel):
+    variant_id: int
+
+    def to_response(self):
+        return self.model_dump()

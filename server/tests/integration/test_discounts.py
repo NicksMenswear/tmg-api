@@ -97,10 +97,9 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(response_attendee1["status"]["invite"], attendee1["attendee"].invite)
         self.assertEqual(discount_item1["event_id"], str(event.id))
         self.assertEqual(discount_item1["amount"], 0)
-        self.assertEqual(len(discount_item1["codes"]), 0)
+        self.assertEqual(len(response_attendee1["codes"]), 0)
         self.assertEqual(response_attendee1["look"]["id"], str(attendee1["look"].id))
         self.assertEqual(response_attendee1["look"]["name"], attendee1["look"].name)
-        self.assertEqual(len(discount_item1["codes"]), 0)
 
         self.assertEqual(response_attendee2["id"], str(attendee2["attendee"].id))
         self.assertEqual(response_attendee2["first_name"], attendee2["user"].first_name)
@@ -110,10 +109,9 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(response_attendee2["status"]["invite"], attendee2["attendee"].invite)
         self.assertEqual(discount_item2["event_id"], str(event.id))
         self.assertEqual(discount_item2["amount"], 0)
-        self.assertEqual(len(discount_item2["codes"]), 0)
+        self.assertEqual(len(response_attendee2["codes"]), 0)
         self.assertEqual(response_attendee2["look"]["id"], str(attendee2["look"].id))
         self.assertEqual(response_attendee2["look"]["name"], attendee2["look"].name)
-        self.assertEqual(len(discount_item2["codes"]), 0)
 
     def test_create_discount_intent_for_non_active_event(self):
         # given
@@ -184,8 +182,8 @@ class TestDiscounts(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 0)
+        self.assert400(response)
+        self.assertTrue("No discount intents provided" in response.json["errors"])
 
     def test_create_discount_intent_for_invalid_one_attendee(self):
         # given
@@ -311,7 +309,7 @@ class TestDiscounts(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id)
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id)
         )
 
         # when
@@ -333,22 +331,23 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent = response.json[0]
-        self.assertEqual(discount_intent["attendee"]["id"], str(attendee.id))
-        self.assertEqual(discount_intent["amount"], created_discount_intent_request["amount"])
-        self.assertEqual(discount_intent["type"], str(DiscountType.GIFT))
-        self.assertEqual(discount_intent["event_id"], str(event.id))
-        self.assertIsNotNone(discount_intent["id"])
-        self.assertEqual(len(discount_intent["codes"]), 0)
+        discount_intents = self.discount_service.get_gift_discount_intents_for_product_variant(response_variant_id)
+        self.assertEqual(len(discount_intents), 1)
+        discount_intent = discount_intents[0]
+        self.assertEqual(discount_intent.type.value, str(DiscountType.GIFT))
+        self.assertEqual(discount_intent.event_id, event.id)
+        self.assertEqual(discount_intent.amount, created_discount_intent_request["amount"])
+        self.assertIsNotNone(discount_intent.id)
+        self.assertEqual(discount_intent.attendee_id, attendee.id)
 
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-        self.assertEqual(shopify_virtual_product["variants"][0]["price"], created_discount_intent_request["amount"])
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
+        )
+        self.assertIsNotNone(shopify_virtual_product_variant)
+        self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request["amount"])
 
     def test_create_discount_intent_of_type_gift_for_2_attendees(self):
         # given
@@ -356,11 +355,11 @@ class TestDiscounts(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user1.id, event_id=event.id)
+            fixtures.create_attendee_request(email=attendee_user1.email, event_id=event.id)
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee2 = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user2.id, event_id=event.id)
+            fixtures.create_attendee_request(email=attendee_user2.email, event_id=event.id)
         )
 
         # when
@@ -381,25 +380,25 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 2)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent1 = response.json[0]
-        discount_intent2 = response.json[1]
+        discount_intents = self.discount_service.get_gift_discount_intents_for_product_variant(response_variant_id)
+        self.assertEqual(len(discount_intents), 2)
+        discount_intent1 = discount_intents[0]
+        discount_intent2 = discount_intents[1]
 
-        self.assertEqual(
-            discount_intent1["amount"] + discount_intent2["amount"],
-            created_discount_intent_request1.amount + created_discount_intent_request2.amount,
+        self.assertEqual(discount_intent1.type, DiscountType.GIFT)
+        self.assertEqual(discount_intent1.event_id, event.id)
+        self.assertEqual(discount_intent2.type, DiscountType.GIFT)
+        self.assertEqual(discount_intent2.event_id, event.id)
+
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
         )
-        self.assertEqual(discount_intent1["type"], str(DiscountType.GIFT))
-        self.assertEqual(discount_intent1["event_id"], str(event.id))
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent1["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
+        self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
+            shopify_virtual_product_variant["price"],
             created_discount_intent_request1.amount + created_discount_intent_request2.amount,
         )
 
@@ -494,24 +493,24 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
+        discount_intents = self.discount_service.get_gift_discount_intents_for_product_variant(response_variant_id)
+        self.assertEqual(len(discount_intents), 1)
+        discount_intent = discount_intents[0]
+        self.assertEqual(discount_intent.type.value, str(DiscountType.FULL_PAY))
+        self.assertEqual(discount_intent.event_id, event.id)
         discount_amount = (variant1 + variant2 + variant3) * 10
+        self.assertEqual(discount_intent.amount, discount_amount)
+        self.assertIsNotNone(discount_intent.id)
+        self.assertEqual(discount_intent.attendee_id, attendee.id)
 
-        discount_intent = response.json[0]
-        self.assertEqual(discount_intent["attendee"]["id"], str(attendee.id))
-        self.assertEqual(discount_intent["type"], str(DiscountType.FULL_PAY))
-        self.assertEqual(discount_intent["event_id"], str(event.id))
-        self.assertEqual(discount_intent["amount"], discount_amount)
-        self.assertIsNotNone(discount_intent["id"])
-        self.assertTrue(len(discount_intent["codes"]) == 0)
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-        self.assertEqual(shopify_virtual_product["variants"][0]["price"], discount_amount)
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
+        )
+        self.assertIsNotNone(shopify_virtual_product_variant)
+        self.assertEqual(shopify_virtual_product_variant["price"], discount_amount)
 
     def test_create_discount_intent_of_type_full_pay_is_less_then_100(self):
         # given
@@ -583,31 +582,34 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 2)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent1 = response.json[0]
-        discount_intent2 = response.json[1]
-        self.assertNotEqual(discount_intent1["type"], discount_intent2["type"])
-        self.assertEqual(discount_intent1["type"] in [str(DiscountType.FULL_PAY), str(DiscountType.GIFT)], True)
-        self.assertEqual(discount_intent2["type"] in [str(DiscountType.FULL_PAY), str(DiscountType.GIFT)], True)
-        self.assertNotEqual(discount_intent1["amount"], discount_intent2["amount"])
-        self.assertEqual(
-            discount_intent1["amount"] in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.amount],
-            True,
-        )
-        self.assertEqual(
-            discount_intent2["amount"] in [variant1 * 10 + variant2 * 10, created_discount_intent_request2.amount],
-            True,
-        )
+        discount_intents = self.discount_service.get_gift_discount_intents_for_product_variant(response_variant_id)
+        self.assertEqual(len(discount_intents), 2)
+        discount_intent1 = discount_intents[0]
+        discount_intent2 = discount_intents[1]
 
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent1["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
+        self.assertEqual(discount_intent1.event_id, event.id)
+        self.assertEqual(discount_intent2.event_id, event.id)
+        self.assertEqual({discount_intent1.type, discount_intent2.type}, {DiscountType.GIFT, DiscountType.FULL_PAY})
+
+        total_amount = variant1 * 10 + variant2 * 10
+
+        self.assertNotEqual(discount_intent1.amount, discount_intent2.amount)
+        self.assertNotEqual(discount_intent1.type, discount_intent2.type)
+        self.assertEqual(discount_intent1.type in [DiscountType.FULL_PAY, DiscountType.GIFT], True)
+        self.assertEqual(discount_intent2.type in [DiscountType.FULL_PAY, DiscountType.GIFT], True)
+        self.assertEqual(discount_intent1.amount in [total_amount, created_discount_intent_request2.amount], True)
+        self.assertEqual(discount_intent2.amount in [total_amount, created_discount_intent_request2.amount], True)
+
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
+        )
+        self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
-            variant1 * 10 + variant2 * 10 + created_discount_intent_request2.amount,
+            shopify_virtual_product_variant["price"],
+            discount_intent1.amount + discount_intent2.amount,
         )
 
     def test_create_discount_intent_for_party_of_4_of_type_gift_but_only_one_attendee_has_intents_set_no_tmg_discount_to_be_applied(
@@ -650,23 +652,14 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 4)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent = None
-        for intent in response.json:
-            if intent["amount"] > 0:
-                discount_intent = intent
-                break
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-        self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request1.amount,
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
         )
+        self.assertIsNotNone(shopify_virtual_product_variant)
+        self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request1.amount)
 
     def test_create_discount_intent_for_party_of_4_of_type_gift_no_tmg_discount_to_be_applied(
         self,
@@ -716,16 +709,15 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 4)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            response.json[0]["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
+        )
+        self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
+            shopify_virtual_product_variant["price"],
             created_discount_intent_request1.amount
             + created_discount_intent_request2.amount
             + created_discount_intent_request3.amount
@@ -779,22 +771,16 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 4)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent = None
-        for intent in response.json:
-            if intent["amount"] > 0:
-                discount_intent = intent
-                break
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
+        )
+        self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
-            variant1 * 10 + variant2 * 10 - 100,  # tmg discount of 100 off
+            shopify_virtual_product_variant["price"],
+            variant1 * 10 + variant2 * 10 - 100,
         )
 
     def test_create_discount_intent_for_attendee_that_already_has_discount_intent_of_type_gift_it_should_be_overwritten(
@@ -826,19 +812,14 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent = response.json[0]
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-        self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request.amount,
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
         )
+        self.assertIsNotNone(shopify_virtual_product_variant)
+        self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request.amount)
 
     def test_create_discount_intent_for_attendee_that_already_has_discount_code_of_type_gift(
         self,
@@ -879,19 +860,14 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 201)
-        self.assertEqual(len(response.json), 1)
+        response_variant_id = response.json["variant_id"]
+        self.assertIsNotNone(response_variant_id)
 
-        discount_intent = response.json[0]
-
-        shopify_virtual_product_id = self.discount_service.get_discount_by_id(
-            discount_intent["id"]
-        ).shopify_virtual_product_id
-        shopify_virtual_product = self.app.shopify_service.shopify_virtual_products.get(shopify_virtual_product_id)
-        self.assertIsNotNone(shopify_virtual_product)
-        self.assertEqual(
-            shopify_virtual_product["variants"][0]["price"],
-            created_discount_intent_request.amount,
+        shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
+            response_variant_id
         )
+        self.assertIsNotNone(shopify_virtual_product_variant)
+        self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request.amount)
 
         discounts = self.discount_service.get_discounts_by_attendee_id(attendee.id)
         self.assertEqual(len(discounts), 2)

@@ -4,8 +4,9 @@ from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look, EventType
-from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus, EventTypeModel
+from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.models.role_model import CreateRoleModel
+from server.models.user_model import UserModel
 from server.services import ServiceError, NotFoundError, DuplicateError
 from server.services.attendee import AttendeeService
 from server.services.look import LookService
@@ -20,12 +21,15 @@ class EventService:
         self.attendee_service = attendee_service
 
     def get_event_by_id(self, event_id: uuid.UUID, enriched=False) -> EventModel:
-        event = Event.query.filter_by(id=event_id).first()
+        event_with_owner = (
+            db.session.query(Event, User).join(User, User.id == Event.user_id).filter(Event.id == event_id).first()
+        )
 
-        if not event:
+        if not event_with_owner:
             raise NotFoundError("Event not found.")
 
-        event_model = EventModel.from_orm(event)
+        event_model = EventModel.from_orm(event_with_owner[0])
+        event_model.owner = UserModel.from_orm(event_with_owner[1])
 
         if enriched:
             attendees = self.attendee_service.get_attendees_for_events([event_model.id])
@@ -79,7 +83,10 @@ class EventService:
             db.session.rollback()
             raise ServiceError("Failed to create event.", e)
 
-        return EventModel.from_orm(db_event)
+        event = EventModel.from_orm(db_event)
+        event.owner = UserModel.from_orm(user)
+
+        return event
 
     def update_event(self, event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
         db_event = Event.query.filter(Event.id == event_id, Event.is_active).first()
@@ -108,7 +115,10 @@ class EventService:
         except Exception as e:
             raise ServiceError("Failed to update event.", e)
 
-        return EventModel.from_orm(db_event)
+        event = EventModel.from_orm(db_event)
+        event.owner = UserModel.from_orm(User.query.filter(User.id == db_event.user_id).first())
+
+        return event
 
     def delete_event(self, event_id: uuid.UUID) -> None:
         db_event = Event.query.filter(Event.id == event_id).first()
@@ -125,12 +135,21 @@ class EventService:
             raise ServiceError("Failed to deactivate event.", e)
 
     def get_user_owned_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
-        events = Event.query.filter_by(user_id=user_id, is_active=True).all()
+        events = (
+            db.session.query(Event, User)
+            .join(User, User.id == Event.user_id)
+            .filter(Event.user_id == user_id, Event.is_active)
+            .all()
+        )
 
         if not events:
             return []
 
-        models = [EventModel.from_orm(event) for event in events]
+        models = []
+        for event, user in events:
+            event_model = EventModel.from_orm(event)
+            event_model.owner = UserModel.from_orm(user)
+            models.append(event_model)
 
         if enriched:
             event_ids = [event.id for event in models]
@@ -146,28 +165,32 @@ class EventService:
         return models
 
     def get_user_invited_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
-        events = [
-            EventModel.from_orm(event)
-            for event in (
-                Event.query.join(Attendee, Event.id == Attendee.event_id)
-                .filter(Attendee.user_id == user_id, Event.is_active)
-                .all()
-            )
-        ]
+        events_with_owners = (
+            db.session.query(Event, User)
+            .join(User, User.id == Event.user_id)
+            .join(Attendee, Event.id == Attendee.event_id)
+            .filter(Attendee.user_id == user_id, Event.is_active)
+            .all()
+        )
+
+        events = []
+
+        for event, user in events_with_owners:
+            event_model = EventModel.from_orm(event)
+            event_model.owner = UserModel.from_orm(user)
+            events.append(event_model)
 
         if not events:
             return []
 
-        models = [EventModel.from_orm(event) for event in events]
-
         if enriched:
-            event_ids = [event.id for event in models]
+            event_ids = [event.id for event in events]
             attendees = self.attendee_service.get_attendees_for_events(event_ids, user_id)
 
-            for event_model in models:
+            for event_model in events:
                 event_model.attendees = attendees.get(event_model.id, [])
 
-        return models
+        return events
 
     def get_user_events(
         self, user_id: uuid.UUID, status: EventUserStatus = None, enriched: bool = False
@@ -181,7 +204,10 @@ class EventService:
         invited_events = []
 
         if not status or status == EventUserStatus.OWNER:
-            owned_events = self.get_user_owned_events(user_id, enriched)
+            try:
+                owned_events = self.get_user_owned_events(user_id, enriched)
+            except Exception as e:
+                raise ServiceError("Failed to get user owned events.", e)
 
         if not status or status == EventUserStatus.ATTENDEE:
             invited_events = self.get_user_invited_events(user_id, enriched)

@@ -1554,11 +1554,11 @@ components:
           format: date-time
           title: event_at
           type: string
-        user_id:
-          title: user_id
-          $ref: '#/components/schemas/uuid'
+        owner:
+          title: owner
+          $ref: '#/components/schemas/User'
       required:
-        - user_id
+        - owner
         - name
         - event_at
       title: Event

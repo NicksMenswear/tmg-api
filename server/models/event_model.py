@@ -8,6 +8,7 @@ from pydantic import BaseModel, field_validator
 from server.models.attendee_model import AttendeeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
+from server.models.user_model import UserModel
 
 
 class EventUserStatus(str, Enum):
@@ -61,6 +62,7 @@ class EventModel(BaseModel):
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
     type: EventTypeModel
+    owner: Optional[UserModel] = None
     attendees: Optional[List[AttendeeModel]] = []
     looks: Optional[List[LookModel]] = []
     roles: Optional[List[RoleModel]] = []
@@ -69,10 +71,19 @@ class EventModel(BaseModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "user_id", "name", "event_at", "status", "type"})
+        response = self.dict(include={"id", "name", "event_at", "status", "type"})
+
+        if self.owner:
+            response["owner"] = self.owner.to_response()
+
+        return response
 
     def to_enriched_response(self):
-        response = self.dict(include={"id", "user_id", "name", "event_at", "status", "type"})
+        response = self.dict(include={"id", "name", "event_at", "status", "type"})
+
+        if self.owner:
+            response["owner"] = self.owner.to_response()
+
         response["attendees"] = [attendee.to_response() for attendee in self.attendees]
         response["looks"] = [look.to_response() for look in self.looks]
         response["roles"] = [role.to_response() for role in self.roles]

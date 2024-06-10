@@ -66,7 +66,12 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("id"))
         self.assertEqual(created_event.get("name"), event_request.name)
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        event_owner = created_event.get("owner")
+        self.assertIsNotNone(event_owner)
+        self.assertEqual(event_owner.get("id"), str(event_request.user_id))
+        self.assertEqual(event_owner.get("email"), user.email)
+        self.assertEqual(event_owner.get("first_name"), user.first_name)
+        self.assertEqual(event_owner.get("last_name"), user.last_name)
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
@@ -96,7 +101,12 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("id"))
         self.assertEqual(created_event.get("name"), event_request.name)
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        event_owner = created_event.get("owner")
+        self.assertIsNotNone(event_owner)
+        self.assertEqual(event_owner.get("id"), str(event_request.user_id))
+        self.assertEqual(event_owner.get("email"), user.email)
+        self.assertEqual(event_owner.get("first_name"), user.first_name)
+        self.assertEqual(event_owner.get("last_name"), user.last_name)
         self.assertEqual(created_event.get("type"), str(EventTypeModel.PROM))
 
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
@@ -126,7 +136,12 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("id"))
         self.assertEqual(created_event.get("name"), event_request.name)
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        event_owner = created_event.get("owner")
+        self.assertIsNotNone(event_owner)
+        self.assertEqual(event_owner.get("id"), str(event_request.user_id))
+        self.assertEqual(event_owner.get("email"), user.email)
+        self.assertEqual(event_owner.get("first_name"), user.first_name)
+        self.assertEqual(event_owner.get("last_name"), user.last_name)
         self.assertEqual(created_event.get("type"), str(EventTypeModel.OTHER))
         roles = self.role_service.get_roles_for_event(uuid.UUID(created_event.get("id")))
         unique_roles = set([role.name for role in roles])
@@ -158,7 +173,7 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("id"))
         self.assertEqual(created_event.get("name"), event_request.name)
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(created_event.get("user_id"), str(event_request.user_id))
+        self.assertIsNotNone(created_event.get("owner"))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
     def test_get_event_non_existing(self):
@@ -193,7 +208,12 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(response.json.get("id"))
         self.assertEqual(response.json.get("name"), event_request.name)
         self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
+        event_owner = response.json.get("owner")
+        self.assertIsNotNone(event_owner)
+        self.assertEqual(event_owner.get("id"), str(event_request.user_id))
+        self.assertEqual(event_owner.get("email"), user.email)
+        self.assertEqual(event_owner.get("first_name"), user.first_name)
+        self.assertEqual(event_owner.get("last_name"), user.last_name)
 
     def test_get_event_enriched_without_attendees_looks(self):
         # given
@@ -214,7 +234,7 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(response.json.get("id"))
         self.assertEqual(response.json.get("name"), event_request.name)
         self.assertEqual(response.json.get("event_at"), str(event_request.event_at.isoformat()))
-        self.assertEqual(response.json.get("user_id"), str(event_request.user_id))
+        self.assertIsNotNone(response.json.get("owner"))
         self.assertEqual(response.json.get("attendees"), [])
         self.assertEqual(response.json.get("looks"), [])
 
@@ -287,120 +307,6 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
-
-    # def test_get_event_enriched_without_attendees(self):
-    #     # given
-    #     user = self.user_service.create_user(fixtures.create_user_request())
-    #     event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-    #
-    #     # when
-    #     query_params = {**self.hmac_query_params.copy(), "enriched": "true"}
-    #     response = self.client.open(
-    #         f"/events/{event.id}",
-    #         query_string=query_params,
-    #         method="GET",
-    #         content_type=self.content_type,
-    #         headers=self.request_headers,
-    #     )
-    #
-    #     # then
-    #     self.assert200(response)
-    #     response_event = response.json
-    #     self.assert_equal_response_event_with_db_event(
-    #         self.event_service.get_event_by_id(response.json["id"]).to_dict(), response_event
-    #     )
-    #     self.assertEqual(response_event["attendees"], [])
-    #
-    # def test_get_event_enriched_with_2_out_of_3_attendees_active(self):
-    #     # given
-    #     user = self.user_service.create_user(fixtures.create_user_request())
-    #     event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-    #     attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
-    #     attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
-    #     attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
-    #     attendee1 = self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user1.email, event_id=event.id)
-    #     )
-    #     attendee2 = self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user2.email, event_id=event.id)
-    #     )
-    #     self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user3.email, event_id=event.id, is_active=False)
-    #     )
-    #
-    #     # when
-    #     query_params = {**self.hmac_query_params.copy(), "enriched": "true"}
-    #     response = self.client.open(
-    #         f"/events/{event.id}",
-    #         query_string=query_params,
-    #         method="GET",
-    #         content_type=self.content_type,
-    #         headers=self.request_headers,
-    #     )
-    #
-    #     # then
-    #     self.assert200(response)
-    #     response_event = response.json
-    #     self.assert_equal_response_event_with_db_event(
-    #         self.event_service.get_event_by_id(response.json["id"]).to_dict(), response_event
-    #     )
-    #     self.assertEqual(len(response_event["attendees"]), 2)
-    #     response_attendee1 = response_event["attendees"][0]
-    #     response_attendee2 = response_event["attendees"][1]
-    #     self.assertNotEqual(str(attendee1.id), str(attendee2.id))
-    #     self.assertTrue(str(attendee1.id) in [response_attendee1["id"], response_attendee2["id"]])
-    #     self.assertTrue(str(attendee2.id) in [response_attendee1["id"], response_attendee2["id"]])
-    #
-    # def test_get_event_enriched_attendee_look_and_role(self):
-    #     # given
-    #     user = self.user_service.create_user(fixtures.create_user_request())
-    #     event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-    #     attendee_user = self.user_service.create_user(fixtures.create_user_request())
-    #     look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
-    #     role = self.role_service.create_role(fixtures.role_request(event_id=event.id))
-    #     attendee = self.attendee_service.create_attendee(
-    #         fixtures.attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id, role_id=role.id)
-    #     )
-    #
-    #     # when
-    #     query_params = {**self.hmac_query_params.copy(), "enriched": "true"}
-    #     response = self.client.open(
-    #         f"/events/{event.id}",
-    #         query_string=query_params,
-    #         method="GET",
-    #         content_type=self.content_type,
-    #         headers=self.request_headers,
-    #     )
-    #
-    #     # then
-    #     self.assert200(response)
-    #
-    #     response_event = response.json
-    #     self.assertEqual(response_event["user_id"], str(user.id))
-    #
-    #     self.assertEqual(len(response_event["attendees"]), 1)
-    #     response_attendee = response_event["attendees"][0]
-    #     self.assertEqual(response_attendee["id"], str(attendee.id))
-    #     self.assertEqual(response_attendee["invite"], attendee.invite)
-    #     self.assertEqual(response_attendee["pay"], attendee.pay)
-    #     self.assertEqual(response_attendee["ship"], attendee.ship)
-    #     self.assertEqual(response_attendee["size"], attendee.size)
-    #     self.assertEqual(response_attendee["style"], attendee.style)
-    #
-    #     response_attendee_look = response_attendee["look"]
-    #     self.assertEqual(response_attendee_look["id"], str(look.id))
-    #     self.assertEqual(response_attendee_look["name"], look.name)
-    #     self.assertEqual(response_attendee_look["product_specs"], look.product_specs)
-    #
-    #     response_attendee_role = response_attendee["role_id"]
-    #     self.assertEqual(response_attendee_role["id"], str(role.id))
-    #     self.assertEqual(response_attendee_role["name"], role.name)
-    #
-    #     response_attendee_user = response_attendee["user"]
-    #     self.assertEqual(response_attendee_user["id"], str(attendee_user.id))
-    #     self.assertEqual(response_attendee_user["email"], attendee_user.email)
-    #     self.assertEqual(response_attendee_user["first_name"], attendee_user.first_name)
-    #     self.assertEqual(response_attendee_user["last_name"], attendee_user.last_name)
 
     def test_get_roles_by_event_id(self):
         # given

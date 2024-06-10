@@ -15,15 +15,19 @@ from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError
+from server.services.email import AbstractEmailService
 from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
 
 # noinspection PyMethodMayBeStatic
 class AttendeeService:
-    def __init__(self, shopify_service: AbstractShopifyService, user_service: UserService):
+    def __init__(
+        self, shopify_service: AbstractShopifyService, user_service: UserService, email_service: AbstractEmailService
+    ):
         self.shopify_service = shopify_service
         self.user_service = user_service
+        self.email_service = email_service
 
     def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
@@ -166,9 +170,6 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def send_invite(self, attendee_id: uuid.UUID) -> None:
-        pass
-
     def delete_attendee(self, attendee_id: uuid.UUID) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 
@@ -181,3 +182,8 @@ class AttendeeService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to deactivate attendee.", e)
+
+    def send_invites(self, attendee_ids: list[uuid.UUID]) -> None:
+        attendees = Attendee.query.filter(Attendee.id.in_(attendee_ids), Attendee.is_active).all()
+        attendee_models = (AttendeeModel.from_orm(attendee) for attendee in attendees)
+        self.email_service.send_invites_batch(attendee_models)

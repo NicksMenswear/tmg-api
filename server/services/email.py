@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from server.controllers.util import http
 from server.services import ServiceError
@@ -22,7 +23,7 @@ class AbstractEmailService(ABC):
         pass
 
     @abstractmethod
-    def send_invite_email(self, user: UserModel):
+    def send_invites_batch(self, users: list[UserModel]):
         pass
 
 
@@ -30,7 +31,7 @@ class FakeEmailService(AbstractEmailService):
     def send_activation_email(self, user: UserModel):
         pass
 
-    def send_invite_email(self, user: UserModel):
+    def send_invites_batch(self, users: list[UserModel]):
         pass
 
 
@@ -59,8 +60,16 @@ class EmailService(AbstractEmailService):
         }
         self._postmark_request("POST", "email/withTemplate", body)
 
-    def send_invite_email(self, user: UserModel, with_activation=False):
-        if with_activation:
+    def send_invites_batch(self, users: list[UserModel]):
+        batch = []
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = (executor.submit(self._invites_batch_prepare_one, user) for user in users)
+            for future in as_completed(futures):
+                batch.append(future.result())
+        self._postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
+
+    def _invites_batch_prepare_one(self, user: UserModel):
+        if user.account_status:
             shopify_url = self.shopify_service.get_activation_url(user.shopify_id)
             button_text = "Activate Account & Get Started"
         else:
@@ -72,4 +81,4 @@ class EmailService(AbstractEmailService):
             "TemplateId": PostmarkTemplates.INVITE,
             "TemplateModel": {"first_name": user.first_name, "shopify_url": shopify_url, "button_text": button_text},
         }
-        self._postmark_request("POST", "email/withTemplate", body)
+        return body

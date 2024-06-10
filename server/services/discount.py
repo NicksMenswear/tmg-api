@@ -166,7 +166,7 @@ class DiscountService:
 
         for discount_intent in discount_intents:
             owner_discount = owner_discounts[discount_intent.attendee_id]
-            owner_discount.id = discount_intent.id
+            owner_discount.attendee_id = discount_intent.id
             owner_discount.type = discount_intent.type
             owner_discount.amount = discount_intent.amount
 

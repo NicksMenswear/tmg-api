@@ -166,7 +166,7 @@ class DiscountService:
 
         for discount_intent in discount_intents:
             owner_discount = owner_discounts[discount_intent.attendee_id]
-            owner_discount.id = discount_intent.id
+            owner_discount.attendee_id = discount_intent.attendee_id
             owner_discount.type = discount_intent.type
             owner_discount.amount = discount_intent.amount
 
@@ -178,7 +178,7 @@ class DiscountService:
         ).all()
 
         for paid_discount in paid_discounts:
-            owner_discounts[paid_discount.attendee_id].codes.append(
+            owner_discounts[paid_discount.attendee_id].gift_codes.append(
                 DiscountGiftCodeModel(
                     code=paid_discount.shopify_discount_code,
                     amount=paid_discount.amount,

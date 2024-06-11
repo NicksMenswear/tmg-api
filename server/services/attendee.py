@@ -199,7 +199,5 @@ class AttendeeService:
 
         try:
             db.session.commit()
-            for user, attendee in items:
-                db.session.refresh(attendee)
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)

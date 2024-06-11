@@ -194,15 +194,12 @@ class AttendeeService:
 
         self.email_service.send_invites_batch(user_models)
 
-        updated_attendees = []
         for user, attendee in items:
-            if user.account_status:
-                attendee.invite = True
-                updated_attendees.append(attendee)
+            attendee.invite = True
 
         try:
             db.session.commit()
-            for attendee in updated_attendees:
+            for user, attendee in items:
                 db.session.refresh(attendee)
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)

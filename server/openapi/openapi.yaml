@@ -1387,7 +1387,7 @@ paths:
                 $ref: '#/components/schemas/uuid'
               type: array
         required: true
-        x-body-name: payload
+        x-body-name: attendee_ids
       responses:
         "201":
           description: Invites sent

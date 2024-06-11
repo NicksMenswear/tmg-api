@@ -69,11 +69,11 @@ class EmailService(AbstractEmailService):
         self._postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
 
     def _invites_batch_prepare_one(self, user: UserModel):
-        if user.account_status:
-            shopify_url = self.shopify_service.get_activation_url(user.shopify_id)
+        if not user.account_status:
+            shopify_url = self.shopify_service.get_account_activation_url(user.shopify_id)
             button_text = "Activate Account & Get Started"
         else:
-            shopify_url = self.shopify_service.get_login_url()
+            shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
             button_text = "Get Started"
         body = {
             "From": FROM_EMAIL,

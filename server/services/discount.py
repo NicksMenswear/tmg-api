@@ -178,7 +178,7 @@ class DiscountService:
         ).all()
 
         for paid_discount in paid_discounts:
-            owner_discounts[paid_discount.attendee_id].codes.append(
+            owner_discounts[paid_discount.attendee_id].gift_codes.append(
                 DiscountGiftCodeModel(
                     code=paid_discount.shopify_discount_code,
                     amount=paid_discount.amount,

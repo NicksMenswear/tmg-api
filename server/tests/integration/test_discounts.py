@@ -90,26 +90,137 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(discount_item1["attendee_id"], str(attendee1["attendee"].id))
         self.assertEqual(discount_item1["first_name"], attendee1["user"].first_name)
         self.assertEqual(discount_item1["last_name"], attendee1["user"].last_name)
-        self.assertEqual(discount_item1["status"]["style"], attendee1["attendee"].style)
-        self.assertEqual(discount_item1["status"]["pay"], attendee1["attendee"].pay)
-        self.assertEqual(discount_item1["status"]["invite"], attendee1["attendee"].invite)
         self.assertEqual(discount_item1["event_id"], str(event.id))
+        self.assertEqual(discount_item1["user_id"], str(attendee1["user"].id))
         self.assertEqual(discount_item1["amount"], 0)
         self.assertEqual(len(discount_item1["gift_codes"]), 0)
-        self.assertEqual(discount_item1["look"]["id"], str(attendee1["look"].id))
-        self.assertEqual(discount_item1["look"]["name"], attendee1["look"].name)
+
+        discount_status1 = discount_item1["status"]
+        self.assertEqual(discount_status1["style"], attendee1["attendee"].style)
+        self.assertEqual(discount_status1["pay"], attendee1["attendee"].pay)
+        self.assertEqual(discount_status1["invite"], attendee1["attendee"].invite)
+
+        discount_look1 = discount_item1["look"]
+        self.assertEqual(discount_look1["id"], str(attendee1["look"].id))
+        self.assertEqual(discount_look1["name"], attendee1["look"].name)
 
         self.assertEqual(discount_item2["attendee_id"], str(attendee2["attendee"].id))
         self.assertEqual(discount_item2["first_name"], attendee2["user"].first_name)
         self.assertEqual(discount_item2["last_name"], attendee2["user"].last_name)
-        self.assertEqual(discount_item2["status"]["style"], attendee2["attendee"].style)
-        self.assertEqual(discount_item2["status"]["pay"], attendee2["attendee"].pay)
-        self.assertEqual(discount_item2["status"]["invite"], attendee2["attendee"].invite)
+        self.assertEqual(len(discount_item2["gift_codes"]), 0)
         self.assertEqual(discount_item2["event_id"], str(event.id))
         self.assertEqual(discount_item2["amount"], 0)
-        self.assertEqual(len(discount_item2["gift_codes"]), 0)
-        self.assertEqual(discount_item2["look"]["id"], str(attendee2["look"].id))
-        self.assertEqual(discount_item2["look"]["name"], attendee2["look"].name)
+        self.assertEqual(discount_item2["user_id"], str(attendee2["user"].id))
+
+        discount_status2 = discount_item2["status"]
+        self.assertEqual(discount_status2["style"], attendee2["attendee"].style)
+        self.assertEqual(discount_status2["pay"], attendee2["attendee"].pay)
+        self.assertEqual(discount_status2["invite"], attendee2["attendee"].invite)
+
+        discount_look2 = discount_item2["look"]
+        self.assertEqual(discount_look2["id"], str(attendee2["look"].id))
+        self.assertEqual(discount_look2["name"], attendee2["look"].name)
+
+    def test_get_owner_discount_with_gift_codes_full_pay(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [1234, 5678, 1715]})
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
+        )
+        full_pay_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.FULL_PAY,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+
+        response_discount = response.json[0]
+
+        self.assertEqual(response_discount["attendee_id"], str(attendee.id))
+        self.assertEqual(len(response_discount["gift_codes"]), 1)
+
+        gift_code = response_discount["gift_codes"][0]
+        self.assertEqual(gift_code["code"], full_pay_discount.shopify_discount_code)
+        self.assertEqual(gift_code["amount"], full_pay_discount.amount)
+        self.assertEqual(gift_code["type"], full_pay_discount.type.value)
+        self.assertTrue(gift_code["used"])
+
+    def test_get_owner_discount_with_2_gift_codes_gift_one_paid_and_one_not_paid(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [1234, 5678, 1715]})
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
+        )
+        paid_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount_intent = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+
+        response_discount = response.json[0]
+
+        self.assertEqual(response_discount["attendee_id"], str(attendee.id))
+        self.assertEqual(response_discount["amount"], discount_intent.amount)
+        self.assertEqual(len(response_discount["gift_codes"]), 1)
+
+        gift_code = response_discount["gift_codes"][0]
+        self.assertEqual(gift_code["code"], paid_discount.shopify_discount_code)
+        self.assertEqual(gift_code["amount"], paid_discount.amount)
+        self.assertEqual(gift_code["type"], paid_discount.type.value)
+        self.assertFalse(gift_code["used"])
 
     def test_create_discount_intent_for_non_active_event(self):
         # given

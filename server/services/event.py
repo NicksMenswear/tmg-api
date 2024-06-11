@@ -169,7 +169,7 @@ class EventService:
             db.session.query(Event, User)
             .join(User, User.id == Event.user_id)
             .join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.user_id == user_id, Event.is_active)
+            .filter(Attendee.user_id == user_id, Event.is_active, Attendee.is_active)
             .all()
         )
 

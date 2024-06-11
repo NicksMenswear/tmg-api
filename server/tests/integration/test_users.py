@@ -224,6 +224,13 @@ class TestUsers(BaseTestCase):
                 event_id=event1.id, email=attendee_user.email, look_id=look1.id, role_id=role11.id
             )
         )
+        # adding attendee and removing it
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id
+            )
+        )
+        self.attendee_service.delete_attendee(attendee3.id)
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id

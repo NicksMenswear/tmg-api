@@ -184,6 +184,20 @@ class AttendeeService:
             raise ServiceError("Failed to deactivate attendee.", e)
 
     def send_invites(self, attendee_ids: list[uuid.UUID]) -> None:
-        users = User.query.join(Attendee, Attendee.user_id == User.id).filter(Attendee.id.in_(attendee_ids)).all()
-        user_models = [UserModel.from_orm(user) for user in users]
+        items = (
+            db.session.query(User, Attendee)
+            .join(Attendee, Attendee.user_id == User.id)
+            .filter(Attendee.id.in_(attendee_ids))
+            .all()
+        )
+        user_models = [UserModel.from_orm(user) for user, attendee in items]
+
         self.email_service.send_invites_batch(user_models)
+
+        for user, attendee in items:
+            attendee.invite = True
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to update attendee.", e)

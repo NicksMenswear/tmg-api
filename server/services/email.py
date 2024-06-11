@@ -52,11 +52,13 @@ class EmailService(AbstractEmailService):
 
     def send_activation_email(self, user: UserModel):
         activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+
+        template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {
             "From": FROM_EMAIL,
             "To": user.email,
             "TemplateId": PostmarkTemplates.ACTIVATION,
-            "TemplateModel": {"first_name": user.first_name, "shopify_url": activation_url},
+            "TemplateModel": template_model,
         }
         self._postmark_request("POST", "email/withTemplate", body)
 
@@ -75,10 +77,12 @@ class EmailService(AbstractEmailService):
         else:
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
             button_text = "Get Started"
+
+        template_model = {"first_name": user.first_name, "shopify_url": shopify_url, "button_text": button_text}
         body = {
             "From": FROM_EMAIL,
             "To": user.email,
             "TemplateId": PostmarkTemplates.INVITE,
-            "TemplateModel": {"first_name": user.first_name, "shopify_url": shopify_url, "button_text": button_text},
+            "TemplateModel": template_model,
         }
         return body

@@ -50,6 +50,17 @@ def delete_attendee(attendee_id):
 
 @hmac_verification
 @error_handler
+def send_invites(attendee_ids):
+    attendee_service = FlaskApp.current().attendee_service
+
+    attendee_uuids = [uuid.UUID(attendee_id) for attendee_id in attendee_ids]
+    attendee_service.send_invites(attendee_uuids)
+
+    return None, 201
+
+
+@hmac_verification
+@error_handler
 def apply_discounts(attendee_id, apply_discounts_request):
     discount_service = FlaskApp.current().discount_service
 

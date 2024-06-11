@@ -1350,7 +1350,51 @@ paths:
           description: Discounts applied
       summary: Apply discounts
       x-openapi-router-controller: server.controllers.attendees
-
+  /invites:
+    post:
+      operationId: send_invites
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/uuid'
+              type: array
+        required: true
+        x-body-name: attendee_ids
+      responses:
+        "201":
+          description: Invites sent
+      summary: Send invites
+      tags:
+        - Invites
+      x-openapi-router-controller: server.controllers.attendees
   /webhooks/shopify:
     post:
       operationId: shopify_webhook

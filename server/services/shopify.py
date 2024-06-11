@@ -21,6 +21,14 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def get_account_login_url(self, customer_id):
+        pass
+
+    @abstractmethod
+    def get_account_activation_url(self, customer_id):
+        pass
+
+    @abstractmethod
     def get_product_by_id(self, product_id):
         pass
 
@@ -64,6 +72,12 @@ class FakeShopifyService(AbstractShopifyService):
             raise DuplicateError("Shopify customer with this email address already exists.")
 
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
+
+    def get_account_login_url(self, customer_id):
+        pass
+
+    def get_account_activation_url(self, customer_id):
+        pass
 
     def get_product_by_id(self, product_id):
         return {
@@ -163,17 +177,17 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def get_account_login_url(self):
+    def get_account_login_url(self, customer_id):
         return f"https://{self.__shopify_store_host}/account/login"
 
-    def get_activation_url(self, customer_id):
+    def get_account_activation_url(self, customer_id):
         status, body = self.admin_api_request(
             "POST",
             f"{self.__shopify_rest_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
         )
 
         if status >= 400:
-            raise ServiceError("Failed to create shopify customer.")
+            raise ServiceError("Failed to create activation url.")
 
         return body.get("account_activation_url")
 

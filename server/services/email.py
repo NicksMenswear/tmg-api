@@ -51,7 +51,7 @@ class EmailService(AbstractEmailService):
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
     def send_activation_email(self, user: UserModel):
-        activation_url = self.shopify_service.get_activation_url(user.shopify_id)
+        activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
         body = {
             "From": FROM_EMAIL,
             "To": user.email,

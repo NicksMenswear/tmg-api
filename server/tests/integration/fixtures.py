@@ -222,3 +222,9 @@ def product_request(**product_data):
         "Barcode": product_data.get("barcode", random.randint(1000, 100000)),
         "Tags": product_data.get("tags", ["tag1", "tag2"]),
     }
+
+
+def store_sizing_request(**data) -> dict:
+    return {
+        "how_big": "very big",
+    }

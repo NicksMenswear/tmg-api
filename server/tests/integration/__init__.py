@@ -13,6 +13,7 @@ from server.database.models import (
     OrderItem,
     Discount,
     Product,
+    Sizing,
 )
 from server.flask_app import FlaskApp
 
@@ -38,6 +39,7 @@ class BaseTestCase(TestCase):
         Product.query.delete()
         Event.query.delete()
         User.query.delete()
+        Sizing.query.delete()
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON
@@ -61,8 +63,4 @@ class BaseTestCase(TestCase):
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service
-
-    def assert_equal_left(self, left, right):
-        # Asserts that all key-value pairs in left are present and equal in right.
-        for key in left:
-            self.assertEqual(left[key], right[key])
+        self.sizing_service = self.app.sizing_service

@@ -1342,7 +1342,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApplyDiscountsRequest"
+              $ref: "#/components/schemas/ApplyDiscounts"
         required: true
         x-body-name: apply_discounts_request
       responses:
@@ -1504,6 +1504,23 @@ paths:
       tags:
         - Login
       x-openapi-router-controller: server.controllers.login
+  /sizing:
+    post:
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSizing"
+        required: true
+        x-body-name: data
+      responses:
+        "201":
+          description: Create sizing information
+      summary: Create sizing information
+      tags:
+        - Sizing
+      x-openapi-router-controller: server.controllers.sizes
 
 components:
   schemas:
@@ -1859,7 +1876,7 @@ components:
           items:
             $ref: '#/components/schemas/EventDiscountCode'
           default: []
-    ApplyDiscountsRequest:
+    ApplyDiscounts:
       properties:
         event_id:
           title: event_id
@@ -1885,4 +1902,7 @@ components:
           type: integer
       title: AuditLog
       type: object
-
+    CreateSizing:
+      properties: {}
+      title: Sizing
+      type: object

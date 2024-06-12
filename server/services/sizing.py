@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class SizingService:
-    def store(self, data: dict) -> uuid.UUID:
+    def create(self, data: dict) -> uuid.UUID:
         try:
             sizing = Sizing(data=data)
 
@@ -18,8 +18,8 @@ class SizingService:
             db.session.commit()
             db.session.refresh(sizing)
         except Exception as e:
-            logger.error(f"Failed to store sizing data: {e}: {data}")
+            logger.error(f"Failed to save sizing data: {e}: {data}")
             db.session.rollback()
-            raise ServiceError("Failed to store sizing data")
+            raise ServiceError("Failed to save sizing data")
 
         return sizing.id

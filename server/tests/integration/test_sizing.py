@@ -4,7 +4,7 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestSizing(BaseTestCase):
-    def test_store_sizing(self):
+    def test_create_sizing(self):
         # when
         response = self.client.open(
             "/sizing",

@@ -1506,18 +1506,18 @@ paths:
       x-openapi-router-controller: server.controllers.login
   /sizing:
     post:
-      operationId: store
+      operationId: create
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StoreSizing"
+              $ref: "#/components/schemas/CreateSizing"
         required: true
         x-body-name: data
       responses:
         "201":
-          description: Store sizing information
-      summary: Store sizing information
+          description: Create sizing information
+      summary: Create sizing information
       tags:
         - Sizing
       x-openapi-router-controller: server.controllers.sizes
@@ -1902,7 +1902,7 @@ components:
           type: integer
       title: AuditLog
       type: object
-    StoreSizing:
+    CreateSizing:
       properties: {}
       title: Sizing
       type: object

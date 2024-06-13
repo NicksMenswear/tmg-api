@@ -22,8 +22,6 @@ def generate_phone_number() -> str:
     return f"+1{random.randint(1000000000, 9999999999)}"
 
 
-def generate_email(host: str = None) -> str:
-    name = generate_unique_string()
-    host = host if host else "example.com"
-
-    return f"{name}@{host}"
+def generate_email() -> str:
+    rnd = generate_unique_string()
+    return f"automation+{rnd}@themoderngroom.com"

@@ -120,7 +120,7 @@ class WebhookService:
         try:
             self.shopify_service.archive_product(shopify_product_id)
         except Exception as e:
-            logger.error(
+            logger.warning(
                 f"Error archiving product with id '{shopify_product_id}/{shopify_variant_id}': {e}"
             )  # log but proceed
 

@@ -4,6 +4,7 @@ from typing import List, Dict, Optional
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User, Role, Look
+from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
     CreateAttendeeModel,
@@ -59,6 +60,10 @@ class AttendeeService:
 
         attendees = dict()
 
+        attendee_ids = {attendee.id for attendee, _, _, _ in db_attendees}
+
+        attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
+
         for attendee, user, role, look in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
@@ -78,6 +83,7 @@ class AttendeeService:
                     role=RoleModel.from_orm(role) if role else None,
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
+                    gift_codes=attendees_gift_codes.get(attendee.id, set()),
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,

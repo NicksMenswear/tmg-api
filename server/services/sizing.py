@@ -18,8 +18,7 @@ class SizingService:
             db.session.commit()
             db.session.refresh(sizing)
         except Exception as e:
-            logger.error(f"Failed to save sizing data: {e}: {data}")
             db.session.rollback()
-            raise ServiceError("Failed to save sizing data")
+            raise ServiceError("Failed to save sizing data", e)
 
         return sizing.id

@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+from server.models.discount_model import DiscountGiftCodeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import UserRequestModel
@@ -57,6 +58,7 @@ class EnrichedAttendeeModel(AttendeeModel):
     user: AttendeeUserModel
     role: Optional[RoleModel] = None
     look: Optional[LookModel] = None
+    gift_codes: Optional[List[DiscountGiftCodeModel]] = {}
 
     def to_response(self):
         attendee = super().to_response()
@@ -64,6 +66,7 @@ class EnrichedAttendeeModel(AttendeeModel):
         attendee["user"] = user
         attendee["role"] = self.role.to_response() if self.role else None
         attendee["look"] = self.look.to_response() if self.look else None
+        attendee["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
 
         return attendee
 

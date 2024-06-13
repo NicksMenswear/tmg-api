@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look, EventType
+from server.database.models import Event, User, Attendee, Look, EventType, Discount
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.models.role_model import CreateRoleModel
 from server.models.user_model import UserModel

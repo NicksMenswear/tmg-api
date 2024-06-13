@@ -186,6 +186,9 @@ class ShopifyService(AbstractShopifyService):
             f"{self.__shopify_rest_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
         )
 
+        if status == 422 and "account already enabled" in body.get("errors", []):
+            raise ServiceError("Account already activated.")
+
         if status >= 400:
             raise ServiceError("Failed to create activation url.")
 

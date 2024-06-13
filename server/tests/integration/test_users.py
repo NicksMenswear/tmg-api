@@ -2,10 +2,13 @@ from __future__ import absolute_import
 
 import json
 import uuid
+import random
 
 from server import encoder
+from server.database.models import DiscountType
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
+from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -171,6 +174,34 @@ class TestUsers(BaseTestCase):
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=attendee_user2.email, is_active=False)
         )
+        not_used_paid_discount = self.app.discount_service.create_discount(
+            event1.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        used_paid_discount = self.app.discount_service.create_discount(
+            event1.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount_intent = self.app.discount_service.create_discount(
+            event1.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+        )
 
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         event3 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
@@ -198,13 +229,18 @@ class TestUsers(BaseTestCase):
         self.assertEqual(len(response_event1["attendees"]), 1)
         self.assertEqual(response_event1["attendees"][0]["id"], str(attendee1.id))
         self.assertEqual(response_event1["attendees"][0]["user"]["email"], str(attendee_user1.email))
+        gift_codes1 = response_event1["attendees"][0]["gift_codes"]
+        self.assertEqual(len(gift_codes1), 2)
+        self.assertEqual(
+            {gift_codes1[0]["code"], gift_codes1[1]["code"]},
+            {not_used_paid_discount.shopify_discount_code, used_paid_discount.shopify_discount_code},
+        )
 
         response_event2 = response.json[1]
         self.assertEqual(response_event2["id"], str(event2.id))
         self.assertEqual(response_event2["status"], str(EventUserStatus.OWNER))
         self.assertEqual(len(response_event2["roles"]), 1)
-        self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
-        self.assertEqual(len(response_event1["attendees"]), 1)
+        self.assertEqual(response_event2["looks"][0]["id"], str(look.id))
         self.assertEqual(len(response_event2["attendees"]), 0)
 
     def test_get_all_events_for_user_invited_and_enriched(self):

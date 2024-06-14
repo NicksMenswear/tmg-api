@@ -49,11 +49,11 @@ def init_sentry():
         enable_tracing=True,
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
-        traces_sample_rate=1.0,
+        traces_sample_rate=0.5,
         # Set profiles_sample_rate to 1.0 to profile 100%
         # of sampled transactions.
         # We recommend adjusting this value in production.
-        profiles_sample_rate=1.0,
+        profiles_sample_rate=0.5,
         # Ignoring healthcheck transactions
         before_send_transaction=filter_transactions,
         environment=os.getenv("STAGE"),

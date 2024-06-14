@@ -1,7 +1,7 @@
 import random
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Set, Dict
 from uuid import UUID
 
 from sqlalchemy import or_
@@ -445,3 +445,27 @@ class DiscountService:
         )
 
         return [discount.shopify_discount_code for discount in discounts]
+
+    def get_discount_codes_for_attendees(
+        self, attendee_ids: Set[uuid.UUID]
+    ) -> Dict[uuid.UUID, List[DiscountGiftCodeModel]]:
+        discounts = Discount.query.filter(
+            Discount.attendee_id.in_(attendee_ids), Discount.shopify_discount_code != None
+        ).all()
+
+        attendee_discounts = {}
+
+        for discount in discounts:
+            if discount.attendee_id not in attendee_discounts:
+                attendee_discounts[discount.attendee_id] = []
+
+            attendee_discounts[discount.attendee_id].append(
+                DiscountGiftCodeModel(
+                    code=discount.shopify_discount_code,
+                    amount=discount.amount,
+                    type=str(discount.type),
+                    used=discount.used,
+                )
+            )
+
+        return attendee_discounts

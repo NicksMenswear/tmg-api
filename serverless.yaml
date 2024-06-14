@@ -71,7 +71,7 @@ custom:
   stageVars:
     dev:
       region: us-west-2
-      data_bucket: "arn:aws:s3:::tmg-api-data-dev-a47b7af3"
+      data_bucket: "arn:aws:s3:::tmg-api-data-dev-fe58ee1e1337"
       vpc:
         securityGroupIds:
           - sg-0649f5114f8fdde15

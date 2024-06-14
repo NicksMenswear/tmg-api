@@ -7,6 +7,16 @@ provider:
   iam:
     role:
       name: tmg-api-${sls:stage}-role
+      statements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:AbortMultipartUpload
+          - s3:ListMultipartUploadParts
+          - s3:CreateMultipartUpload
+          - s3:CompleteMultipartUpload
+        Resource:
+          - arn:aws:s3:::tmg-api-*/*
   stackTags:
       env: ${sls:stage}
   logs:
@@ -30,6 +40,7 @@ functions:
       # General
       STAGE: ${sls:stage}
       API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
+      DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
       # SQLAlchemy Env Variables
       DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
       DB_PORT: 5432
@@ -60,6 +71,7 @@ custom:
   stageVars:
     dev:
       region: us-west-2
+      data_bucket: "arn:aws:s3:::tmg-api-data-dev-a47b7af3"
       vpc:
         securityGroupIds:
           - sg-0649f5114f8fdde15

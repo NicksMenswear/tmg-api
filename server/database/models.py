@@ -155,6 +155,7 @@ class Look(Base):
     name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     product_specs = Column(JSON)
+    image_path = Column(String, default=None)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)

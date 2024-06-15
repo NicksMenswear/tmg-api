@@ -82,6 +82,7 @@ custom:
     stg: ${self:custom.stageVars.dev}
     prd:
       region: us-east-1
+      data_bucket: "arn:aws:s3:::tmg-api-data-prd-e08bbe743c81"
       vpc:
         securityGroupIds:
           - sg-02f3c6c3b0ac6cdb3

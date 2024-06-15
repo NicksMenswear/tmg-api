@@ -17,10 +17,6 @@ on:
         - chromium   # chrome
         - webkit     # safari
         - firefox
-      load:
-        type: boolean
-        description: Enable load multiplier
-        default: false
 
 jobs:
   setup:
@@ -43,7 +39,6 @@ jobs:
       ref: ${{ github.ref_name }}
       stage: ${{ matrix.stage }}
       browser: ${{ inputs.browser }}
-      load: ${{ inputs.load && 10 || 1 }}
       notify: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

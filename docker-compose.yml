@@ -83,8 +83,10 @@ services:
       BROWSER: ${BROWSER:-chromium}
       LOAD: ${LOAD:-1}
     command: >
-      bash -c "pip install pytest pytest-playwright pytest-xdist &&
-      pytest --verbose --browser $BROWSER -n $LOAD"
+      bash -c "pip install pytest pytest-playwright &&
+      pytest --verbose --browser $BROWSER"
+    deploy:
+      replicas: ${LOAD:-1}
     tty: false
     restart: "no"
 

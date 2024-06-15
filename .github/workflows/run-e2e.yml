@@ -43,7 +43,7 @@ jobs:
       ref: ${{ github.ref_name }}
       stage: ${{ matrix.stage }}
       browser: ${{ inputs.browser }}
-      load: ${{ inputs.load == 'true' && 100 || 1 }}
+      load: ${{ inputs.load && 100 || 1 }}
       notify: true
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

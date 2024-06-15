@@ -17,6 +17,10 @@ on:
         - chromium   # chrome
         - webkit     # safari
         - firefox
+      load:
+        type: number
+        description: Load multiplier
+        default: 1
 
 jobs:
   setup:

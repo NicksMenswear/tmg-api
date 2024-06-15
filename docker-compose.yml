@@ -81,9 +81,10 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
+      LOAD: ${LOAD:-1}
     command: >
-      bash -c "pip install pytest pytest-playwright &&
-      pytest --verbose --browser $BROWSER"
+      bash -c "pip install pytest pytest-playwright pytest-xdist &&
+      pytest --verbose --browser $BROWSER -n $LOAD"
     tty: false
     restart: "no"
 

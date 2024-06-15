@@ -16,6 +16,11 @@ on:
         type: string
         default: chromium
         description: Browser to run tests on
+      load:
+        required: false
+        type: number
+        default: 1
+        description: Load multiplier
       notify:
         required: false
         type: boolean
@@ -57,6 +62,7 @@ jobs:
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}
+          LOAD: ${{ inputs.load }}
 
       - name: Clean up
         if: always()

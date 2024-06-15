@@ -4,7 +4,7 @@ ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
 TEST_USER_EMAIL = "e2etmg+01@hotmail.com"
 TEST_USER_PASSWORD = "123456"
-EMAIL_FROM = "automation@themoderngroom.com"
+EMAIL_FROM = "info@themoderngroom.com"
 IMAP_HOST = "outlook.office365.com"
 IMAP_PORT = 993
 EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
@@ -13,10 +13,19 @@ EMAIL_ACCOUNT_PASSWORD = "fbb06fc8-fd64-11ee-8a70-d73cbe5bfd61"
 STORE_CONFIG = {
     "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123", "require_store_password": True},
     "stg": {"url": "https://tmg-staging.myshopify.com", "password": "test123", "require_store_password": True},
+    "prd": {
+        "url": "https://themodern-groom.myshopify.com",
+        "password": "test123",
+        "require_store_password": False,
+        "has_additional_initial_screen_on_store_access": True,
+    },
 }
 
 STORE_URL = STORE_CONFIG.get(ACTIVE_ENV).get("url")
 REQUIRE_STORE_PASSWORD = STORE_CONFIG.get(ACTIVE_ENV).get("require_store_password")
+HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS = STORE_CONFIG.get(ACTIVE_ENV).get(
+    "has_additional_initial_screen_on_store_access", False
+)
 STORE_PASSWORD = STORE_CONFIG.get(ACTIVE_ENV).get("password")
 
 API_PARAMS = {
@@ -38,6 +47,16 @@ API_PARAMS = {
             "shop": "tmg-staging.myshopify.com",
             "signature": "ddca24b84f084aad360f8530f071a53c9948b14f6671b0184479cf277a5120b8",
             "timestamp": "1713979125",
+        },
+    },
+    "prd": {
+        "url": "https://api.prd.tmgcorp.net",
+        "hmac": {
+            "logged_in_customer_id": "6680352456746",
+            "path_prefix": "/apps/prd",
+            "shop": "themodern-groom.myshopify.com",
+            "signature": "d876ab9a5505497002ad038050b8ec484abf807d2f5221066e32ce67a4e34fb1",
+            "timestamp": "1718364754",
         },
     },
 }

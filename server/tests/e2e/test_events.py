@@ -1,13 +1,24 @@
-import re
-
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 from server.tests import utils
 from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD
-from server.tests.e2e.utils import api, ui
+from server.tests.e2e.utils import api, actions, verify
 
 EVENT_DATE = "2028-04-18"
 EVENT_PRETTY_DATE = "Tuesday, April 18, 2028"
+
+DEFAULT_WEDDING_ROLES = {
+    "Best Man",
+    "Bride",
+    "Father of the Bride",
+    "Father of the Groom",
+    "Groom",
+    "Groomsman",
+    "Officiant",
+    "Usher",
+}
+DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone"}
+DEFAULT_OTHER_ROLES = {"Attendee"}
 
 
 def test_basic_create_event(page: Page):
@@ -17,19 +28,19 @@ def test_basic_create_event(page: Page):
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    verify.no_upcoming_events_visible(page)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
 
-    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
-    expect(page.get_by_text(EVENT_PRETTY_DATE).first).to_be_visible()
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
 
-    ui.open_event_accordion(page, event_id)
+    actions.open_event_accordion(page, event_id)
 
-    ui.add_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
+    verify.attendee_to_be_visible(page, attendee_first_name, attendee_last_name)
 
 
 def test_create_multiple_events(page: Page):
@@ -43,23 +54,24 @@ def test_create_multiple_events(page: Page):
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    verify.no_upcoming_events_visible(page)
 
-    event_id_1 = ui.create_new_event(page, event_name_1, EVENT_DATE)
-    event_id_2 = ui.create_new_event(page, event_name_2, EVENT_DATE)
+    event_id_1 = actions.create_new_event(page, event_name_1, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    verify.event_to_be_visible(page, event_name_1, EVENT_PRETTY_DATE)
 
-    ui.open_event_accordion(page, event_id_1)
-    attendee_id_1 = ui.add_attendee(page, event_id_1, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    event_id_2 = actions.create_new_event(page, event_name_2, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    verify.event_to_be_visible(page, event_name_2, EVENT_PRETTY_DATE)
 
-    assert attendee_id_1 is not None
+    actions.open_event_accordion(page, event_id_1)
+    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
 
-    ui.open_event_accordion(page, event_id_2)
-    attendee_id_2 = ui.add_attendee(page, event_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-
-    assert attendee_id_2 is not None
+    actions.open_event_accordion(page, event_id_2)
+    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
 
 
 def test_create_event_and_add_few_attendees(page: Page):
@@ -75,26 +87,54 @@ def test_create_event_and_add_few_attendees(page: Page):
     attendee_email_3 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    verify.no_upcoming_events_visible(page)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
 
-    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
-    expect(page.get_by_text(EVENT_PRETTY_DATE).first).to_be_visible()
+    actions.open_event_accordion(page, event_id)
 
-    ui.open_event_accordion(page, event_id)
+    actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
 
-    attendee_id_1 = ui.add_attendee(page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    assert attendee_id_1 is not None
+    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
+    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
+    verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
 
-    attendee_id_2 = ui.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    assert attendee_id_2 is not None
 
-    attendee_id_3 = ui.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
-    assert attendee_id_3 is not None
+def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name_1 = utils.generate_unique_name()
+    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_email_1 = utils.generate_email()
+    attendee_first_name_2 = utils.generate_unique_name()
+    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_email_2 = utils.generate_email()
+    attendee_first_name_3 = utils.generate_unique_name()
+    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_email_3 = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    verify.no_upcoming_events_visible(page)
+
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1, "Save & Add Next")
+    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2, "Save & Add Next")
+    actions.add_first_attendee(page, attendee_first_name_3, attendee_last_name_3, attendee_email_3, "Save")
+
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
+
+    actions.open_event_accordion(page, event_id)
+
+    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
+    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
+    verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
 
 
 def test_create_event_add_and_remove_attendees(page: Page):
@@ -107,25 +147,19 @@ def test_create_event_add_and_remove_attendees(page: Page):
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    verify.no_upcoming_events_visible(page)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE)
+    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+    actions.open_event_accordion(page, event_id)
 
-    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
-    expect(page.get_by_text(EVENT_PRETTY_DATE).first).to_be_visible()
+    actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
 
-    ui.open_event_accordion(page, event_id)
-
-    attendee_id_1 = ui.add_attendee(page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    assert attendee_id_1 is not None
-
-    attendee_id_2 = ui.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    assert attendee_id_2 is not None
-
-    ui.delete_attendee(page, attendee_id_1)
+    actions.delete_attendee(page, attendee_id_1)
 
 
 def test_delete_event(page: Page):
@@ -139,28 +173,20 @@ def test_delete_event(page: Page):
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    verify.no_upcoming_events_visible(page)
 
-    event_id_1 = ui.create_new_event(page, event_name_1, EVENT_DATE)
-    event_id_2 = ui.create_new_event(page, event_name_2, EVENT_DATE)
+    event_id_1 = actions.create_new_event(page, event_name_1, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    verify.event_to_be_visible(page, event_name_1, EVENT_PRETTY_DATE)
 
-    ui.open_event_accordion(page, event_id_1)
+    actions.create_new_event(page, event_name_2, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    verify.event_to_be_visible(page, event_name_2, EVENT_PRETTY_DATE)
 
-    attendee_id_1 = ui.add_attendee(page, event_id_1, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    assert attendee_id_1 is not None
-
-    ui.open_event_accordion(page, event_id_2)
-
-    attendee_id_2 = ui.add_attendee(page, event_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    assert attendee_id_2 is not None
-
-    ui.delete_event(page, event_id_1)
-
-    expect(page.get_by_role("heading", name=event_name_1).first).not_to_be_visible()
-    expect(page.get_by_role("heading", name=event_name_2).first).to_be_visible()
+    actions.delete_event(page, event_id_1, event_name_1)
 
 
 def test_delete_all_events(page: Page):
@@ -170,52 +196,44 @@ def test_delete_all_events(page: Page):
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    verify.no_upcoming_events_visible(page)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+    event_id_1 = actions.create_new_event(page, event_name, EVENT_DATE)
+    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
 
-    ui.open_event_accordion(page, event_id)
-
-    attendee_id = ui.add_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
-    assert attendee_id is not None
-
-    ui.delete_event(page, event_id)
-
-    expect(page.get_by_role("heading", name=event_name).first).not_to_be_visible()
+    actions.delete_event(page, event_id_1, event_name)
 
 
 def test_delete_all_attendees(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name1 = utils.generate_unique_name()
-    attendee_last_name1 = utils.generate_unique_name()
-    attendee_email1 = utils.generate_email()
-    attendee_first_name2 = utils.generate_unique_name()
-    attendee_last_name2 = utils.generate_unique_name()
-    attendee_email2 = utils.generate_email()
+    attendee_first_name_1 = utils.generate_unique_name()
+    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_email_1 = utils.generate_email()
+    attendee_first_name_2 = utils.generate_unique_name()
+    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    verify.no_upcoming_events_visible(page)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE)
+    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    verify.event_to_be_visible(page, event_name, EVENT_PRETTY_DATE)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE)
+    actions.open_event_accordion(page, event_id)
 
-    ui.open_event_accordion(page, event_id)
+    attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
 
-    attendee_id1 = ui.add_attendee(page, event_id, attendee_first_name1, attendee_last_name1, attendee_email1)
-    assert attendee_id1 is not None
+    actions.delete_attendee(page, attendee_id_1)
+    actions.delete_attendee(page, attendee_id_2)
 
-    attendee_id2 = ui.add_attendee(page, event_id, attendee_first_name2, attendee_last_name2, attendee_email2)
-    assert attendee_id2 is not None
-
-    ui.delete_attendee(page, attendee_id1)
-    ui.delete_attendee(page, attendee_id2)
-
-    expect(page.get_by_text("No attendees added.").first).to_be_visible()
+    verify.no_attendee_added_to_be_visible(page, event_id)
 
 
 def test_create_all_types_of_events_and_check_roles(page: Page):
@@ -235,60 +253,33 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     attendee_email3 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    verify.no_upcoming_events_visible(page)
 
-    event_id1 = ui.create_new_event(page, event_name1, EVENT_DATE, "wedding")
-    ui.open_event_accordion(page, event_id1)
-    attendee_id1 = ui.add_attendee(page, event_id1, attendee_first_name1, attendee_last_name1, attendee_email1)
-    assert attendee_id1 is not None
-    wedding_roles = {
-        role.inner_text().strip()
-        for role in page.locator(
-            f'div.tmg-attendees-item[data-attendee-id="{attendee_id1}"] div.tmg-attendees-role li.tmg-select-item'
-        ).all()
-    }
-    assert {
-        "Best Man",
-        "Bride",
-        "Father of the Bride",
-        "Father of the Groom",
-        "Groom",
-        "Groomsman",
-        "Officiant",
-        "Usher",
-    } == wedding_roles
-    assert (
-        page.locator(f'div.tmg-item[data-event-id="{event_id1}"] >> div.tmg-item-header-type').first.inner_text()
-        == "Wedding"
-    )
+    event_id1 = actions.create_new_event(page, event_name1, EVENT_DATE, "wedding")
+    attendee_id1 = actions.add_first_attendee(page, attendee_first_name1, attendee_last_name1, attendee_email1)
 
-    event_id2 = ui.create_new_event(page, event_name2, EVENT_DATE, "prom")
-    ui.open_event_accordion(page, event_id2)
-    attendee_id2 = ui.add_attendee(page, event_id2, attendee_first_name2, attendee_last_name2, attendee_email2)
-    assert attendee_id2 is not None
-    prom_roles = {
-        role.inner_text().strip()
-        for role in page.locator(
-            f'div.tmg-attendees-item[data-attendee-id="{attendee_id2}"] div.tmg-attendees-role li.tmg-select-item'
-        ).all()
-    }
-    assert {"Attendee", "Attendee Parent or Chaperone"} == prom_roles
-    assert (
-        page.locator(f'div.tmg-item[data-event-id="{event_id2}"] >> div.tmg-item-header-type').first.inner_text()
-        == "Prom"
-    )
+    actions.open_event_accordion(page, event_id1)
 
-    event_id3 = ui.create_new_event(page, event_name3, EVENT_DATE, "other")
-    ui.open_event_accordion(page, event_id3)
-    attendee_id3 = ui.add_attendee(page, event_id3, attendee_first_name3, attendee_last_name3, attendee_email3)
-    assert attendee_id3 is not None
-    assert (
-        page.locator(f'div.tmg-item[data-event-id="{event_id3}"] >> div.tmg-item-header-type').first.inner_text()
-        == "Other"
-    )
+    verify.roles_are_available_for_attendee(page, attendee_id1, DEFAULT_WEDDING_ROLES)
+
+    verify.event_has_type(page, event_id1, "Wedding")
+
+    event_id2 = actions.create_new_event(page, event_name2, EVENT_DATE, "prom")
+    attendee_id2 = actions.add_first_attendee(page, attendee_first_name2, attendee_last_name2, attendee_email2)
+    actions.open_event_accordion(page, event_id2)
+
+    verify.roles_are_available_for_attendee(page, attendee_id2, DEFAULT_PROM_ROLES)
+    verify.event_has_type(page, event_id2, "Prom")
+
+    event_id3 = actions.create_new_event(page, event_name3, EVENT_DATE, "other")
+    attendee_id3 = actions.add_first_attendee(page, attendee_first_name3, attendee_last_name3, attendee_email3)
+    actions.open_event_accordion(page, event_id3)
+
+    verify.roles_are_available_for_attendee(page, attendee_id3, DEFAULT_OTHER_ROLES)
+    verify.event_has_type(page, event_id3, "Other")
 
 
 def test_roles_persistence(page: Page):
@@ -298,22 +289,20 @@ def test_roles_persistence(page: Page):
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
-    ui.access_store(page)
-    ui.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
+    verify.no_upcoming_events_visible(page)
 
-    event_id = ui.create_new_event(page, event_name, EVENT_DATE, "prom")
-    ui.open_event_accordion(page, event_id)
-    attendee_id = ui.add_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
-    assert attendee_id is not None
+    event_id = actions.create_new_event(page, event_name, EVENT_DATE, "prom")
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.open_event_accordion(page, event_id)
 
     role_name = "Attendee Parent or Chaperone"
-    role_id = ui.select_role_for_attendee(page, event_id, attendee_id, role_name)
+    role_id = actions.select_role_for_attendee(page, event_id, attendee_id, role_name)
 
     page.reload()
 
-    ui.open_event_accordion(page, event_id)
-    assert role_id == page.locator(
-        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"]'
-    ).first.get_attribute("data-role-id")
+    actions.open_event_accordion(page, event_id)
+
+    verify.role_is_selected_for_attendee(page, event_id, attendee_id, role_id)

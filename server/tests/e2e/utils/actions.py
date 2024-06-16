@@ -232,9 +232,12 @@ def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
     send_invites_dialog.wait_for(state="visible")
 
     for attendee_id in attendee_ids:
-        attendee_locator = send_invites_dialog.locator(f'div[data-attendee-id="{attendee_id}"]')
-        checkbox_locator = attendee_locator.locator('input[type="checkbox"]')
-        checkbox_locator.click()
+        invite_attendee_list_locator = page.locator("#inviteAttendeesList")
+        attendee_locator = invite_attendee_list_locator.locator(
+            f'li.tmg-invite-attendee-item[data-attendee-id="{attendee_id}"]'
+        )
+        checkbox_label_locator = attendee_locator.locator("label.tmg-checkbox")
+        checkbox_label_locator.click()
 
     send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
     send_invites_button.click()

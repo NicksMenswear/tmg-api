@@ -56,5 +56,6 @@ def logged_in(page: Page):
 
 
 def not_logged_in(page: Page):
+    link_locator = page.locator('a[href="/account"]:has-text("Account")')
+    expect(link_locator).not_to_be_visible()
     expect(page.locator("a", has_text="Logout")).not_to_be_visible()
-    expect(page.locator("a", has_text="Account")).not_to_be_visible()

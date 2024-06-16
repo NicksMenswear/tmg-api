@@ -198,14 +198,43 @@ def activation_enter_password(page: Page, password: str):
 
 
 def select_role_for_attendee(page: Page, event_id, attendee_id, role_name: str):
-    page.locator(
-        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"] div.tmg-select'
-    ).first.click()
+    event_locator = page.locator(f'div[data-event-id="{event_id}"]')
+    attendee_locator = event_locator.locator(f'div[data-attendee-id="{attendee_id}"]')
 
-    page.locator(
-        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"] ul.tmg-select-items li.tmg-select-item >> text="{role_name}"'
-    ).first.click()
+    role_dropdown = attendee_locator.locator("div.tmg-attendees-role .tmg-select-title")
+    role_dropdown.click()
 
-    return page.locator(
-        f'div.tmg-item[data-event-id="{event_id}"] div.tmg-attendees-item[data-attendee-id="{attendee_id}"]'
-    ).first.get_attribute("data-role-id")
+    role_option = attendee_locator.locator(f'li[data-role-id] span.tmg-select-item-title:text("{role_name}")')
+    role_option.click()
+
+    return role_option.locator("..").get_attribute("data-role-id")
+
+
+def select_look_for_attendee(page: Page, event_id, attendee_id, look_name: str):
+    event_locator = page.locator(f'div[data-event-id="{event_id}"]')
+    attendee_locator = event_locator.locator(f'div[data-attendee-id="{attendee_id}"]')
+
+    look_dropdown = attendee_locator.locator("div.tmg-attendees-look .tmg-select-title")
+    look_dropdown.click()
+
+    look_option = attendee_locator.locator(f'li[data-look-id] span.tmg-select-item-title:text("{look_name}")')
+    look_option.click()
+
+    return look_option.locator("..").get_attribute("data-look-id")
+
+
+def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
+    send_invites_button = page.locator(f'button[data-event-id="{event_id}"].inviteModal')
+    send_invites_button.scroll_into_view_if_needed()
+    send_invites_button.click()
+
+    send_invites_dialog = page.locator(f"div#send-invite-modal.tmg-modal.showed")
+    send_invites_dialog.wait_for(state="visible")
+
+    for attendee_id in attendee_ids:
+        attendee_locator = send_invites_dialog.locator(f'div[data-attendee-id="{attendee_id}"]')
+        checkbox_locator = attendee_locator.locator('input[type="checkbox"]')
+        checkbox_locator.click()
+
+    send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
+    send_invites_button.click()

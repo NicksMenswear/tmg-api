@@ -84,7 +84,7 @@ class LookService:
         if not look:
             raise NotFoundError("Look not found")
 
-        num_attendees = Attendee.query.filter(Attendee.look_id == look_id).count()
+        num_attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).count()
 
         if num_attendees > 0:
             raise BadRequestError("Can't delete look associated to attendee")

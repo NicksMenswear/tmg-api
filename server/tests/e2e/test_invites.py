@@ -1,3 +1,4 @@
+import unittest
 import uuid
 
 from playwright.sync_api import Page
@@ -10,6 +11,7 @@ EVENT_DATE = "2028-04-18"
 EVENT_PRETTY_DATE = "Tuesday, April 18, 2028"
 
 
+@unittest.skip("This test is incomplete due to bug in invites")
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()

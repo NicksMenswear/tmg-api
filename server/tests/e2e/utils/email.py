@@ -42,7 +42,7 @@ def search_emails(mail, subject, email_from, email_to):
 
                 if (
                     msg["subject"] == subject
-                    and (email_from is None or msg["from"] == email_from)
+                    and (email_from is None or email_from in msg["from"])
                     and msg["to"] == email_to
                 ):
                     return get_email_body(msg)
@@ -58,20 +58,20 @@ def get_email_body(msg):
             content_disposition = str(part.get("Content-Disposition"))
 
             if content_type == "text/plain" and "attachment" not in content_disposition:
-                content = content + part.get_payload()
+                content = content + part.get_payload(decode=True).decode("utf-8")
             elif content_type == "text/html" and "attachment" not in content_disposition:
-                content = content + part.get_payload()
+                content = content + part.get_payload(decode=True).decode("utf-8")
     else:
         content_type = msg.get_content_type()
 
         if content_type == "text/plain" or content_type == "text/html":
-            content = msg.get_payload()
+            content = msg.get_payload(decode=True).decode("utf-8")
 
     return content
 
 
-def link_from_email(email_body: str, link_text: str = "Click Me"):
-    pattern = r'<a href="([^"]+)">' + link_text + "</a>"
+def link_from_email(email_body: str, link_text: str = " Activate Account "):
+    pattern = rf'<a href="([^"]+)"[^>]*>.*?<span[^>]*>{link_text}</span>.*?</a>'
     match = re.search(pattern, email_body, re.IGNORECASE)
 
     if match:

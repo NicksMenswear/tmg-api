@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from server import encoder
+from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
 from server.services.role import PREDEFINED_ROLES
 from server.tests.integration import BaseTestCase, fixtures
@@ -503,6 +504,14 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email)
+        )
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email)
+        )
 
         # when
         response = self.client.open(
@@ -518,6 +527,11 @@ class TestEvents(BaseTestCase):
 
         looked_up_event = self.event_service.get_event_by_id(event.id)
         self.assertEqual(looked_up_event.is_active, False)
+
+        db_attendee1 = Attendee.query.filter(Attendee.id == attendee1.id).first()
+        self.assertEqual(db_attendee1.is_active, False)
+        db_attendee2 = Attendee.query.filter(Attendee.id == attendee2.id).first()
+        self.assertEqual(db_attendee2.is_active, False)
 
     def test_create_event_name_too_short(self):
         # given

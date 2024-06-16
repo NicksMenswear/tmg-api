@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Event, User, Attendee, Look, EventType, Discount
+from server.database.models import Event, User, Attendee, Look, EventType
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.models.role_model import CreateRoleModel
 from server.models.user_model import UserModel
@@ -127,6 +127,11 @@ class EventService:
             raise NotFoundError("Event not found.")
 
         try:
+            attendees = self.attendee_service.get_attendees_for_event(db_event.id)
+
+            for attendee in attendees:
+                self.attendee_service.delete_attendee(attendee.id)
+
             db_event.is_active = False
 
             db.session.commit()

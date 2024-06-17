@@ -12,6 +12,7 @@ from server.database.models import Look, Attendee
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.aws import AbstractAWSService
+from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,12 @@ TMP_DIR = os.environ.get("TMPDIR", "/tmp")
 
 # noinspection PyMethodMayBeStatic
 class LookService:
-    def __init__(self, user_service: UserService, aws_service: AbstractAWSService):
+    def __init__(
+        self, user_service: UserService, aws_service: AbstractAWSService, shopify_service: AbstractShopifyService
+    ):
         self.user_service = user_service
         self.aws_service = aws_service
+        self.shopify_service = shopify_service
 
     def get_look_by_id(self, look_id: uuid.UUID) -> LookModel:
         db_look = Look.query.filter(Look.id == look_id).first()
@@ -35,10 +39,21 @@ class LookService:
         return LookModel.from_orm(db_look)
 
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
-        return [
+        look_models = [
             LookModel.from_orm(look)
             for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
+
+        variants = [variant for look_model in look_models for variant in look_model.product_specs.get("variants", [])]
+
+        if variants:
+            variants_with_prices = self.shopify_service.get_variant_prices(variants)
+
+            for look_model in look_models:
+                for variant_id in look_model.product_specs.get("variants", []):
+                    look_model.price += variants_with_prices.get(variant_id, 0.0)
+
+        return look_models
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         db_look: Look = Look.query.filter(

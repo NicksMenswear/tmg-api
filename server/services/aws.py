@@ -1,5 +1,5 @@
 import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import boto3
 
@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractAWSService(ABC):
+    @abstractmethod
     def upload_to_s3(self, local_file, bucket, s3_file):
         raise NotImplementedError()
 

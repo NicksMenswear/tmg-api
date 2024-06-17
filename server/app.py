@@ -99,7 +99,7 @@ def init_services(app, is_testing=False):
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
-    app.look_service = LookService(app.user_service, app.aws_service)
+    app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
     app.attendee_service = AttendeeService(app.shopify_service, app.user_service, app.email_service)
     app.order_service = OrderService(user_service=app.user_service)
     app.event_service = EventService(

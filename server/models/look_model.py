@@ -30,12 +30,16 @@ class LookModel(BaseModel):
     product_specs: dict
     image_path: Optional[str]
     is_active: bool
+    price: float = 0.0
 
     class Config:
         from_attributes = True
 
     def to_response(self):
         return self.dict(include={"id", "name", "product_specs", "image_path"})
+
+    def to_response_with_price(self):
+        return self.dict(include={"id", "name", "product_specs", "image_path", "price"})
 
 
 class UpdateLookModel(LookRequest):

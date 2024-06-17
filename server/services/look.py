@@ -1,18 +1,30 @@
+import base64
+import logging
+import os
 import uuid
 from datetime import datetime
 from typing import List
+
+import time
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
+from server.services.aws import AbstractAWSService
 from server.services.user import UserService
+
+logger = logging.getLogger(__name__)
+
+DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
+TMP_DIR = os.environ.get("TMPDIR", "/tmp")
 
 
 # noinspection PyMethodMayBeStatic
 class LookService:
-    def __init__(self, user_service: UserService):
+    def __init__(self, user_service: UserService, aws_service: AbstractAWSService):
         self.user_service = user_service
+        self.aws_service = aws_service
 
     def get_look_by_id(self, look_id: uuid.UUID) -> LookModel:
         db_look = Look.query.filter(Look.id == look_id).first()
@@ -42,13 +54,28 @@ class LookService:
                 name=create_look.name,
                 user_id=create_look.user_id,
                 product_specs=create_look.product_specs,
+                image_path=None,
                 is_active=create_look.is_active,
             )
 
             db.session.add(db_look)
             db.session.commit()
             db.session.refresh(db_look)
+
+            if create_look.image:
+                timestamp = str(int(time.time() * 1000))
+                local_file = f"{TMP_DIR}/{timestamp}.png"
+                s3_file = f"looks/{create_look.user_id}/{db_look.id}/{timestamp}.png"
+
+                self.__save_image(create_look.image, local_file)
+                self.aws_service.upload_to_s3(local_file, DATA_BUCKET, s3_file)
+
+                db_look.image_path = s3_file
+
+                db.session.commit()
+                db.session.refresh(db_look)
         except Exception as e:
+            logger.exception(e)
             raise ServiceError("Failed to create look.", e)
 
         return LookModel.from_orm(db_look)
@@ -96,3 +123,14 @@ class LookService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
+
+    def __save_image(self, image_b64: str, local_file: str) -> None:
+        try:
+            image_b64 = image_b64.replace("data:image/png;base64,", "")
+            decoded_image = base64.b64decode(image_b64)
+
+            with open(local_file, "wb") as f:
+                f.write(decoded_image)
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to save image.", e)

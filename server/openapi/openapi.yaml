@@ -744,7 +744,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Look'
+              $ref: '#/components/schemas/CreateLook'
         required: true
         x-body-name: create_look
       responses:
@@ -1639,6 +1639,26 @@ components:
         - event_at
       title: Event
       type: object
+    CreateLook:
+      properties:
+        name:
+          title: name
+          type: string
+        user_id:
+          title: user_id
+          $ref: '#/components/schemas/uuid'
+        product_specs:
+          title: product_specs
+          type: object
+        image:
+          title: image
+          type: string
+          nullable: true
+      required:
+        - name
+        - user_id
+      title: Create Look
+      type: object
     Look:
       properties:
         id:
@@ -1654,9 +1674,9 @@ components:
         product_specs:
           title: product_specs
           type: object
-      required:
-        - name
-        - user_id
+        image_path:
+          title: image_path
+          type: string
       title: Look
       type: object
     UpdateLook:

@@ -70,7 +70,7 @@ def get_email_body(msg):
     return content
 
 
-def link_from_email(email_body: str, link_text: str = " Activate Account "):
+def get_activate_account_link_from_email(email_body: str, link_text: str = " Activate Account "):
     pattern = rf'<a href="([^"]+)"[^>]*>.*?<span[^>]*>{link_text}</span>.*?</a>'
     match = re.search(pattern, email_body, re.IGNORECASE)
 

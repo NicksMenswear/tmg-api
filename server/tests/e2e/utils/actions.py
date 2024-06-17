@@ -8,7 +8,6 @@ from server.tests.e2e import (
     STORE_PASSWORD,
     HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS,
 )
-from server.tests.e2e.utils import verify
 
 
 def access_store(page: Page):
@@ -31,7 +30,7 @@ def login(page: Page, email: str, password: str):
     page.get_by_role("button", name="Login").click()
 
 
-def create_new_event(page: Page, event_name: str, event_date: str = None, event_type: str = "wedding"):
+def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18", event_type: str = "wedding"):
     page.get_by_role("button", name="New Event ").first.click()
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)

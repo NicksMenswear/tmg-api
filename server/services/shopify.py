@@ -4,6 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+from typing import List
 
 from server.controllers.util import http
 from server.services import ServiceError, NotFoundError, DuplicateError
@@ -41,7 +42,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_total_price_for_variants(self, variant_ids):
+    def get_variant_prices(self, variant_ids: List[str]):
+        pass
+
+    @abstractmethod
+    def get_total_price_for_variants(self, variant_ids: List[str]):
         pass
 
     @abstractmethod
@@ -113,17 +118,21 @@ class FakeShopifyService(AbstractShopifyService):
 
         return virtual_product
 
-    def get_total_price_for_variants(self, variant_ids):
+    def get_variant_prices(self, variant_ids: List[str]):
+        result = {}
+
+        for variant_id in variant_ids:
+            result[variant_id] = int(variant_id) * 10
+
+        return result
+
+    def get_total_price_for_variants(self, variant_ids: List[str]):
         if not variant_ids:
             return 0
 
-        total_look_price = 0
+        variant_prices = self.get_variant_prices(variant_ids)
 
-        for variant_id in variant_ids:
-            variant_price = int(variant_id) * 10
-            total_look_price += variant_price
-
-        return total_look_price
+        return sum([variant_prices[variant_id] for variant_id in variant_ids])
 
     def delete_product(self, product_id):
         pass
@@ -395,11 +404,9 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def get_total_price_for_variants(self, variant_ids):
-        total_price = 0
-
+    def get_variant_prices(self, variant_ids: List[str]):
         if not variant_ids:
-            return total_price
+            return 0
 
         ids_query = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
 
@@ -407,6 +414,7 @@ class ShopifyService(AbstractShopifyService):
         {{
           nodes(ids: [{ids_query}]) {{
             ... on ProductVariant {{
+              id
               price
             }}
           }}
@@ -425,4 +433,14 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. {body['errors']}")
 
-        return sum(float(variant["price"]) for variant in body["data"]["nodes"])
+        variants_with_prices = {}
+
+        for variant in body["data"]["nodes"]:
+            variants_with_prices[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = float(variant["price"])
+
+        return variants_with_prices
+
+    def get_total_price_for_variants(self, variant_ids: List[str]):
+        variants_with_prices = self.get_variant_prices(variant_ids)
+
+        return sum([float(variants_with_prices[variant_id]) for variant_id in variant_ids])

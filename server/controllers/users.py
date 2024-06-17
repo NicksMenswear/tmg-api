@@ -57,7 +57,7 @@ def get_user_looks(user_id):
 
     looks = look_service.get_looks_by_user_id(uuid.UUID(user_id))
 
-    return [look.to_response() for look in looks], 200
+    return [look.to_response_with_price() for look in looks], 200
 
 
 @hmac_verification

@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 
 import json
-import uuid
 import random
+import uuid
 
 from server import encoder
 from server.database.models import DiscountType
@@ -490,8 +490,12 @@ class TestUsers(BaseTestCase):
         # given
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
-        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
-        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user1.id, product_specs={"variants": [12, 34]})
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user1.id, product_specs={"variants": [34, 56]})
+        )
         look3 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id, is_active=False))
         self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
 
@@ -513,8 +517,10 @@ class TestUsers(BaseTestCase):
 
         self.assertEqual(response_look1["id"], str(look1.id))
         self.assertEqual(response_look1["name"], str(look1.name))
+        self.assertEqual(response_look1["price"], 120 + 340)
         self.assertEqual(response_look2["id"], str(look2.id))
         self.assertEqual(response_look2["name"], str(look2.name))
+        self.assertEqual(response_look2["price"], 340 + 560)
 
     def test_create_user_first_name_too_short(self):
         # when

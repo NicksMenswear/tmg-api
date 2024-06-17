@@ -44,10 +44,14 @@ class LookService:
             for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
 
-        variants = [variant for look_model in look_models for variant in look_model.product_specs.get("variants", [])]
+        variants = set()
+
+        for look_model in look_models:
+            for variant in look_model.product_specs.get("variants", []):
+                variants.add(variant)
 
         if variants:
-            variants_with_prices = self.shopify_service.get_variant_prices(variants)
+            variants_with_prices = self.shopify_service.get_variant_prices(list(variants))
 
             for look_model in look_models:
                 for variant_id in look_model.product_specs.get("variants", []):

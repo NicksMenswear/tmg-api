@@ -95,7 +95,7 @@ def init_app(is_testing=False):
 
 def init_services(app, is_testing=False):
     app.aws_service = FakeAWSService() if is_testing else AWSService()
-    app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
+    app.shopify_service = ShopifyService() if is_testing else ShopifyService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()

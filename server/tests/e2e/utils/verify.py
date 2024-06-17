@@ -7,7 +7,7 @@ def no_upcoming_events_visible(page: Page):
     expect(page.locator(".tmg-section-events >> text=No Upcoming Events.")).to_be_visible()
 
 
-def event_to_be_visible(page: Page, event_name: str, event_date: str):
+def event_to_be_visible(page: Page, event_name: str, event_date: str = "Tuesday, April 18, 2028"):
     expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
     expect(page.get_by_text(event_date).first).to_be_visible()
 
@@ -47,6 +47,33 @@ def event_has_type(page: Page, event_id: str, event_type: str):
         page.locator(f'div.tmg-item[data-event-id="{event_id}"] >> div.tmg-item-header-type').first.inner_text()
         == event_type
     )
+
+
+def invite_is_of_type(page, expected_type):
+    event_type = page.query_selector(".tmg-invite-event-type").inner_text()
+    assert event_type == expected_type, f"Expected event type '{expected_type}', but got '{event_type}'"
+
+
+def invite_has_name(page, expected_name):
+    event_name = page.query_selector(".tmg-invite-event-name").inner_text()
+    assert event_name == expected_name, f"Expected event name '{expected_name}', but got '{event_name}'"
+
+
+def invite_event_date(page, expected_date):
+    event_date = page.query_selector(".tmg-invite-event-date").inner_text()
+    assert event_date == expected_date, f"Expected event date '{expected_date}', but got '{event_date}'"
+
+
+def invite_role_is(page, expected_role):
+    role_xpath = "//div[@class='tmg-invite-attendee-info'][span[text()='Role:']]"
+    role = page.query_selector(role_xpath).inner_text().split("Role:")[1].strip()
+    assert role == expected_role, f"Expected role '{expected_role}', but got '{role}'"
+
+
+def invite_look_is(page, expected_look):
+    look_xpath = "//div[@class='tmg-invite-attendee-info'][span[text()='Look:']]"
+    look = page.query_selector(look_xpath).inner_text().split("Look:")[1].strip()
+    assert look == expected_look, f"Expected look '{expected_look}', but got '{look}'"
 
 
 def logged_in(page: Page):

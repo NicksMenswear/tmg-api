@@ -9,6 +9,11 @@ IMAP_HOST = "outlook.office365.com"
 IMAP_PORT = 993
 EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
 EMAIL_ACCOUNT_PASSWORD = "fbb06fc8-fd64-11ee-8a70-d73cbe5bfd61"
+EMAIL_SUBJECT_EVENT_INVITATION = "The Modern Groom: Event Invitation"
+EMAIL_SUBJECT_ACCOUNT_CREATED = "The Modern Groom: Account Created"
+EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION = "Customer account confirmation"
+DEFAULT_EVENT_DATE = "2028-04-18"
+DEFAULT_EVENT_PRETTY_DATE = "Tuesday, April 18, 2028"
 
 STORE_CONFIG = {
     "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123", "require_store_password": True},

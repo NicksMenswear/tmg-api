@@ -436,7 +436,7 @@ class ShopifyService(AbstractShopifyService):
         variants_with_prices = {}
 
         for variant in body["data"]["nodes"]:
-            variants_with_prices[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = variant["price"]
+            variants_with_prices[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = float(variant["price"])
 
         return variants_with_prices
 

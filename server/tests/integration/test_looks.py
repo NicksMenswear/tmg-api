@@ -34,6 +34,36 @@ class TestLooks(BaseTestCase):
         self.assertEqual(db_look.product_specs, look_data.product_specs)
         self.assertEqual(db_look.user_id, user.id)
 
+    def test_create_look_with_image(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        look_img = fixtures.get_look_1_image_in_b64()
+
+        # when
+        look_data = fixtures.create_look_request(
+            user_id=user.id, product_specs={"variants": [123, 234, 345]}, image=look_img
+        )
+
+        response = self.client.open(
+            "/looks",
+            query_string=self.hmac_query_params,
+            data=look_data.json(),
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertIsNotNone(response.json["id"])
+        self.assertEqual(response.json["name"], look_data.name)
+        db_look = self.look_service.get_look_by_id(response.json["id"])
+        self.assertIsNotNone(db_look)
+        self.assertIsNotNone(response.json["image_path"])
+        self.assertTrue(response.json["image_path"].startswith(f"looks/{user.id}/{response.json['id']}/"))
+        self.assertEqual(db_look.product_specs, look_data.product_specs)
+        self.assertEqual(db_look.user_id, user.id)
+
     def test_create_look_duplicate(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

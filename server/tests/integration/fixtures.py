@@ -1,3 +1,4 @@
+import base64
 import random
 import uuid
 from datetime import datetime, timedelta
@@ -56,6 +57,7 @@ def create_look_request(**look_data) -> CreateLookModel:
         user_id=look_data.get("user_id", uuid.uuid4()),
         product_specs=look_data.get("product_specs", {}),
         is_active=look_data.get("is_active", True),
+        image=look_data.get("image"),
     )
 
 
@@ -197,6 +199,21 @@ def update_order_request(**order_data):
         "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
         "received_date": order_data.get("received_date", datetime.now().isoformat()),
     }
+
+
+def get_look_1_image_in_b64():
+    return file_to_b64("assets/look_1.png")
+
+
+def get_look_2_image_in_b64():
+    return file_to_b64("assets/look_2.png")
+
+
+def file_to_b64(file_path):
+    with open(file_path, "rb") as file:
+        content = file.read()
+
+    return base64.b64encode(content).decode("utf-8")
 
 
 def product_request(**product_data):

@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, field_validator
@@ -19,6 +20,7 @@ class CreateLookModel(LookRequest):
     user_id: UUID
     product_specs: dict
     is_active: bool = True
+    image: Optional[str] = None
 
 
 class LookModel(BaseModel):
@@ -26,13 +28,14 @@ class LookModel(BaseModel):
     name: str
     user_id: UUID
     product_specs: dict
+    image_path: Optional[str]
     is_active: bool
 
     class Config:
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "name", "product_specs"})
+        return self.dict(include={"id", "name", "product_specs", "image_path"})
 
 
 class UpdateLookModel(LookRequest):

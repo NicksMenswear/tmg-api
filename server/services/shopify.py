@@ -4,7 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Dict
 
 from server.controllers.util import http
 from server.services import ServiceError, NotFoundError, DuplicateError
@@ -42,7 +42,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_variant_prices(self, variant_ids: List[str]):
+    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
         pass
 
     @abstractmethod
@@ -118,7 +118,7 @@ class FakeShopifyService(AbstractShopifyService):
 
         return virtual_product
 
-    def get_variant_prices(self, variant_ids: List[str]):
+    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
         result = {}
 
         for variant_id in variant_ids:
@@ -404,9 +404,9 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def get_variant_prices(self, variant_ids: List[str]):
+    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
         if not variant_ids:
-            return 0
+            return {}
 
         ids_query = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
 
@@ -436,6 +436,9 @@ class ShopifyService(AbstractShopifyService):
         variants_with_prices = {}
 
         for variant in body["data"]["nodes"]:
+            if not variant or "id" not in variant or "price" not in variant:
+                continue
+
             variants_with_prices[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = float(variant["price"])
 
         return variants_with_prices
@@ -443,4 +446,4 @@ class ShopifyService(AbstractShopifyService):
     def get_total_price_for_variants(self, variant_ids: List[str]):
         variants_with_prices = self.get_variant_prices(variant_ids)
 
-        return sum([float(variants_with_prices[variant_id]) for variant_id in variant_ids])
+        return sum([variants_with_prices.get(variant_id, 0.0) for variant_id in variant_ids])

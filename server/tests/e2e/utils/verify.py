@@ -89,4 +89,5 @@ def logged_in(page: Page):
 
 def not_logged_in(page: Page):
     page.hover(".header-account")
-    page.locator("a#loginButton").first.wait_for(state="visible")
+    page.locator(".header-account-list").first.wait_for(state="visible")
+    # page.locator("a#loginButton").first.wait_for(state="visible")

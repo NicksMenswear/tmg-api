@@ -14,9 +14,8 @@ from server.tests.e2e.utils import actions, email, verify
 
 
 def test_login(page: Page):
-    verify.not_logged_in(page)
-
     actions.access_store(page)
+    verify.not_logged_in(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.logged_in(page)
@@ -30,7 +29,7 @@ def test_signup_form(page: Page):
 
     actions.access_store(page)
 
-    actions.sing_up(page, first_name, last_name, user_email)
+    actions.sign_up(page, first_name, last_name, user_email)
 
     email_content = email.look_for_email(EMAIL_SUBJECT_ACCOUNT_CREATED, EMAIL_FROM, user_email)
     assert email_content is not None
@@ -54,6 +53,6 @@ def test_logout(page: Page):
 
     verify.logged_in(page)
 
-    page.get_by_role("link", name="Logout").click()
+    actions.logout(page)
 
     verify.not_logged_in(page)

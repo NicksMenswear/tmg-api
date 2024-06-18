@@ -573,9 +573,9 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
-        variant1 = random.randint(1, 30)
-        variant2 = random.randint(1, 30)
-        variant3 = random.randint(1, 30)
+        variant1 = random.randint(30, 40)
+        variant2 = random.randint(30, 50)
+        variant3 = random.randint(30, 60)
         look = self.app.look_service.create_look(
             fixtures.create_look_request(
                 user_id=attendee_user.id, product_specs={"variants": [variant1, variant2, variant3]}

@@ -6,7 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX
+from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX, MIN_ORDER_AMOUNT
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -651,15 +651,15 @@ class TestDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 400)
-        self.assertTrue("Total look items price must be greater than 100" in response.json["errors"])
+        self.assertTrue(f"Total look items price must be greater than {MIN_ORDER_AMOUNT}" in response.json["errors"])
 
     def test_create_discount_intent_of_mixed_types(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
-        variant1 = random.randint(1, 30)
-        variant2 = random.randint(1, 30)
+        variant1 = random.randint(30, 50)
+        variant2 = random.randint(30, 60)
         look1 = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
         )
@@ -840,8 +840,8 @@ class TestDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
-        variant1 = random.randint(10, 30)
-        variant2 = random.randint(10, 30)
+        variant1 = random.randint(30, 40)
+        variant2 = random.randint(30, 50)
         look1 = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [variant1, variant2]})
         )

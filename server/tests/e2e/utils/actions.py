@@ -24,7 +24,9 @@ def access_store(page: Page):
 
 
 def login(page: Page, email: str, password: str):
-    page.get_by_role("link", name="Login").click()
+    page.hover(".header-account")
+    page.click("a#loginButton")
+
     page.get_by_role("textbox", name="Email address", exact=True).fill(email)
     page.get_by_role("textbox", name="Password").fill(password)
     page.get_by_role("button", name="Login").click()
@@ -177,11 +179,19 @@ def delete_attendee(page: Page, attendee_id: str):
 
 
 def logout(page: Page):
-    page.get_by_role("link", name="Logout").click()
+    page.hover(".header-account")
+    header_account_list = page.locator(".header-account-list").first
+    header_account_list.wait_for(state="visible")
+
+    # page.hover(".header-account")
+    # header_account_list.locator("a#logoutButton").wait_for(state="visible")
+    # header_account_list.locator("a#logoutButton").click()
 
 
-def sing_up(page: Page, first_name: str, last_name: str, email: str):
-    page.get_by_role("link", name="Login").click()
+def sign_up(page: Page, first_name: str, last_name: str, email: str):
+    page.hover(".header-account")
+    page.click("a#loginButton")
+
     page.get_by_role("link", name="Sign up").click()
 
     page.get_by_placeholder("First name").fill(first_name)

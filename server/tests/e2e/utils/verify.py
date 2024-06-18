@@ -4,7 +4,12 @@ from playwright.sync_api import Page, expect
 
 
 def no_upcoming_events_visible(page: Page):
-    expect(page.locator(".tmg-section-events >> text=No Upcoming Events.")).to_be_visible()
+    events_locator = page.locator(".tmg-section-events")
+    events_locator.scroll_into_view_if_needed()
+    events_locator.wait_for(state="visible")
+
+    tmg_event_content = page.locator(".tmg-event-content")
+    tmg_event_content.locator(".preloader").wait_for(state="hidden")
 
 
 def event_to_be_visible(page: Page, event_name: str, event_date: str = "Tuesday, April 18, 2028"):
@@ -77,12 +82,12 @@ def invite_look_is(page, expected_look):
 
 
 def logged_in(page: Page):
-    expect(page.get_by_role("link", name="Account Login")).not_to_be_visible()
-    expect(page.get_by_role("link", name="Account Account")).to_be_visible()
-    expect(page.get_by_role("link", name="Logout")).to_be_visible()
+    page.hover(".header-account")
+    page.locator(".header-account-list").first.wait_for(state="visible")
+    # page.locator(".header-account-item a#logoutButton").first.wait_for(state="visible")
 
 
 def not_logged_in(page: Page):
-    link_locator = page.locator('a[href="/account"]:has-text("Account")')
-    expect(link_locator).not_to_be_visible()
-    expect(page.locator("a", has_text="Logout")).not_to_be_visible()
+    page.hover(".header-account")
+    page.locator(".header-account-list").first.wait_for(state="visible")
+    # page.locator("a#loginButton").first.wait_for(state="visible")

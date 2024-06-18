@@ -408,7 +408,9 @@ class ShopifyService(AbstractShopifyService):
         if not variant_ids:
             return {}
 
-        ids_query = ", ".join([f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids])
+        ids_query = ", ".join(
+            [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids if variant_id]
+        )
 
         query = f"""
         {{

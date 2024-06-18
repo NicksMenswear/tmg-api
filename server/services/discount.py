@@ -30,6 +30,7 @@ DISCOUNT_TYPES = {DiscountType.GIFT, DiscountType.FULL_PAY}
 DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "DISCOUNT"
 GIFT_DISCOUNT_CODE_PREFIX = "GIFT"
 TMG_GROUP_DISCOUNT_CODE_PREFIX = "TMG-GROUP-100-OFF"
+MIN_ORDER_AMOUNT = 300
 
 
 # noinspection PyMethodMayBeStatic
@@ -261,8 +262,8 @@ class DiscountService:
 
                     total_intent_amount += total_price_of_look
 
-                    if total_price_of_look < 100:
-                        raise BadRequestError("Total look items price must be greater than 100.")
+                    if total_price_of_look < MIN_ORDER_AMOUNT:
+                        raise BadRequestError(f"Total look items price must be greater than {MIN_ORDER_AMOUNT}.")
 
                     if num_attendees >= 4:
                         total_intent_amount -= 100.0

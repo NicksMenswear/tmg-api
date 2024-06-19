@@ -133,7 +133,7 @@ class LookService:
         num_attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).count()
 
         if num_attendees > 0:
-            raise BadRequestError("Can't delete look associated to attendee")
+            raise BadRequestError("Can't delete look associated with attendee")
 
         try:
             look.is_active = False

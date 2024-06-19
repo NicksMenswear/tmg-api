@@ -295,7 +295,7 @@ class TestLooks(BaseTestCase):
 
         # then
         self.assertStatus(response, 400)
-        self.assertEqual(response.json["errors"], "Can't delete look associated to attendee")
+        self.assertEqual(response.json["errors"], "Can't delete look associated with attendee")
 
     def test_delete_look_associated_to_non_active_attendee(self):
         # given

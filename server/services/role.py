@@ -96,7 +96,7 @@ class RoleService:
         num_attendees = Attendee.query.filter(Attendee.role_id == role_id).count()
 
         if num_attendees > 0:
-            raise BadRequestError("Can't delete role associated to attendee")
+            raise BadRequestError("Can't delete role associated with attendee")
 
         try:
             role.is_active = False

@@ -233,7 +233,7 @@ class TestRoles(BaseTestCase):
 
         # then
         self.assertStatus(response, 400)
-        self.assertEqual(response.json["errors"], "Can't delete role associated to attendee")
+        self.assertEqual(response.json["errors"], "Can't delete role associated with attendee")
 
     def test_create_role_with_name_too_short(self):
         # given

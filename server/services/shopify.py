@@ -409,7 +409,7 @@ class ShopifyService(AbstractShopifyService):
             return {}
 
         ids_query = ", ".join(
-            [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids if variant_id]
+            [f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids if variant_id]
         )
 
         query = f"""

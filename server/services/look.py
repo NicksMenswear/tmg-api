@@ -89,7 +89,20 @@ class LookService:
                 self.__save_image(create_look.image, local_file)
                 self.aws_service.upload_to_s3(local_file, DATA_BUCKET, s3_file)
 
+                bundle_product_variant_id = self.shopify_service.create_bundle(
+                    create_look.product_specs.get("variants"), image_src=f"https://data.dev.tmgcorp.net/{s3_file}"
+                )
+
+                if not bundle_product_variant_id:
+                    raise ServiceError("Failed to create bundle product variant.")
+
+                enriched_product_specs = {
+                    "bundle": {"variant_id": bundle_product_variant_id},
+                    "variants": create_look.product_specs.get("variants"),
+                }
+
                 db_look.image_path = s3_file
+                db_look.product_specs = enriched_product_specs
 
                 db.session.commit()
                 db.session.refresh(db_look)

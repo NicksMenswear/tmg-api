@@ -96,6 +96,7 @@ def init_app(is_testing=False):
 def init_services(app, is_testing=False):
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
+    # app.shopify_service = ShopifyService() if is_testing else ShopifyService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
@@ -117,6 +118,10 @@ def init_services(app, is_testing=False):
         app.order_service,
     )
     app.sizing_service = SizingService()
+    # app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
+    app.online_store_sales_channel_id = (
+        "gid://shopify/Publication/123" if is_testing else app.shopify_service.get_online_store_sales_channel_id()
+    )
 
 
 def init_db():

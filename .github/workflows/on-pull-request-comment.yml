@@ -17,7 +17,22 @@ permissions:
   checks: read
 
 jobs:
-  report-start:
+  report-start-cd:
+    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cd') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR status
+        uses: teamniteo/pull_request_status_action@v1.0.0
+        with:
+          pr_number: ${{ github.event.issue.number }}
+          state: pending
+          repository: ${{ github.repository }}
+          target_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          context: "on-pull-request-comment / cd"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  report-start-e2e:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
     runs-on: ubuntu-latest
     steps:
@@ -28,17 +43,12 @@ jobs:
           state: pending
           repository: ${{ github.repository }}
           target_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          context: "on-pull-request-comment / ${{ matrix.job }}"
+          context: "on-pull-request-comment / e2e"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    strategy:
-      matrix:
-        job:
-          - cd
-          - e2e
 
   await-ci:
-    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
+    if: ${{ github.event.issue.pull_request != '' && (contains(github.event.comment.body, '/cd') || contains(github.event.comment.body, '/e2e')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Wait for CI gate status
@@ -53,7 +63,7 @@ jobs:
         run: ${{ steps.wait-for-gate.outputs.conclusion == 'success' }}
 
   cd:
-    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
+    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cd') }}
     uses: ./.github/workflows/_sls_deploy.yml
     needs: await-ci
     with:
@@ -65,7 +75,7 @@ jobs:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
 
   report-cd:
-    if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
+    if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cd') }}
     runs-on: ubuntu-latest
     needs: cd
     steps:

@@ -23,6 +23,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_POOL_SIZE: 100
+      TMG_APP_TESTING: 'true'
     working_dir: /usr/src/app/
     command: >
       bash -c "pip install tox &&

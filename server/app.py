@@ -118,10 +118,7 @@ def init_services(app, is_testing=False):
         app.order_service,
     )
     app.sizing_service = SizingService()
-    # app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
-    app.online_store_sales_channel_id = (
-        "gid://shopify/Publication/123" if is_testing else app.shopify_service.get_online_store_sales_channel_id()
-    )
+    app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
 
 
 def init_db():

@@ -189,6 +189,10 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(
                 f"Shopify API rate limit exceeded. Retry in f{response.headers.get('Retry-After')} seconds."
             )
+        if response.status >= 500:
+            raise ServiceError(
+                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
+            )
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
@@ -202,6 +206,10 @@ class ShopifyService(AbstractShopifyService):
                 "X-Shopify-Storefront-Access-Token": self.__storefront_api_access_token,
             },
         )
+        if response.status >= 500:
+            raise ServiceError(
+                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
+            )
 
         return response.status, json.loads(response.data.decode("utf-8"))
 

@@ -162,7 +162,7 @@ class FakeShopifyService(AbstractShopifyService):
         pass
 
     def create_bundle(self, variants: List[str], image_src: str) -> str:
-        pass
+        return f"{random.randint(1000, 100000)}"
 
 
 class ShopifyService(AbstractShopifyService):

@@ -61,7 +61,7 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(response.json["image_path"])
         self.assertTrue(response.json["image_path"].startswith(f"looks/{user.id}/{response.json['id']}/"))
-        self.assertEqual(db_look.product_specs, look_data.product_specs)
+        self.assertEqual(db_look.product_specs.get("variants"), look_data.product_specs.get("variants"))
         self.assertEqual(db_look.user_id, user.id)
 
     def test_create_look_duplicate(self):

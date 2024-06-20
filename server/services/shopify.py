@@ -495,7 +495,7 @@ class ShopifyService(AbstractShopifyService):
         parent_product_id = bundle_parent_product.get("id")
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
 
-        shopify_variants = [f"gid://shopify/ProductVariant/{variant}" for variant in variants]
+        shopify_variants = [f"gid://shopify/ProductVariant/{variant}" for variant in variants if variant]
 
         self.add_variants_to_product_bundle(parent_product_variant_id, shopify_variants)
 

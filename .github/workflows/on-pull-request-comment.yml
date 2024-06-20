@@ -91,7 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   e2e:
-    if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}
+    if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e' && (needs.cd.result == 'skipped' || needs.cd.result == 'success'))  }}
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
     with:

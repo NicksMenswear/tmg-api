@@ -117,6 +117,9 @@ def init_services(app, is_testing=False):
         app.order_service,
     )
     app.sizing_service = SizingService()
+    app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
+    app.stage = os.getenv("STAGE", "dev")
+    app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
 
 
 def init_db():

@@ -24,7 +24,7 @@ class AWSService(AbstractAWSService):
         s3 = boto3.client("s3")
 
         try:
-            s3.upload_file(local_file, bucket, s3_file)
+            s3.upload_file(local_file, bucket, s3_file, ExtraArgs={"ContentType": "image/png"})
 
             logger.info(f"File uploaded to S3: {s3_file}")
         except Exception as e:

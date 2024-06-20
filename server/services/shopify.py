@@ -7,12 +7,17 @@ from datetime import datetime, timezone
 from typing import List, Dict
 
 from server.controllers.util import http
+from server.flask_app import FlaskApp
 from server.services import ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
 
 
 class AbstractShopifyService(ABC):
+    @abstractmethod
+    def get_online_store_sales_channel_id(self):
+        pass
+
     @abstractmethod
     def get_customer_by_email(self, email: str) -> dict:
         return {}
@@ -61,6 +66,10 @@ class AbstractShopifyService(ABC):
     def archive_product(self, shopify_product_id):
         pass
 
+    @abstractmethod
+    def create_bundle(self, variants: List[str], image_src: str) -> str:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None):
@@ -68,6 +77,9 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants = (
             shopify_virtual_product_variants if shopify_virtual_product_variants else {}
         )
+
+    def get_online_store_sales_channel_id(self):
+        return "gid://shopify/Publication/1234567890"
 
     def get_customer_by_email(self, email: str) -> dict:
         return {"id": random.randint(1000, 100000)}
@@ -149,6 +161,9 @@ class FakeShopifyService(AbstractShopifyService):
     def archive_product(self, shopify_product_id):
         pass
 
+    def create_bundle(self, variants: List[str], image_src: str) -> str:
+        return f"{random.randint(1000, 100000)}"
+
 
 class ShopifyService(AbstractShopifyService):
     def __init__(self):
@@ -189,6 +204,27 @@ class ShopifyService(AbstractShopifyService):
         )
 
         return response.status, json.loads(response.data.decode("utf-8"))
+
+    def get_online_store_sales_channel_id(self):
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": "{ publications(first: 10) { edges { node { id name } } } }"},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get sales channels in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get sales channels in shopify store: {body['errors']}")
+
+        publication_edges = body.get("data", {}).get("publications", {}).get("edges", [])
+
+        for publication in publication_edges:
+            if publication["node"]["name"] == "Online Store":
+                return publication["node"]["id"]
+
+        raise ServiceError("Online Store sales channel not found.")
 
     def get_account_login_url(self, customer_id):
         return f"https://{self.__shopify_store_host}/account/login"
@@ -449,3 +485,199 @@ class ShopifyService(AbstractShopifyService):
         variants_with_prices = self.get_variant_prices(variant_ids)
 
         return sum([variants_with_prices.get(variant_id, 0.0) for variant_id in variant_ids])
+
+    def create_bundle(self, variants: List[str], image_src: str) -> str:
+        bundle_parent_product_suffix = random.randint(1000000, 100000000)
+        bundle_parent_product_name = f"Look Suit Bundle #{bundle_parent_product_suffix}"
+        bundle_parent_product_handle = f"look-suit-bundle-{bundle_parent_product_suffix}"
+        bundle_parent_product = self.create_product_bundle(bundle_parent_product_name)
+
+        parent_product_id = bundle_parent_product.get("id")
+        parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
+
+        shopify_variants = [f"gid://shopify/ProductVariant/{variant}" for variant in variants]
+
+        self.add_variants_to_product_bundle(parent_product_variant_id, shopify_variants)
+
+        self.publish_and_add_to_online_sales_channel(
+            bundle_parent_product_handle, parent_product_id, FlaskApp.current().online_store_sales_channel_id
+        )
+        self.add_image_to_product(parent_product_id, image_src)
+
+        return parent_product_variant_id.removeprefix("gid://shopify/ProductVariant/")
+
+    def create_product_bundle(self, product_name: str):
+        mutation = """
+        mutation CreateProductBundle($input: ProductInput!) {
+          productCreate(input: $input) {
+            product {
+              id
+              title
+              variants(first: 10) {
+                edges{
+                  node{
+                    id
+                    price
+                  }
+                }
+              }
+            }
+            userErrors{
+              field
+              message
+            }
+          }
+        }
+        """
+        variables = {"input": {"title": product_name, "variants": []}}
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
+
+        parent_product = body.get("data", {}).get("productCreate", {}).get("product")
+
+        return parent_product
+
+    def add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
+        bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]
+
+        mutation = """
+        mutation CreateBundleComponents($input: [ProductVariantRelationshipUpdateInput!]!) {
+          productVariantRelationshipBulkUpdate(input: $input) {
+            parentProductVariants {
+              id
+              productVariantComponents(first: 10) {
+                nodes{
+                  id
+                  quantity
+                  productVariant {
+                    id
+                  }
+                }
+              }
+            }
+            userErrors {
+              code
+              field
+              message
+            }
+          }
+        }
+        """
+        variables = {
+            "input": [
+                {
+                    "parentProductVariantId": parent_product_shopify_variant_id,
+                    "productVariantRelationshipsToCreate": bundle_variants,
+                }
+            ]
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
+
+        return body
+
+    def publish_and_add_to_online_sales_channel(
+        self, product_handle: str, parent_product_id: str, sales_channel_id: str
+    ):
+        mutation = """
+        mutation productUpdate($input: ProductInput!) {
+            productUpdate(input: $input) {
+                product {
+                    id
+                }
+                userErrors {
+                    field
+                    message
+                }
+            }
+        }
+        """
+
+        variables = {
+            "input": {
+                "id": parent_product_id,
+                "publishedAt": datetime.now(timezone.utc).isoformat(),
+                "handle": product_handle,
+                "productPublications": {
+                    "publicationId": sales_channel_id,
+                    "publishDate": datetime.now(timezone.utc).isoformat(),
+                },
+            },
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
+
+        return body
+
+    def add_image_to_product(self, product_id: str, image_url: str):
+        mutation = """
+        mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
+            productCreateMedia(media: $media, productId: $productId) {
+                media {
+                    alt
+                    mediaContentType
+                    status
+                    ... on MediaImage {
+                        id
+                        image {
+                            originalSrc
+                            transformedSrc
+                        }
+                    }
+                }
+                userErrors {
+                    field
+                    message
+                }
+            }
+        }
+        """
+
+        variables = {
+            "media": [{"originalSource": image_url, "mediaContentType": "IMAGE", "alt": "Product image"}],
+            "productId": product_id,
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to add image to product in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to add image to product in shopify store. {body['errors']}")
+
+        return body

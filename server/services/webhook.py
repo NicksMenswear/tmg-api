@@ -1,12 +1,12 @@
 import logging
 import random
-import uuid
 from datetime import datetime
+from typing import Dict, Any, Optional
 
 from server.database.models import SourceType, OrderType, StoreLocation
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
-from server.models.user_model import UserModel, CreateUserModel, UpdateUserModel
-from server.services import ServiceError, NotFoundError
+from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.services import NotFoundError
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
@@ -42,7 +42,7 @@ class WebhookService:
     def __error(self, message):
         return {"errors": message}
 
-    def handle_orders_paid(self, payload):
+    def handle_orders_paid(self, payload: Dict[str, Any]):
         items = payload.get("line_items")
 
         if not items or len(items) == 0:
@@ -211,8 +211,11 @@ class WebhookService:
 
         create_products = []
 
-        if payload.get("line_items"):
-            for line_item in payload.get("line_items"):
+        event_id = self.get_event_id_from_note_attributes(payload)
+        items = payload.get("line_items")
+
+        if items:
+            for line_item in items:
                 create_product = CreateProductModel(
                     name=line_item.get("name"),
                     sku=line_item.get("sku"),
@@ -232,6 +235,7 @@ class WebhookService:
             shipping_address=shipping_address,
             store_location=StoreLocation.ONLINE.value,
             products=create_products,
+            event_id=event_id,
             meta=payload,
         )
 
@@ -243,3 +247,13 @@ class WebhookService:
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             return self.__error(f"Error creating order: {str(e)}")
+
+    def get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[str]:
+        note_attributes = payload.get("note_attributes", [])
+
+        if note_attributes:
+            for note_attribute in note_attributes:
+                if note_attribute.get("name") == "__event_id":
+                    return note_attribute.get("value")
+
+        return None

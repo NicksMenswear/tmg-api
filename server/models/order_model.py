@@ -73,6 +73,7 @@ class OrderModel(CoreModel):
     order_date: datetime
     products: List[ProductModel] = []
     discount_codes: List[str] = []
+    event_id: Optional[UUID] = None
 
     class Config:
         from_attributes = True

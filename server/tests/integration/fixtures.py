@@ -129,8 +129,8 @@ def webhook_shopify_line_item(product_id=None, variant_id=None, sku=""):
     }
 
 
-def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None):
-    return {
+def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None, event_id=None):
+    order = {
         "id": random.randint(1000, 1000000),
         "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
         "customer": {
@@ -148,6 +148,11 @@ def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=
         },
         "line_items": [] if not line_items else line_items,
     }
+
+    if event_id:
+        order["note_attributes"] = [{"name": "__event_id", "value": event_id}]
+
+    return order
 
 
 def webhook_customer_update(

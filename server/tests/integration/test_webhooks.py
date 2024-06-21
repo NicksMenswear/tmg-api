@@ -609,8 +609,30 @@ class TestWebhooks(BaseTestCase):
         self.assertEqual(len(order.products), 1)
         self.assertEqual(order.order_number, str(webhook_request["order_number"]))
         self.assertEqual(order.order_date.isoformat(), webhook_request["created_at"])
+        self.assertIsNone(order.event_id)
 
         response_product = response.json["products"][0]
         request_line_item = webhook_request["line_items"][0]
         self.assertEqual(response_product["name"], request_line_item["name"])
         self.assertEqual(response_product["sku"], request_line_item["sku"])
+
+    def test_order_paid_with_event(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event_id = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            event_id=str(event_id),
+        )
+
+        response = self.__post(webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        self.assertIsNotNone(order)
+        self.assertEqual(order.event_id, event_id)

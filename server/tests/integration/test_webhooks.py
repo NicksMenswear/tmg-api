@@ -498,7 +498,11 @@ class TestWebhooks(BaseTestCase):
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
+                user_id=attendee_user.id,
+                product_specs={
+                    "bundle": {"variant_id": random.randint(1000, 1000000)},
+                    "variants": [random.randint(1000, 1000000)],
+                },
             )
         )
         attendee = self.app.attendee_service.create_attendee(

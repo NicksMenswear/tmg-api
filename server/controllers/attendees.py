@@ -64,10 +64,9 @@ def send_invites(attendee_ids):
 def apply_discounts(attendee_id, apply_discounts_request):
     discount_service = FlaskApp.current().discount_service
 
-    event_id = apply_discounts_request["event_id"]
     shopify_cart_id = apply_discounts_request["shopify_cart_id"]
 
-    response = discount_service.apply_discounts(attendee_id, event_id, shopify_cart_id)
+    response = discount_service.apply_discounts(attendee_id, shopify_cart_id)
 
     logger.info(f"Discount codes applied to cart: {response}")
 

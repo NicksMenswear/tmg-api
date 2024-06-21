@@ -148,12 +148,13 @@ class WebhookService:
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
+            bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+            discounted_variant_ids = (
+                [bundle_variant_id] if bundle_variant_id else look.product_specs.get("variants", [])
+            )
+
             discount_response = self.shopify_service.create_discount_code(
-                code,
-                code,
-                attendee_user.shopify_id,
-                discount.amount,
-                look.product_specs.get("variants"),
+                code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids
             )
 
             self.discount_service.add_code_to_discount(

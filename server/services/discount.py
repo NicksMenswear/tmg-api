@@ -130,9 +130,9 @@ class DiscountService:
         for user, attendee, look in users_attendees_looks:
             look_price = 0.0
 
-            if look and look.product_specs and look.product_specs.get("variants"):
-                variant_ids = look.product_specs["variants"]
-                look_price = self.shopify_service.get_total_price_for_variants(variant_ids)
+            if look and look.product_specs and look.product_specs.get("bundle", {}).get("variant_id"):
+                bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+                look_price = self.shopify_service.get_total_price_for_variants([bundle_variant_id])
 
             look_model = (
                 DiscountLookModel(
@@ -253,11 +253,11 @@ class DiscountService:
                     if not look:
                         raise NotFoundError("Look not found.")
 
-                    if not look.product_specs or len(look.product_specs.get("variants", [])) == 0:
-                        raise BadRequestError("Look has no variants.")
+                    if not look.product_specs or not look.product_specs.get("bundle", {}).get("variant_id"):
+                        raise BadRequestError("Look has no bundle associated")
 
                     total_price_of_look = self.shopify_service.get_total_price_for_variants(
-                        look.product_specs.get("variants")
+                        [look.product_specs.get("bundle", {}).get("variant_id")]
                     )
 
                     total_intent_amount += total_price_of_look
@@ -395,8 +395,8 @@ class DiscountService:
 
         look = self.look_service.get_look_by_id(attendee.look_id)
 
-        if not look or not look.product_specs or len(look.product_specs.get("variants", [])) == 0:
-            raise ServiceError("Look has no variants.")
+        if not look or not look.product_specs or not look.product_specs.get("bundle", {}).get("variant_id"):
+            raise ServiceError("Look has no bundle associated")
 
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 

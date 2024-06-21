@@ -1,10 +1,11 @@
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator
+from pydantic import field_validator
 
+from server.models import CoreModel
 from server.models.attendee_model import AttendeeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
@@ -28,7 +29,7 @@ class EventTypeModel(str, Enum):
         return self.value
 
 
-class EventRequestModel(BaseModel):
+class EventRequestModel(CoreModel):
     name: str
     event_at: datetime
 
@@ -54,7 +55,7 @@ class CreateEventModel(EventRequestModel):
     type: EventTypeModel = EventTypeModel.WEDDING
 
 
-class EventModel(BaseModel):
+class EventModel(CoreModel):
     id: UUID
     user_id: UUID
     name: str

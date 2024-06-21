@@ -1,9 +1,11 @@
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator
+from pydantic import field_validator
+
+from server.models import CoreModel
 
 
-class RoleRequestModel(BaseModel):
+class RoleRequestModel(CoreModel):
     name: str
 
     @field_validator("name")
@@ -20,7 +22,7 @@ class CreateRoleModel(RoleRequestModel):
     is_active: bool = True
 
 
-class RoleModel(BaseModel):
+class RoleModel(CoreModel):
     id: UUID
     event_id: UUID
     name: str

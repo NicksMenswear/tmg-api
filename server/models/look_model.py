@@ -1,10 +1,12 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator
+from pydantic import field_validator
+
+from server.models import CoreModel
 
 
-class LookRequest(BaseModel):
+class LookRequest(CoreModel):
     name: str
 
     @field_validator("name")
@@ -23,7 +25,7 @@ class CreateLookModel(LookRequest):
     image: Optional[str] = None
 
 
-class LookModel(BaseModel):
+class LookModel(CoreModel):
     id: UUID
     name: str
     user_id: UUID

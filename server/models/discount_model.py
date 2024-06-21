@@ -2,12 +2,13 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, PositiveFloat
+from pydantic import PositiveFloat
 
 from server.database.models import DiscountType
+from server.models import CoreModel
 
 
-class CreateDiscountIntent(BaseModel):
+class CreateDiscountIntent(CoreModel):
     attendee_id: UUID
 
 
@@ -19,7 +20,7 @@ class CreateDiscountIntentPayFull(CreateDiscountIntent):
     pay_full: bool = True
 
 
-class DiscountGiftCodeModel(BaseModel):
+class DiscountGiftCodeModel(CoreModel):
     code: str
     amount: float
     type: str
@@ -29,7 +30,7 @@ class DiscountGiftCodeModel(BaseModel):
         return self.dict()
 
 
-class DiscountModel(BaseModel):
+class DiscountModel(CoreModel):
     id: UUID
     event_id: UUID
     attendee_id: UUID
@@ -62,12 +63,12 @@ class DiscountModel(BaseModel):
         return {**response, "type": self.type.value}
 
 
-class ApplyDiscountModel(BaseModel):
+class ApplyDiscountModel(CoreModel):
     event_id: UUID
     shopify_cart_id: str
 
 
-class DiscountLookModel(BaseModel):
+class DiscountLookModel(CoreModel):
     id: UUID
     name: str
     price: float
@@ -76,7 +77,7 @@ class DiscountLookModel(BaseModel):
         return self.model_dump()
 
 
-class DiscountStatusModel(BaseModel):
+class DiscountStatusModel(CoreModel):
     style: bool
     invite: bool
     pay: bool
@@ -85,7 +86,7 @@ class DiscountStatusModel(BaseModel):
         return self.model_dump()
 
 
-class EventDiscountModel(BaseModel):
+class EventDiscountModel(CoreModel):
     event_id: UUID
     amount: float = 0.0
     type: DiscountType
@@ -109,7 +110,7 @@ class EventDiscountModel(BaseModel):
         return response
 
 
-class DiscountPayResponseModel(BaseModel):
+class DiscountPayResponseModel(CoreModel):
     variant_id: int
 
     def to_response(self):

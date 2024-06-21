@@ -2,10 +2,12 @@ import re
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import EmailStr, field_validator
+
+from server.models import CoreModel
 
 
-class UserRequestModel(BaseModel):
+class UserRequestModel(CoreModel):
     first_name: str
     last_name: str
     account_status: Optional[bool] = False
@@ -28,7 +30,7 @@ class CreateUserModel(UserRequestModel):
     email: EmailStr
 
 
-class UserModel(BaseModel):
+class UserModel(CoreModel):
     id: UUID
     first_name: str
     last_name: str

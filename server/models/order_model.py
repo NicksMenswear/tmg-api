@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel
+from server.models import CoreModel
 
 
 class AddressTypeModel(str, Enum):
@@ -14,7 +14,7 @@ class AddressTypeModel(str, Enum):
         return self.value
 
 
-class AddressModel(BaseModel):
+class AddressModel(CoreModel):
     type: AddressTypeModel = AddressTypeModel.SHIPPING
     line1: Optional[str] = None
     line2: Optional[str] = None
@@ -24,7 +24,7 @@ class AddressModel(BaseModel):
     country: Optional[str] = None
 
 
-class CreateProductModel(BaseModel):
+class CreateProductModel(CoreModel):
     name: str
     sku: Optional[str] = None
     price: float = 0.0
@@ -33,7 +33,7 @@ class CreateProductModel(BaseModel):
     meta: Optional[dict] = None
 
 
-class CreateOrderModel(BaseModel):
+class CreateOrderModel(CoreModel):
     legacy_id: Optional[str] = None
     user_id: Optional[UUID] = None
     event_id: Optional[UUID] = None
@@ -53,7 +53,7 @@ class CreateOrderModel(BaseModel):
     meta: Optional[dict] = None
 
 
-class ProductModel(BaseModel):
+class ProductModel(CoreModel):
     id: UUID
     name: str
     sku: Optional[str] = None
@@ -67,7 +67,7 @@ class ProductModel(BaseModel):
         return self.dict(include={"id", "name", "sku"})
 
 
-class OrderModel(BaseModel):
+class OrderModel(CoreModel):
     id: UUID
     order_number: str
     order_date: datetime

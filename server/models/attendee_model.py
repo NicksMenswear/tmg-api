@@ -1,8 +1,9 @@
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
 
+from server.models import CoreModel
 from server.models.discount_model import DiscountGiftCodeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
@@ -17,7 +18,7 @@ class CreateAttendeeModel(UserRequestModel):
     is_active: bool = True
 
 
-class AttendeeModel(BaseModel):
+class AttendeeModel(CoreModel):
     id: UUID
     user_id: UUID
     event_id: UUID
@@ -39,7 +40,7 @@ class AttendeeModel(BaseModel):
         )
 
 
-class AttendeeUserModel(BaseModel):
+class AttendeeUserModel(CoreModel):
     first_name: str
     last_name: str
     email: EmailStr
@@ -71,7 +72,7 @@ class EnrichedAttendeeModel(AttendeeModel):
         return attendee
 
 
-class UpdateAttendeeModel(BaseModel):
+class UpdateAttendeeModel(CoreModel):
     is_active: bool = True
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

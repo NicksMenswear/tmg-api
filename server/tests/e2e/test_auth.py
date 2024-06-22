@@ -55,6 +55,8 @@ def test_logout(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
+    verify.no_upcoming_events_visible(page)
+
     verify.logged_in(page)
 
     actions.logout(page)

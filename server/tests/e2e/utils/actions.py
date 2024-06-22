@@ -24,8 +24,7 @@ def access_store(page: Page):
 
 
 def login(page: Page, email: str, password: str):
-    page.hover(".header-account")
-    page.click("a#loginButton")
+    page.goto(f"{STORE_URL}/account")
 
     page.get_by_role("textbox", name="Email address", exact=True).fill(email)
     page.get_by_role("textbox", name="Password").fill(password)
@@ -189,14 +188,13 @@ def logout(page: Page):
 
 
 def sign_up(page: Page, first_name: str, last_name: str, email: str):
-    page.hover(".header-account")
-    page.click("a#loginButton")
+    page.goto(f"{STORE_URL}/account")
 
     page.get_by_role("link", name="Sign up").click()
 
-    page.get_by_placeholder("First name").fill(first_name)
-    page.get_by_placeholder("Last name").fill(last_name)
-    page.get_by_placeholder("Email address*", exact=True).fill(email)
+    page.get_by_placeholder("First name").first.fill(first_name)
+    page.get_by_placeholder("Last name").first.fill(last_name)
+    page.get_by_placeholder("Email address*", exact=True).first.fill(email)
     page.get_by_role("button", name="Sign Up").click()
 
 

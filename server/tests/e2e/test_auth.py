@@ -15,8 +15,12 @@ from server.tests.e2e.utils import actions, email, verify
 
 def test_login(page: Page):
     actions.access_store(page)
+
     verify.not_logged_in(page)
+
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
 
     verify.logged_in(page)
 

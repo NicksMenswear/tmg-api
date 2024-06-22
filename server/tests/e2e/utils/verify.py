@@ -82,12 +82,22 @@ def invite_look_is(page, expected_look):
 
 
 def logged_in(page: Page):
-    page.hover(".header-account")
-    page.locator(".header-account-list").first.wait_for(state="visible")
-    # page.locator(".header-account-item a#logoutButton").first.wait_for(state="visible")
+    my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
+    parent_menu_item = my_account_menu_item.locator("..")
+    parent_menu_item.hover()
+
+    page.wait_for_selector(".navbar-dropdown .navbar-item#logoutButton", state="visible")
+    logout_link = page.query_selector(".navbar-dropdown .navbar-item#logoutButton")
+
+    assert logout_link.get_attribute("href") == "/account/logout" and logout_link.is_visible()
 
 
 def not_logged_in(page: Page):
-    page.hover(".header-account")
-    page.locator(".header-account-list").first.wait_for(state="visible")
-    # page.locator("a#loginButton").first.wait_for(state="visible")
+    my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
+    parent_menu_item = my_account_menu_item.locator("..")
+    parent_menu_item.hover()
+
+    page.wait_for_selector(".navbar-dropdown .navbar-item#loginButton", state="visible")
+    login_link = page.query_selector(".navbar-dropdown .navbar-item#loginButton")
+
+    assert login_link.get_attribute("href") == "/account" and login_link.is_visible()

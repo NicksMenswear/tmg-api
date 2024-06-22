@@ -1110,34 +1110,6 @@ class TestDiscounts(BaseTestCase):
         self.assertStatus(response, 404)
         self.assertTrue("Attendee not found" in response.json["errors"])
 
-    def test_apply_discounts_invalid_event(self):
-        user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id)
-        )
-
-        # when
-        response = self.client.open(
-            f"/attendees/{str(attendee.id)}/apply-discounts",
-            query_string=self.hmac_query_params,
-            method="POST",
-            headers=self.request_headers,
-            content_type=self.content_type,
-            data=json.dumps(
-                fixtures.apply_discounts_request(event_id=uuid.uuid4()).model_dump(), cls=encoder.CustomJSONEncoder
-            ),
-        )
-
-        # then
-        self.assertStatus(response, 404)
-        self.assertTrue("Event not found" in response.json["errors"])
-
-    ################################
-    #    FIX ME
-    ################################
-
     def test_apply_discounts_no_gift_discounts_and_party_less_then_4(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))

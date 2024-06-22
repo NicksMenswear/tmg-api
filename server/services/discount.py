@@ -418,20 +418,20 @@ class DiscountService:
 
         return DiscountModel.from_orm(discount)
 
-    def apply_discounts(self, attendee_id: uuid.UUID, event_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
+    def apply_discounts(self, attendee_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
         attendee = self.attendee_service.get_attendee_by_id(attendee_id)
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
         discounts = self.user_service.get_gift_paid_but_not_used_discounts(attendee_id)
-        num_attendees = self.event_service.get_num_attendees_for_event(event_id)
+        num_attendees = self.event_service.get_num_attendees_for_event(attendee.event_id)
 
         if num_attendees >= 4:
             existing_discount = self.get_group_discount_for_attendee(attendee_id)
 
             if not existing_discount:
-                discount = self.create_tmg_group_discount_for_attendee(attendee, event_id)
+                discount = self.create_tmg_group_discount_for_attendee(attendee, attendee.event_id)
                 discounts.append(discount)
             else:
                 discounts.append(existing_discount)

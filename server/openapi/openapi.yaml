@@ -1898,15 +1898,10 @@ components:
           default: []
     ApplyDiscounts:
       properties:
-        event_id:
-          title: event_id
-          type: string
-          $ref: '#/components/schemas/uuid'
         shopify_cart_id:
           title: shopify_cart_id
           type: string
       required:
-        - event_id
         - shopify_cart_id
 
     ShopifyWebhook:

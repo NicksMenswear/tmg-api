@@ -178,13 +178,7 @@ def delete_attendee(page: Page, attendee_id: str):
 
 
 def logout(page: Page):
-    page.hover(".header-account")
-    header_account_list = page.locator(".header-account-list").first
-    header_account_list.wait_for(state="visible")
-
-    # page.hover(".header-account")
-    # header_account_list.locator("a#logoutButton").wait_for(state="visible")
-    # header_account_list.locator("a#logoutButton").click()
+    page.goto(f"{STORE_URL}/account/logout")
 
 
 def sign_up(page: Page, first_name: str, last_name: str, email: str):

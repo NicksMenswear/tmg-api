@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from playwright.sync_api import Page
@@ -39,7 +40,9 @@ def test_invite_attendee(page: Page):
     actions.open_event_accordion(page, event_id)
 
     actions.select_role_for_attendee(page, event_id, attendee_id, role_name)
+    time.sleep(1)
     actions.select_look_for_attendee(page, event_id, attendee_id, look_name)
+    time.sleep(2)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
 

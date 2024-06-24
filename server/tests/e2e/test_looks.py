@@ -15,6 +15,7 @@ def test_create_delete_looks(page: Page):
     api.delete_all_looks(user_id)
 
     page.goto(f"{STORE_URL}/pages/looks")
+
     verify.looks_page_is_empty(page)
 
     actions.create_default_look(page, look_name)

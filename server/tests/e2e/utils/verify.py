@@ -129,5 +129,10 @@ def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, it
 
 
 def looks_page_is_empty(page: Page):
-    page.locator(".tmg-heading h1:has-text('My Looks')").wait_for(state="visible")
-    page.locator(".tmg-empty-data p:has-text('Your looks will be displayed here.')").wait_for(state="visible")
+    my_looks = page.locator(".tmg-section-looks .tmg-heading h1:has-text('My Looks')")
+    my_looks.scroll_into_view_if_needed()
+    my_looks.wait_for(state="visible")
+
+    looks_message = page.locator(".tmg-empty-data p:has-text('Your looks will be displayed here.')")
+    looks_message.scroll_into_view_if_needed()
+    looks_message.wait_for(state="visible")

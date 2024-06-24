@@ -1,3 +1,5 @@
+import time
+
 from playwright.sync_api import Page
 
 from server.tests import utils
@@ -13,8 +15,10 @@ def test_create_delete_looks(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
     api.delete_all_looks(user_id)
+    verify.no_upcoming_events_visible(page)
 
     page.goto(f"{STORE_URL}/pages/looks")
+    time.sleep(3)
 
     verify.looks_page_is_empty(page)
 
@@ -35,8 +39,11 @@ def test_add_look_to_cart_from_looks_page(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
     api.delete_all_looks(user_id)
+    verify.no_upcoming_events_visible(page)
 
     page.goto(f"{STORE_URL}/pages/looks")
+    time.sleep(3)
+
     verify.looks_page_is_empty(page)
 
     actions.create_default_look(page, look_name)

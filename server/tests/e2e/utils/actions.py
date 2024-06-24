@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 
 from playwright.sync_api import Page, expect
@@ -261,16 +262,13 @@ def open_pay_dialog(page: Page, event_id):
     return pay_dialog
 
 
-def pay_to_attendees_by_id(page: Page, event_id, attendee_ids):
+def pay_to_attendees_by_id(page: Page, event_id, attendee_id, amount):
     pay_dialog = open_pay_dialog(page, event_id)
 
-    for attendee_id in attendee_ids:
-        invite_attendee_list_locator = page.locator("#inviteAttendeesList")
-        attendee_locator = invite_attendee_list_locator.locator(
-            f'li.tmg-invite-attendee-item[data-attendee-id="{attendee_id}"]'
-        )
-        checkbox_label_locator = attendee_locator.locator("label.tmg-checkbox")
-        checkbox_label_locator.click()
+    attendee_list_item = page.locator(f'li.tmg-pay-attendee-item[data-attendee-id="{attendee_id}"]')
+    attendee_amount_input_element = attendee_list_item.locator("input.tmg-pay-attendee-item-input")
 
-    send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
-    send_invites_button.click()
+    attendee_amount_input_element.fill(str(amount))
+
+    pay_button = pay_dialog.locator("button.tmg-btn.paySend")
+    pay_button.click()

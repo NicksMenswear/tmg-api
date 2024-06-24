@@ -116,3 +116,13 @@ def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warn
         f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
     )
     assert attendee_2.locator("p.tmg-pay-attendee-item-message").inner_text().strip() == warning
+
+
+def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, item_price: str):
+    row_locator = page.locator(f'div[role="row"]:has-text("{item_name}")')
+    row_locator.wait_for(state="visible")
+
+    price_locator_in_row = row_locator.locator(f"text={item_price}")
+    price_locator_in_row.wait_for(state="visible")
+
+    assert price_locator_in_row.count() > 0

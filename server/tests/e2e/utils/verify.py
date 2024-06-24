@@ -101,3 +101,38 @@ def not_logged_in(page: Page):
     login_link = page.query_selector(".navbar-dropdown .navbar-item#loginButton")
 
     assert login_link.get_attribute("href") == "/account" and login_link.is_visible()
+
+
+def input_value_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, value):
+    attendee_1 = page.locator(
+        f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
+    )
+    input_1 = attendee_1.locator("input.tmg-pay-attendee-item-input")
+    assert input_1.get_attribute("value") == str(value)
+
+
+def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warning):
+    attendee_2 = page.locator(
+        f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
+    )
+    assert attendee_2.locator("p.tmg-pay-attendee-item-message").inner_text().strip() == warning
+
+
+def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, item_price: str):
+    row_locator = page.locator(f'div[role="row"]:has-text("{item_name}")')
+    row_locator.wait_for(state="visible")
+
+    price_locator_in_row = row_locator.locator(f"text={item_price}")
+    price_locator_in_row.wait_for(state="visible")
+
+    assert price_locator_in_row.count() > 0
+
+
+def looks_page_is_empty(page: Page):
+    my_looks = page.locator(".tmg-section-looks .tmg-heading h1:has-text('My Looks')")
+    my_looks.scroll_into_view_if_needed()
+    my_looks.wait_for(state="visible")
+
+    looks_message = page.locator(".tmg-empty-data p:has-text('Your looks will be displayed here.')")
+    looks_message.scroll_into_view_if_needed()
+    looks_message.wait_for(state="visible")

@@ -1,6 +1,3 @@
-import unittest
-import uuid
-
 from playwright.sync_api import Page
 
 from server.tests import utils

@@ -25,3 +25,7 @@ def generate_phone_number() -> str:
 def generate_email() -> str:
     rnd = generate_unique_string()
     return f"automation+{rnd}@themoderngroom.com"
+
+
+def generate_look_name() -> str:
+    return f"Test Look {generate_unique_string().capitalize()}"

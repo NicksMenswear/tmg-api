@@ -126,3 +126,8 @@ def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, it
     price_locator_in_row.wait_for(state="visible")
 
     assert price_locator_in_row.count() > 0
+
+
+def looks_page_is_empty(page: Page):
+    page.locator(".tmg-heading h1:has-text('My Looks')").wait_for(state="visible")
+    page.locator(".tmg-empty-data p:has-text('Your looks will be displayed here.')").wait_for(state="visible")

@@ -1,4 +1,5 @@
 import random
+import uuid
 from datetime import datetime, timedelta
 
 from playwright.sync_api import Page, expect
@@ -262,7 +263,7 @@ def open_pay_dialog(page: Page, event_id):
     return pay_dialog
 
 
-def pay_to_attendees_by_id(page: Page, event_id, attendee_id, amount):
+def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
     pay_dialog = open_pay_dialog(page, event_id)
 
     attendee_list_item = page.locator(f'li.tmg-pay-attendee-item[data-attendee-id="{attendee_id}"]')
@@ -272,3 +273,62 @@ def pay_to_attendees_by_id(page: Page, event_id, attendee_id, amount):
 
     pay_button = pay_dialog.locator("button.tmg-btn.paySend")
     pay_button.click()
+
+
+def create_default_look(page, name):
+    page.goto(f"{STORE_URL}/products/suit-builder")
+
+    look_name_input = page.locator(f'input[name="properties[_Name this Look]"]')
+    look_name_input.fill(name)
+
+    save_look_button = page.locator(f'input[type="button"][id="save_look_btn"]')
+    save_look_button.click()
+
+
+def get_look_by_name_on_looks_page(page, look_name):
+    page.wait_for_selector('div.tmg-heading h1:text("My Looks")')
+
+    look_card_locator = page.locator(f'div.tmg-look-card:has-text("{look_name}")')
+    data_look_id = look_card_locator.get_attribute("data-look-id")
+    data_look_variant_id = look_card_locator.get_attribute("data-look-variant-id")
+    price_locator = look_card_locator.locator(".tmg-look-card-price")
+    price = float(price_locator.inner_text().strip().replace("$", ""))
+
+    assert price > 0
+
+    return data_look_id, data_look_variant_id, price
+
+
+def delete_look_by_look_id(page, look_id):
+    look_card_locator = page.locator(f'div.tmg-look-card[data-look-id="{look_id}"]')
+    remove_button = look_card_locator.locator("button.removeLook")
+    remove_button.click()
+
+    modal_locator = page.locator("div.confirm-modal-container")
+    modal_locator.wait_for()
+
+    modal_header = modal_locator.locator("div.confirm-modal-header")
+    assert modal_header.inner_text().strip() == "Remove Look"
+
+    confirm_button_locator = modal_locator.locator("button#confirm-btn")
+    confirm_button_locator.click()
+
+
+def pay_in_full_attendee_by_id(page: Page, event_id, attendee_id, expected_amount):
+    pay_dialog = open_pay_dialog(page, event_id)
+
+    attendee_list_item = page.locator(f'li.tmg-pay-attendee-item[data-attendee-id="{attendee_id}"]')
+    attendee_amount_input_element = attendee_list_item.locator("input.tmg-pay-attendee-item-input")
+    pay_in_full_button = attendee_list_item.locator("button.tmg-btn.btnPayFull")
+    pay_in_full_button.click()
+
+    assert float(attendee_amount_input_element.input_value()) == expected_amount
+
+    pay_button = pay_dialog.locator("button.tmg-btn.paySend")
+    pay_button.click()
+
+
+def add_look_to_cart(page, look_id):
+    look_card_locator = page.locator(f'div.tmg-look-card[data-look-id="{look_id}"]')
+    add_to_cart_button = look_card_locator.locator("button.tmg-btn.lookToCart")
+    add_to_cart_button.click()

@@ -38,7 +38,9 @@ class TestEvents(BaseTestCase):
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=fixtures.create_event_request(name=event.name, user_id=user.id, is_active=True).json(),
+            data=fixtures.create_event_request(
+                name=event.name, event_at=event.event_at, user_id=user.id, is_active=True
+            ).json(),
         )
 
         # then

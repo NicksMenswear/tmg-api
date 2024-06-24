@@ -101,3 +101,18 @@ def not_logged_in(page: Page):
     login_link = page.query_selector(".navbar-dropdown .navbar-item#loginButton")
 
     assert login_link.get_attribute("href") == "/account" and login_link.is_visible()
+
+
+def input_value_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, value):
+    attendee_1 = page.locator(
+        f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
+    )
+    input_1 = attendee_1.locator("input.tmg-pay-attendee-item-input")
+    assert input_1.get_attribute("value") == str(value)
+
+
+def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warning):
+    attendee_2 = page.locator(
+        f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
+    )
+    assert attendee_2.locator("p.tmg-pay-attendee-item-message").inner_text().strip() == warning

@@ -224,13 +224,45 @@ def select_look_for_attendee(page: Page, event_id, attendee_id, look_name: str):
     return look_option.locator("..").get_attribute("data-look-id")
 
 
-def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
+def open_send_invites_dialog(page: Page, event_id):
     send_invites_button = page.locator(f'button[data-event-id="{event_id}"].inviteModal')
     send_invites_button.scroll_into_view_if_needed()
     send_invites_button.click()
 
     send_invites_dialog = page.locator(f"div#send-invite-modal.tmg-modal.showed")
     send_invites_dialog.wait_for(state="visible")
+
+    return send_invites_dialog
+
+
+def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
+    send_invites_dialog = open_send_invites_dialog(page, event_id)
+
+    for attendee_id in attendee_ids:
+        invite_attendee_list_locator = page.locator("#inviteAttendeesList")
+        attendee_locator = invite_attendee_list_locator.locator(
+            f'li.tmg-invite-attendee-item[data-attendee-id="{attendee_id}"]'
+        )
+        checkbox_label_locator = attendee_locator.locator("label.tmg-checkbox")
+        checkbox_label_locator.click()
+
+    send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
+    send_invites_button.click()
+
+
+def open_pay_dialog(page: Page, event_id):
+    pay_button = page.locator(f'button[data-event-id="{event_id}"].payModal')
+    pay_button.scroll_into_view_if_needed()
+    pay_button.click()
+
+    pay_dialog = page.locator(f"div#pay-modal.tmg-modal.showed")
+    pay_dialog.wait_for(state="visible")
+
+    return pay_dialog
+
+
+def pay_to_attendees_by_id(page: Page, event_id, attendee_ids):
+    pay_dialog = open_pay_dialog(page, event_id)
 
     for attendee_id in attendee_ids:
         invite_attendee_list_locator = page.locator("#inviteAttendeesList")

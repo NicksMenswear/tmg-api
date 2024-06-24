@@ -64,7 +64,7 @@ class EventService:
         ).first()
 
         if db_event:
-            raise DuplicateError("Event with the same details already exists.")
+            raise DuplicateError("Event with the same name and date already exists.")
 
         try:
             db_event = Event(

@@ -24,7 +24,7 @@ def access_store(page: Page):
 
 
 def login(page: Page, email: str, password: str):
-    page.goto(f"{STORE_URL}/account")
+    page.goto(f"{STORE_URL}/account/login")
 
     page.get_by_role("textbox", name="Email address", exact=True).fill(email)
     page.get_by_role("textbox", name="Password").fill(password)

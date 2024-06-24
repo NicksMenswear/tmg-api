@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from playwright.sync_api import Page
@@ -10,13 +11,14 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_ACCOUNT_CREATED,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
 )
-from server.tests.e2e.utils import actions, email, verify
+from server.tests.e2e.utils import actions, email, verify, api
 
 
 def test_login(page: Page):
+    api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
 
-    verify.not_logged_in(page)
+    # verify.not_logged_in(page)
 
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 

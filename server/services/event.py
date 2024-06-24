@@ -57,7 +57,10 @@ class EventService:
             raise NotFoundError("User not found.")
 
         db_event = Event.query.filter(
-            Event.name == create_event.name, create_event.event_at, Event.is_active, Event.user_id == user.id
+            Event.name == create_event.name,
+            Event.event_at == create_event.event_at,
+            Event.is_active,
+            Event.user_id == user.id,
         ).first()
 
         if db_event:

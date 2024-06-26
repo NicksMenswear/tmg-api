@@ -242,10 +242,11 @@ def main():
                 logger.exception(e)
                 new_session.rollback()
         else:
-            logger.info(f"User {legacy_db_user_email} found in new db by email: {new_db_user.id}")
-
             if not new_db_user.shopify_id:
-                logger.info(f"Creating shopify user {legacy_db_user_email} ...")
+                logger.info(
+                    f"User {legacy_db_user_email} found in new db by email but doesn't have shopify_id. Creating shopify user"
+                )
+
                 shopify_id = create_shopify_customer_via_api(legacy_db_user)
 
                 logger.info(f"Shopify user {legacy_db_user_email} created: {shopify_id}")
@@ -272,9 +273,7 @@ def main():
                     logger.error(f"Legacy id doesn't match for user {new_db_user.id}")
                     continue
 
-                logger.info(
-                    f"User {legacy_db_user_email} already exists in new db with shopify id '{new_db_user.shopify_id}' and '{new_db_user.legacy_id}'. All good. Skipping ..."
-                )
+                logger.info(f"User {legacy_db_user_email} already exists. Skipping ...")
 
 
 if __name__ == "__main__":

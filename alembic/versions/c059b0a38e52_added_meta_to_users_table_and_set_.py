@@ -21,9 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # meta
-    op.add_column("users", sa.Column("meta", sa.JSON(), nullable=True))
+    op.add_column("users", sa.Column("meta", sa.JSON(), server_default=sa.text("'{}'::jsonb"), nullable=True))
     op.execute("UPDATE users SET meta = '{}'")
-    op.alter_column("users", "meta", default="{}", nullable=False)
+    op.alter_column("users", "meta", existing_type=sa.JSON(), nullable=False)
 
     # account_status
     op.execute("UPDATE users SET account_status = FALSE WHERE account_status IS NULL")

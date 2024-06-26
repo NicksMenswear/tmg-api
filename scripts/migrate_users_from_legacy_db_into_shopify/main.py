@@ -75,6 +75,9 @@ def get_users_with_legacy_ids_from_new_db():
         users = {}
 
         for db_user in db_users:
+            if not db_user.email:
+                continue
+
             users[db_user.email.lower()] = db_user
 
         return users
@@ -84,22 +87,26 @@ def get_users_with_legacy_ids_from_new_db():
 
 
 def insert_user_into_db(legacy_user: Dict[str, Any]):
+    db_user = User(
+        id=uuid.uuid4(),
+        legacy_id=legacy_user["id"],
+        first_name=legacy_user["first_name"],
+        last_name=legacy_user["last_name"],
+        email=legacy_user["email"],
+        phone_number=legacy_user.get("phone") if legacy_user.get("phone") else None,
+        account_status=False,
+        meta={"legacy": json.loads(json.dumps(legacy_user, cls=CustomJSONEncoder))},
+    )
+
     try:
-        db_user = User(
-            id=uuid.uuid4(),
-            legacy_id=legacy_user["id"],
-            first_name=legacy_user["first_name"],
-            last_name=legacy_user["last_name"],
-            email=legacy_user["email"],
-            phone_number=legacy_user.get("phone") if legacy_user.get("phone") else None,
-            account_status=False,
-            meta={"legacy": json.loads(json.dumps(legacy_user, cls=CustomJSONEncoder))},
-        )
         new_session.add(db_user)
         new_session.commit()
+        new_session.refresh(db_user)
     except Exception as e:
         logger.exception(e)
         new_session.rollback()
+
+    return db_user
 
 
 def create_shopify_customer_via_api(legacy_user):
@@ -136,7 +143,7 @@ def create_shopify_customer_via_api(legacy_user):
 
     if response.status >= 400:
         logger.error(f"Failed to create shopify user {legacy_user['email']}: {response.json()}")
-        return response
+        return None
 
     decoded = json.loads(response.data.decode("utf-8"))
     data = decoded.get("data", {})
@@ -146,17 +153,17 @@ def create_shopify_customer_via_api(legacy_user):
 
     if "userErrors" in data:
         logger.error(f"Failed to create shopify user {legacy_user['email']}: {data}")
-        return data
+        return None
 
     customer = data.get("customerCreate", {}).get("customer", {})
 
     if not customer or not customer.get("id", "").startswith("gid://shopify/Customer/"):
         logger.error(f"Failed to create shopify user {legacy_user['email']}: {data['errors']}")
-        return data
+        return None
 
     logger.info(f"Successfully created user {legacy_user['email']}")
 
-    return data
+    return customer.get("id").strip("gid://shopify/Customer/")
 
 
 def get_shopify_customer_id_by_email(email):
@@ -196,41 +203,66 @@ def get_shopify_customer_id_by_email(email):
     return shopify_id
 
 
-def merge_new_and_legacy_users(new_db_user, legacy_user, shopify_id=None):
-    try:
-        if shopify_id:
-            new_db_user.shopify_id = shopify_id
-
-        new_db_user.legacy_id = legacy_user["id"]
-        new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_user, cls=CustomJSONEncoder))}
-
-        new_session.commit()
-    except Exception as e:
-        logger.exception(e)
-        new_session.rollback()
-
-
 def main():
     new_db_users = get_users_with_legacy_ids_from_new_db()
     legacy_db_users = fetch_users_from_legacy_db()
 
     for legacy_db_user_email in legacy_db_users.keys():
+        logger.info(f"Processing user {legacy_db_user_email} ...")
         legacy_db_user = legacy_db_users[legacy_db_user_email]
         del legacy_db_user["password"]
 
-        if not new_db_users.get(legacy_db_user["email"]):
-            insert_user_into_db(legacy_db_user)
-            create_shopify_customer_via_api(legacy_db_user)
-            sleep(1)  # rate limit
-            continue
+        new_db_user = new_db_users.get(legacy_db_user["email"])
 
-        customer_shopify_id = None
-        if not new_db_users[legacy_db_user_email].shopify_id:
-            customer_shopify_id = get_shopify_customer_id_by_email(legacy_db_user["email"])
+        if not new_db_user:
+            logger.info(f"User by email '{legacy_db_user_email}' not found in new db. Creating ...")
 
-        new_db_user = new_db_users[legacy_db_user_email]
+            new_db_user = insert_user_into_db(legacy_db_user)
+            if not new_db_user:
+                logger.error(f"Failed to insert user '{legacy_db_user_email}' into new db")
+                continue
 
-        merge_new_and_legacy_users(new_db_user, legacy_db_user, customer_shopify_id)
+            logger.info(f"User '{legacy_db_user_email}' inserted into new db with id '{new_db_user.id}'")
+
+            logger.info(f"Creating shopify user '{legacy_db_user_email}' ...")
+
+            shopify_id = create_shopify_customer_via_api(legacy_db_user)
+
+            if not shopify_id:
+                logger.error(f"Failed to create shopify user {legacy_db_user_email}. Skipping ...")
+                continue
+
+            logger.info(f"Shopify user '{legacy_db_user_email}' created with shopify id: '{shopify_id}'")
+            logger.info(f"Updating user '{legacy_db_user_email}' with shopify id '{shopify_id}' ...")
+
+            try:
+                new_db_user.shopify_id = shopify_id
+                new_session.commit()
+            except Exception as e:
+                logger.exception(e)
+                new_session.rollback()
+        else:
+            logger.info(f"User {legacy_db_user_email} found in new db by email: {new_db_user.id}")
+
+            if not new_db_user.shopify_id:
+                logger.info(f"Creating shopify user {legacy_db_user_email} ...")
+                shopify_id = create_shopify_customer_via_api(legacy_db_user)
+
+                logger.info(f"Shopify user {legacy_db_user_email} created: {shopify_id}")
+
+                if not shopify_id:
+                    logger.error(f"Failed to create shopify user {legacy_db_user_email}")
+                    continue
+
+                new_db_user.shopify_id = shopify_id
+
+            try:
+                new_db_user.legacy_id = legacy_db_user["id"]
+                new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_db_user, cls=CustomJSONEncoder))}
+                new_session.commit()
+            except Exception as e:
+                logger.exception(e)
+                new_session.rollback()
 
 
 if __name__ == "__main__":

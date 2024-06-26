@@ -97,7 +97,7 @@ class WebhookService:
                     last_name=last_name,
                     account_status=True if state == "enabled" else False,
                     shopify_id=str(shopify_id),
-                    phone_number=str(phone),
+                    phone_number=str(phone) if phone else None,
                 ),
             )
 

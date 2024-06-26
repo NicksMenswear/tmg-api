@@ -568,7 +568,7 @@ class TestUsers(BaseTestCase):
             method="POST",
             data=json.dumps(
                 {
-                    "first_name": "123",
+                    "first_name": "123@#$%",
                     "last_name": "abcdefg",
                     "email": "test@example.com",
                 },

@@ -56,7 +56,7 @@ def fetch_users_from_legacy_db():
 
         for row in rows:
             user = dict(row._mapping)
-            email = "zinovii-" + user.get("email").lower()
+            email = user.get("email").lower()
             user["email"] = email
             users[email] = user
 
@@ -70,12 +70,12 @@ def fetch_users_from_legacy_db():
 
 def get_users_with_legacy_ids_from_new_db():
     try:
-        db_users = new_session.query(User).filter(User.legacy_id.isnot(None)).all()
+        db_users = new_session.query(User).all()
 
         users = {}
 
         for db_user in db_users:
-            users[db_user.email] = db_user
+            users[db_user.email.lower()] = db_user
 
         return users
     except Exception as e:
@@ -201,6 +201,7 @@ def merge_new_and_legacy_users(new_db_user, legacy_user, shopify_id=None):
         if shopify_id:
             new_db_user.shopify_id = shopify_id
 
+        new_db_user.legacy_id = legacy_user["id"]
         new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_user, cls=CustomJSONEncoder))}
 
         new_session.commit()

@@ -1,9 +1,7 @@
 import json
 import logging
 import os
-import random
 import uuid
-from datetime import datetime
 from time import sleep
 from typing import Dict, Any
 

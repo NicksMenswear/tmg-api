@@ -256,13 +256,25 @@ def main():
 
                 new_db_user.shopify_id = shopify_id
 
-            try:
-                new_db_user.legacy_id = legacy_db_user["id"]
-                new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_db_user, cls=CustomJSONEncoder))}
-                new_session.commit()
-            except Exception as e:
-                logger.exception(e)
-                new_session.rollback()
+                try:
+                    new_db_user.legacy_id = legacy_db_user["id"]
+                    new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_db_user, cls=CustomJSONEncoder))}
+                    new_session.commit()
+                except Exception as e:
+                    logger.exception(e)
+                    new_session.rollback()
+            else:
+                if not new_db_user.legacy_id:
+                    logger.error(f"user doesn't have legacy id but has shopify id: {new_db_user.id}")
+                    continue
+
+                if new_db_user.legacy_id != str(legacy_db_user["id"]):
+                    logger.error(f"Legacy id doesn't match for user {new_db_user.id}")
+                    continue
+
+                logger.info(
+                    f"User {legacy_db_user_email} already exists in new db with shopify id '{new_db_user.shopify_id}' and '{new_db_user.legacy_id}'. All good. Skipping ..."
+                )
 
 
 if __name__ == "__main__":

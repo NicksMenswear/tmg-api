@@ -206,7 +206,7 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertEqual(
             response.json["errors"],
-            f"Event date cannot be more than {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks from today.",
+            f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks.",
         )
 
     def test_get_event_non_existing(self):

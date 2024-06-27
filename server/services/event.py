@@ -70,7 +70,7 @@ class EventService:
 
         if not self.__is_ahead_n_weeks(create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION):
             raise BadRequestError(
-                f"Event date cannot be more than {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks from today."
+                f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks."
             )
 
         try:

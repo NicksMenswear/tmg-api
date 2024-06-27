@@ -12,7 +12,7 @@ from server.services.attendee import AttendeeService
 from server.services.look import LookService
 from server.services.role import RoleService, PREDEFINED_ROLES
 
-NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 6
+NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 4
 
 
 # noinspection PyMethodMayBeStatic

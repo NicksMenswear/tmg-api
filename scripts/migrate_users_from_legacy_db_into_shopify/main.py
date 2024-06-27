@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import uuid
-from time import sleep
 from typing import Dict, Any
 
 import urllib3
@@ -25,9 +24,9 @@ LEGACY_DB_USER = "postgres"
 LEGACY_DB_PASSWORD = os.environ["LEGACY_DB_PASSWORD"]
 LEGACY_DB_URI = f"postgresql+psycopg2://{LEGACY_DB_USER}:{LEGACY_DB_PASSWORD}@{LEGACY_DB_HOST}:5432/{LEGACY_DB_NAME}"
 
-NEW_DB_HOST = "tmg-db-dev-01.cfbqizbq9cdk.us-west-2.rds.amazonaws.com"
+NEW_DB_HOST = os.environ["NEW_DB_HOST"]
 NEW_DB_NAME = "tmg"
-NEW_DB_USER = "postgres"
+NEW_DB_USER = os.environ["NEW_DB_USER"]
 NEW_DB_PASSWORD = os.environ["NEW_DB_PASSWORD"]
 NEW_DB_URI = f"postgresql+psycopg2://{NEW_DB_USER}:{NEW_DB_PASSWORD}@{NEW_DB_HOST}:5432/{NEW_DB_NAME}"
 
@@ -48,6 +47,7 @@ def fetch_users_from_legacy_db():
                 SELECT *
                 FROM users_user
                 ORDER BY date_joined DESC
+                LIMIT 1000
                 """
             )
         ).fetchall()
@@ -132,7 +132,12 @@ def create_shopify_customer_via_api(legacy_user):
     }
 
     if legacy_user.get("phone"):
-        input_data["phone"] = legacy_user["phone"]
+        if legacy_user["phone"].startswith("+1"):
+            input_data["phone"] = legacy_user["phone"]
+        elif len(legacy_user["phone"]) == 11:
+            input_data["phone"] = "+" + legacy_user["phone"]
+    else:
+        input_data["phone"] = None
 
     response = urllib3.PoolManager().request(
         "POST",
@@ -158,7 +163,7 @@ def create_shopify_customer_via_api(legacy_user):
     customer = data.get("customerCreate", {}).get("customer", {})
 
     if not customer or not customer.get("id", "").startswith("gid://shopify/Customer/"):
-        logger.error(f"Failed to create shopify user {legacy_user['email']}: {data['errors']}")
+        logger.error(f"Failed to create shopify user {legacy_user['email']}: {decoded}")
         return None
 
     logger.info(f"Successfully created user {legacy_user['email']}")

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 def login(email):
     user_service = FlaskApp.current().user_service
     shopify_service = FlaskApp.current().shopify_service
+    email_service = FlaskApp.current().email_service
 
     try:
         user = user_service.get_user_by_email(email)
@@ -33,6 +34,9 @@ def login(email):
         is_legacy = "legacy" in tags.split(",") if tags else False
 
         if user:
+            if is_legacy and state == "disabled":
+                email_service.send_activation_email(user)
+
             return {"tmg_state": user.account_status, "shopify_state": state, "is_legacy": is_legacy}, 200
         else:
             return {"tmg_state": "User not found", "shopify_state": state, "is_legacy": is_legacy}, 200

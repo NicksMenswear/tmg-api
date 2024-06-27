@@ -35,8 +35,3 @@ def login(email):
         return {"state": state, "is_legacy": is_legacy}, 200
 
     return {"state": state}, 200
-
-
-# 404
-# 200, {"state": "disabled", "is_legacy": true}     <<<< modal, no login
-# 200, {"state": "enabled"}                         >>>> else

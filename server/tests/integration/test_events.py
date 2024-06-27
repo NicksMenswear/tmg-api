@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from server import encoder
 from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
+from server.services.event import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
 from server.services.role import PREDEFINED_ROLES
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -178,6 +179,35 @@ class TestEvents(BaseTestCase):
         self.assertEqual(created_event.get("event_at"), str(event_request.event_at.isoformat()))
         self.assertIsNotNone(created_event.get("owner"))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
+
+    def test_create_too_early_event(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(
+            user_id=user.id,
+            type=EventTypeModel.WEDDING,
+            event_at=datetime.now()
+            + timedelta(weeks=NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION)
+            - timedelta(days=2),
+        )
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=event_request.json(),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(
+            response.json["errors"],
+            f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks.",
+        )
 
     def test_get_event_non_existing(self):
         # when

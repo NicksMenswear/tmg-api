@@ -37,7 +37,7 @@ def update_user_request(**user_data) -> UpdateUserModel:
 def create_event_request(**create_event) -> CreateEventModel:
     return CreateEventModel(
         name=create_event.get("name", str(uuid.uuid4())),
-        event_at=create_event.get("event_at", (datetime.now() + timedelta(days=1)).isoformat()),
+        event_at=create_event.get("event_at", (datetime.now() + timedelta(weeks=10)).isoformat()),
         user_id=create_event.get("user_id", uuid.uuid4()),
         is_active=create_event.get("is_active", True),
         type=create_event.get("type", EventTypeModel.OTHER),

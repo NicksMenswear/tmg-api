@@ -98,6 +98,10 @@ def hmac_webhook_verification(func):
 def token_verification(func, api_token=os.getenv("API_TOKEN", None)):
     @wraps(func)
     def wrapper(*args, **kwargs):
+        if FlaskApp.current().config.get("TMG_APP_TESTING", False):
+            logger.debug("Token verification succeeded: in testing mode.")
+            return func(*args, **kwargs)
+
         request_token = request.headers.get("X-Api-Access-Token", "unset")
         if request_token == api_token:
             return func(*args, **kwargs)

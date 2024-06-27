@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from server.database.database_manager import db
@@ -7,10 +7,12 @@ from server.database.models import Event, User, Attendee, Look, EventType
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
 from server.models.role_model import CreateRoleModel
 from server.models.user_model import UserModel
-from server.services import ServiceError, NotFoundError, DuplicateError
+from server.services import ServiceError, NotFoundError, DuplicateError, BadRequestError
 from server.services.attendee import AttendeeService
 from server.services.look import LookService
 from server.services.role import RoleService, PREDEFINED_ROLES
+
+NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 6
 
 
 # noinspection PyMethodMayBeStatic
@@ -65,6 +67,11 @@ class EventService:
 
         if db_event:
             raise DuplicateError("Event with the same name and date already exists.")
+
+        if not self.__is_ahead_n_weeks(create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION):
+            raise BadRequestError(
+                f"Event date cannot be more than {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks from today."
+            )
 
         try:
             db_event = Event(
@@ -243,3 +250,6 @@ class EventService:
         )
 
         return [EventModel.from_orm(event) for event in events]
+
+    def __is_ahead_n_weeks(self, event_at: datetime, number_of_weeks: int) -> bool:
+        return event_at > datetime.now() + timedelta(weeks=number_of_weeks)

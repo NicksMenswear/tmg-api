@@ -77,12 +77,16 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants = (
             shopify_virtual_product_variants if shopify_virtual_product_variants else {}
         )
+        self.customers = {}
 
     def get_online_store_sales_channel_id(self):
         return "gid://shopify/Publication/1234567890"
 
     def get_customer_by_email(self, email: str) -> dict:
-        return {"id": random.randint(1000, 100000)}
+        if email.endswith("@shopify-user-does-not-exists.com"):
+            raise NotFoundError("Shopify customer doesn't exist.")
+
+        return self.customers.get(email, {"id": random.randint(1000, 100000)})
 
     def create_customer(self, first_name, last_name, email):
         if email.endswith("@shopify-user-exists.com"):

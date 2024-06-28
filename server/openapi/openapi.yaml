@@ -1463,7 +1463,7 @@ paths:
       x-openapi-router-controller: server.controllers.audit
   /login:
     get:
-      operationId: login_val
+      operationId: login
       parameters:
         - in: query
           name: logged_in_customer_id

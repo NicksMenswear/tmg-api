@@ -1463,7 +1463,7 @@ paths:
       x-openapi-router-controller: server.controllers.audit
   /login:
     get:
-      operationId: login
+      operationId: login_val
       parameters:
         - in: query
           name: logged_in_customer_id
@@ -1500,10 +1500,10 @@ paths:
           description: Successful response
         "404":
           description: User not found
-      summary: User Login
+      summary: User Verification
       tags:
         - Login
-      x-openapi-router-controller: server.controllers.auth
+      x-openapi-router-controller: server.controllers.login
   /size:
     post:
       operationId: create

@@ -11,6 +11,6 @@ logger = logging.getLogger(__name__)
 def create(user_id, data):
     sizing_service = FlaskApp.current().sizing_service
 
-    sizing_id = sizing_service.create(data)
+    sizing_id = sizing_service.create(user_id, data)
 
     return {"id": sizing_id}, 201

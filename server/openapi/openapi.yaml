@@ -1537,7 +1537,7 @@ paths:
       summary: Save user measurements
       tags:
         - Measurements
-      x-openapi-router-controller: server.controllers.sizes
+      x-openapi-router-controller: server.controllers.measurements
 
 components:
   schemas:

@@ -2,7 +2,7 @@ import logging
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Size, Measurement
+from server.database.models import Size
 from server.services.user import UserService
 from server.services import ServiceError
 
@@ -28,19 +28,3 @@ class SizeService:
         self.user_service.set_size(user_id)
 
         return size.id
-
-
-# noinspection PyMethodMayBeStatic
-class MeasurementService:
-    def create(self, user_id: uuid.UUID, data: dict) -> uuid.UUID:
-        try:
-            measurement = Measurement(user_id=user_id, data=data)
-
-            db.session.add(measurement)
-            db.session.commit()
-            db.session.refresh(measurement)
-        except Exception as e:
-            db.session.rollback()
-            raise ServiceError("Failed to save measurement data", e)
-
-        return measurement.id

@@ -248,5 +248,6 @@ def product_request(**product_data):
 
 def store_size_request(**data) -> dict:
     return {
-        "how_big": "very big",
+        "user_id": uuid.uuid4(),
+        "data": {"test": 123},
     }

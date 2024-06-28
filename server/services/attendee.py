@@ -94,6 +94,19 @@ class AttendeeService:
 
         return attendees
 
+    def update_attendee_pay_status(self, event_id: uuid.UUID, user_id: uuid.UUID):
+        attendee = Attendee.query.filter(Attendee.event_id == event_id, Attendee.user_id == user_id).first()
+
+        if not attendee:
+            raise NotFoundError("Attendee not found.")
+
+        attendee.pay = True
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to update attendee pay status.", e)
+
     def get_attendees_for_event(self, event_id: uuid.UUID) -> List[AttendeeModel]:
         event = Event.query.filter_by(id=event_id).first()
 

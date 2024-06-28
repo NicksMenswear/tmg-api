@@ -35,7 +35,7 @@ class AttendeeModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(
+        return self.model_dump(
             include={"id", "user_id", "event_id", "role_id", "look_id", "style", "invite", "pay", "size", "ship"}
         )
 

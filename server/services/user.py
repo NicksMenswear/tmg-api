@@ -120,7 +120,7 @@ class UserService:
         return UserModel.from_orm(user)
 
     def set_size(self, user_id: uuid.UUID) -> None:
-        attendees = User.query.join(Attendee).filter(Attendee.user_id == user_id).all()
+        attendees = Attendee.query.filter(Attendee.user_id == user_id).all()
 
         for attendee in attendees:
             attendee.size = True

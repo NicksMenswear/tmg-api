@@ -1504,7 +1504,7 @@ paths:
       tags:
         - Login
       x-openapi-router-controller: server.controllers.login
-  /size:
+  /sizes:
     post:
       operationId: create
       requestBody:
@@ -1940,9 +1940,11 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
-        data:
+          nullable: false
+        size:
           title: data
           type: object
+          nullable: false
       title: Size
       type: object
 
@@ -1951,8 +1953,10 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
-        data:
+          nullable: false
+        measurement:
           title: data
           type: object
+          nullable: false
       title: Measurement
       type: object

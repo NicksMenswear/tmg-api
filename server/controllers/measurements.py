@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 @error_handler
-def create(user_id, data):
+def create(data):
     measurement_service = FlaskApp.current().measurement_service
 
-    measurement_id = measurement_service.create(user_id, data)
+    measurement_id = measurement_service.create(data)
 
     return {"id": measurement_id}, 201

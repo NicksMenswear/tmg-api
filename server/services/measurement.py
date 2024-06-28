@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class MeasurementService:
-    def create(self, user_id: uuid.UUID, data: dict) -> uuid.UUID:
+    def create(self, data: dict) -> uuid.UUID:
         try:
-            measurement = Measurement(user_id=user_id, data=data)
+            measurement = Measurement(user_id=data["user_id"], data=data["data"])
 
             db.session.add(measurement)
             db.session.commit()

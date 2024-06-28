@@ -14,9 +14,9 @@ class SizeService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def create(self, user_id: uuid.UUID, data: dict) -> uuid.UUID:
+    def create(self, data: dict) -> uuid.UUID:
         try:
-            size = Size(user_id=user_id, data=data)
+            size = Size(user_id=data["user_id"], data=data["data"])
 
             db.session.add(size)
             db.session.commit()
@@ -25,6 +25,6 @@ class SizeService:
             db.session.rollback()
             raise ServiceError("Failed to save size data", e)
 
-        self.user_service.set_size(user_id)
+        self.user_service.set_size(data["user_id"])
 
         return size.id

@@ -624,10 +624,14 @@ class TestWebhooks(BaseTestCase):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event_id = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
 
         # when
         webhook_request = fixtures.webhook_shopify_paid_order(
-            customer_email=user.email,
+            customer_email=attendee_user.email,
             line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
             event_id=str(event_id),
         )
@@ -640,3 +644,6 @@ class TestWebhooks(BaseTestCase):
         order = self.order_service.get_order_by_id(order_id)
         self.assertIsNotNone(order)
         self.assertEqual(order.event_id, event_id)
+
+        attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(attendee.pay)

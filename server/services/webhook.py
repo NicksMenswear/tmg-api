@@ -1,5 +1,6 @@
 import logging
 import random
+import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -213,6 +214,7 @@ class WebhookService:
         create_products = []
 
         event_id = self.get_event_id_from_note_attributes(payload)
+
         items = payload.get("line_items")
 
         if items:
@@ -244,17 +246,29 @@ class WebhookService:
             order_model = self.order_service.create_order(create_order)
             order_model.discount_codes = tmg_issued_discount_codes
 
+            if event_id and user.id:
+                try:
+                    self.attendee_service.update_attendee_pay_status(event_id, user.id)
+                except NotFoundError:
+                    logger.error(
+                        f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
+                    )
+
             return order_model.to_response()
         except Exception as e:
             logger.error(f"Error creating order: {e}")
             return self.__error(f"Error creating order: {str(e)}")
 
-    def get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[str]:
+    def get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
         note_attributes = payload.get("note_attributes", [])
 
         if note_attributes:
             for note_attribute in note_attributes:
                 if note_attribute.get("name") == "__event_id":
-                    return note_attribute.get("value")
+                    try:
+                        return uuid.UUID(note_attribute.get("value"))
+                    except ValueError:
+                        logger.error(f"Invalid event_id in note attributes: {note_attribute.get('value')}")
+                        return None
 
         return None

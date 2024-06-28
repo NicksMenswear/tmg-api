@@ -246,7 +246,7 @@ def product_request(**product_data):
     }
 
 
-def store_sizing_request(**data) -> dict:
+def store_size_request(**data) -> dict:
     return {
         "how_big": "very big",
     }

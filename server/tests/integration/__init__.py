@@ -13,7 +13,8 @@ from server.database.models import (
     OrderItem,
     Discount,
     Product,
-    Sizing,
+    Size,
+    Measurement,
 )
 from server.flask_app import FlaskApp
 
@@ -39,7 +40,8 @@ class BaseTestCase(TestCase):
         Product.query.delete()
         Event.query.delete()
         User.query.delete()
-        Sizing.query.delete()
+        Size.query.delete()
+        Measurement.query.delete()
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON
@@ -63,4 +65,4 @@ class BaseTestCase(TestCase):
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service
-        self.sizing_service = self.app.sizing_service
+        self.size_service = self.app.size_service

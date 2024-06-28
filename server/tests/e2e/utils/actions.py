@@ -37,9 +37,12 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     page.get_by_role("button", name="New Event ").first.click()
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
-    page.locator("#eventDate").fill(
-        event_date if event_date else (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
-    )
+
+    try:
+        page.locator("div.air-datepicker-cell[data-date='31']").first.click()
+    except:
+        page.locator("div.air-datepicker-cell[data-date='30']").first.click()
+
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
     event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')

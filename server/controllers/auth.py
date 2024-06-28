@@ -17,31 +17,21 @@ def login(email):
     try:
         user = user_service.get_user_by_email(email)
     except NotFoundError as e:
-        logger.warning(f"User not found by email {email} on login")
-        user = None
+        logger.warning(f"User not found for email: {email}")
+        return None, 404
 
     try:
         shopify_customer = shopify_service.get_customer_by_email(email)
     except NotFoundError as e:
-        logger.warning(f"Shopify customer not found by email {email} on login")
-        shopify_customer = None
+        logger.warning(f"Shopify customer not found for email: {email}")
+        return None, 404
 
-    # TODO: Refactor this weird response
+    state = shopify_customer["state"]
+    tags = shopify_customer["tags"]
+    is_legacy = "legacy" in tags.split(",") if tags else False
 
-    if shopify_customer:
-        state = shopify_customer["state"]
-        tags = shopify_customer["tags"]
-        is_legacy = "legacy" in tags.split(",") if tags else False
+    if is_legacy and state == "disabled":
+        email_service.send_activation_email(user)
+        return {"state": state, "is_legacy": is_legacy}, 200
 
-        if user:
-            if is_legacy and state == "disabled":
-                email_service.send_activation_email(user)
-
-            return {"tmg_state": user.account_status, "shopify_state": state, "is_legacy": is_legacy}, 200
-        else:
-            return {"tmg_state": "User not found", "shopify_state": state, "is_legacy": is_legacy}, 200
-    else:
-        if user:
-            return {"tmg_state": user.account_status, "shopify_state": "User not found", "is_legacy": False}, 200
-        else:
-            return {"tmg_state": "User not found", "shopify_state": "User not found", "is_legacy": False}, 404
+    return {"state": state}, 200

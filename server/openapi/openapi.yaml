@@ -1500,7 +1500,7 @@ paths:
           description: Successful response
         "404":
           description: User not found
-      summary: User Verification
+      summary: User Login
       tags:
         - Login
       x-openapi-router-controller: server.controllers.auth

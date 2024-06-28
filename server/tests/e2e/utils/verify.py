@@ -55,13 +55,19 @@ def event_has_type(page: Page, event_id: str, event_type: str):
 
 
 def invite_is_of_type(page, expected_type):
-    event_type = page.query_selector(".tmg-invite-event-type").inner_text()
+    event_type = page.query_selector(".tmg-invitation-event-type").inner_text()
     assert event_type == expected_type, f"Expected event type '{expected_type}', but got '{event_type}'"
 
 
-def invite_has_name(page, expected_name):
-    event_name = page.query_selector(".tmg-invite-event-name").inner_text()
-    assert event_name == expected_name, f"Expected event name '{expected_name}', but got '{event_name}'"
+def invite_has_name(page, expected_event_name):
+    invitation_attendee_element = page.locator(".tmg-invitation-attendee").first
+
+    event_name_element = invitation_attendee_element.locator("li strong").first
+    event_name_text = event_name_element.inner_text()
+
+    assert (
+        event_name_text == expected_event_name
+    ), f"Expected event name '{expected_event_name}' but got '{event_name_text}'"
 
 
 def invite_event_date(page, expected_date):
@@ -70,15 +76,21 @@ def invite_event_date(page, expected_date):
 
 
 def invite_role_is(page, expected_role):
-    role_xpath = "//div[@class='tmg-invite-attendee-info'][span[text()='Role:']]"
-    role = page.query_selector(role_xpath).inner_text().split("Role:")[1].strip()
-    assert role == expected_role, f"Expected role '{expected_role}', but got '{role}'"
+    attendees_look_element = page.locator(".tmg-attendees-look").first
+
+    role_element = attendees_look_element.locator("li:has-text('Role:') strong")
+    role_text = role_element.inner_text()
+
+    assert role_text == expected_role, f"Expected role '{expected_role}', but got '{role_text}'"
 
 
 def invite_look_is(page, expected_look):
-    look_xpath = "//div[@class='tmg-invite-attendee-info'][span[text()='Look:']]"
-    look = page.query_selector(look_xpath).inner_text().split("Look:")[1].strip()
-    assert look == expected_look, f"Expected look '{expected_look}', but got '{look}'"
+    attendees_look_element = page.locator(".tmg-attendees-look").first
+
+    look_element = attendees_look_element.locator("li:has-text('Look:') strong")
+    look_text = look_element.inner_text()
+
+    assert look_text == expected_look, f"Expected role '{expected_look}', but got '{look_text}'"
 
 
 def logged_in(page: Page):

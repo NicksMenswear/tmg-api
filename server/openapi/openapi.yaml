@@ -1503,7 +1503,7 @@ paths:
       summary: User Verification
       tags:
         - Login
-      x-openapi-router-controller: server.controllers.login
+      x-openapi-router-controller: server.controllers.auth
   /sizes:
     post:
       operationId: create

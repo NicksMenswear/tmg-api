@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 @token_verification
 @error_handler
-def create(data):
+def create(user_id, data):
     sizing_service = FlaskApp.current().sizing_service
 
     sizing_id = sizing_service.create(data)

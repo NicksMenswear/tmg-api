@@ -22,7 +22,7 @@ from server.services.look import LookService
 from server.services.order import OrderService
 from server.services.role import RoleService
 from server.services.shopify import ShopifyService, FakeShopifyService
-from server.services.sizing import SizingService
+from server.services.size import SizingService
 from server.services.user import UserService
 from server.services.webhook import WebhookService
 

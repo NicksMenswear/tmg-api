@@ -2,14 +2,14 @@ import logging
 import uuid
 
 from server.database.database_manager import db
-from server.database.models import Sizing
+from server.database.models import Sizes
 from server.services import ServiceError
 
 logger = logging.getLogger(__name__)
 
 
 # noinspection PyMethodMayBeStatic
-class SizingService:
+class SizeService:
     def create(self, data: dict) -> uuid.UUID:
         try:
             sizing = Sizing(data=data)

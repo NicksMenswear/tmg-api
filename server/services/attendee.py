@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Optional
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User, Role, Look
+from server.database.models import Attendee, Event, User, Role, Look, Sizes
 from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
@@ -153,6 +153,7 @@ class AttendeeService:
             raise DuplicateError("Attendee already exists.")
         else:
             try:
+                user_size = Sizes.query.filter(Sizes.user_id == attendee_user.id).first()
                 new_attendee = Attendee(
                     id=uuid.uuid4(),
                     user_id=attendee_user.id,
@@ -160,6 +161,7 @@ class AttendeeService:
                     role_id=create_attendee.role_id,
                     look_id=create_attendee.look_id,
                     is_active=create_attendee.is_active,
+                    size=bool(user_size),
                 )
 
                 db.session.add(new_attendee)

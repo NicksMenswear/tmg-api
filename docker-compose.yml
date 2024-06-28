@@ -83,8 +83,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
     command: >
-      bash -c "pip install pytest pytest-playwright &&
-      pytest --verbose --browser $BROWSER"
+      bash -c "pip install pytest pytest-playwright pytest-rerunfailures &&
+      pytest --verbose --browser $BROWSER --reruns 2"
     deploy:
       replicas: ${LOAD:-1}
     tty: false

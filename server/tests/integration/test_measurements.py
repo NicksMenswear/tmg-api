@@ -14,7 +14,7 @@ class TestMeasurements(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_size_request(user_id=str(user.id))),
+            data=json.dumps(fixtures.store_measurement_request(user_id=str(user.id))),
         )
 
         # then

@@ -1942,7 +1942,7 @@ components:
           $ref: '#/components/schemas/uuid'
         data:
           title: data
-          type: object
+          type: array
       required:
         - user_id
         - data

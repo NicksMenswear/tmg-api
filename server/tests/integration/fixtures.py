@@ -246,8 +246,30 @@ def product_request(**product_data):
     }
 
 
+def store_measurement_request(**data) -> dict:
+    return {
+        "user_id": data["user_id"],
+        "data": {
+            "sku": "001A2TAN",
+            "genderType": "adult",
+            "gender": "Male",
+            "weight": 50,
+            "height": 2133,
+            "age": 33,
+            "chestShape": "Moderate",
+            "stomachShape": "Average",
+            "hipShape": "Moderate",
+            "shoeSize": "7",
+        },
+    }
+
+
 def store_size_request(**data) -> dict:
     return {
         "user_id": data["user_id"],
-        "data": {"test": 123},
+        "data": [
+            {"brandName": "THE MODERN GROOM", "apparelId": "SLIM JACKET", "size": "50L"},
+            {"brandName": "THE MODERN GROOM", "apparelId": "PANT", "size": "32 L"},
+            {"brandName": "THE MODERN GROOM", "apparelId": "VEST", "size": "50L"},
+        ],
     }

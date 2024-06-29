@@ -248,6 +248,6 @@ def product_request(**product_data):
 
 def store_size_request(**data) -> dict:
     return {
-        "user_id": str(uuid.uuid4()),
+        "user_id": data["user_id"],
         "data": {"test": 123},
     }

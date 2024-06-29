@@ -39,9 +39,9 @@ class BaseTestCase(TestCase):
         Order.query.delete()
         Product.query.delete()
         Event.query.delete()
-        User.query.delete()
         Size.query.delete()
         Measurement.query.delete()
+        User.query.delete()
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON

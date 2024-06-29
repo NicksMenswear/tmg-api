@@ -5,6 +5,7 @@ from server.tests.integration import BaseTestCase, fixtures
 
 class TestMeasurements(BaseTestCase):
     def test_create_measurements(self):
+        # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when

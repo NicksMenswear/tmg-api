@@ -1,12 +1,12 @@
 import logging
 
-from server.controllers.util import error_handler, token_verification
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 
 
-@token_verification
+@hmac_verification
 @error_handler
 def create(data):
     sizing_service = FlaskApp.current().size_service

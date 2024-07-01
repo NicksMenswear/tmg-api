@@ -23,10 +23,16 @@ class TestSizes(BaseTestCase):
 
     def test_create_size_with_existing_attendees(self):
         # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=str(user.id)))
-        attendee1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=str(event.id)))
-        attendee2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=str(event.id)))
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=user.email, event_id=str(event1.id))
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=user.email, event_id=str(event2.id))
+        )
 
         # when
         response = self.client.open(
@@ -49,12 +55,15 @@ class TestSizes(BaseTestCase):
 
     def test_create_size_and_new_attendee(self):
         # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=str(user.id)))
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
         self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id)))
 
         # when
-        attendee = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=str(event.id)))
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=user.email, event_id=str(event.id))
+        )
 
         # then
         # Size is set for every new attendee

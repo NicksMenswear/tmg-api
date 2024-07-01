@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class MeasurementService:
-    def create(self, data: dict) -> uuid.UUID:
+    def create_measurement(self, data: dict) -> uuid.UUID:
         try:
             measurement = Measurement(user_id=data["user_id"], data=data["data"])
 

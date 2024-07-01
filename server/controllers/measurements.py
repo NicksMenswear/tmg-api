@@ -11,6 +11,6 @@ logger = logging.getLogger(__name__)
 def create(data):
     measurement_service = FlaskApp.current().measurement_service
 
-    measurement_id = measurement_service.create(data)
+    measurement_id = measurement_service.create_measurement(data)
 
     return {"id": measurement_id}, 201

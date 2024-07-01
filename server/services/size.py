@@ -14,7 +14,7 @@ class SizeService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def create(self, data: dict) -> uuid.UUID:
+    def create_size(self, data: dict) -> uuid.UUID:
         try:
             size = Size(user_id=data["user_id"], data=data["data"])
 

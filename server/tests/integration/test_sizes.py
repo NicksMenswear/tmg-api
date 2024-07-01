@@ -43,9 +43,9 @@ class TestSizes(BaseTestCase):
 
         # Size was set for existing attendees
         attendee1 = self.attendee_service.get_attendee_by_id(attendee1.id)
-        self.assertIsTrue(attendee1.size)
+        self.assertTrue(attendee1.size)
         attendee2 = self.attendee_service.get_attendee_by_id(attendee2.id)
-        self.assertIsTrue(attendee2.size)
+        self.assertTrue(attendee2.size)
 
     def test_create_size_and_new_attendee(self):
         # given
@@ -58,6 +58,6 @@ class TestSizes(BaseTestCase):
 
         # then
         # Size is set for every new attendee
-        self.assertIsTrue(attendee.size)
+        self.assertTrue(attendee.size)
         attendee = self.attendee_service.get_attendee_by_id(attendee.id)
-        self.assertIsTrue(attendee.size)
+        self.assertTrue(attendee.size)

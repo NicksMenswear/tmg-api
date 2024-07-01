@@ -346,11 +346,16 @@ class ShopifyService(AbstractShopifyService):
         status, body = self.admin_api_request(
             "PATCH",
             f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json",
-            {"product": {"id": shopify_product_id, "published": False}},
+            {"product": {"id": shopify_product_id, "status": "archived", "published_at": None}},
         )
 
         if status >= 400:
-            raise ServiceError(f"Failed to archive/unpublish product by id '{shopify_product_id}' in shopify store.")
+            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}' in shopify store.")
+
+        if "errors" in body:
+            raise ServiceError(
+                f"Failed to archive product by id '{shopify_product_id}' in shopify store: {body['errors']}"
+            )
 
         return body.get("product")
 

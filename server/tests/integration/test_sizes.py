@@ -53,9 +53,10 @@ class TestSizes(BaseTestCase):
         event = self.event_service.create_event(fixtures.create_event_request(user_id=str(user.id)))
         self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id)))
 
-        # then
+        # when
         attendee = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=str(event.id)))
 
+        # then
         # Size is set for every new attendee
         self.assertIsTrue(attendee.size)
         attendee = self.attendee_service.get_attendee(attendee.id)

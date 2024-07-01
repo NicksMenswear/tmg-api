@@ -22,7 +22,8 @@ from server.services.look import LookService
 from server.services.order import OrderService
 from server.services.role import RoleService
 from server.services.shopify import ShopifyService, FakeShopifyService
-from server.services.sizing import SizingService
+from server.services.size import SizeService
+from server.services.measurement import MeasurementService
 from server.services.user import UserService
 from server.services.webhook import WebhookService
 
@@ -116,7 +117,8 @@ def init_services(app, is_testing=False):
         app.shopify_service,
         app.order_service,
     )
-    app.sizing_service = SizingService()
+    app.size_service = SizeService(app.user_service)
+    app.measurement_service = MeasurementService()
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
     app.stage = os.getenv("STAGE", "dev")
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"

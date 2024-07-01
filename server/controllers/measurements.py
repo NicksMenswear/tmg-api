@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 @hmac_verification
 @error_handler
 def create(data):
-    sizing_service = FlaskApp.current().size_service
+    measurement_service = FlaskApp.current().measurement_service
 
-    sizing_id = sizing_service.create_size(data)
+    measurement_id = measurement_service.create_measurement(data)
 
-    return {"id": sizing_id}, 201
+    return {"id": measurement_id}, 201

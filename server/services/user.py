@@ -118,3 +118,15 @@ class UserService:
             raise ServiceError("Failed to update user.", e)
 
         return UserModel.from_orm(user)
+
+    def set_size(self, user_id: uuid.UUID) -> None:
+        attendees = Attendee.query.filter(Attendee.user_id == user_id).all()
+
+        for attendee in attendees:
+            attendee.size = True
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to update attendee size.", e)

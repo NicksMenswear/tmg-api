@@ -3,15 +3,18 @@ import json
 from server.tests.integration import BaseTestCase, fixtures
 
 
-class TestSizing(BaseTestCase):
-    def test_create_sizing(self):
+class TestMeasurements(BaseTestCase):
+    def test_create_measurements(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
         # when
         response = self.client.open(
-            "/sizing",
+            "/measurements",
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_sizing_request()),
+            data=json.dumps(fixtures.store_measurement_request(user_id=str(user.id))),
         )
 
         # then

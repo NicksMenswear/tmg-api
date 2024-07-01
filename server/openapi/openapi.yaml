@@ -1504,23 +1504,40 @@ paths:
       tags:
         - Login
       x-openapi-router-controller: server.controllers.auth
-  /sizing:
+  /sizes:
     post:
       operationId: create
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateSizing"
+              $ref: "#/components/schemas/CreateSize"
         required: true
         x-body-name: data
       responses:
         "201":
-          description: Create sizing information
-      summary: Create sizing information
+          description: Save user size
+      summary: Save user size
       tags:
         - Sizing
       x-openapi-router-controller: server.controllers.sizes
+  /measurements:
+    post:
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMeasurement"
+        required: true
+        x-body-name: data
+      responses:
+        "201":
+          description: Save user measurements
+      summary: Save user measurements
+      tags:
+        - Measurements
+      x-openapi-router-controller: server.controllers.measurements
 
 components:
   schemas:
@@ -1917,7 +1934,31 @@ components:
           type: integer
       title: AuditLog
       type: object
-    CreateSizing:
-      properties: {}
-      title: Sizing
+    
+    CreateSize:
+      properties:
+        user_id:
+          title: user_id
+          $ref: '#/components/schemas/uuid'
+        data:
+          title: data
+          type: array
+      required:
+        - user_id
+        - data
+      title: Size
+      type: object
+
+    CreateMeasurement:
+      properties:
+        user_id:
+          title: user_id
+          $ref: '#/components/schemas/uuid'
+        data:
+          title: data
+          type: object
+      required:
+        - user_id
+        - data
+      title: Measurement
       type: object

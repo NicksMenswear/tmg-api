@@ -38,10 +38,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
 
-    try:
-        page.locator("div.air-datepicker-cell[data-date='31']").first.click()
-    except:
-        page.locator("div.air-datepicker-cell[data-date='30']").first.click()
+    select_max_available_day_in_calendar(page)
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
@@ -54,6 +51,19 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     assert event_id is not None
 
     return event_id
+
+
+def select_max_available_day_in_calendar(page: Page):
+    day = 31
+
+    while day >= 28:
+        locator = page.locator(f"div.air-datepicker-cell[data-date='{day}']:not(.\\-disabled\\-)").first
+
+        if locator.is_visible():
+            locator.click()
+            return
+        else:
+            day -= 1
 
 
 def expect_no_upcoming_events_visible(page: Page):

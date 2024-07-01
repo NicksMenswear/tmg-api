@@ -26,10 +26,10 @@ class TestSizes(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request())
         attendee1 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=user.email, event_id=event.id)
+            fixtures.create_attendee_request(email=user.email, event_id=str(event.id))
         )
         attendee2 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=user.email, event_id=event.id)
+            fixtures.create_attendee_request(email=user.email, event_id=str(event.id))
         )
 
         # when
@@ -59,7 +59,7 @@ class TestSizes(BaseTestCase):
 
         # then
         attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=user.email, event_id=event.id)
+            fixtures.create_attendee_request(email=user.email, event_id=event.id)
         )
 
         # Size is set for every new attendee

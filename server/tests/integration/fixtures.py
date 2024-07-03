@@ -91,6 +91,11 @@ def create_attendee_request(**attendee_data):
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
         is_active=attendee_data.get("is_active", True),
+        pay=attendee_data.get("pay", False),
+        size=attendee_data.get("size", False),
+        ship=attendee_data.get("ship", False),
+        invite=attendee_data.get("invite", False),
+        style=attendee_data.get("style", False),
     )
 
 

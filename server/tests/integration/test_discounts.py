@@ -56,10 +56,14 @@ class TestDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"variants": [9988, 1715]})
         )
         attendee1 = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(email=attendee_user1.email, event_id=event.id, look_id=look1.id)
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look1.id, invite=True, style=True
+            )
         )
         attendee2 = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(email=attendee_user2.email, event_id=event.id, look_id=look2.id)
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
         )
         attendees = [
             {"user": attendee_user1, "attendee": attendee1, "look": look1},
@@ -130,7 +134,9 @@ class TestDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [1234, 5678, 1715]})
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
         )
         full_pay_discount = self.app.discount_service.create_discount(
             event.id,
@@ -177,7 +183,9 @@ class TestDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [1234, 5678, 1715]})
         )
         attendee = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
         )
         paid_discount = self.app.discount_service.create_discount(
             event.id,

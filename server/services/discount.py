@@ -108,56 +108,23 @@ class DiscountService:
 
         return Discount.query.filter(Discount.event_id == event_id).all()
 
-    def get_owner_discounts_for_event(self, event_id: UUID) -> List[EventDiscountModel]:
-        event = self.event_service.get_event_by_id(event_id)
+    def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
+        look_bundle_ids = set()
 
-        if not event:
-            raise NotFoundError("Event not found.")
+        for _, _, look in users_attendees_looks:
+            if not look or not look.product_specs:
+                continue
 
-        users_attendees_looks = (
-            db.session.query(User, Attendee, Look)
-            .join(Attendee, User.id == Attendee.user_id)
-            .outerjoin(Look, Attendee.look_id == Look.id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active)
-            .all()
-        )
+            bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
 
-        if not users_attendees_looks:
-            return []
+            if bundle_variant_id:
+                look_bundle_ids.add(bundle_variant_id)
 
-        owner_discounts = {}
+        look_bundle_prices = self.shopify_service.get_variant_prices(list(look_bundle_ids))
 
-        for user, attendee, look in users_attendees_looks:
-            look_price = 0.0
+        return look_bundle_prices
 
-            if look and look.product_specs and look.product_specs.get("bundle", {}).get("variant_id"):
-                bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-                look_price = self.shopify_service.get_total_price_for_variants([bundle_variant_id])
-
-            look_model = (
-                DiscountLookModel(
-                    id=look.id,
-                    name=look.name,
-                    price=float(look_price),
-                )
-                if look
-                else None
-            )
-
-            owner_discounts[attendee.id] = EventDiscountModel(
-                event_id=event_id,
-                amount=0.0,
-                type=DiscountType.GIFT,
-                attendee_id=attendee.id,
-                user_id=user.id,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                look=look_model,
-                status=DiscountStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
-            )
-
-        attendee_ids = owner_discounts.keys()
-
+    def __enrich_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
             or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
@@ -171,6 +138,7 @@ class DiscountService:
             owner_discount.type = discount_intent.type
             owner_discount.amount = discount_intent.amount
 
+    def __enrich_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
             or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
@@ -187,6 +155,55 @@ class DiscountService:
                     used=paid_discount.used,
                 )
             )
+
+    def get_owner_discounts_for_event(self, event_id: UUID) -> List[EventDiscountModel]:
+        event = self.event_service.get_event_by_id(event_id)
+
+        if not event:
+            raise NotFoundError("Event not found.")
+
+        users_attendees_looks = (
+            db.session.query(User, Attendee, Look)
+            .join(Attendee, User.id == Attendee.user_id)
+            .outerjoin(Look, Attendee.look_id == Look.id)
+            .filter(Attendee.event_id == event_id, Attendee.is_active, Attendee.invite)
+            .all()
+        )
+
+        if not users_attendees_looks:
+            return []
+
+        self.__fetch_look_prices(users_attendees_looks)
+
+        look_bundle_prices = self.__fetch_look_prices(users_attendees_looks)
+
+        owner_discounts = {}
+
+        for user, attendee, look in users_attendees_looks:
+            look_model = None
+
+            if look and look.product_specs:
+                bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+                look_price = look_bundle_prices.get(bundle_variant_id, 0.0)
+
+                look_model = DiscountLookModel(id=look.id, name=look.name, price=float(look_price))
+
+            owner_discounts[attendee.id] = EventDiscountModel(
+                event_id=event_id,
+                amount=0.0,
+                type=DiscountType.GIFT,
+                attendee_id=attendee.id,
+                user_id=user.id,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                look=look_model,
+                status=DiscountStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
+            )
+
+        attendee_ids = owner_discounts.keys()
+
+        self.__enrich_with_discount_intents_information(owner_discounts, attendee_ids, event_id)
+        self.__enrich_with_paid_discounts_information(owner_discounts, attendee_ids, event_id)
 
         return list(owner_discounts.values())
 

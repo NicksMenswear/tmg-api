@@ -162,6 +162,10 @@ class AttendeeService:
                     look_id=create_attendee.look_id,
                     is_active=create_attendee.is_active,
                     size=bool(user_size),
+                    style=create_attendee.style,
+                    invite=create_attendee.invite,
+                    pay=create_attendee.pay,
+                    ship=create_attendee.ship,
                 )
 
                 db.session.add(new_attendee)

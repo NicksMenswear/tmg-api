@@ -30,7 +30,7 @@ TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-50-OFF"
 TMG_GROUP_50_USD_AMOUNT = 50
 TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-25%-OFF"
 TMG_GROUP_25_PERCENT_OFF = 0.25
-MIN_ORDER_AMOUNT = 260
+TMG_GROUP_MIN_PERCENT_AMOUNT = 300
 
 logger = logging.getLogger(__name__)
 
@@ -242,7 +242,7 @@ class DiscountService:
 
             look_price = owner_discount.look.price
 
-            if look_price < 300:
+            if look_price < TMG_GROUP_MIN_PERCENT_AMOUNT:
                 owner_discount.gift_codes.append(
                     DiscountGiftCodeModel(
                         code=TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
@@ -334,7 +334,7 @@ class DiscountService:
             tmg_group_discount = 0
 
             if num_attendees >= 4:
-                if look_price <= 300:
+                if look_price <= TMG_GROUP_MIN_PERCENT_AMOUNT:
                     tmg_group_discount = TMG_GROUP_50_USD_AMOUNT
                 else:
                     tmg_group_discount = look_price * TMG_GROUP_25_PERCENT_OFF
@@ -463,7 +463,7 @@ class DiscountService:
         look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
-        if look_price < 300:
+        if look_price < TMG_GROUP_MIN_PERCENT_AMOUNT:
             code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
             discount_amount = TMG_GROUP_50_USD_AMOUNT
         else:

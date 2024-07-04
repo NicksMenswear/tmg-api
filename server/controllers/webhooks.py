@@ -35,5 +35,7 @@ def shopify_webhook(payload):
             response_payload = topic_handlers[topic](payload)
         else:
             logger.debug(f"Unhandled Shopify webhook topic: {topic}")
+    except Exception as e:
+        logger.exception(f"Error handling Shopify webhook: {e}")
     finally:
         return response_payload, 200

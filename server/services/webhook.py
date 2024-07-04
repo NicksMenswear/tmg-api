@@ -202,7 +202,7 @@ class WebhookService:
 
         tmg_issued_discount_codes = self.process_used_discount_code(payload)
 
-        order_number = payload.get("order_number")
+        shopify_order_number = payload.get("order_number")
         created_at = datetime.fromisoformat(payload.get("created_at"))
         shipping_address = payload.get("shipping_address")
         shipping_address = AddressModel(
@@ -232,9 +232,16 @@ class WebhookService:
 
                 create_products.append(create_product)
 
+        try:
+            order_number = self.superblocks_service.generate_order_number()
+        except Exception as e:
+            logger.exception(f"Error sending order to Superblocks: {e}")
+            order_number = None
+
         create_order = CreateOrderModel(
             user_id=user.id,
-            order_number=str(order_number),
+            order_number=order_number,
+            shopify_order_number=str(shopify_order_number),
             order_origin=SourceType.TMG.value,
             order_date=created_at,
             order_type=[OrderType.NEW_ORDER.value],
@@ -256,11 +263,6 @@ class WebhookService:
                     logger.error(
                         f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
                     )
-
-            try:
-                self.superblocks_service.order_created_webhook(order_model.to_response())
-            except Exception as e:
-                logger.exception(f"Error sending order to Superblocks: {e}")
 
             return order_model.to_response()
         except Exception as e:

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import uuid
 from abc import ABC, abstractmethod
 
 from server.controllers.util import http
@@ -14,13 +15,13 @@ SUPERBLOCKS_ORDER_WEBHOOK_API_URL = os.getenv("SUPERBLOCKS_ORDER_WEBHOOK_API_URL
 
 class AbstractSuperblocksService(ABC):
     @abstractmethod
-    def order_created_webhook(self, body):
-        pass
+    def generate_order_number(self):
+        return str(uuid.uuid4())
 
 
 class FakeSuperblocksService(AbstractSuperblocksService):
-    def order_created_webhook(self, body):
-        pass
+    def generate_order_number(self):
+        return str(uuid.uuid4())
 
 
 class SuperblocksService(AbstractSuperblocksService):
@@ -34,10 +35,10 @@ class SuperblocksService(AbstractSuperblocksService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def order_created_webhook(self, body):
-        status, body = self.api_request("POST", SUPERBLOCKS_ORDER_WEBHOOK_API_URL, body)
+    def generate_order_number(self):
+        status, body = self.api_request("POST", SUPERBLOCKS_ORDER_WEBHOOK_API_URL)
 
         if status >= 400:
-            raise ServiceError(f"Failed to create order in Superblocks: {body}")
+            raise ServiceError(f"Failed to generate order number. {body}")
 
-        return body
+        return body.get("output", {}).get("result")

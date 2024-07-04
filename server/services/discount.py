@@ -108,54 +108,6 @@ class DiscountService:
 
         return Discount.query.filter(Discount.event_id == event_id).all()
 
-    def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
-        look_bundle_ids = set()
-
-        for _, _, look in users_attendees_looks:
-            if not look or not look.product_specs:
-                continue
-
-            bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-
-            if bundle_variant_id:
-                look_bundle_ids.add(bundle_variant_id)
-
-        look_bundle_prices = self.shopify_service.get_variant_prices(list(look_bundle_ids))
-
-        return look_bundle_prices
-
-    def __enrich_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
-        discount_intents = Discount.query.filter(
-            Discount.event_id == event_id,
-            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
-            Discount.shopify_discount_code == None,
-            Discount.attendee_id.in_(attendee_ids),
-        ).all()
-
-        for discount_intent in discount_intents:
-            owner_discount = owner_discounts[discount_intent.attendee_id]
-            owner_discount.attendee_id = discount_intent.attendee_id
-            owner_discount.type = discount_intent.type
-            owner_discount.amount = discount_intent.amount
-
-    def __enrich_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
-        paid_discounts = Discount.query.filter(
-            Discount.event_id == event_id,
-            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
-            Discount.shopify_discount_code != None,
-            Discount.attendee_id.in_(attendee_ids),
-        ).all()
-
-        for paid_discount in paid_discounts:
-            owner_discounts[paid_discount.attendee_id].gift_codes.append(
-                DiscountGiftCodeModel(
-                    code=paid_discount.shopify_discount_code,
-                    amount=paid_discount.amount,
-                    type=str(paid_discount.type),
-                    used=paid_discount.used,
-                )
-            )
-
     def get_owner_discounts_for_event(self, event_id: UUID) -> List[EventDiscountModel]:
         event = self.event_service.get_event_by_id(event_id)
 
@@ -166,7 +118,7 @@ class DiscountService:
             db.session.query(User, Attendee, Look)
             .join(Attendee, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active, Attendee.invite)
+            .filter(Attendee.event_id == event_id, Attendee.is_active, Attendee.invite, Attendee.style)
             .all()
         )
 
@@ -202,10 +154,58 @@ class DiscountService:
 
         attendee_ids = owner_discounts.keys()
 
-        self.__enrich_with_discount_intents_information(owner_discounts, attendee_ids, event_id)
-        self.__enrich_with_paid_discounts_information(owner_discounts, attendee_ids, event_id)
+        self.__enrich_owner_discounts_with_discount_intents_information(owner_discounts, attendee_ids, event_id)
+        self.__enrich_owner_discounts_with_paid_discounts_information(owner_discounts, attendee_ids, event_id)
 
         return list(owner_discounts.values())
+
+    def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
+        look_bundle_ids = set()
+
+        for _, _, look in users_attendees_looks:
+            if not look or not look.product_specs:
+                continue
+
+            bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+
+            if bundle_variant_id:
+                look_bundle_ids.add(bundle_variant_id)
+
+        look_bundle_prices = self.shopify_service.get_variant_prices(list(look_bundle_ids))
+
+        return look_bundle_prices
+
+    def __enrich_owner_discounts_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
+        discount_intents = Discount.query.filter(
+            Discount.event_id == event_id,
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
+            Discount.shopify_discount_code == None,
+            Discount.attendee_id.in_(attendee_ids),
+        ).all()
+
+        for discount_intent in discount_intents:
+            owner_discount = owner_discounts[discount_intent.attendee_id]
+            owner_discount.attendee_id = discount_intent.attendee_id
+            owner_discount.type = discount_intent.type
+            owner_discount.amount = discount_intent.amount
+
+    def __enrich_owner_discounts_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
+        paid_discounts = Discount.query.filter(
+            Discount.event_id == event_id,
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
+            Discount.shopify_discount_code != None,
+            Discount.attendee_id.in_(attendee_ids),
+        ).all()
+
+        for paid_discount in paid_discounts:
+            owner_discounts[paid_discount.attendee_id].gift_codes.append(
+                DiscountGiftCodeModel(
+                    code=paid_discount.shopify_discount_code,
+                    amount=paid_discount.amount,
+                    type=str(paid_discount.type),
+                    used=paid_discount.used,
+                )
+            )
 
     def get_gift_discount_intents_for_product_variant(self, variant_id: str) -> List[DiscountModel]:
         discounts = Discount.query.filter(

@@ -135,7 +135,7 @@ class TestDiscounts(BaseTestCase):
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True  # , style=True
             )
         )
         full_pay_discount = self.app.discount_service.create_discount(

@@ -1,3 +1,4 @@
+import logging
 import random
 import uuid
 from datetime import datetime, timezone
@@ -29,8 +30,11 @@ from server.services.user import UserService
 DISCOUNT_TYPES = {DiscountType.GIFT, DiscountType.FULL_PAY}
 DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "DISCOUNT"
 GIFT_DISCOUNT_CODE_PREFIX = "GIFT"
-TMG_GROUP_DISCOUNT_CODE_PREFIX = "TMG-GROUP-100-OFF"
-MIN_ORDER_AMOUNT = 300
+TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-50-OFF"
+TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-25%-OFF"
+MIN_ORDER_AMOUNT = 260
+
+logger = logging.getLogger(__name__)
 
 
 # noinspection PyMethodMayBeStatic
@@ -118,27 +122,31 @@ class DiscountService:
             db.session.query(User, Attendee, Look)
             .join(Attendee, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
-            .filter(Attendee.event_id == event_id, Attendee.is_active, Attendee.invite, Attendee.style)
+            .filter(Attendee.event_id == event_id, Attendee.is_active)
             .all()
         )
 
         if not users_attendees_looks:
             return []
 
-        self.__fetch_look_prices(users_attendees_looks)
-
         look_bundle_prices = self.__fetch_look_prices(users_attendees_looks)
 
         owner_discounts = {}
+
+        num_styled_and_invited_attendees = 0
 
         for user, attendee, look in users_attendees_looks:
             look_model = None
 
             if look and look.product_specs:
                 bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-                look_price = look_bundle_prices.get(bundle_variant_id, 0.0)
 
-                look_model = DiscountLookModel(id=look.id, name=look.name, price=float(look_price))
+                if bundle_variant_id:
+                    look_price = look_bundle_prices.get(bundle_variant_id, 0.0)
+                    look_model = DiscountLookModel(id=look.id, name=look.name, price=float(look_price))
+
+            if attendee.style and attendee.invite and look_model:
+                num_styled_and_invited_attendees += 1
 
             owner_discounts[attendee.id] = EventDiscountModel(
                 event_id=event_id,
@@ -157,6 +165,9 @@ class DiscountService:
         self.__enrich_owner_discounts_with_discount_intents_information(owner_discounts, attendee_ids, event_id)
         self.__enrich_owner_discounts_with_paid_discounts_information(owner_discounts, attendee_ids, event_id)
 
+        if num_styled_and_invited_attendees >= 4:
+            self.__enrich_owner_discounts_with_tmg_group_virtual_discount_code(owner_discounts, attendee_ids)
+
         return list(owner_discounts.values())
 
     def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
@@ -168,12 +179,12 @@ class DiscountService:
 
             bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
 
-            if bundle_variant_id:
-                look_bundle_ids.add(bundle_variant_id)
+            if not bundle_variant_id:
+                continue
 
-        look_bundle_prices = self.shopify_service.get_variant_prices(list(look_bundle_ids))
+            look_bundle_ids.add(bundle_variant_id)
 
-        return look_bundle_prices
+        return self.shopify_service.get_variant_prices(list(look_bundle_ids))
 
     def __enrich_owner_discounts_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
         discount_intents = Discount.query.filter(
@@ -206,6 +217,34 @@ class DiscountService:
                     used=paid_discount.used,
                 )
             )
+
+    def __enrich_owner_discounts_with_tmg_group_virtual_discount_code(self, owner_discounts, attendee_ids):
+        for attendee_id in attendee_ids:
+            owner_discount = owner_discounts[attendee_id]
+
+            if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
+                continue
+
+            look_price = owner_discount.look.price
+
+            if look_price < 300:
+                owner_discount.gift_codes.append(
+                    DiscountGiftCodeModel(
+                        code=TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
+                        amount=50.0,
+                        type=str(DiscountType.PARTY_OF_FOUR),
+                        used=False,
+                    )
+                )
+            else:
+                owner_discount.gift_codes.append(
+                    DiscountGiftCodeModel(
+                        code=TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX,
+                        amount=look_price * 0.25,
+                        type=str(DiscountType.PARTY_OF_FOUR),
+                        used=False,
+                    )
+                )
 
     def get_gift_discount_intents_for_product_variant(self, variant_id: str) -> List[DiscountModel]:
         discounts = Discount.query.filter(
@@ -417,7 +456,7 @@ class DiscountService:
 
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
-        code = f"{TMG_GROUP_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
+        code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
         title = code
 
         shopify_discount = self.shopify_service.create_discount_code(title, code, attendee_user.shopify_id, 100, [])

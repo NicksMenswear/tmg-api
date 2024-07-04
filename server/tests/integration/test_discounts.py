@@ -6,7 +6,12 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_DISCOUNT_CODE_PREFIX, MIN_ORDER_AMOUNT
+from server.services.discount import (
+    GIFT_DISCOUNT_CODE_PREFIX,
+    TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
+    MIN_ORDER_AMOUNT,
+    TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX,
+)
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -50,10 +55,10 @@ class TestDiscounts(BaseTestCase):
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"variants": [1234, 5678, 1715]})
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": 124}})
         )
         look2 = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"variants": [9988, 1715]})
+            fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": 829}})
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -1101,6 +1106,62 @@ class TestDiscounts(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertTrue("Groom gift discount already issued for attendee" in response.json["errors"])
 
+    def test_get_owner_discounts_from_event_with_4_attendees(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        look1 = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": 26}})
+        )
+        look2 = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": 31}})
+        )
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look1.id, invite=True, style=True
+            )
+        )
+        attendee2 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee3 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee4 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 4)
+
+        for discount in response.json:
+            discount_attendee_id = discount["attendee_id"]
+
+            if str(discount_attendee_id) == str(attendee1.id):
+                self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
+            else:
+                self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX)
+
     def test_apply_discounts_invalid_attendee(self):
         # when
         response = self.client.open(
@@ -1186,7 +1247,7 @@ class TestDiscounts(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 1)
-        self.assertTrue(response.json[0].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response.json[0].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX))
 
     def test_apply_discounts_with_gift_discounts(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
@@ -1307,11 +1368,11 @@ class TestDiscounts(BaseTestCase):
         self.assertTrue(
             (
                 response.json[0] == discount.shopify_discount_code
-                and response.json[1].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
+                and response.json[1].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
             )
             or (
                 response.json[1] == discount.shopify_discount_code
-                and response.json[0].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
+                and response.json[0].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
             )
         )
 
@@ -1412,8 +1473,8 @@ class TestDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 2)
         self.assertTrue(discount.shopify_discount_code in {response.json[0], response.json[1]})
         self.assertTrue(
-            response.json[0].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
-            or response.json[1].startswith(TMG_GROUP_DISCOUNT_CODE_PREFIX)
+            response.json[0].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
+            or response.json[1].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
         )
 
     def test_apply_discounts_with_gift_discounts_and_party_of_4_when_tmg_discount_already_issued(self):
@@ -1456,7 +1517,7 @@ class TestDiscounts(BaseTestCase):
             100,
             DiscountType.PARTY_OF_FOUR,
             False,
-            f"{TMG_GROUP_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
             random.randint(10000, 100000),
             random.randint(10000, 100000),
             random.randint(10000, 100000),

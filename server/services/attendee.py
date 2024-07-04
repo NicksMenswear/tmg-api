@@ -38,6 +38,9 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
+    def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
+        return db.session.query(Attendee).filter(Attendee.event_id == event_id, Attendee.is_active).count()
+
     def get_attendees_for_events(
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:

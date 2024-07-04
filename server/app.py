@@ -24,6 +24,7 @@ from server.services.role import RoleService
 from server.services.shopify import ShopifyService, FakeShopifyService
 from server.services.size import SizeService
 from server.services.measurement import MeasurementService
+from server.services.superblocks import SuperblocksService, FakeSuperblocksService
 from server.services.user import UserService
 from server.services.webhook import WebhookService
 
@@ -97,6 +98,7 @@ def init_app(is_testing=False):
 def init_services(app, is_testing=False):
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
+    app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
@@ -116,6 +118,7 @@ def init_services(app, is_testing=False):
         app.look_service,
         app.shopify_service,
         app.order_service,
+        app.superblocks_service,
     )
     app.size_service = SizeService(app.user_service)
     app.measurement_service = MeasurementService()

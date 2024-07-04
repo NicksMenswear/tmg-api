@@ -330,6 +330,7 @@ class Order(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
     order_number = Column(String, unique=True)
+    shopify_order_number = Column(String, unique=True)
     order_origin = Column(Enum(SourceType))
     order_date = Column(DateTime, default=datetime.utcnow)
     status = Column(String)
@@ -351,16 +352,6 @@ class Order(Base):
     meta = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    def to_dict(self):
-        return {
-            "id": str(self.id),
-            "user_id": str(self.user_id),
-            "event_id": str(self.event_id),
-            "order_date": self.order_date,
-            "shipped_date": self.shipped_date,
-            "received_date": self.received_date,
-        }
 
 
 class OrderItem(Base):

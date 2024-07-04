@@ -135,7 +135,7 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=attendee_user.id, product_specs={"variants": [1234, 5678, 1715]})
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs={"bundle": {"variant_id": 123}})
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(

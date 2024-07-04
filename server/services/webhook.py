@@ -17,6 +17,7 @@ from server.services.discount import (
 from server.services.look import LookService
 from server.services.order import OrderService
 from server.services.shopify import ShopifyService
+from server.services.superblocks import AbstractSuperblocksService
 from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class WebhookService:
         look_service: LookService,
         shopify_service: ShopifyService,
         order_service: OrderService,
+        superblocks_service: AbstractSuperblocksService,
     ):
         self.user_service = user_service
         self.attendee_service = attendee_service
@@ -39,6 +41,7 @@ class WebhookService:
         self.look_service = look_service
         self.shopify_service = shopify_service
         self.order_service = order_service
+        self.superblocks_service = superblocks_service
 
     def __error(self, message):
         return {"errors": message}
@@ -253,6 +256,11 @@ class WebhookService:
                     logger.error(
                         f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
                     )
+
+            try:
+                self.superblocks_service.order_created_webhook(order_model.to_response())
+            except Exception as e:
+                logger.exception(f"Error sending order to Superblocks: {e}")
 
             return order_model.to_response()
         except Exception as e:

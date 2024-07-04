@@ -59,6 +59,7 @@ functions:
       # Postmark Env Variables
       POSTMARK_API_URL: "https://api.postmarkapp.com"
       POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
+      SUPERBLOCKS_ORDER_WEBHOOK_API_URL: ${ssm:/${sls:stage}/superblocks/order_webhook_api_url}
 
 plugins:
   - serverless-python-requirements

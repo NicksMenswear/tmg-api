@@ -4,7 +4,6 @@ from server.app import init_app, init_db
 from server.database.database_manager import db
 from server.database.models import (
     Order,
-    ProductItem,
     User,
     Event,
     Look,
@@ -65,4 +64,5 @@ class BaseTestCase(TestCase):
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service
+        self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service

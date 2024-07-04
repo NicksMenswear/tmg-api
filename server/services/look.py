@@ -60,6 +60,14 @@ class LookService:
 
         return look_models
 
+    def get_look_price(self, look) -> float:
+        bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+
+        if not bundle_variant_id:
+            return 0.0
+
+        return self.shopify_service.get_variant_prices([bundle_variant_id])[bundle_variant_id]
+
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         db_look: Look = Look.query.filter(
             Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active

@@ -3,7 +3,7 @@ import uuid
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
-from server.models.discount_model import CreateDiscountIntentAmount, CreateDiscountIntentPayFull
+from server.models.discount_model import CreateDiscountIntent
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +23,6 @@ def get_owner_discounts_for_event(event_id):
 def create_discount_intents(event_id, intents):
     discount_service = FlaskApp.current().discount_service
 
-    discount_intents = []
-
-    for intent in intents:
-        if "amount" in intent:
-            discount_intents.append(CreateDiscountIntentAmount(**intent))
-        elif "pay_full" in intent:
-            discount_intents.append(CreateDiscountIntentPayFull(**intent))
-        else:
-            raise ValueError("Invalid discount intent")
+    discount_intents = [CreateDiscountIntent(**intent) for intent in intents]
 
     return discount_service.create_discount_intents(uuid.UUID(event_id), discount_intents).to_response(), 201

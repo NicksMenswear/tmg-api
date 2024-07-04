@@ -15,6 +15,11 @@ class CreateAttendeeModel(UserRequestModel):
     event_id: UUID
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
+    style: bool = False
+    invite: bool = False
+    pay: bool = False
+    size: bool = False
+    ship: bool = False
     is_active: bool = True
 
 

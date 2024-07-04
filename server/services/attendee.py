@@ -38,6 +38,23 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
+    def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
+        db_event = Event.query.filter_by(id=event_id, is_active=True).first()
+
+        if not db_event:
+            raise NotFoundError("Event not found.")
+
+        return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
+
+    def get_num_discountable_attendees_for_event(self, event_id: uuid.UUID) -> int:
+        return Attendee.query.filter(
+            Attendee.event_id == event_id,
+            Attendee.is_active == True,
+            Attendee.look_id != None,
+            Attendee.style == True,
+            Attendee.invite == True,
+        ).count()
+
     def get_attendees_for_events(
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
@@ -162,6 +179,10 @@ class AttendeeService:
                     look_id=create_attendee.look_id,
                     is_active=create_attendee.is_active,
                     size=bool(user_size),
+                    style=create_attendee.style,
+                    invite=create_attendee.invite,
+                    pay=create_attendee.pay,
+                    ship=create_attendee.ship,
                 )
 
                 db.session.add(new_attendee)

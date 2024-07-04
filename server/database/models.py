@@ -527,7 +527,6 @@ class RMAItem(Base):
 @enum.unique
 class DiscountType(enum.Enum):
     GIFT = "gift"
-    FULL_PAY = "full_pay"
     PARTY_OF_FOUR = "party_of_four"
 
     def __str__(self):

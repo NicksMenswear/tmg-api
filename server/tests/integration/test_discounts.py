@@ -11,11 +11,17 @@ from server.services.discount import (
     TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
     MIN_ORDER_AMOUNT,
     TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX,
+    TMG_GROUP_50_USD_AMOUNT,
+    TMG_GROUP_25_PERCENT_OFF,
 )
 from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestDiscounts(BaseTestCase):
+    def __price_for_look(self, look):
+        variant_id = look.product_specs["bundle"]["variant_id"]
+        return self.shopify_service.get_variant_prices([variant_id])[variant_id]
+
     def test_get_owner_discounts_for_invalid_event(self):
         # when
         response = self.client.open(
@@ -1262,10 +1268,14 @@ class TestDiscounts(BaseTestCase):
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": 26}})
+            fixtures.create_look_request(
+                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
         )
         look2 = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": 31}})
+            fixtures.create_look_request(
+                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+            )
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -1306,11 +1316,377 @@ class TestDiscounts(BaseTestCase):
 
             if str(discount_attendee_id) == str(attendee1.id):
                 self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX)
-                self.assertEqual(discount["gift_codes"][0]["amount"], 50)
+                self.assertEqual(discount["gift_codes"][0]["amount"], TMG_GROUP_50_USD_AMOUNT)
             else:
+                look_price = self.__price_for_look(look2)
+
                 self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX)
+                self.assertEqual(discount["gift_codes"][0]["amount"], look_price * TMG_GROUP_25_PERCENT_OFF)
+
+    def test_remaining_amount_for_attendee_without_look(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["remaining_amount"], 0)
+
+    def test_remaining_amount_for_attendee_not_invited(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=False, style=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["remaining_amount"], 0)
+
+    def test_remaining_amount_for_attendee_not_styled(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=False
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["remaining_amount"], 0)
+
+    def test_remaining_amount_for_attendee_whole_look_price(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["remaining_amount"], self.__price_for_look(look))
+
+    def test_remaining_amount_for_attendee_with_already_partially_paid_gift_code(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 90),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["remaining_amount"], self.__price_for_look(look) - discount.amount)
+
+    def test_remaining_amount_for_attendee_with_multiple_already_partially_paid_gift_code(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        look = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 90),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(10, 90),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(
+            response.json[0]["remaining_amount"],
+            self.__price_for_look(look) - discount1.amount - discount2.amount,
+        )
+
+    def test_remaining_amount_for_group_of_4(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        look1 = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        look2 = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+            )
+        )
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look1.id, invite=True, style=True
+            )
+        )
+        attendee2 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee3 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee4 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 4)
+
+        for discount in response.json:
+            discount_attendee_id = discount["attendee_id"]
+
+            if str(discount_attendee_id) == str(attendee1.id):
+                look_price = self.__price_for_look(look1)
+
+                self.assertEqual(discount["remaining_amount"], look_price - TMG_GROUP_50_USD_AMOUNT)
+            else:
+                look_price = self.__price_for_look(look2)
+
+                self.assertEqual(discount["remaining_amount"], look_price - look_price * TMG_GROUP_25_PERCENT_OFF)
+
+    def test_remaining_amount_for_group_of_4_with_discounts(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        look1 = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+            )
+        )
+        look2 = self.app.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+            )
+        )
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look1.id, invite=True, style=True
+            )
+        )
+        attendee2 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee3 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee4 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(10, 90),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee2.id,
+            random.randint(10, 90),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 4)
+
+        for discount in response.json:
+            discount_attendee_id = discount["attendee_id"]
+
+            if str(discount_attendee_id) == str(attendee1.id):
+                variant_id = look1.product_specs["bundle"]["variant_id"]
+                look_price = self.__price_for_look(look1)
+
                 self.assertEqual(
-                    discount["gift_codes"][0]["amount"], look2.product_specs["bundle"]["variant_id"] * 10 * 0.25
+                    discount["remaining_amount"],
+                    look_price - discount1.amount - TMG_GROUP_50_USD_AMOUNT,
+                )
+            elif str(discount_attendee_id) == str(attendee2.id):
+                look_price = self.__price_for_look(look2)
+
+                self.assertEqual(
+                    discount["remaining_amount"], look_price - discount2.amount - look_price * TMG_GROUP_25_PERCENT_OFF
                 )
 
     def test_apply_discounts_invalid_attendee(self):

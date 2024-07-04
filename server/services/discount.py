@@ -31,7 +31,9 @@ DISCOUNT_TYPES = {DiscountType.GIFT, DiscountType.FULL_PAY}
 DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "DISCOUNT"
 GIFT_DISCOUNT_CODE_PREFIX = "GIFT"
 TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-50-OFF"
+TMG_GROUP_50_USD_AMOUNT = 50
 TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-25%-OFF"
+TMG_GROUP_25_PERCENT_OFF = 0.25
 MIN_ORDER_AMOUNT = 260
 
 logger = logging.getLogger(__name__)
@@ -168,7 +170,24 @@ class DiscountService:
         if num_styled_and_invited_attendees >= 4:
             self.__enrich_owner_discounts_with_tmg_group_virtual_discount_code(owner_discounts, attendee_ids)
 
+        self.__calculate_remaining_amount(owner_discounts)
+
         return list(owner_discounts.values())
+
+    def __calculate_remaining_amount(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]):
+        for attendee_id in owner_discounts.keys():
+            owner_discount = owner_discounts[attendee_id]
+
+            if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
+                continue
+
+            owner_discount.remaining_amount = owner_discount.look.price
+
+            if len(owner_discount.gift_codes) == 0:
+                continue
+
+            for gift_code in owner_discount.gift_codes:
+                owner_discount.remaining_amount -= gift_code.amount
 
     def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
         look_bundle_ids = set()
@@ -231,7 +250,7 @@ class DiscountService:
                 owner_discount.gift_codes.append(
                     DiscountGiftCodeModel(
                         code=TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
-                        amount=50.0,
+                        amount=TMG_GROUP_50_USD_AMOUNT,
                         type=str(DiscountType.PARTY_OF_FOUR),
                         used=False,
                     )

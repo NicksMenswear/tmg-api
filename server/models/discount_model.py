@@ -89,6 +89,7 @@ class DiscountStatusModel(CoreModel):
 class EventDiscountModel(CoreModel):
     event_id: UUID
     amount: float = 0.0
+    remaining_amount: float = 0.0
     type: DiscountType
     attendee_id: UUID
     user_id: UUID
@@ -100,7 +101,16 @@ class EventDiscountModel(CoreModel):
 
     def to_response(self):
         response = self.dict(
-            include={"event_id", "amount", "attendee_id", "user_id", "first_name", "last_name", "event_id", "amount"}
+            include={
+                "event_id",
+                "amount",
+                "remaining_amount",
+                "attendee_id",
+                "user_id",
+                "first_name",
+                "last_name",
+                "event_id",
+            }
         )
         response["type"] = self.type.value
         response["status"] = self.status.to_response()

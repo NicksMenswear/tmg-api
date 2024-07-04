@@ -94,16 +94,7 @@ class EventDiscountModel(CoreModel):
 
     def to_response(self):
         response = self.dict(
-            include={
-                "event_id",
-                "amount",
-                "remaining_amount",
-                "attendee_id",
-                "user_id",
-                "first_name",
-                "last_name",
-                "event_id",
-            }
+            include={"event_id", "amount", "remaining_amount", "attendee_id", "user_id", "first_name", "last_name"}
         )
         response["type"] = self.type.value
         response["status"] = self.status.to_response()

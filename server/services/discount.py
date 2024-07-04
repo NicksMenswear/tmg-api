@@ -462,7 +462,6 @@ class DiscountService:
 
         look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
-        discount_amount = 0
 
         if look_price < 300:
             code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
@@ -473,7 +472,9 @@ class DiscountService:
 
         title = code
 
-        shopify_discount = self.shopify_service.create_discount_code(title, code, attendee_user.shopify_id, 100, [])
+        shopify_discount = self.shopify_service.create_discount_code(
+            title, code, attendee_user.shopify_id, discount_amount, [look.product_specs.get("bundle").get("variant_id")]
+        )
 
         discount = Discount(
             attendee_id=attendee.id,

@@ -1,7 +1,6 @@
 import logging
 import uuid
 from datetime import datetime
-from operator import or_
 from typing import List
 
 from server.database.database_manager import db
@@ -93,7 +92,7 @@ class UserService:
                 Discount.attendee_id == attendee_id,
                 Discount.shopify_discount_code != None,
                 Discount.used == False,
-                or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.FULL_PAY),
+                Discount.type == DiscountType.GIFT,
             ).all()
         ]
 

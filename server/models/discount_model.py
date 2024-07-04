@@ -10,14 +10,7 @@ from server.models import CoreModel
 
 class CreateDiscountIntent(CoreModel):
     attendee_id: UUID
-
-
-class CreateDiscountIntentAmount(CreateDiscountIntent):
     amount: PositiveFloat
-
-
-class CreateDiscountIntentPayFull(CreateDiscountIntent):
-    pay_full: bool = True
 
 
 class DiscountGiftCodeModel(CoreModel):

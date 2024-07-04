@@ -39,7 +39,21 @@ class AttendeeService:
         return AttendeeModel.from_orm(attendee)
 
     def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
-        return db.session.query(Attendee).filter(Attendee.event_id == event_id, Attendee.is_active).count()
+        db_event = Event.query.filter_by(id=event_id, is_active=True).first()
+
+        if not db_event:
+            raise NotFoundError("Event not found.")
+
+        return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
+
+    def get_num_discountable_attendees_for_event(self, event_id: uuid.UUID) -> int:
+        return Attendee.query.filter(
+            Attendee.event_id == event_id,
+            Attendee.is_active == True,
+            Attendee.look_id != None,
+            Attendee.style == True,
+            Attendee.invite == True,
+        ).count()
 
     def get_attendees_for_events(
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None

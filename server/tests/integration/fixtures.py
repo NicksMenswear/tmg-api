@@ -4,11 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
-from server.models.discount_model import (
-    ApplyDiscountModel,
-    CreateDiscountIntentAmount,
-    CreateDiscountIntentPayFull,
-)
+from server.models.discount_model import ApplyDiscountModel, CreateDiscountIntent
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
@@ -109,16 +105,9 @@ def update_attendee_request(**attendee_data):
 
 
 def create_gift_discount_intent_request(**create_discount_intent):
-    return CreateDiscountIntentAmount(
+    return CreateDiscountIntent(
         attendee_id=create_discount_intent.get("attendee_id", str(uuid.uuid4())),
         amount=create_discount_intent.get("amount", random.randint(10, 500)),
-    )
-
-
-def create_full_pay_discount_intent_request(**create_discount_intent):
-    return CreateDiscountIntentPayFull(
-        attendee_id=create_discount_intent.get("attendee_id", str(uuid.uuid4())),
-        pay_full=True,
     )
 
 

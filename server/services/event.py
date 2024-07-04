@@ -44,14 +44,6 @@ class EventService:
 
         return event_model
 
-    def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
-        db_event = Event.query.filter_by(id=event_id, is_active=True).first()
-
-        if not db_event:
-            raise NotFoundError("Event not found.")
-
-        return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
-
     def create_event(self, create_event: CreateEventModel) -> EventModel:
         user = User.query.filter_by(id=create_event.user_id).first()
 

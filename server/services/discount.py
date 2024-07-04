@@ -460,9 +460,17 @@ class DiscountService:
         if not look or not look.product_specs or not look.product_specs.get("bundle", {}).get("variant_id"):
             raise ServiceError("Look has no bundle associated")
 
+        look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
+        discount_amount = 0
 
-        code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
+        if look_price < 300:
+            code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
+            discount_amount = TMG_GROUP_50_USD_AMOUNT
+        else:
+            code = f"{TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
+            discount_amount = look_price * TMG_GROUP_25_PERCENT_OFF
+
         title = code
 
         shopify_discount = self.shopify_service.create_discount_code(title, code, attendee_user.shopify_id, 100, [])
@@ -471,7 +479,7 @@ class DiscountService:
             attendee_id=attendee.id,
             event_id=event_id,
             type=DiscountType.PARTY_OF_FOUR,
-            amount=100,
+            amount=discount_amount,
             shopify_discount_code=shopify_discount.get("shopify_discount_code"),
             shopify_discount_code_id=shopify_discount.get("shopify_discount_id"),
         )
@@ -487,7 +495,7 @@ class DiscountService:
             raise NotFoundError("Attendee not found.")
 
         discounts = self.user_service.get_gift_paid_but_not_used_discounts(attendee_id)
-        num_attendees = self.attendee_service.get_num_attendees_for_event(attendee.event_id)
+        num_attendees = self.attendee_service.get_num_discountable_attendees_for_event(attendee.event_id)
 
         if num_attendees >= 4:
             existing_discount = self.get_group_discount_for_attendee(attendee_id)

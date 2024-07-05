@@ -61,7 +61,7 @@ functions:
       POSTMARK_API_URL: "https://api.postmarkapp.com"
       POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
       # ActiveCampaign Env Variables
-      ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com/"
+      ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com"
       ACTIVECAMPAIGN_API_KEY: ${ssm:/${sls:stage}/activecampaign/api_key}
 
 plugins:

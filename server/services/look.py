@@ -45,18 +45,20 @@ class LookService:
             for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
 
-        variants = set()
+        bundle_variants = set()
 
         for look_model in look_models:
-            for variant in look_model.product_specs.get("variants", []):
-                variants.add(variant)
+            bundle_variant_id = look_model.product_specs.get("bundle", {}).get("variant_id")
 
-        if variants:
-            variants_with_prices = self.shopify_service.get_variant_prices(list(variants))
+            if bundle_variant_id:
+                bundle_variants.add(bundle_variant_id)
+
+        if bundle_variants:
+            bundle_variants_with_prices = self.shopify_service.get_variant_prices(list(bundle_variants))
 
             for look_model in look_models:
-                for variant_id in look_model.product_specs.get("variants", []):
-                    look_model.price += variants_with_prices.get(variant_id, 0.0)
+                bundle_variant_id = look_model.product_specs.get("bundle", {}).get("variant_id")
+                look_model.price = bundle_variants_with_prices.get(bundle_variant_id, 0.0) if bundle_variant_id else 0.0
 
         return look_models
 
@@ -90,6 +92,8 @@ class LookService:
             db.session.commit()
             db.session.refresh(db_look)
 
+            s3_file = None
+
             if create_look.image:
                 timestamp = str(int(time.time() * 1000))
                 local_file = f"{TMP_DIR}/{timestamp}.png"
@@ -98,24 +102,28 @@ class LookService:
                 self.__save_image(create_look.image, local_file)
                 self.aws_service.upload_to_s3(local_file, DATA_BUCKET, s3_file)
 
-                bundle_product_variant_id = self.shopify_service.create_bundle(
-                    create_look.product_specs.get("variants"),
-                    image_src=f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}",
-                )
+            bundle_product_variant_id = self.shopify_service.create_bundle(
+                create_look.product_specs.get("variants"),
+                image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
+            )
 
-                if not bundle_product_variant_id:
-                    raise ServiceError("Failed to create bundle product variant.")
+            if not bundle_product_variant_id:
+                raise ServiceError("Failed to create bundle product variant.")
 
-                enriched_product_specs = {
-                    "bundle": {"variant_id": bundle_product_variant_id},
-                    "variants": create_look.product_specs.get("variants"),
-                }
+            variant_ids_with_titles = self.shopify_service.get_variant_product_title(
+                create_look.product_specs.get("variants")
+            )
 
-                db_look.image_path = s3_file
-                db_look.product_specs = enriched_product_specs
+            enriched_product_specs = {
+                "bundle": {"variant_id": bundle_product_variant_id},
+                "items": variant_ids_with_titles,
+            }
 
-                db.session.commit()
-                db.session.refresh(db_look)
+            db_look.image_path = s3_file
+            db_look.product_specs = enriched_product_specs
+
+            db.session.commit()
+            db.session.refresh(db_look)
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to create look.", e)

@@ -146,16 +146,19 @@ class WebhookService:
 
             look = self.look_service.get_look_by_id(attendee.look_id)
 
-            if not look or not look.product_specs or len(look.product_specs.get("variants", [])) == 0:
+            if (
+                not look
+                or not look.product_specs
+                or not look.product_specs.get("bundle", {}).get("variant_id")
+                or not look.product_specs.get("items")
+            ):
                 logger.error(f"No shopify variants founds for look {look.id}. Can't create discount code")
                 return self.__error(f"No shopify variants founds for look {look.id}. Can't create discount code")
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
             bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-            discounted_variant_ids = (
-                [bundle_variant_id] if bundle_variant_id else look.product_specs.get("variants", [])
-            )
+            discounted_variant_ids = [bundle_variant_id]
 
             discount_response = self.shopify_service.create_discount_code(
                 code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids

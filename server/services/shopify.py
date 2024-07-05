@@ -4,7 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -55,6 +55,10 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
+        pass
+
+    @abstractmethod
     def get_total_price_for_variants(self, variant_ids: List[str]):
         pass
 
@@ -71,7 +75,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, variants: List[str], image_src: str) -> str:
+    def create_bundle(self, variants: List[str], image_src: str = None) -> str:
         pass
 
 
@@ -149,6 +153,14 @@ class FakeShopifyService(AbstractShopifyService):
 
         return result
 
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
+        if not variant_ids:
+            return []
+
+        return [
+            {"variant_id": f"{variant_id}", "title": f"Test Product Variant {variant_id}"} for variant_id in variant_ids
+        ]
+
     def get_total_price_for_variants(self, variant_ids: List[str]):
         if not variant_ids:
             return 0
@@ -172,8 +184,11 @@ class FakeShopifyService(AbstractShopifyService):
     def archive_product(self, shopify_product_id):
         pass
 
-    def create_bundle(self, variants: List[str], image_src: str) -> str:
-        return f"{random.randint(1000, 100000)}"
+    def create_bundle(self, variants: List[str], image_src: str = None) -> str:
+        if not variants:
+            return f"{random.randint(1000, 100000)}"
+
+        return str(sum([int(variant) for variant in variants]))
 
 
 class ShopifyService(AbstractShopifyService):
@@ -523,12 +538,65 @@ class ShopifyService(AbstractShopifyService):
 
         return variants_with_prices
 
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
+        if not variant_ids:
+            return {}
+
+        ids_query = ", ".join(
+            [f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids if variant_id]
+        )
+
+        query = f"""
+        {{
+            nodes(ids: [{ids_query}]) {{
+            ... on ProductVariant {{
+                id
+                title
+                product {{
+                    id
+                    title
+                }}
+            }}
+            }}
+        }}
+        """
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
+
+        variants_with_titles = []
+
+        for variant in body["data"]["nodes"]:
+            if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
+                continue
+
+            product = variant["product"]
+            variants_with_titles.append(
+                {
+                    "product_id": product["id"].removeprefix("gid://shopify/Product/"),
+                    "product_title": product["title"],
+                    "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
+                    "variant_title": variant["title"],
+                }
+            )
+
+        return variants_with_titles
+
     def get_total_price_for_variants(self, variant_ids: List[str]):
         variants_with_prices = self.get_variant_prices(variant_ids)
 
         return sum([variants_with_prices.get(variant_id, 0.0) for variant_id in variant_ids])
 
-    def create_bundle(self, variants: List[str], image_src: str) -> str:
+    def create_bundle(self, variants: List[str], image_src: str = None) -> str:
         bundle_parent_product_suffix = random.randint(1000000, 100000000)
         bundle_parent_product_name = f"Look Suit Bundle #{bundle_parent_product_suffix}"
         bundle_parent_product_handle = f"look-suit-bundle-{bundle_parent_product_suffix}"
@@ -544,7 +612,9 @@ class ShopifyService(AbstractShopifyService):
         self.publish_and_add_to_online_sales_channel(
             bundle_parent_product_handle, parent_product_id, FlaskApp.current().online_store_sales_channel_id
         )
-        self.add_image_to_product(parent_product_id, image_src)
+
+        if image_src:
+            self.add_image_to_product(parent_product_id, image_src)
 
         return parent_product_variant_id.removeprefix("gid://shopify/ProductVariant/")
 

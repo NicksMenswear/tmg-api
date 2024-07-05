@@ -303,7 +303,49 @@ paths:
         - Users
         - Looks
       x-openapi-router-controller: server.controllers.users
-
+  /ac:
+    post:
+      operationId: create_contact
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+        x-body-name: create_user
+      responses:
+        "201":
+          description: Contact created
+      summary: Create contact
+      tags:
+        - ActiveCampaign
+      x-openapi-router-controller: server.controllers.activecampaign
   /events:
     post:
       operationId: create_event

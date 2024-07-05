@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Optional
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User, Role, Look, Size
+from server.database.models import Attendee, Event, User, Role, Look, Size, Order
 from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
@@ -15,6 +15,7 @@ from server.models.attendee_model import (
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
+from server.models.order_model import TrackingModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.email import AbstractEmailService
 from server.services.shopify import AbstractShopifyService
@@ -59,10 +60,11 @@ class AttendeeService:
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         query = (
-            db.session.query(Attendee, User, Role, Look)
+            db.session.query(Attendee, User, Role, Look, Order)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
+            .outerjoin(Order, (Order.user_id == Attendee.user_id) & (Order.event_id == Attendee.event_id))
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
         )
@@ -77,11 +79,11 @@ class AttendeeService:
 
         attendees = dict()
 
-        attendee_ids = {attendee.id for attendee, _, _, _ in db_attendees}
+        attendee_ids = {attendee.id for attendee, _, _, _, _ in db_attendees}
 
         attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
 
-        for attendee, user, role, look in db_attendees:
+        for attendee, user, role, look, orders in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
@@ -101,6 +103,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendees_gift_codes.get(attendee.id, set()),
+                    tracking=self._get_tracking_for_attendee(user, orders) if orders else [],
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,
@@ -225,7 +228,7 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to deactivate attendee.", e)
 
-    def send_invites(self, attendee_ids: list[uuid.UUID]) -> None:
+    def send_invites(self, attendee_ids: List[uuid.UUID]) -> None:
         items = (
             db.session.query(User, Attendee)
             .join(Attendee, Attendee.user_id == User.id)
@@ -243,3 +246,13 @@ class AttendeeService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
+
+    def _get_tracking_for_attendee(self, orders: List[Order]) -> List[TrackingModel]:
+        shop_id = self.shopify_service.get_shop_id()
+        tracking = []
+        for order in orders:
+            if not order.outbound_tracking:
+                tracking_id = order.outbound_tracking
+                tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
+                tracking.append(TrackingModel(tracking_id, tracking_url))
+        return tracking

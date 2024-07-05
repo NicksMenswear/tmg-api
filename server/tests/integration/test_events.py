@@ -532,7 +532,7 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    def test_delete_event(self):
+    def test_delete_event_attendees_are_not_invited_or_paid(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -564,6 +564,134 @@ class TestEvents(BaseTestCase):
         self.assertEqual(db_attendee1.is_active, False)
         db_attendee2 = Attendee.query.filter(Attendee.id == attendee2.id).first()
         self.assertEqual(db_attendee2.is_active, False)
+
+    def test_delete_event_attendee_is_not_active(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, is_active=False)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 204)
+
+        looked_up_event = self.event_service.get_event_by_id(event.id)
+        self.assertEqual(looked_up_event.is_active, False)
+
+        db_attendee = Attendee.query.filter(Attendee.id == attendee.id).first()
+        self.assertEqual(db_attendee.is_active, False)
+
+    def test_delete_event_attendee_is_not_active_but_invited(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, is_active=False)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 204)
+
+        looked_up_event = self.event_service.get_event_by_id(event.id)
+        self.assertEqual(looked_up_event.is_active, False)
+
+        db_attendee = Attendee.query.filter(Attendee.id == attendee.id).first()
+        self.assertEqual(db_attendee.is_active, False)
+
+    def test_delete_event_attendee_is_invited(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, invite=True)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Cannot delete event with invited or paid attendees.")
+
+    def test_delete_event_attendee_is_paid(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, pay=True)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Cannot delete event with invited or paid attendees.")
+
+    def test_delete_event_at_least_one_attendee_invite(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email, invite=False)
+        )
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email, invite=True)
+        )
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user3.email, invite=False)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json["errors"], "Cannot delete event with invited or paid attendees.")
 
     def test_create_event_name_too_short(self):
         # given

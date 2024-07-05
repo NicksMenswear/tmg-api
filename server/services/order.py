@@ -38,6 +38,7 @@ class OrderService:
                 user_id=create_order.user_id,
                 event_id=create_order.event_id,
                 order_number=create_order.order_number,
+                shopify_order_id=create_order.shopify_order_id,
                 shopify_order_number=create_order.shopify_order_number,
                 order_origin=SourceType(create_order.order_origin) if create_order.order_origin else None,
                 order_date=create_order.order_date,

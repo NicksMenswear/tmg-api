@@ -38,6 +38,7 @@ class CreateOrderModel(CoreModel):
     user_id: Optional[UUID] = None
     event_id: Optional[UUID] = None
     order_number: Optional[str] = None
+    shopify_order_id: Optional[str] = None
     shopify_order_number: Optional[str] = None
     order_origin: Optional[str] = None
     order_date: Optional[datetime] = None
@@ -71,6 +72,7 @@ class ProductModel(CoreModel):
 class OrderModel(CoreModel):
     id: UUID
     order_number: str
+    shopify_order_id: str
     shopify_order_number: str
     order_date: datetime
     products: List[ProductModel] = []

@@ -330,6 +330,7 @@ class Order(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
     order_number = Column(String, unique=True)
+    shopify_order_id = Column(String, unique=True)
     shopify_order_number = Column(String, unique=True)
     order_origin = Column(Enum(SourceType))
     order_date = Column(DateTime, default=datetime.utcnow)

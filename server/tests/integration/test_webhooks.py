@@ -611,8 +611,10 @@ class TestWebhooks(BaseTestCase):
         order = self.order_service.get_order_by_id(order_id)
         self.assertIsNotNone(order)
         self.assertEqual(len(order.products), 1)
-        self.assertEqual(order.shopify_order_number, str(webhook_request["order_number"]))
+        self.assertIsNotNone(order.shopify_order_id)
+        self.assertEqual(order.shopify_order_id, str(webhook_request["id"]))
         self.assertIsNotNone(order.order_number)
+        self.assertEqual(order.shopify_order_number, str(webhook_request["order_number"]))
         self.assertEqual(order.order_date.isoformat(), webhook_request["created_at"])
         self.assertIsNone(order.event_id)
 

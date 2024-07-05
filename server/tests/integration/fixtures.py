@@ -9,6 +9,7 @@ from server.models.event_model import CreateEventModel, UpdateEventModel, EventT
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.models.order_model import CreateOrderModel
 from server.tests import utils
 
 
@@ -101,6 +102,29 @@ def update_attendee_request(**attendee_data):
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
         is_active=attendee_data.get("is_active", True),
+    )
+
+
+def create_order_request(**order_data):
+    return CreateOrderModel(
+        legacy_id=order_data.get("legacy_id", str(uuid.uuid4())),
+        user_id=order_data.get("user_id", uuid.uuid4()),
+        event_id=order_data.get("event_id", uuid.uuid4()),
+        order_number=order_data.get("order_number", str(uuid.uuid4())),
+        shopify_order_number=order_data.get("shopify_order_number", str(uuid.uuid4())),
+        order_origin=order_data.get("order_origin", str(uuid.uuid4())),
+        order_date=order_data.get("order_date", datetime.now().isoformat()),
+        status=order_data.get("status", str(uuid.uuid4())),
+        shipped_date=order_data.get("shipped_date", datetime.now().isoformat()),
+        received_date=order_data.get("received_date", datetime.now().isoformat()),
+        ship_by_date=order_data.get("ship_by_date", datetime.now().isoformat()),
+        shipping_method=order_data.get("shipping_method", str(uuid.uuid4())),
+        outbound_tracking=order_data.get("outbound_tracking", str(uuid.uuid4())),
+        store_location=order_data.get("store_location", str(uuid.uuid4())),
+        order_type=order_data.get("order_type", [str(uuid.uuid4())]),
+        shipping_address=order_data.get("shipping_address", {}),
+        products=order_data.get("products", []),
+        meta=order_data.get("meta", {}),
     )
 
 

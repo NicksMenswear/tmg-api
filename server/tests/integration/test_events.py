@@ -285,7 +285,9 @@ class TestEvents(BaseTestCase):
                 event_id=event.id, email=attendee_user1.email, look_id=look1.id, role_id=role1.id
             )
         )
-        order = self.order_service.create_order(fixtures.create_order_request(attendee_id=attendee1.id))
+        order = self.order_service.create_order(
+            fixtures.create_order_request(user_id=attendee_user1.id, event_id=event.id, outbound_tracking="123123")
+        )
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email, is_active=False)
@@ -315,6 +317,8 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_attendee.get("look").get("id"), str(look1.id))
         self.assertEqual(response_attendee.get("role_id"), str(role1.id))
         self.assertEqual(response_attendee.get("role").get("id"), str(role1.id))
+        self.assertEqual(response_attendee.get("tracking")[0].get("tracking_number"), order.outbound_tracking)
+        self.assertTrue(response_attendee.get("tracking")[0].get("tracking_url").contains(order.shopify_order_id))
 
         response_look = response.json.get("looks")[0]
         self.assertEqual(response_look.get("id"), str(look1.id))

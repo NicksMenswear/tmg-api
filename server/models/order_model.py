@@ -89,8 +89,8 @@ class OrderModel(CoreModel):
 
 
 class TrackingModel(CoreModel):
-    tracking_id: str
+    tracking_number: str
     tracking_url: Optional[str]
 
     def to_response(self):
-        return self.dict(include={"tracking_id", "tracking_url"})
+        return self.dict(include={"tracking_number", "tracking_url"})

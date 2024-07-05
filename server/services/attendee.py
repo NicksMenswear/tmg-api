@@ -103,7 +103,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendees_gift_codes.get(attendee.id, set()),
-                    tracking=self._get_tracking(orders) if orders else [],
+                    tracking=[self._get_tracking(order) for order in orders if order.outbound_tracking],
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,
@@ -247,12 +247,8 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-    def _get_tracking(self, orders: List[Order]) -> List[TrackingModel]:
+    def _get_tracking(self, order: Order) -> TrackingModel:
         shop_id = FlaskApp.current().online_store_shop_id
-        tracking = []
-        for order in orders:
-            if not order.outbound_tracking:
-                tracking_id = order.outbound_tracking
-                tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
-                tracking.append(TrackingModel(tracking_id, tracking_url))
-        return tracking
+        tracking_number = order.outbound_tracking
+        tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
+        return TrackingModel(tracking_number, tracking_url)

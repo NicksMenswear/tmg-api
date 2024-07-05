@@ -75,8 +75,7 @@ class EnrichedAttendeeModel(AttendeeModel):
         attendee["role"] = self.role.to_response() if self.role else None
         attendee["look"] = self.look.to_response() if self.look else None
         attendee["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
-        attendee["tracking"] = self.tracking.to_response() if self.tracking else None
-
+        attendee["tracking"] = [tracking.to_response() for tracking in self.tracking]
         return attendee
 
 

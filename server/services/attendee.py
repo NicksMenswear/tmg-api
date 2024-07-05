@@ -60,11 +60,10 @@ class AttendeeService:
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         query = (
-            db.session.query(Attendee, User, Role, Look, Order)
+            db.session.query(Attendee, User, Role, Look)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
-            .outerjoin(Order, (Order.user_id == Attendee.user_id) & (Order.event_id == Attendee.event_id))
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
         )
@@ -79,11 +78,11 @@ class AttendeeService:
 
         attendees = dict()
 
-        attendee_ids = {attendee.id for attendee, _, _, _, _ in db_attendees}
+        attendee_ids = {attendee.id for attendee, _, _, _ in db_attendees}
 
         attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
 
-        for attendee, user, role, look, orders in db_attendees:
+        for attendee, user, role, look in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
@@ -103,7 +102,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendees_gift_codes.get(attendee.id, set()),
-                    tracking=[self._get_tracking(order) for order in orders if order.outbound_tracking],
+                    tracking=self._get_tracking_for_attendee(attendee),
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,
@@ -247,8 +246,13 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-    def _get_tracking(self, order: Order) -> TrackingModel:
+    def _get_tracking_for_attendee(self, attendee: Attendee) -> List[TrackingModel]:
         shop_id = FlaskApp.current().online_store_shop_id
-        tracking_number = order.outbound_tracking
-        tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
-        return TrackingModel(tracking_number, tracking_url)
+        tracking = []
+        orders = Order.query.filter(Order.event_id == attendee.event_id, Order.user_id == attendee.user_id).all()
+        for order in orders:
+            if order.outbound_tracking:
+                tracking_number = order.outbound_tracking
+                tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
+                tracking.append(TrackingModel(tracking_number=tracking_number, tracking_url=tracking_url))
+        return tracking

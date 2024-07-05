@@ -87,7 +87,7 @@ class FakeShopifyService(AbstractShopifyService):
         return "gid://shopify/Publication/1234567890"
 
     def get_online_store_shop_id(self) -> str:
-        return "1"
+        return "666"
 
     def get_customer_by_email(self, email: str) -> dict:
         if email.endswith("@shopify-user-does-not-exists.com"):

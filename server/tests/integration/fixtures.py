@@ -118,13 +118,8 @@ def create_order_request(**order_data):
         shipped_date=order_data.get("shipped_date", datetime.now().isoformat()),
         received_date=order_data.get("received_date", datetime.now().isoformat()),
         ship_by_date=order_data.get("ship_by_date", datetime.now().isoformat()),
-        shipping_method=order_data.get("shipping_method", str(uuid.uuid4())),
-        outbound_tracking=order_data.get("outbound_tracking", str(uuid.uuid4())),
-        store_location=order_data.get("store_location", str(uuid.uuid4())),
-        order_type=order_data.get("order_type", [str(uuid.uuid4())]),
-        shipping_address=order_data.get("shipping_address", {}),
-        products=order_data.get("products", []),
-        meta=order_data.get("meta", {}),
+        shipping_method=order_data.get("shipping_method", "TNT"),
+        outbound_tracking=order_data.get("outbound_tracking", None),
     )
 
 

@@ -341,6 +341,39 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_attendee["id"], str(attendee2.id))
         self.assertEqual(response_attendee["user"]["email"], str(attendee_user2.email))
 
+    def test_get_events_where_user_is_invited(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email, invite=True)
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email, invite=False)
+        )
+
+        # when
+        response = self.client.open(
+            f"/users/{attendee_user.id}/events",
+            query_string={**self.hmac_query_params, "enriched": True, "status": "attendee"},
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+
+        response_event = response.json[0]
+        self.assertEqual(response_event["id"], str(event1.id))
+        self.assertEqual(len(response_event["attendees"]), 1)
+        response_attendee = response_event["attendees"][0]
+        self.assertEqual(response_attendee["id"], str(attendee1.id))
+        self.assertEqual(response_attendee["user"]["email"], str(attendee_user.email))
+
     def test_get_invites_for_non_existing_user(self):
         # when
         response = self.client.open(

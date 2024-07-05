@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import json
+import random
 import uuid
 
 from server import encoder
@@ -14,7 +15,12 @@ class TestLooks(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
-        look_data = fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234, 345]})
+        look_data = fixtures.create_look_request(
+            user_id=user.id,
+            product_specs={
+                "variants": [random.randint(100, 1000), random.randint(100, 1000), random.randint(100, 1000)]
+            },
+        )
 
         response = self.client.open(
             "/looks",
@@ -31,7 +37,11 @@ class TestLooks(BaseTestCase):
         self.assertEqual(response.json["name"], look_data.name)
         db_look = self.look_service.get_look_by_id(response.json["id"])
         self.assertIsNotNone(db_look)
-        self.assertEqual(db_look.product_specs, look_data.product_specs)
+        self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
+        self.assertEqual(
+            set(list(db_look.product_specs.get("items").keys())),
+            set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
+        )
         self.assertEqual(db_look.user_id, user.id)
 
     def test_create_look_with_image(self):
@@ -61,7 +71,10 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(response.json["image_path"])
         self.assertTrue(response.json["image_path"].startswith(f"looks/{user.id}/{response.json['id']}/"))
-        self.assertEqual(db_look.product_specs.get("variants"), look_data.product_specs.get("variants"))
+        self.assertEqual(
+            set(list(db_look.product_specs.get("items").keys())),
+            set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
+        )
         self.assertIsNotNone(db_look.product_specs.get("bundle"))
         self.assertEqual(db_look.user_id, user.id)
 

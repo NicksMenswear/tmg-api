@@ -342,12 +342,12 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+                user_id=attendee_user1.id, product_specs={"variants": [random.randint(26, 29)]}
             )
         )
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+                user_id=attendee_user2.id, product_specs={"variants": [random.randint(31, 60)]}
             )
         )
         attendee1 = self.app.attendee_service.create_attendee(
@@ -615,12 +615,12 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+                user_id=attendee_user1.id, product_specs={"variants": [random.randint(26, 29)]}
             )
         )
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+                user_id=attendee_user2.id, product_specs={"variants": [random.randint(31, 60)]}
             )
         )
         attendee1 = self.app.attendee_service.create_attendee(
@@ -679,12 +679,12 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user1.id, product_specs={"bundle": {"variant_id": random.randint(26, 29)}}
+                user_id=attendee_user1.id, product_specs={"variants": [random.randint(26, 29)]}
             )
         )
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(
-                user_id=attendee_user2.id, product_specs={"bundle": {"variant_id": random.randint(31, 60)}}
+                user_id=attendee_user2.id, product_specs={"variants": [random.randint(31, 60)]}
             )
         )
         attendee1 = self.app.attendee_service.create_attendee(

@@ -109,7 +109,7 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
         look = self.look_service.create_look(
             fixtures.create_look_request(
                 user_id=user.id,
-                product_specs={"bundle": {"variant_id": random.randint(20, 29)}},
+                product_specs={"variants": [random.randint(20, 29)]},
             )
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
@@ -223,10 +223,7 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=user.id,
-                product_specs={"bundle": {"variant_id": random.randint(20, 29)}},
-            )
+            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [random.randint(20, 29)]})
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(

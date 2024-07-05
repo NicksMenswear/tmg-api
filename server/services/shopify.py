@@ -258,8 +258,8 @@ class ShopifyService(AbstractShopifyService):
 
         shop_id = body.get("data", {}).get("shop", {}).get("id")
 
-        if shop_id:
-            return shop_id
+        if shop_id and shop_id.startswith("gid://shopify/Shop/"):
+            return shop_id.replace("gid://shopify/Shop/", "")
 
         raise ServiceError("Failed to get shop id.")
 

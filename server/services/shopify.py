@@ -55,7 +55,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_variant_product_title(self, variant_ids: List[str]) -> Dict[str, str]:
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
         pass
 
     @abstractmethod
@@ -538,7 +538,7 @@ class ShopifyService(AbstractShopifyService):
 
         return variants_with_prices
 
-    def get_variant_product_title(self, variant_ids: List[str]) -> Dict[str, str]:
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
         if not variant_ids:
             return {}
 
@@ -548,12 +548,16 @@ class ShopifyService(AbstractShopifyService):
 
         query = f"""
         {{
-          nodes(ids: [{ids_query}]) {{
+            nodes(ids: [{ids_query}]) {{
             ... on ProductVariant {{
-              id
-              title
+                id
+                title
+                product {{
+                    id
+                    title
+                }}
             }}
-          }}
+            }}
         }}
         """
 
@@ -572,11 +576,17 @@ class ShopifyService(AbstractShopifyService):
         variants_with_titles = []
 
         for variant in body["data"]["nodes"]:
-            if not variant or "id" not in variant or "title" not in variant:
+            if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
                 continue
 
+            product = variant["product"]
             variants_with_titles.append(
-                {"variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"), "title": variant["title"]}
+                {
+                    "product_id": product["id"].removeprefix("gid://shopify/Product/"),
+                    "product_title": product["title"],
+                    "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
+                    "variant_title": variant["title"],
+                }
             )
 
         return variants_with_titles

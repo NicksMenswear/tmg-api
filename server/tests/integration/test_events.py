@@ -320,7 +320,7 @@ class TestEvents(BaseTestCase):
         self.assertEqual(response_attendee.get("role_id"), str(role1.id))
         self.assertEqual(response_attendee.get("role").get("id"), str(role1.id))
         self.assertEqual(response_attendee.get("tracking")[0].get("tracking_number"), "123123")
-        self.assertTrue(response_attendee.get("tracking")[0].get("tracking_url", "").contains("777"))
+        self.assertTrue("777" in response_attendee.get("tracking")[0].get("tracking_url", ""))
 
         response_look = response.json.get("looks")[0]
         self.assertEqual(response_look.get("id"), str(look1.id))

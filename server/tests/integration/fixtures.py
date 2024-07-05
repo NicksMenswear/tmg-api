@@ -111,6 +111,7 @@ def create_order_request(**order_data):
         event_id=order_data.get("event_id", uuid.uuid4()),
         shopify_order_number=order_data.get("shopify_order_number", str(uuid.uuid4())),
         outbound_tracking=order_data.get("outbound_tracking", None),
+        order_type=order_data.get("order_type", []),
     )
 
 

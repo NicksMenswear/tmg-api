@@ -125,6 +125,7 @@ def init_services(app, is_testing=False):
     app.measurement_service = MeasurementService()
     app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
+    app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()
     app.stage = os.getenv("STAGE", "dev")
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
 

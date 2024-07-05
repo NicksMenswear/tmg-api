@@ -19,6 +19,10 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def get_online_store_shop_id(self):
+        return 0
+
+    @abstractmethod
     def get_customer_by_email(self, email: str) -> dict:
         return {}
 
@@ -81,6 +85,9 @@ class FakeShopifyService(AbstractShopifyService):
 
     def get_online_store_sales_channel_id(self):
         return "gid://shopify/Publication/1234567890"
+
+    def get_online_store_shop_id(self):
+        return 0
 
     def get_customer_by_email(self, email: str) -> dict:
         if email.endswith("@shopify-user-does-not-exists.com"):
@@ -237,6 +244,24 @@ class ShopifyService(AbstractShopifyService):
                 return publication["node"]["id"]
 
         raise ServiceError("Online Store sales channel not found.")
+
+    def get_online_store_shop_id(self):
+        status, body = self.admin_api_request(
+            "POST", f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json", {"query": "{ shop { id } }"}
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get shop id. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get shop id: {body['errors']}")
+
+        shop_id = body.get("data", {}).get("shop", {}).get("id")
+
+        if shop_id:
+            return shop_id
+
+        raise ServiceError("Failed to get shop id.")
 
     def get_account_login_url(self, customer_id):
         return f"https://{self.__shopify_store_host}/account/login"

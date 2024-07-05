@@ -285,6 +285,7 @@ class TestEvents(BaseTestCase):
                 event_id=event.id, email=attendee_user1.email, look_id=look1.id, role_id=role1.id
             )
         )
+        order = self.order_service.create_order(fixtures.create_order_request(attendee_id=attendee1.id))
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email, is_active=False)

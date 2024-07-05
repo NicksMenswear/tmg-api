@@ -248,7 +248,7 @@ class AttendeeService:
             raise ServiceError("Failed to update attendee.", e)
 
     def _get_tracking(self, orders: List[Order]) -> List[TrackingModel]:
-        shop_id = self.shopify_service.get_shop_id()
+        shop_id = FlaskApp.current().online_store_shop_id
         tracking = []
         for order in orders:
             if not order.outbound_tracking:

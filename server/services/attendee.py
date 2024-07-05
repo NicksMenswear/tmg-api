@@ -103,7 +103,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendees_gift_codes.get(attendee.id, set()),
-                    tracking=self._get_tracking_for_attendee(user, orders) if orders else [],
+                    tracking=self._get_tracking(orders) if orders else [],
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,
@@ -247,7 +247,7 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-    def _get_tracking_for_attendee(self, orders: List[Order]) -> List[TrackingModel]:
+    def _get_tracking(self, orders: List[Order]) -> List[TrackingModel]:
         shop_id = self.shopify_service.get_shop_id()
         tracking = []
         for order in orders:

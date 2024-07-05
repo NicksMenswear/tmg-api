@@ -128,9 +128,16 @@ class EventService:
         if not db_event:
             raise NotFoundError("Event not found.")
 
-        try:
-            attendees = self.attendee_service.get_attendees_for_event(db_event.id)
+        attendees = self.attendee_service.get_attendees_for_event(db_event.id)
 
+        has_invited_or_paid_attendees = any(
+            (attendee.is_active and (attendee.invite or attendee.pay)) for attendee in attendees
+        )
+
+        if has_invited_or_paid_attendees:
+            raise BadRequestError("Cannot delete event with invited or paid attendees.")
+
+        try:
             for attendee in attendees:
                 self.attendee_service.delete_attendee(attendee.id)
 
@@ -176,7 +183,7 @@ class EventService:
             db.session.query(Event, User)
             .join(User, User.id == Event.user_id)
             .join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.user_id == user_id, Event.is_active, Attendee.is_active)
+            .filter(Attendee.user_id == user_id, Event.is_active, Attendee.is_active, Attendee.invite)
             .all()
         )
 

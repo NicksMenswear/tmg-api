@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Optional
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User, Role, Look, Size
+from server.database.models import Attendee, Event, User, Role, Look, Size, Order
 from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
@@ -11,6 +11,7 @@ from server.models.attendee_model import (
     UpdateAttendeeModel,
     EnrichedAttendeeModel,
     AttendeeUserModel,
+    TrackingModel,
 )
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
@@ -101,6 +102,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendees_gift_codes.get(attendee.id, set()),
+                    tracking=self._get_tracking_for_attendee(attendee),
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,
@@ -225,7 +227,7 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to deactivate attendee.", e)
 
-    def send_invites(self, attendee_ids: list[uuid.UUID]) -> None:
+    def send_invites(self, attendee_ids: List[uuid.UUID]) -> None:
         items = (
             db.session.query(User, Attendee)
             .join(Attendee, Attendee.user_id == User.id)
@@ -243,3 +245,14 @@ class AttendeeService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
+
+    def _get_tracking_for_attendee(self, attendee: Attendee) -> List[TrackingModel]:
+        shop_id = FlaskApp.current().online_store_shop_id
+        tracking = []
+        orders = Order.query.filter(Order.event_id == attendee.event_id, Order.user_id == attendee.user_id).all()
+        for order in orders:
+            if order.outbound_tracking:
+                tracking_number = order.outbound_tracking
+                tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
+                tracking.append(TrackingModel(tracking_number=tracking_number, tracking_url=tracking_url))
+        return tracking

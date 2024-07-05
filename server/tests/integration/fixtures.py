@@ -9,6 +9,7 @@ from server.models.event_model import CreateEventModel, UpdateEventModel, EventT
 from server.models.look_model import CreateLookModel, UpdateLookModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.models.order_model import CreateOrderModel, AddressModel
 from server.tests import utils
 
 
@@ -101,6 +102,19 @@ def update_attendee_request(**attendee_data):
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),
         is_active=attendee_data.get("is_active", True),
+    )
+
+
+def create_order_request(**order_data):
+    return CreateOrderModel(
+        user_id=order_data.get("user_id", uuid.uuid4()),
+        event_id=order_data.get("event_id", uuid.uuid4()),
+        outbound_tracking=order_data.get("outbound_tracking", None),
+        order_type=order_data.get("order_type", []),
+        shipping_address=order_data.get("shipping_address", AddressModel()),
+        order_number=order_data.get("order_number", "123456"),
+        shopify_order_number=order_data.get("shopify_order_number", str(uuid.uuid4())),
+        shopify_order_id=order_data.get("shopify_order_id", "7890"),
     )
 
 

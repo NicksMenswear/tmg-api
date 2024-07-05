@@ -48,19 +48,19 @@ class LookService:
         variants = set()
 
         for look_model in look_models:
-            variant_ids = list(look_model.product_specs.get("items", {}).keys())
+            items = look_model.product_specs.get("items", [])
 
-            for variant in variant_ids:
-                variants.add(variant)
+            for item in items:
+                variants.add(item.get("variant_id"))
 
         if variants:
             variants_with_prices = self.shopify_service.get_variant_prices(list(variants))
 
             for look_model in look_models:
-                variant_ids = list(look_model.product_specs.get("items", {}).keys())
+                items = look_model.product_specs.get("items", [])
 
-                for variant_id in variant_ids:
-                    look_model.price += variants_with_prices.get(variant_id, 0.0)
+                for item in items:
+                    look_model.price += variants_with_prices.get(item.get("variant_id"), 0.0)
 
         return look_models
 

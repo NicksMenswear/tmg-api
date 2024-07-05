@@ -39,7 +39,7 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
         self.assertEqual(
-            set(list(db_look.product_specs.get("items").keys())),
+            set([item.get("variant_id") for item in db_look.product_specs.get("items", [])]),
             set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
         )
         self.assertEqual(db_look.user_id, user.id)
@@ -72,7 +72,7 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(response.json["image_path"])
         self.assertTrue(response.json["image_path"].startswith(f"looks/{user.id}/{response.json['id']}/"))
         self.assertEqual(
-            set(list(db_look.product_specs.get("items").keys())),
+            set([item.get("variant_id") for item in db_look.product_specs.get("items", [])]),
             set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
         )
         self.assertIsNotNone(db_look.product_specs.get("bundle"))

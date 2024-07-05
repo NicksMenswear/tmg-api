@@ -4,7 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -153,11 +153,13 @@ class FakeShopifyService(AbstractShopifyService):
 
         return result
 
-    def get_variant_product_title(self, variant_ids: List[str]) -> Dict[str, str]:
+    def get_variant_product_title(self, variant_ids: List[str]) -> List[Any]:
         if not variant_ids:
-            return {}
+            return []
 
-        return {variant_id: f"Test Product Variant {variant_id}" for variant_id in variant_ids}
+        return [
+            {"variant_id": f"{variant_id}", "title": f"Test Product Variant {variant_id}"} for variant_id in variant_ids
+        ]
 
     def get_total_price_for_variants(self, variant_ids: List[str]):
         if not variant_ids:
@@ -567,13 +569,15 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
 
-        variants_with_titles = {}
+        variants_with_titles = []
 
         for variant in body["data"]["nodes"]:
             if not variant or "id" not in variant or "title" not in variant:
                 continue
 
-            variants_with_titles[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = variant["title"]
+            variants_with_titles.append(
+                {"variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"), "title": variant["title"]}
+            )
 
         return variants_with_titles
 

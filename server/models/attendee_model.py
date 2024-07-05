@@ -8,7 +8,6 @@ from server.models.discount_model import DiscountGiftCodeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import UserRequestModel
-from server.models.order_model import TrackingModel
 
 
 class CreateAttendeeModel(UserRequestModel):
@@ -59,6 +58,14 @@ class AttendeeUserModel(CoreModel):
                 "email",
             }
         )
+
+
+class TrackingModel(CoreModel):
+    tracking_number: str
+    tracking_url: Optional[str]
+
+    def to_response(self):
+        return self.dict(include={"tracking_number", "tracking_url"})
 
 
 class EnrichedAttendeeModel(AttendeeModel):

@@ -286,7 +286,9 @@ class TestEvents(BaseTestCase):
             )
         )
         order = self.order_service.create_order(
-            fixtures.create_order_request(user_id=attendee_user1.id, event_id=event.id, outbound_tracking="123123")
+            fixtures.create_order_request(
+                user_id=attendee_user1.id, event_id=event.id, outbound_tracking="123123", shopify_order_id="777"
+            )
         )
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee2 = self.attendee_service.create_attendee(

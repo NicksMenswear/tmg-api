@@ -88,11 +88,3 @@ class OrderModel(CoreModel):
         data["discount_codes"] = self.discount_codes
 
         return data
-
-
-class TrackingModel(CoreModel):
-    tracking_number: str
-    tracking_url: Optional[str]
-
-    def to_response(self):
-        return self.dict(include={"tracking_number", "tracking_url"})

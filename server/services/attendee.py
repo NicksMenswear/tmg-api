@@ -11,11 +11,11 @@ from server.models.attendee_model import (
     UpdateAttendeeModel,
     EnrichedAttendeeModel,
     AttendeeUserModel,
+    TrackingModel,
 )
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
-from server.models.order_model import TrackingModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.email import AbstractEmailService
 from server.services.shopify import AbstractShopifyService

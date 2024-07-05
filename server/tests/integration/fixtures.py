@@ -110,11 +110,6 @@ def create_order_request(**order_data):
         user_id=order_data.get("user_id", uuid.uuid4()),
         event_id=order_data.get("event_id", uuid.uuid4()),
         shopify_order_number=order_data.get("shopify_order_number", str(uuid.uuid4())),
-        order_date=order_data.get("order_date", datetime.now().isoformat()),
-        shipped_date=order_data.get("shipped_date", datetime.now().isoformat()),
-        received_date=order_data.get("received_date", datetime.now().isoformat()),
-        ship_by_date=order_data.get("ship_by_date", datetime.now().isoformat()),
-        shipping_method=order_data.get("shipping_method", "TNT"),
         outbound_tracking=order_data.get("outbound_tracking", None),
     )
 

@@ -257,19 +257,19 @@ class TestUsers(BaseTestCase):
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event1.id, email=attendee_user.email, look_id=look1.id, role_id=role11.id
+                event_id=event1.id, email=attendee_user.email, look_id=look1.id, role_id=role11.id, invite=True
             )
         )
         # adding attendee and removing it
         attendee3 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id
+                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id, invite=True
             )
         )
         self.attendee_service.delete_attendee(attendee3.id)
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(
-                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id
+                event_id=event2.id, email=attendee_user.email, look_id=look2.id, role_id=role21.id, invite=True
             )
         )
 
@@ -312,13 +312,13 @@ class TestUsers(BaseTestCase):
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email)
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email, invite=True)
         )
         attendee2 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email)
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email, invite=True)
         )
         attendee3 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, email=attendee_user3.email)
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user3.email, invite=True)
         )
 
         # when
@@ -340,6 +340,39 @@ class TestUsers(BaseTestCase):
         response_attendee = response_event["attendees"][0]
         self.assertEqual(response_attendee["id"], str(attendee2.id))
         self.assertEqual(response_attendee["user"]["email"], str(attendee_user2.email))
+
+    def test_get_events_where_user_is_invited(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email, invite=True)
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email, invite=False)
+        )
+
+        # when
+        response = self.client.open(
+            f"/users/{attendee_user.id}/events",
+            query_string={**self.hmac_query_params, "enriched": True, "status": "attendee"},
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 1)
+
+        response_event = response.json[0]
+        self.assertEqual(response_event["id"], str(event1.id))
+        self.assertEqual(len(response_event["attendees"]), 1)
+        response_attendee = response_event["attendees"][0]
+        self.assertEqual(response_attendee["id"], str(attendee1.id))
+        self.assertEqual(response_attendee["user"]["email"], str(attendee_user.email))
 
     def test_get_invites_for_non_existing_user(self):
         # when
@@ -377,7 +410,7 @@ class TestUsers(BaseTestCase):
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email)
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email, invite=True)
         )
         self.event_service.create_event(fixtures.create_event_request(user_id=attendee_user.id))
 
@@ -404,10 +437,10 @@ class TestUsers(BaseTestCase):
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
         self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email)
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email, invite=True)
         )
         self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email)
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email, invite=True)
         )
 
         # when
@@ -436,7 +469,9 @@ class TestUsers(BaseTestCase):
         event4_invited_inactive = self.event_service.create_event(
             fixtures.create_event_request(user_id=user1.id, is_active=False)
         )
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event1.id, email=user2.email))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=user2.email, invite=True)
+        )
 
         # when
         response = self.client.open(

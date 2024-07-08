@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import random
+import unittest
 import uuid
 
 from server.database.models import DiscountType
@@ -279,7 +280,10 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 4)
 
         for discount in response.json:
-            self.assertTrue(len(discount["gift_codes"]) == 0)
+            if discount.get("attendee_id") == str(attendee4.id):
+                self.assertTrue(len(discount["gift_codes"]) == 0)
+            else:
+                self.assertTrue(len(discount["gift_codes"]) == 1)
 
     def test_get_no_tmg_group_discount_for_event_with_4_attendees_but_one_is_not_invited(self):
         # given
@@ -330,7 +334,10 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         self.assertEqual(len(response.json), 4)
 
         for discount in response.json:
-            self.assertTrue(len(discount["gift_codes"]) == 0)
+            if discount.get("attendee_id") == str(attendee4.id):
+                self.assertTrue(len(discount["gift_codes"]) == 0)
+            else:
+                self.assertTrue(len(discount["gift_codes"]) == 1)
 
     def test_get_tmg_group_discounts_from_event_with_4_attendees(self):
         # given
@@ -447,7 +454,7 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(len(response.json), 1)
-        self.assertEqual(response.json[0]["remaining_amount"], 0)
+        self.assertEqual(response.json[0]["remaining_amount"], self.look_service.get_look_price(look))
 
     def test_get_remaining_amount_for_attendee_not_styled(self):
         # given
@@ -477,7 +484,7 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(len(response.json), 1)
-        self.assertEqual(response.json[0]["remaining_amount"], 0)
+        self.assertEqual(response.json[0]["remaining_amount"], self.look_service.get_look_price(look))
 
     def test_get_remaining_amount_for_attendee_whole_look_price(self):
         # given

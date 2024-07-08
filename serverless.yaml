@@ -41,7 +41,6 @@ functions:
       STAGE: ${sls:stage}
       API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
       DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
-      SUPERBLOCKS_ORDER_WEBHOOK_API_URL: ${ssm:/${sls:stage}/superblocks/order_webhook_api_url}
       # SQLAlchemy Env Variables
       DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
       DB_PORT: 5432

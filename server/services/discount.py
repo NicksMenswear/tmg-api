@@ -2,6 +2,7 @@ import logging
 import random
 import uuid
 from datetime import datetime, timezone
+from operator import or_
 from typing import List, Optional, Set, Dict
 from uuid import UUID
 
@@ -177,6 +178,10 @@ class DiscountService:
             if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
                 continue
 
+            if owner_discount.status.pay:
+                owner_discount.remaining_amount = 0
+                continue
+
             owner_discount.remaining_amount = owner_discount.look.price
 
             if len(owner_discount.gift_codes) == 0:
@@ -218,7 +223,7 @@ class DiscountService:
     def __enrich_owner_discounts_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
-            Discount.type == DiscountType.GIFT,
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.PARTY_OF_FOUR),
             Discount.shopify_discount_code != None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
@@ -238,6 +243,9 @@ class DiscountService:
             owner_discount = owner_discounts[attendee_id]
 
             if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
+                continue
+
+            if owner_discount.status.pay:
                 continue
 
             look_price = owner_discount.look.price

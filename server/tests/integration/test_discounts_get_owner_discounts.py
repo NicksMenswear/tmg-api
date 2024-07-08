@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import random
-import unittest
 import uuid
 
 from server.database.models import DiscountType

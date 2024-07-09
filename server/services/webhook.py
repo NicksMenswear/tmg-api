@@ -236,11 +236,7 @@ class WebhookService:
 
                 create_products.append(create_product)
 
-        try:
-            order_number = self.superblocks_service.generate_order_number()
-        except Exception as e:
-            logger.exception(f"Error sending order to Superblocks: {e}")
-            order_number = None
+        order_number = self.order_service.generate_order_number()
 
         create_order = CreateOrderModel(
             user_id=user.id,

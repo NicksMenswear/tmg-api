@@ -1,3 +1,6 @@
+import random
+import string
+import time
 import uuid
 from typing import List
 
@@ -12,6 +15,16 @@ from server.services.user import UserService
 class OrderService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
+
+    def generate_order_number(self):
+        prefix = "MG"
+
+        timestamp = time.strftime("%y%m%d%H%M%S")
+        random_string_length = 4
+        random_string = "".join(random.choices(string.ascii_uppercase + string.digits, k=random_string_length))
+        new_order_number = f"{prefix}{timestamp}{random_string}"
+
+        return new_order_number
 
     def get_order_by_id(self, order_id: uuid.UUID) -> OrderModel:
         order = Order.query.filter(Order.id == order_id).first()

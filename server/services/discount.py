@@ -2,6 +2,7 @@ import logging
 import random
 import uuid
 from datetime import datetime, timezone
+from operator import or_
 from typing import List, Optional, Set, Dict
 from uuid import UUID
 
@@ -131,7 +132,7 @@ class DiscountService:
 
         owner_discounts = {}
 
-        num_styled_and_invited_attendees = 0
+        num_attendees = 0
 
         for user, attendee, look in users_attendees_looks:
             look_model = None
@@ -143,8 +144,7 @@ class DiscountService:
                     look_price = look_bundle_prices.get(bundle_variant_id, 0.0)
                     look_model = DiscountLookModel(id=look.id, name=look.name, price=float(look_price))
 
-            if attendee.style and attendee.invite and look_model:
-                num_styled_and_invited_attendees += 1
+            num_attendees += 1
 
             owner_discounts[attendee.id] = EventDiscountModel(
                 event_id=event_id,
@@ -163,7 +163,7 @@ class DiscountService:
         self.__enrich_owner_discounts_with_discount_intents_information(owner_discounts, attendee_ids, event_id)
         self.__enrich_owner_discounts_with_paid_discounts_information(owner_discounts, attendee_ids, event_id)
 
-        if num_styled_and_invited_attendees >= 4:
+        if num_attendees >= 4:
             self.__enrich_owner_discounts_with_tmg_group_virtual_discount_code(owner_discounts, attendee_ids)
 
         self.__calculate_remaining_amount(owner_discounts)
@@ -174,7 +174,12 @@ class DiscountService:
         for attendee_id in owner_discounts.keys():
             owner_discount = owner_discounts[attendee_id]
 
-            if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
+            if not owner_discount.look:
+                owner_discount.remaining_amount = 0
+                continue
+
+            if owner_discount.status.pay:
+                owner_discount.remaining_amount = 0
                 continue
 
             owner_discount.remaining_amount = owner_discount.look.price
@@ -218,7 +223,7 @@ class DiscountService:
     def __enrich_owner_discounts_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
-            Discount.type == DiscountType.GIFT,
+            or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.PARTY_OF_FOUR),
             Discount.shopify_discount_code != None,
             Discount.attendee_id.in_(attendee_ids),
         ).all()
@@ -237,7 +242,10 @@ class DiscountService:
         for attendee_id in attendee_ids:
             owner_discount = owner_discounts[attendee_id]
 
-            if not owner_discount.look or not owner_discount.status.style or not owner_discount.status.invite:
+            if not owner_discount.look:
+                continue
+
+            if owner_discount.status.pay:
                 continue
 
             look_price = owner_discount.look.price

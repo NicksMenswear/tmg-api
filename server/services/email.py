@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from server.controllers.util import http
 from server.services import ServiceError
 from server.models.user_model import UserModel
+from server.models.event_model import EventModel, EventTypeModel
 from server.services.shopify import AbstractShopifyService
 
 POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
@@ -14,7 +15,8 @@ FROM_EMAIL = "info@themoderngroom.com"
 
 class PostmarkTemplates:
     ACTIVATION = 36199819
-    INVITE = 36201238
+    INVITE_DEFAULT = 36555557
+    INVITE_WEDDING = 36201238
 
 
 class AbstractEmailService(ABC):
@@ -62,15 +64,15 @@ class EmailService(AbstractEmailService):
         }
         self._postmark_request("POST", "email/withTemplate", body)
 
-    def send_invites_batch(self, users: list[UserModel]):
+    def send_invites_batch(self, users: list[UserModel], event: EventModel):
         batch = []
         with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = (executor.submit(self._invites_batch_prepare_one, user) for user in users)
+            futures = (executor.submit(self._invites_batch_prepare_one, user, event) for user in users)
             for future in as_completed(futures):
                 batch.append(future.result())
         self._postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
 
-    def _invites_batch_prepare_one(self, user: UserModel):
+    def _invites_batch_prepare_one(self, user: UserModel, event: EventModel):
         if not user.account_status:
             shopify_url = self.shopify_service.get_account_activation_url(user.shopify_id)
             button_text = "Activate Account & Get Started"
@@ -78,11 +80,21 @@ class EmailService(AbstractEmailService):
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
             button_text = "Get Started"
 
-        template_model = {"first_name": user.first_name, "shopify_url": shopify_url, "button_text": button_text}
+        template = (
+            PostmarkTemplates.INVITE_WEDDING
+            if event.type == EventTypeModel.WEDDING
+            else PostmarkTemplates.INVITE_DEFAULT
+        )
+        template_model = {
+            "first_name": user.first_name,
+            "event_name": event.name,
+            "shopify_url": shopify_url,
+            "button_text": button_text,
+        }
         body = {
             "From": FROM_EMAIL,
             "To": user.email,
-            "TemplateId": PostmarkTemplates.INVITE,
+            "TemplateId": template,
             "TemplateModel": template_model,
         }
         return body

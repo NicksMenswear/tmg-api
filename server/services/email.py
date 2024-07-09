@@ -80,11 +80,10 @@ class EmailService(AbstractEmailService):
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
             button_text = "Get Started"
 
-        template = (
-            PostmarkTemplates.INVITE_WEDDING
-            if event.type == EventTypeModel.WEDDING
-            else PostmarkTemplates.INVITE_DEFAULT
-        )
+        template = PostmarkTemplates.INVITE_DEFAULT
+        if event.type == EventTypeModel.WEDDING:
+            template = PostmarkTemplates.INVITE_WEDDING
+
         template_model = {
             "first_name": user.first_name,
             "event_name": event.name,

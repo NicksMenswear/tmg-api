@@ -25,7 +25,7 @@ class AbstractEmailService(ABC):
         pass
 
     @abstractmethod
-    def send_invites_batch(self, users: list[UserModel]):
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
         pass
 
 
@@ -33,7 +33,7 @@ class FakeEmailService(AbstractEmailService):
     def send_activation_email(self, user: UserModel):
         pass
 
-    def send_invites_batch(self, users: list[UserModel]):
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
         pass
 
 
@@ -64,7 +64,7 @@ class EmailService(AbstractEmailService):
         }
         self._postmark_request("POST", "email/withTemplate", body)
 
-    def send_invites_batch(self, users: list[UserModel], event: EventModel):
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
         batch = []
         with ThreadPoolExecutor(max_workers=20) as executor:
             futures = (executor.submit(self._invites_batch_prepare_one, user, event) for user in users)

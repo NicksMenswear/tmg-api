@@ -16,6 +16,7 @@ from server.models.attendee_model import (
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
+from server.models.event_model import EventModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.email import AbstractEmailService
 from server.services.shopify import AbstractShopifyService
@@ -228,17 +229,21 @@ class AttendeeService:
             raise ServiceError("Failed to deactivate attendee.", e)
 
     def send_invites(self, attendee_ids: List[uuid.UUID]) -> None:
-        items = (
-            db.session.query(User, Attendee)
+        if not attendee_ids:
+            return
+        rows = (
+            db.session.query(User, Attendee, Event)
             .join(Attendee, Attendee.user_id == User.id)
+            .join(Event, Event.id == Attendee.event_id)
             .filter(Attendee.id.in_(attendee_ids))
             .all()
         )
-        user_models = [UserModel.from_orm(user) for user, attendee in items]
+        user_models = [UserModel.from_orm(user) for user, attendee, event in rows]
+        event_model = EventModel.from_orm(rows[0][2])
 
-        self.email_service.send_invites_batch(user_models)
+        self.email_service.send_invites_batch(event_model, user_models)
 
-        for user, attendee in items:
+        for user, attendee, event in rows:
             attendee.invite = True
 
         try:

@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import json
-import random
 import uuid
 
 from server import encoder
@@ -10,6 +9,10 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestLooks(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.populate_shopify_variants()
+
     def test_create_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -17,9 +20,7 @@ class TestLooks(BaseTestCase):
         # when
         look_data = fixtures.create_look_request(
             user_id=user.id,
-            product_specs={
-                "variants": [random.randint(100, 1000), random.randint(100, 1000), random.randint(100, 1000)]
-            },
+            product_specs=self.create_look_test_product_specs(),
         )
 
         response = self.client.open(
@@ -38,9 +39,11 @@ class TestLooks(BaseTestCase):
         db_look = self.look_service.get_look_by_id(response.json["id"])
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
+        self.assertIsNotNone(db_look.product_specs.get("suit").get("variant_id"))
+        # all variants except suit and add suit parts like pants, vest, jacket
         self.assertEqual(
-            set([item.get("variant_id") for item in db_look.product_specs.get("items", [])]),
-            set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
+            len(db_look.product_specs.get("items", [])),
+            len(look_data.product_specs.get("variants")) - 1 + 3,
         )
         self.assertEqual(db_look.user_id, user.id)
 
@@ -51,7 +54,9 @@ class TestLooks(BaseTestCase):
 
         # when
         look_data = fixtures.create_look_request(
-            user_id=user.id, product_specs={"variants": [123, 234, 345]}, image=look_img
+            user_id=user.id,
+            product_specs=self.create_look_test_product_specs(),
+            image=look_img,
         )
 
         response = self.client.open(
@@ -71,20 +76,26 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(response.json["image_path"])
         self.assertTrue(response.json["image_path"].startswith(f"looks/{user.id}/{response.json['id']}/"))
+        self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
+        self.assertIsNotNone(db_look.product_specs.get("suit").get("variant_id"))
+        # all variants except suit and add suit parts like pants, vest, jacket
         self.assertEqual(
-            set([item.get("variant_id") for item in db_look.product_specs.get("items", [])]),
-            set([str(variant_id) for variant_id in look_data.product_specs.get("variants")]),
+            len(db_look.product_specs.get("items", [])),
+            len(look_data.product_specs.get("variants")) - 1 + 3,
         )
-        self.assertIsNotNone(db_look.product_specs.get("bundle"))
         self.assertEqual(db_look.user_id, user.id)
 
     def test_create_look_duplicate(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
 
         # when
-        look_data = fixtures.create_look_request(user_id=user.id, name=look.name)
+        look_data = fixtures.create_look_request(
+            user_id=user.id, name=look.name, product_specs=self.create_look_test_product_specs()
+        )
 
         response = self.client.open(
             "/looks",
@@ -114,7 +125,9 @@ class TestLooks(BaseTestCase):
     def test_look_by_id(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
 
         # when
         response = self.client.open(
@@ -154,7 +167,7 @@ class TestLooks(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
-            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [123, 234, 345]})
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
@@ -163,8 +176,7 @@ class TestLooks(BaseTestCase):
 
         # when
         update_look_request = fixtures.update_look_request(
-            name=f"{str(uuid.uuid4())}-new_name",
-            product_specs={"variants": [987, 876]},
+            name=f"{str(uuid.uuid4())}-new_name", product_specs=self.create_look_test_product_specs()
         )
 
         response = self.client.open(
@@ -191,8 +203,12 @@ class TestLooks(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
-        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=str(user.id)))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=str(user.id), product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=str(user.id), product_specs=self.create_look_test_product_specs())
+        )
         role = self.role_service.create_role(fixtures.create_role_request(event_id=str(event.id)))
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(email=user.email, event_id=event.id, role_id=role.id, look_id=look.id)
@@ -234,7 +250,9 @@ class TestLooks(BaseTestCase):
         user2 = self.user_service.create_user(fixtures.create_user_request())
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user1.id, product_specs=self.create_look_test_product_specs())
+        )
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=user1.email, look_id=look.id)
         )
@@ -275,7 +293,9 @@ class TestLooks(BaseTestCase):
     def test_delete_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
 
         # when
         response = self.client.open(
@@ -295,7 +315,9 @@ class TestLooks(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, look_id=look.id))
 
         # when
@@ -315,7 +337,9 @@ class TestLooks(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, look_id=look.id, is_active=False)
         )

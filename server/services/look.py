@@ -158,6 +158,7 @@ class LookService:
 
             look_variants = self.shopify_service.get_variants_by_id(create_look.product_specs.get("variants"))
             suit_parts_variants = self.__get_suit_parts(suit_variant_id)
+
             all_variants = look_variants + suit_parts_variants
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 
@@ -175,25 +176,10 @@ class LookService:
             if not bundle_product_variant_id:
                 raise ServiceError("Failed to create bundle product variant.")
 
-            items = []
-
-            for variant_id in enriched_product_specs_variants:
-                variant = id_to_variants[variant_id]
-                items.append(
-                    {
-                        "product_id": variant.product_id,
-                        "product_title": variant.product_title,
-                        "variant_id": variant.variant_id,
-                        "variant_title": variant.variant_title,
-                        "variant_sku": variant.variant_sku,
-                        "variant_price": variant.variant_price,
-                    }
-                )
-
             enriched_product_specs = {
                 "bundle": {"variant_id": bundle_product_variant_id},
-                "suit": {"variant_id": suit_variant_id},
-                "items": items,
+                "suit": id_to_variants[suit_variant_id].model_dump(),
+                "items": [id_to_variants[variant_id].model_dump() for variant_id in enriched_product_specs_variants],
             }
 
             db_look.image_path = s3_file

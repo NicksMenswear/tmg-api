@@ -241,7 +241,7 @@ def test_grooms_gift(page):
     )
     add_suit_to_cart_button.click()
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Look Suit Bundle", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
 
     discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
     span_locator = page.locator(f'span:has-text("{discount_code_prefix}")')

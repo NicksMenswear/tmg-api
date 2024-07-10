@@ -1,16 +1,16 @@
 import base64
 import logging
 import os
+import time
 import uuid
 from datetime import datetime
 from typing import List
-
-import time
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
 from server.flask_app import FlaskApp
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
+from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.aws import AbstractAWSService
 from server.services.shopify import AbstractShopifyService
@@ -70,7 +70,23 @@ class LookService:
 
         return self.shopify_service.get_variant_prices([bundle_variant_id])[bundle_variant_id]
 
-    def create_look(self, create_look: CreateLookModel) -> LookModel:
+    def __persist_new_look_to_db(self, create_look: CreateLookModel) -> Look:
+        look = Look(
+            id=uuid.uuid4(),
+            name=create_look.name,
+            user_id=create_look.user_id,
+            product_specs=create_look.product_specs,
+            image_path=None,
+            is_active=create_look.is_active,
+        )
+
+        db.session.add(look)
+        db.session.commit()
+        db.session.refresh(look)
+
+        return look
+
+    def __verify_that_look_does_not_exist(self, create_look: CreateLookModel) -> None:
         db_look: Look = Look.query.filter(
             Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active
         ).first()
@@ -78,45 +94,92 @@ class LookService:
         if db_look:
             raise DuplicateError("Look already exists with that name.")
 
+    def __store_look_image_to_s3(self, create_look: CreateLookModel, db_look: Look) -> str:
+        timestamp = str(int(time.time() * 1000))
+        local_file = f"{TMP_DIR}/{timestamp}.png"
+        s3_file = f"looks/{create_look.user_id}/{db_look.id}/{timestamp}.png"
+
+        self.__save_image(create_look.image, local_file)
+        self.aws_service.upload_to_s3(local_file, DATA_BUCKET, s3_file)
+
+        return s3_file
+
+    def __get_suit_parts(self, suit_variant_id: str) -> List[ShopifyVariantModel]:
+        suit_variants: List[ShopifyVariantModel] = self.shopify_service.get_variants_by_id([suit_variant_id])
+
+        if not suit_variants or len(suit_variants) == 0 or not suit_variants[0]:
+            raise ServiceError("Suit variant not found.")
+
+        suit_variant = suit_variants[0]
+        suit_sku = suit_variant.variant_sku
+
+        if not suit_sku:
+            raise ServiceError("Suit variant sku not found.")
+
+        if not suit_sku.startswith("00"):
+            raise ServiceError("Invalid suit variant sku.")
+
+        jacket_sku = "1" + suit_sku[1:]
+        pants_sku = "2" + suit_sku[1:]
+        vest_sku = "3" + suit_sku[1:]
+
+        jacket_variant = self.shopify_service.get_variant_by_sku(jacket_sku)
+        pants_variant = self.shopify_service.get_variant_by_sku(pants_sku)
+        vest_variant = self.shopify_service.get_variant_by_sku(vest_sku)
+
+        if not jacket_variant or not pants_variant or not vest_variant:
+            raise ServiceError("Not all suit parts were found.")
+
+        return [jacket_variant, pants_variant, vest_variant]
+
+    def __enrich_product_specs_variants_with_suit_parts(
+        self, suit_variant_id: str, product_specs: dict, suit_parts_variants: List[ShopifyVariantModel]
+    ) -> List[str]:
+        enriched_product_specs_variants = product_specs.get("variants").copy()
+        enriched_product_specs_variants.remove(suit_variant_id)
+
+        enriched_product_specs_variants = [
+            variant.variant_id for variant in suit_parts_variants
+        ] + enriched_product_specs_variants
+
+        return enriched_product_specs_variants
+
+    def create_look(self, create_look: CreateLookModel) -> LookModel:
+        self.__verify_that_look_does_not_exist(create_look)
+
         try:
-            db_look = Look(
-                id=uuid.uuid4(),
-                name=create_look.name,
-                user_id=create_look.user_id,
-                product_specs=create_look.product_specs,
-                image_path=None,
-                is_active=create_look.is_active,
+            db_look = self.__persist_new_look_to_db(create_look)
+            s3_file = self.__store_look_image_to_s3(create_look, db_look) if create_look.image else None
+
+            suit_variant_id = create_look.product_specs.get("suit_variant")
+
+            if not suit_variant_id:
+                raise ServiceError("Suit variant id is missing.")
+
+            look_variants = self.shopify_service.get_variants_by_id(create_look.product_specs.get("variants"))
+            suit_parts_variants = self.__get_suit_parts(suit_variant_id)
+
+            all_variants = look_variants + suit_parts_variants
+            id_to_variants = {variant.variant_id: variant for variant in all_variants}
+
+            enriched_product_specs_variants = self.__enrich_product_specs_variants_with_suit_parts(
+                suit_variant_id,
+                create_look.product_specs,
+                suit_parts_variants,
             )
 
-            db.session.add(db_look)
-            db.session.commit()
-            db.session.refresh(db_look)
-
-            s3_file = None
-
-            if create_look.image:
-                timestamp = str(int(time.time() * 1000))
-                local_file = f"{TMP_DIR}/{timestamp}.png"
-                s3_file = f"looks/{create_look.user_id}/{db_look.id}/{timestamp}.png"
-
-                self.__save_image(create_look.image, local_file)
-                self.aws_service.upload_to_s3(local_file, DATA_BUCKET, s3_file)
-
             bundle_product_variant_id = self.shopify_service.create_bundle(
-                create_look.product_specs.get("variants"),
+                enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
             )
 
             if not bundle_product_variant_id:
                 raise ServiceError("Failed to create bundle product variant.")
 
-            variant_ids_with_titles = self.shopify_service.get_variant_product_title(
-                create_look.product_specs.get("variants")
-            )
-
             enriched_product_specs = {
                 "bundle": {"variant_id": bundle_product_variant_id},
-                "items": variant_ids_with_titles,
+                "suit": id_to_variants[suit_variant_id].model_dump(),
+                "items": [id_to_variants[variant_id].model_dump() for variant_id in enriched_product_specs_variants],
             }
 
             db_look.image_path = s3_file

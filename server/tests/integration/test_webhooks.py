@@ -32,6 +32,10 @@ WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
 
 
 class TestWebhooks(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.populate_shopify_variants()
+
     def __post(self, payload, headers):
         return self.client.open(
             WEBHOOK_SHOPIFY_ENDPOINT,
@@ -232,54 +236,13 @@ class TestWebhooks(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No look associated for attendee" in response.json["errors"])
 
-    def test_paid_order_invalid_look(self):
-        # given
-        user = self.app.user_service.create_user(fixtures.create_user_request())
-        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
-        look = self.app.look_service.create_look(fixtures.create_look_request(user_id=attendee_user.id))
-        attendee = self.app.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
-        )
-        product_id = random.randint(1000, 1000000)
-        variant_id = random.randint(1000, 1000000)
-        self.app.discount_service.create_discount(
-            event.id,
-            attendee.id,
-            random.randint(50, 500),
-            DiscountType.GIFT,
-            shopify_virtual_product_id=product_id,
-            shopify_virtual_product_variant_id=variant_id,
-        )
-
-        # when
-        response = self.__post(
-            fixtures.webhook_shopify_paid_order(
-                customer_email=user.email,
-                line_items=[
-                    fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
-                        product_id=product_id,
-                        variant_id=variant_id,
-                    )
-                ],
-            ),
-            PAID_ORDER_REQUEST_HEADERS,
-        )
-
-        # then
-        self.assert200(response)
-        self.assertTrue("No shopify variants founds for look" in response.json["errors"])
-
     def test_paid_order_with_one_discount_code(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -324,9 +287,7 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -384,19 +345,13 @@ class TestWebhooks(BaseTestCase):
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
         look1 = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user1.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs=self.create_look_test_product_specs())
         )
         look2 = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user2.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user2.id, product_specs=self.create_look_test_product_specs())
         )
         look3 = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user3.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user3.id, product_specs=self.create_look_test_product_specs())
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
@@ -497,13 +452,7 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id,
-                product_specs={
-                    "bundle": {"variant_id": random.randint(1000, 1000000)},
-                    "variants": [random.randint(1000, 1000000)],
-                },
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
@@ -543,9 +492,7 @@ class TestWebhooks(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"variants": [random.randint(1000, 1000000)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)

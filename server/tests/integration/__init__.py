@@ -1,3 +1,5 @@
+import random
+
 from flask_testing import TestCase
 
 from server.app import init_app, init_db
@@ -16,6 +18,8 @@ from server.database.models import (
     Measurement,
 )
 from server.flask_app import FlaskApp
+from server.models.shopify_model import ShopifyVariantModel
+from server.services.shopify import FakeShopifyService
 
 CONTENT_TYPE_JSON = "application/json"
 
@@ -66,3 +70,43 @@ class BaseTestCase(TestCase):
         self.webhook_service = self.app.webhook_service
         self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service
+
+    def populate_shopify_variants(self, num_variants=100):
+        if not isinstance(self.shopify_service, FakeShopifyService):
+            return
+
+        for _ in range(num_variants):
+            variant_id = str(random.randint(1000000, 100000000))
+
+            self.shopify_service.shopify_variants[variant_id] = ShopifyVariantModel(
+                **{
+                    "product_id": str(random.randint(10000, 1000000)),
+                    "product_title": f"Product for variant {variant_id}",
+                    "variant_id": variant_id,
+                    "variant_title": f"Variant {variant_id}",
+                    "variant_sku": f"00{random.randint(10000, 1000000)}",
+                    "variant_price": random.randint(100, 1000),
+                }
+            )
+
+    def get_random_shopify_variant(self):
+        if not isinstance(self.shopify_service, FakeShopifyService):
+            return None
+
+        keys = list(self.shopify_service.shopify_variants.keys())
+        random_key = keys[random.randint(0, len(keys) - 1)]
+
+        return self.shopify_service.shopify_variants[random_key]
+
+    def create_look_test_product_specs(self, num_variants=5):
+        suit_variant = self.get_random_shopify_variant()
+
+        variants = [suit_variant.variant_id]
+
+        for _ in range(num_variants):
+            variants.append(self.get_random_shopify_variant().variant_id)
+
+        return {
+            "suit_variant": suit_variant.variant_id,
+            "variants": variants,
+        }

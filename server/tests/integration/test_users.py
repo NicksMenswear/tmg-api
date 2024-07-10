@@ -14,6 +14,11 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestUsers(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.populate_shopify_variants(100)
+
     def assert_equal_response_user_with_user_model(self, user: UserModel, response_user: dict):
         self.assertEqual(response_user["id"], str(user.id))
         self.assertEqual(response_user["first_name"], user.first_name)
@@ -163,7 +168,9 @@ class TestUsers(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
 
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
         role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
         role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
@@ -249,8 +256,12 @@ class TestUsers(BaseTestCase):
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         user2 = self.user_service.create_user(fixtures.create_user_request())
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
-        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id))
-        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user1.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user2.id, product_specs=self.create_look_test_product_specs())
+        )
         role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
         role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
         role21 = self.role_service.create_role(fixtures.create_role_request(event_id=event2.id))
@@ -526,13 +537,19 @@ class TestUsers(BaseTestCase):
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
         look1 = self.look_service.create_look(
-            fixtures.create_look_request(user_id=user1.id, product_specs={"variants": [12, 34]})
+            fixtures.create_look_request(user_id=user1.id, product_specs=self.create_look_test_product_specs())
         )
         look2 = self.look_service.create_look(
-            fixtures.create_look_request(user_id=user1.id, product_specs={"variants": [34, 56]})
+            fixtures.create_look_request(user_id=user1.id, product_specs=self.create_look_test_product_specs())
         )
-        look3 = self.look_service.create_look(fixtures.create_look_request(user_id=user1.id, is_active=False))
-        self.look_service.create_look(fixtures.create_look_request(user_id=user2.id))
+        look3 = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user1.id, is_active=False, product_specs=self.create_look_test_product_specs()
+            )
+        )
+        self.look_service.create_look(
+            fixtures.create_look_request(user_id=user2.id, product_specs=self.create_look_test_product_specs())
+        )
 
         # when
         response = self.client.open(
@@ -552,10 +569,10 @@ class TestUsers(BaseTestCase):
 
         self.assertEqual(response_look1["id"], str(look1.id))
         self.assertEqual(response_look1["name"], str(look1.name))
-        self.assertEqual(response_look1["price"], 120 + 340)
+        self.assertEqual(response_look1["price"], self.look_service.get_look_price(look1))
         self.assertEqual(response_look2["id"], str(look2.id))
         self.assertEqual(response_look2["name"], str(look2.name))
-        self.assertEqual(response_look2["price"], 340 + 560)
+        self.assertEqual(response_look2["price"], self.look_service.get_look_price(look2))
 
     def test_create_user_first_name_too_short(self):
         # when

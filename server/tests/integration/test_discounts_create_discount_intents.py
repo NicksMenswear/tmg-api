@@ -13,6 +13,10 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestDiscountsCreateDiscountIntent(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.populate_shopify_variants()
+
     def test_create_for_non_active_event(self):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
@@ -91,9 +95,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -187,9 +189,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -239,9 +239,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
@@ -304,9 +302,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -363,9 +359,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
@@ -438,9 +432,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -481,9 +473,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -546,9 +536,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -581,9 +569,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(10000, 100000)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -646,9 +632,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"variants": [random.randint(10, 100)]}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -683,9 +667,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(
-                user_id=attendee_user.id, product_specs={"bundle": {"variant_id": random.randint(20, 25)}}
-            )
+            fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -734,8 +716,12 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=user.id, product_specs={"variants": [random.randint(25, 29)]})
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
+        # hack to reduce price of the look so smaller discount is applied
+        self.shopify_service.shopify_variants.get(
+            look.product_specs["bundle"]["variant_id"]
+        ).variant_price = random.randint(200, 299)
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 user_id=attendee_user1.id, event_id=event.id, look_id=look.id, style=True, invite=True

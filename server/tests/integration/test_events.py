@@ -13,6 +13,11 @@ from server.tests.integration import BaseTestCase, fixtures
 
 
 class TestEvents(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.populate_shopify_variants()
+
     def test_create_event_for_non_existing_user(self):
         # when
         response = self.client.open(
@@ -275,8 +280,14 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look1 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
-        look2 = self.look_service.create_look(fixtures.create_look_request(user_id=user.id, is_active=False))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user.id, is_active=False, product_specs=self.create_look_test_product_specs()
+            )
+        )
         role1 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         role2 = self.role_service.create_role(fixtures.create_role_request(event_id=event.id, is_active=False))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
@@ -414,7 +425,9 @@ class TestEvents(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        look = self.look_service.create_look(fixtures.create_look_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
         role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())

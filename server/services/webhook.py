@@ -43,9 +43,6 @@ class WebhookService:
         self.order_service = order_service
         self.superblocks_service = superblocks_service
 
-    def __error(self, message):
-        return {"errors": message}
-
     def handle_orders_paid(self, payload: Dict[str, Any]):
         items = payload.get("line_items")
 
@@ -56,9 +53,9 @@ class WebhookService:
         if len(items) == 1 and items[0].get("sku") and items[0].get("sku").startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
             sku = items[0].get("sku")
             logger.debug(f"Found paid discount order with sku '{sku}'")
-            return self.process_gift_discount(payload)
+            return self.__process_gift_discount(payload)
 
-        return self.process_paid_order(payload)
+        return self.__process_paid_order(payload)
 
     def handle_customer_update(self, payload):
         shopify_id = payload.get("id")
@@ -109,7 +106,10 @@ class WebhookService:
         else:
             return user.to_response()
 
-    def process_gift_discount(self, payload):
+    def __error(self, message):
+        return {"errors": message}
+
+    def __process_gift_discount(self, payload):
         product = payload.get("line_items")[0]
         customer = payload.get("customer")
 
@@ -174,7 +174,7 @@ class WebhookService:
 
         return {"discount_codes": discounts_codes}
 
-    def process_used_discount_code(self, payload):
+    def __process_used_discount_code(self, payload):
         discount_codes = payload.get("discount_codes", [])
 
         if len(discount_codes) == 0:
@@ -194,7 +194,7 @@ class WebhookService:
 
         return used_discount_codes
 
-    def process_paid_order(self, payload):
+    def __process_paid_order(self, payload):
         shopify_customer_email = payload.get("customer").get("email")
 
         user = self.user_service.get_user_by_email(shopify_customer_email)
@@ -203,7 +203,7 @@ class WebhookService:
             logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
             return self.__error(f"No user found for email '{shopify_customer_email}'")
 
-        tmg_issued_discount_codes = self.process_used_discount_code(payload)
+        tmg_issued_discount_codes = self.__process_used_discount_code(payload)
 
         shopify_order_id = payload.get("id")
         shopify_order_number = payload.get("order_number")
@@ -220,7 +220,7 @@ class WebhookService:
 
         create_products = []
 
-        event_id = self.get_event_id_from_note_attributes(payload)
+        event_id = self.__get_event_id_from_note_attributes(payload)
 
         items = payload.get("line_items")
 
@@ -270,7 +270,7 @@ class WebhookService:
             logger.error(f"Error creating order: {e}")
             return self.__error(f"Error creating order: {str(e)}")
 
-    def get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
+    def __get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
         note_attributes = payload.get("note_attributes", [])
 
         if note_attributes:

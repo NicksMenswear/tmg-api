@@ -76,7 +76,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, variants: List[str], image_src: str = None) -> str:
+    def create_bundle(self, variant_ids: List[str], image_src: str = None) -> str:
         pass
 
     @abstractmethod
@@ -681,7 +681,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def create_bundle(self, variants: List[str], image_src: str = None) -> str:
+    def create_bundle(self, variant_ids: List[str], image_src: str = None) -> str:
         bundle_parent_product_suffix = random.randint(1000000, 100000000)
         bundle_parent_product_name = f"Suit Bundle #{bundle_parent_product_suffix}"
         bundle_parent_product_handle = f"suit-bundle-{bundle_parent_product_suffix}"
@@ -690,9 +690,9 @@ class ShopifyService(AbstractShopifyService):
         parent_product_id = bundle_parent_product.get("id")
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
 
-        shopify_variants = [f"gid://shopify/ProductVariant/{variant}" for variant in variants if variant]
+        shopify_variant_ids = [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids if variant_id]
 
-        self.__add_variants_to_product_bundle(parent_product_variant_id, shopify_variants)
+        self.__add_variants_to_product_bundle(parent_product_variant_id, shopify_variant_ids)
 
         self.__publish_and_add_to_online_sales_channel(
             bundle_parent_product_handle, parent_product_id, FlaskApp.current().online_store_sales_channel_id

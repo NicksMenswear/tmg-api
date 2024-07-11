@@ -80,7 +80,7 @@ class AttendeeService:
 
         attendees = {}
 
-        attendee_ids = {attendee.id for attendee, _, _, _ in db_attendees}
+        attendee_ids = {attendee.id for attendee, _, _, _, _ in db_attendees}
 
         attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
 

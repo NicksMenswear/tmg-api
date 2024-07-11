@@ -61,7 +61,7 @@ class AttendeeService:
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         query = (
-            db.session.query(Attendee, User, Role, Look)
+            db.session.query(Attendee, Event, User, Role, Look)
             .join(Event, Event.id == Attendee.event_id)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)

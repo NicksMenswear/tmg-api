@@ -10,12 +10,12 @@ PAID_ORDER_REQUEST_HEADERS = {
 }
 
 
-class TestWebhooksOrderPaid(BaseTestCase):
+class TestWebhooksOrderPaidGeneral(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.populate_shopify_variants()
 
-    def test_paid_order_without_items(self):
+    def test_order_without_items(self):
         # when
         response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, {}, PAID_ORDER_REQUEST_HEADERS)
 
@@ -23,7 +23,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No items in order" in response.json["errors"])
 
-    def test_paid_order_for_non_gift_virtual_product(self):
+    def test_order_for_non_gift_virtual_product(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
@@ -41,7 +41,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertEqual(response.json["discount_codes"], [])
 
-    def test_paid_order_with_gift_virtual_product_sku(self):
+    def test_order_with_gift_virtual_product_sku(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
@@ -63,7 +63,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No discounts found for product" in response.json["errors"])
 
-    def test_paid_order_no_look(self):
+    def test_order_no_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -102,7 +102,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertTrue("No look associated for attendee" in response.json["errors"])
 
-    def test_paid_order_with_one_discount_code(self):
+    def test_order_with_one_discount_code(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -148,7 +148,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
 
         self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
-    def test_paid_order_with_1_paid_and_1_unpaid_discounts(self):
+    def test_order_with_1_paid_and_1_unpaid_discounts(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -205,7 +205,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
 
         self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
-    def test_paid_order_with_multiple_discount_intents(self):
+    def test_order_with_multiple_discount_intents(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -283,7 +283,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assertTrue(discount_codes[1].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent2.amount)}-OFF"))
         self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent3.amount)}-OFF"))
 
-    def test_paid_order_with_empty_list_of_discount_codes(self):
+    def test_order_with_empty_list_of_discount_codes(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
@@ -300,7 +300,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertEqual(response.json["discount_codes"], [])
 
-    def test_paid_order_with_non_existing_discount_codes(self):
+    def test_order_with_non_existing_discount_codes(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
@@ -317,7 +317,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         self.assert200(response)
         self.assertEqual(len(response.json["discount_codes"]), 0)
 
-    def test_paid_order_with_discount_code(self):
+    def test_order_with_discount_code(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -358,7 +358,7 @@ class TestWebhooksOrderPaid(BaseTestCase):
         discount_in_db = self.discount_service.get_discount_by_shopify_code(discount.shopify_discount_code)
         self.assertTrue(discount_in_db.used)
 
-    def test_paid_order_with_multiple_discount_codes(self):
+    def test_order_with_multiple_discount_codes(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))

@@ -190,10 +190,10 @@ class SkuBuilder:
         if not jacket_size:
             raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
 
-        return f"{shopify_sku}{jacket_size}R"
+        return f"{shopify_sku}{jacket_size}RAF"
 
     def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
-        return f"{shopify_sku}{size_model.pant_size}R"
+        return f"{shopify_sku}{size_model.pant_size}RAF"
 
     def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
         vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
@@ -201,7 +201,7 @@ class SkuBuilder:
         if not vest_size_code:
             raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
 
-        return f"{shopify_sku}{vest_size_code}"
+        return f"{shopify_sku}{vest_size_code}RAF"
 
     def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
         shirt_neck_size = SIZE_CODES.get(size_model.shirt_neck_size)
@@ -228,13 +228,13 @@ class SkuBuilder:
             raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
 
         if 28 <= pant_size_num <= 46:
-            pant_size = "46"
+            pant_size = "460"
         elif 48 <= pant_size_num <= 60:
-            pant_size = "60"
+            pant_size = "600"
         else:
             raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
 
-        return f"{shopify_sku}{pant_size}A"
+        return f"{shopify_sku}{pant_size}R"
 
     def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> str:
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)

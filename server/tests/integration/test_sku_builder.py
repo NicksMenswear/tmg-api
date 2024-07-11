@@ -38,7 +38,7 @@ class TestSkuBuilder(unittest.TestCase):
 
         return result
 
-    def test_jacket_correctness(self):
+    def test_jacket_ship_hero_product_availability(self):
         shopify_jackets = TestSkuBuilder.read_csv_into_set("assets/shopify_jackets.csv")
         shiphero_skus_jacket_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_jacket_known_excludes.csv"
@@ -60,7 +60,7 @@ class TestSkuBuilder(unittest.TestCase):
                     else:
                         raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_vest_correctness(self):
+    def test_vest_ship_hero_product_availability(self):
         shopify_vests = TestSkuBuilder.read_csv_into_set("assets/shopify_vests.csv")
 
         for shopify_vest in shopify_vests:
@@ -77,7 +77,7 @@ class TestSkuBuilder(unittest.TestCase):
                     else:
                         raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_pants_correctness(self):
+    def test_pants_ship_hero_product_availability(self):
         shopify_pants = TestSkuBuilder.read_csv_into_set("assets/shopify_pants.csv")
         shiphero_skus_pants_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_pants_known_excludes.csv"
@@ -99,7 +99,7 @@ class TestSkuBuilder(unittest.TestCase):
                     else:
                         raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_shirts_correctness(self):
+    def test_shirts_ship_hero_product_availability(self):
         shopify_shirts = TestSkuBuilder.read_csv_into_set("assets/shopify_shirts.csv")
         shiphero_skus_shirts_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_shirts_known_excludes.csv"
@@ -121,7 +121,7 @@ class TestSkuBuilder(unittest.TestCase):
                     else:
                         raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_neck_tie_correctness(self):
+    def test_neck_tie_ship_hero_product_availability(self):
         shopify_neck_ties = TestSkuBuilder.read_csv_into_set("assets/shopify_neck_ties.csv")
         shiphero_skus_neck_ties_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_neck_ties_known_excludes.csv"
@@ -141,7 +141,7 @@ class TestSkuBuilder(unittest.TestCase):
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_bow_tie_correctness(self):
+    def test_bow_tie_ship_hero_product_availability(self):
         shopify_bow_ties = TestSkuBuilder.read_csv_into_set("assets/shopify_bow_ties.csv")
 
         for shopify_bow_tie in shopify_bow_ties:
@@ -156,7 +156,7 @@ class TestSkuBuilder(unittest.TestCase):
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_shoes_correctness(self):
+    def test_shoes_ship_hero_product_availability(self):
         shopify_shoes = TestSkuBuilder.read_csv_into_set("assets/shopify_shoes.csv")
         shiphero_skus_shoes_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_shoes_known_excludes.csv"
@@ -177,7 +177,7 @@ class TestSkuBuilder(unittest.TestCase):
                 else:
                     raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_socks_correctness(self):
+    def test_socks_ship_hero_product_availability(self):
         shopify_socks = TestSkuBuilder.read_csv_into_set("assets/shopify_socks.csv")
 
         for shopify_sock in shopify_socks:
@@ -192,7 +192,7 @@ class TestSkuBuilder(unittest.TestCase):
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_swatches_correctness(self):
+    def test_swatches_ship_hero_product_availability(self):
         shopify_swatches = TestSkuBuilder.read_csv_into_set("assets/shopify_swatches.csv")
         shiphero_skus_swatches_excludes = TestSkuBuilder.read_csv_into_set(
             "assets/ship_hero_skus_swatches_known_excludes.csv"
@@ -212,7 +212,7 @@ class TestSkuBuilder(unittest.TestCase):
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
 
-    def test_shopify_premium_pocket_square_correctness(self):
+    def test_shopify_premium_pocket_square_ship_hero_product_availability(self):
         shopify_premium_pocket_squares = TestSkuBuilder.read_csv_into_set("assets/shopify_premium_pocket_squares.csv")
 
         for shopify_premium_pocket_square in shopify_premium_pocket_squares:

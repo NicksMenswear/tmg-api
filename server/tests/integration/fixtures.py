@@ -7,10 +7,10 @@ from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeMode
 from server.models.discount_model import ApplyDiscountModel, CreateDiscountIntent
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
-from server.models.measurement_model import CreateMeasurementsRequestModel
+from server.models.measurement_model import CreateMeasurementsRequestModel, MeasurementModel
 from server.models.order_model import CreateOrderModel, AddressModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
-from server.models.size_model import CreateSizeRequestModel
+from server.models.size_model import CreateSizeRequestModel, SizeModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.tests import utils
 
@@ -288,11 +288,106 @@ def store_size_request(**create_store_size_request) -> CreateSizeRequestModel:
                 [
                     {"brandName": "THE MODERN GROOM", "apparelId": "SLEEVE LENGTH (SHIRT)", "size": "34/35"},
                     {"brandName": "THE MODERN GROOM", "apparelId": "JACKET LENGTH", "size": "R"},
-                    {"brandName": "THE MODERN GROOM", "apparelId": "SHIRT", "size": "16 "},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "SHIRT", "size": "16"},
                     {"brandName": "THE MODERN GROOM", "apparelId": "JACKET", "size": "42"},
                     {"brandName": "THE MODERN GROOM", "apparelId": "PANT", "size": "40"},
                     {"brandName": "THE MODERN GROOM", "apparelId": "VEST", "size": "42"},
                 ],
             ),
         }
+    )
+
+
+def size_model(**data) -> SizeModel:
+    return SizeModel(
+        id=data.get("id", uuid.uuid4()),
+        user_id=data.get("user_id", uuid.uuid4()),
+        data=data.get(
+            "data",
+            [
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "SLEEVE LENGTH (SHIRT)",
+                    "size": data.get("shirt_sleeve_length", "34/35"),
+                },
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "JACKET LENGTH",
+                    "size": data.get(
+                        "jacket_length",
+                        "R",
+                    ),
+                },
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "SHIRT",
+                    "size": data.get(
+                        "shirt_neck_size",
+                        "16",
+                    ),
+                },
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "JACKET",
+                    "size": data.get(
+                        "jacket_size",
+                        "42",
+                    ),
+                },
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "PANT",
+                    "size": data.get(
+                        "pant_size",
+                        "40",
+                    ),
+                },
+                {
+                    "brandName": "THE MODERN GROOM",
+                    "apparelId": "VEST",
+                    "size": data.get(
+                        "vest_size",
+                        "42",
+                    ),
+                },
+            ],
+        ),
+        jacket_size=data.get("jacket_size", "42"),
+        jacket_length=data.get("jacket_length", "R"),
+        vest_size=data.get("vest_size", "42"),
+        vest_length=data.get("vest_length", "R"),
+        pant_size=data.get("pant_size", "40"),
+        pant_length=data.get("pant_length", "R"),
+        shirt_sleeve_length=data.get("shirt_sleeve_length", "34/35"),
+        shirt_neck_size=data.get("shirt_neck_size", "16"),
+    )
+
+
+def measurement_model(**data) -> MeasurementModel:
+    return MeasurementModel(
+        id=data.get("id", uuid.uuid4()),
+        user_id=data.get("user_id", uuid.uuid4()),
+        gender_type=data.get("gender_type", "Adult"),
+        gender=data.get("gender", "Male"),
+        weight=data.get("weight", 90),
+        height=data.get("height", 1803),
+        age=data.get("age", "58"),
+        chest_shape=data.get("chest_shape", "High"),
+        stomach_shape=data.get("stomach_shape", "Average"),
+        hip_shape=data.get("hip_shape", "High"),
+        shoe_size=data.get("shoe_size", "7"),
+        data=data.get(
+            "data",
+            {
+                "genderType": data.get("gender_type", "Adult"),
+                "gender": data.get("gender", "Male"),
+                "weight": data.get("weight", 90),
+                "height": data.get("height", 1803),
+                "age": data.get("age", "58"),
+                "chestShape": data.get("chest_shape", "High"),
+                "stomachShape": data.get("stomach_shape", "Average"),
+                "hipShape": data.get("hip_shape", "High"),
+                "shoeSize": data.get("shoe_size", "7"),
+            },
+        ),
     )

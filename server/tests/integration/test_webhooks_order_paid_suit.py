@@ -43,7 +43,7 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
     @parameterized.expand(
         [
             [["101A1BLK"], ["101A1BLK42RAF"]],  # jacket
-            [["201A1BLK"], ["201A1BLK40RAF"]],  # pants
+            [["201A1BLK"], ["201A1BLK40R"]],  # pants
             [["301A2BLK"], ["301A2BLK00LRAF"]],  # vest
             [["403A2BLK"], ["403A2BLK1605"]],  # shirt
             [["503A400A"], ["503A400AOSR"]],  # bow tie
@@ -53,7 +53,7 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
             [["903A4BLK"], ["903A4BLKOSR"]],  # socks
             [
                 ["101A1BLK", "201A1BLK", "301A2BLK", "903A4BLK"],
-                ["101A1BLK42RAF", "201A1BLK40RAF", "301A2BLK00LRAF", "903A4BLKOSR"],
+                ["101A1BLK42RAF", "201A1BLK40R", "301A2BLK00LRAF", "903A4BLKOSR"],
             ],
         ]
     )

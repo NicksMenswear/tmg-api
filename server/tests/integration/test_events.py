@@ -359,7 +359,7 @@ class TestEvents(BaseTestCase):
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
 
-    def test_get_event_shows_owner_on_top(self):
+    def test_get_event_shows_owner_attendee_on_top(self):
         # given
         owner = self.user_service.create_user(fixtures.create_user_request())
         guest1 = self.user_service.create_user(fixtures.create_user_request())

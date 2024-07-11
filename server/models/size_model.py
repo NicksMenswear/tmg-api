@@ -14,10 +14,12 @@ class SizeModel(CoreModel):
     id: UUID
     user_id: UUID
     data: List[Any]
-    jacket_length: str
     jacket_size: str
+    jacket_length: str
     vest_size: str
+    vest_length: str = "R"
     pant_size: str
+    pant_length: str = "R"
     shirt_sleeve_length: str
     shirt_neck_size: str
 

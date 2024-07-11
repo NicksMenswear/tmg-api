@@ -1,5 +1,6 @@
 import json
 
+from server import encoder
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -14,7 +15,9 @@ class TestMeasurements(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_measurement_request(user_id=str(user.id))),
+            data=json.dumps(
+                fixtures.store_measurement_request(user_id=user.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
         )
 
         # then

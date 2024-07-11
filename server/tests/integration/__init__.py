@@ -1,7 +1,9 @@
+import json
 import random
 
 from flask_testing import TestCase
 
+from server import encoder
 from server.app import init_app, init_db
 from server.database.database_manager import db
 from server.database.models import (
@@ -22,6 +24,7 @@ from server.models.shopify_model import ShopifyVariantModel
 from server.services.shopify import FakeShopifyService
 
 CONTENT_TYPE_JSON = "application/json"
+WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
 
 
 class BaseTestCase(TestCase):
@@ -70,6 +73,7 @@ class BaseTestCase(TestCase):
         self.webhook_service = self.app.webhook_service
         self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service
+        self.measurement_service = self.app.measurement_service
 
     def populate_shopify_variants(self, num_variants=100):
         if not isinstance(self.shopify_service, FakeShopifyService):
@@ -110,3 +114,12 @@ class BaseTestCase(TestCase):
             "suit_variant": suit_variant.variant_id,
             "variants": variants,
         }
+
+    def _post(self, endpoint, payload, headers):
+        return self.client.open(
+            endpoint,
+            method="POST",
+            data=json.dumps(payload, cls=encoder.CustomJSONEncoder),
+            headers={**self.request_headers, **headers},
+            content_type=self.content_type,
+        )

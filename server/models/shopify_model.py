@@ -10,6 +10,3 @@ class ShopifyVariantModel(BaseModel):
     variant_title: str
     variant_price: Optional[float] = None
     variant_sku: str
-
-    def to_dict(self):
-        return self.model_dump()

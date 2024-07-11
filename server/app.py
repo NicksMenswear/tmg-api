@@ -25,6 +25,7 @@ from server.services.shopify import ShopifyService, FakeShopifyService
 from server.services.size import SizeService
 from server.services.measurement import MeasurementService
 from server.services.activecampaign import ActiveCampaignService, FakeActiveCampaignService
+from server.services.sku_builder import SkuBuilder
 from server.services.superblocks import SuperblocksService, FakeSuperblocksService
 from server.services.user import UserService
 from server.services.webhook import WebhookService
@@ -112,6 +113,9 @@ def init_services(app, is_testing=False):
     app.discount_service = DiscountService(
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
+    app.size_service = SizeService(app.user_service)
+    app.measurement_service = MeasurementService()
+    app.sku_builder = SkuBuilder()
     app.webhook_service = WebhookService(
         app.user_service,
         app.attendee_service,
@@ -119,10 +123,10 @@ def init_services(app, is_testing=False):
         app.look_service,
         app.shopify_service,
         app.order_service,
-        app.superblocks_service,
+        app.size_service,
+        app.measurement_service,
+        app.sku_builder,
     )
-    app.size_service = SizeService(app.user_service)
-    app.measurement_service = MeasurementService()
     app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
     app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()

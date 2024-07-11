@@ -387,6 +387,9 @@ class TestEvents(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(response.json.get("attendees")[0].get("user_id"), owner.id)
+        self.assertTrue(response.json.get("attendees")[0].get("is_owner"))
+        self.assertFalse(response.json.get("attendees")[1].get("is_owner"))
+        self.assertFalse(response.json.get("attendees")[2].get("is_owner"))
 
     def test_get_roles_by_event_id(self):
         # given

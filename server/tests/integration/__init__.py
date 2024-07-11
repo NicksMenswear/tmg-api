@@ -24,6 +24,7 @@ from server.models.shopify_model import ShopifyVariantModel
 from server.services.shopify import FakeShopifyService
 
 CONTENT_TYPE_JSON = "application/json"
+WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
 
 
 class BaseTestCase(TestCase):

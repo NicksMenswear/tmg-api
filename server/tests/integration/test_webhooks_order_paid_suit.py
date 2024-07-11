@@ -11,7 +11,7 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
         super().setUp()
         self.populate_shopify_variants()
 
-    def test_order_paid_with_user_measurements_but_unknown_sku(self):
+    def test_order_with_user_measurements_but_unknown_sku(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
@@ -33,8 +33,7 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
 
         # then
         self.assert200(response)
-        order_id = response.json["id"]
-        order = self.order_service.get_order_by_id(order_id)
+        order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
         self.assertEqual(order.products[0].sku, webhook_request["line_items"][0]["sku"])
         self.assertIsNone(order.products[0].shiphero_sku)

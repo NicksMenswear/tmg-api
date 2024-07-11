@@ -62,6 +62,7 @@ class AttendeeService:
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
         query = (
             db.session.query(Attendee, User, Role, Look)
+            .join(Event, Event.id == Attendee.event_id)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
@@ -75,15 +76,15 @@ class AttendeeService:
         db_attendees = query.all()
 
         if not db_attendees:
-            return dict()
+            return {}
 
-        attendees = dict()
+        attendees = {}
 
         attendee_ids = {attendee.id for attendee, _, _, _ in db_attendees}
 
         attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
 
-        for attendee, user, role, look in db_attendees:
+        for attendee, event, user, role, look in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
@@ -91,6 +92,7 @@ class AttendeeService:
                 EnrichedAttendeeModel(
                     id=attendee.id,
                     user_id=attendee.user_id,
+                    is_owner=(attendee.user_id == event.user_id),
                     event_id=attendee.event_id,
                     style=attendee.style,
                     invite=attendee.invite,
@@ -111,6 +113,10 @@ class AttendeeService:
                     ),
                 )
             )
+
+        # Show owner of event on top of the attendee list
+        for event_id, event_attendees in attendees.items():
+            attendees[event_id] = sorted(event_attendees, key=lambda a: a.is_owner, reverse=True)
 
         return attendees
 

@@ -70,6 +70,7 @@ class TrackingModel(CoreModel):
 
 class EnrichedAttendeeModel(AttendeeModel):
     user: AttendeeUserModel
+    is_owner: bool = False
     role: Optional[RoleModel] = None
     look: Optional[LookModel] = None
     gift_codes: Optional[List[DiscountGiftCodeModel]] = []
@@ -78,6 +79,7 @@ class EnrichedAttendeeModel(AttendeeModel):
     def to_response(self):
         attendee = super().to_response()
         user = self.user.to_response()
+        attendee["is_owner"] = self.is_owner
         attendee["user"] = user
         attendee["role"] = self.role.to_response() if self.role else None
         attendee["look"] = self.look.to_response() if self.look else None

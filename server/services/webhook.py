@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 from server.database.models import SourceType, OrderType, StoreLocation
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
-from server.services import NotFoundError
+from server.services import NotFoundError, ServiceError
 from server.services.attendee import AttendeeService
 from server.services.discount import (
     DiscountService,
@@ -15,9 +15,11 @@ from server.services.discount import (
     GIFT_DISCOUNT_CODE_PREFIX,
 )
 from server.services.look import LookService
+from server.services.measurement import MeasurementService
 from server.services.order import OrderService
 from server.services.shopify import ShopifyService
-from server.services.superblocks import AbstractSuperblocksService
+from server.services.size import SizeService
+from server.services.sku_builder import SkuBuilder
 from server.services.user import UserService
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,9 @@ class WebhookService:
         look_service: LookService,
         shopify_service: ShopifyService,
         order_service: OrderService,
-        superblocks_service: AbstractSuperblocksService,
+        size_service: SizeService,
+        measurement_service: MeasurementService,
+        sku_builder: SkuBuilder,
     ):
         self.user_service = user_service
         self.attendee_service = attendee_service
@@ -41,7 +45,9 @@ class WebhookService:
         self.look_service = look_service
         self.shopify_service = shopify_service
         self.order_service = order_service
-        self.superblocks_service = superblocks_service
+        self.size_service = size_service
+        self.measurement_service = measurement_service
+        self.sku_builder = sku_builder
 
     def handle_orders_paid(self, payload: Dict[str, Any]):
         items = payload.get("line_items")
@@ -197,9 +203,9 @@ class WebhookService:
     def __process_paid_order(self, payload):
         shopify_customer_email = payload.get("customer").get("email")
 
-        user = self.user_service.get_user_by_email(shopify_customer_email)
-
-        if not user:
+        try:
+            user = self.user_service.get_user_by_email(shopify_customer_email)
+        except NotFoundError:
             logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
             return self.__error(f"No user found for email '{shopify_customer_email}'")
 
@@ -221,17 +227,37 @@ class WebhookService:
         create_products = []
 
         event_id = self.__get_event_id_from_note_attributes(payload)
+        size_model = self.size_service.get_latest_size_for_user(user.id)
+        measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id)
 
         items = payload.get("line_items")
+        num_shiphero_skus = 0
 
         if items:
             for line_item in items:
+                sku = line_item.get("sku")
+                shiphero_sku = None
+
+                if sku and size_model and measurement_model:
+                    try:
+                        shiphero_sku = self.sku_builder.build(sku, size_model, measurement_model)
+
+                        if shiphero_sku:
+                            num_shiphero_skus += 1
+                    except ServiceError as e:
+                        logger.error(f"Error building ShipHero SKU for '{sku}': {e}")
+
                 create_product = CreateProductModel(
                     name=line_item.get("name"),
-                    sku=line_item.get("sku"),
+                    sku=sku,
+                    shiphero_sku=shiphero_sku,
                     price=line_item.get("price"),
                     quantity=line_item.get("quantity"),
-                    meta={"webhook_line_item_id": line_item.get("id")},
+                    meta={
+                        "webhook_line_item_id": line_item.get("id"),
+                        "used_size_model_id": str(size_model.id) if size_model else None,
+                        "used_measurement_model_id": str(measurement_model.id) if measurement_model else None,
+                    },
                 )
 
                 create_products.append(create_product)

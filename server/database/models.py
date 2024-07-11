@@ -453,6 +453,7 @@ class Product(Base):
         nullable=False,
     )
     sku = Column(String)
+    shiphero_sku = Column(String)
     name = Column(String)
     price = Column(Numeric)
     on_hand = Column(Integer, nullable=False, default=0)

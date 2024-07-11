@@ -7,9 +7,11 @@ from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeMode
 from server.models.discount_model import ApplyDiscountModel, CreateDiscountIntent
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
 from server.models.look_model import CreateLookModel, UpdateLookModel
-from server.models.role_model import CreateRoleModel, UpdateRoleModel
-from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.models.measurement_model import CreateMeasurementsRequestModel
 from server.models.order_model import CreateOrderModel, AddressModel
+from server.models.role_model import CreateRoleModel, UpdateRoleModel
+from server.models.size_model import CreateSizeRequestModel
+from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.tests import utils
 
 
@@ -254,30 +256,43 @@ def product_request(**product_data):
     }
 
 
-def store_measurement_request(**data) -> dict:
-    return {
-        "user_id": data["user_id"],
-        "data": {
-            "sku": "001A2TAN",
-            "genderType": "adult",
-            "gender": "Male",
-            "weight": 50,
-            "height": 2133,
-            "age": 33,
-            "chestShape": "Moderate",
-            "stomachShape": "Average",
-            "hipShape": "Moderate",
-            "shoeSize": "7",
-        },
-    }
+def store_measurement_request(**create_measurement_request) -> CreateMeasurementsRequestModel:
+    return CreateMeasurementsRequestModel(
+        **{
+            "user_id": create_measurement_request.get("user_id"),
+            "data": create_measurement_request.get(
+                "data",
+                {
+                    "sku": "001A2TAN",
+                    "genderType": "adult",
+                    "gender": "Male",
+                    "weight": 90,
+                    "height": 1803,
+                    "age": "58",
+                    "chestShape": "High",
+                    "stomachShape": "Average",
+                    "hipShape": "High",
+                    "shoeSize": "7",
+                },
+            ),
+        }
+    )
 
 
-def store_size_request(**data) -> dict:
-    return {
-        "user_id": data["user_id"],
-        "data": [
-            {"brandName": "THE MODERN GROOM", "apparelId": "SLIM JACKET", "size": "50L"},
-            {"brandName": "THE MODERN GROOM", "apparelId": "PANT", "size": "32 L"},
-            {"brandName": "THE MODERN GROOM", "apparelId": "VEST", "size": "50L"},
-        ],
-    }
+def store_size_request(**create_store_size_request) -> CreateSizeRequestModel:
+    return CreateSizeRequestModel(
+        **{
+            "user_id": create_store_size_request.get("user_id"),
+            "data": create_store_size_request.get(
+                "data",
+                [
+                    {"brandName": "THE MODERN GROOM", "apparelId": "SLEEVE LENGTH (SHIRT)", "size": "34/35"},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "JACKET LENGTH", "size": "R"},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "SHIRT", "size": "16 "},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "JACKET", "size": "42"},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "PANT", "size": "40"},
+                    {"brandName": "THE MODERN GROOM", "apparelId": "VEST", "size": "42"},
+                ],
+            ),
+        }
+    )

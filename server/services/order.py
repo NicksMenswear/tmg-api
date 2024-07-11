@@ -79,6 +79,7 @@ class OrderService:
             for create_product in create_order.products:
                 product = Product(
                     sku=create_product.sku,
+                    shiphero_sku=create_product.shiphero_sku,
                     name=create_product.name,
                     price=create_product.price,
                     on_hand=create_product.on_hand,

@@ -70,6 +70,7 @@ class BaseTestCase(TestCase):
         self.webhook_service = self.app.webhook_service
         self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service
+        self.measurement_service = self.app.measurement_service
 
     def populate_shopify_variants(self, num_variants=100):
         if not isinstance(self.shopify_service, FakeShopifyService):

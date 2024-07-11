@@ -27,6 +27,7 @@ class AddressModel(CoreModel):
 class CreateProductModel(CoreModel):
     name: str
     sku: Optional[str] = None
+    shiphero_sku: Optional[str] = None
     price: float = 0.0
     quantity: int = 0
     on_hand: int = 0

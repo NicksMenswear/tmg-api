@@ -1,7 +1,9 @@
+import json
 import random
 
 from flask_testing import TestCase
 
+from server import encoder
 from server.app import init_app, init_db
 from server.database.database_manager import db
 from server.database.models import (
@@ -111,3 +113,12 @@ class BaseTestCase(TestCase):
             "suit_variant": suit_variant.variant_id,
             "variants": variants,
         }
+
+    def _post(self, endpoint, payload, headers):
+        return self.client.open(
+            endpoint,
+            method="POST",
+            data=json.dumps(payload, cls=encoder.CustomJSONEncoder),
+            headers={**self.request_headers, **headers},
+            content_type=self.content_type,
+        )

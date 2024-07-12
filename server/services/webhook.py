@@ -233,7 +233,7 @@ class WebhookService:
 
         event_id = self.__get_event_id_from_note_attributes(payload)
         size_model = self.size_service.get_latest_size_for_user(user.id)
-        measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id)
+        measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id) if size_model else None
 
         items = payload.get("line_items")
         num_shiphero_skus = 0

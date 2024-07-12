@@ -441,7 +441,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         response_product = response.json["products"][0]
         request_line_item = webhook_request["line_items"][0]
         self.assertEqual(response_product["name"], request_line_item["name"])
-        self.assertEqual(response_product["sku"], request_line_item["sku"])
+        self.assertEqual(response_product["shopify_sku"], request_line_item["sku"])
 
     def test_order_paid_with_event(self):
         # given

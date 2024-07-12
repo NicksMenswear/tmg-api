@@ -25,6 +25,7 @@ class CreateAttendeeModel(UserRequestModel):
 
 class AttendeeModel(CoreModel):
     id: UUID
+    is_owner: bool = False
     user_id: UUID
     event_id: UUID
     role_id: Optional[UUID]
@@ -40,9 +41,7 @@ class AttendeeModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.model_dump(
-            include={"id", "user_id", "event_id", "role_id", "look_id", "style", "invite", "pay", "size", "ship"}
-        )
+        return self.model_dump(exclude={"is_active"})
 
 
 class AttendeeUserModel(CoreModel):
@@ -51,13 +50,7 @@ class AttendeeUserModel(CoreModel):
     email: EmailStr
 
     def to_response(self):
-        return self.dict(
-            include={
-                "first_name",
-                "last_name",
-                "email",
-            }
-        )
+        return self.model_dump()
 
 
 class TrackingModel(CoreModel):
@@ -65,12 +58,11 @@ class TrackingModel(CoreModel):
     tracking_url: Optional[str]
 
     def to_response(self):
-        return self.dict(include={"tracking_number", "tracking_url"})
+        return self.model_dump()
 
 
 class EnrichedAttendeeModel(AttendeeModel):
     user: AttendeeUserModel
-    is_owner: bool = False
     role: Optional[RoleModel] = None
     look: Optional[LookModel] = None
     gift_codes: Optional[List[DiscountGiftCodeModel]] = []
@@ -79,12 +71,13 @@ class EnrichedAttendeeModel(AttendeeModel):
     def to_response(self):
         attendee = super().to_response()
         user = self.user.to_response()
-        attendee["is_owner"] = self.is_owner
+
         attendee["user"] = user
         attendee["role"] = self.role.to_response() if self.role else None
         attendee["look"] = self.look.to_response() if self.look else None
         attendee["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
         attendee["tracking"] = [tracking.to_response() for tracking in self.tracking]
+
         return attendee
 
 

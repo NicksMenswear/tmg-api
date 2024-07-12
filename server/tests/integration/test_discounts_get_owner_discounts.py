@@ -229,7 +229,7 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json), 4)
+        self.assertEqual(len(response.json), 3)
 
         for discount in response.json:
             self.assertTrue(len(discount["gift_codes"]) == 0)

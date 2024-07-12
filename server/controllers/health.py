@@ -2,9 +2,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from server.controllers.util import http, token_verification
-from server.database.models import ProductItem
+from server.database.models import Product
 from server.flask_app import FlaskApp
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ def health():
 
 def _check_db_connection():
     with FlaskApp.app_context():
-        ProductItem.query.first()
+        Product.query.first()
 
 
 def _check_external_connection():

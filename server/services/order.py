@@ -1,24 +1,33 @@
+import logging
 import random
 import string
 import time
 import uuid
+from datetime import datetime, timedelta
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Order, SourceType, Product, OrderItem, OrderType, StoreLocation
+from server.database.models import Order, SourceType, Product, OrderItem, OrderType
+from server.models.measurement_model import MeasurementModel
 from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
+from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
+from server.services.sku_builder import SkuBuilder
 from server.services.user import UserService
 
 ORDER_STATUS_READY = "ORDER_READY"
 ORDER_STATUS_PENDING_MEASUREMENTS = "ORDER_PENDING_MEASUREMENTS"
 ORDER_STATUS_PENDING_MISSING_SKU = "ORDER_PENDING_MISSING_SKU"
+MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS = 60
+
+logger = logging.getLogger(__name__)
 
 
 # noinspection PyMethodMayBeStatic
 class OrderService:
-    def __init__(self, user_service: UserService):
+    def __init__(self, user_service: UserService, sku_builder: SkuBuilder):
         self.user_service = user_service
+        self.sku_builder = sku_builder
 
     def generate_order_number(self):
         prefix = "MG"
@@ -41,6 +50,14 @@ class OrderService:
         order_model.products = [ProductModel.from_orm(product) for product in products]
 
         return order_model
+
+    def get_product_by_id(self, product_id: uuid.UUID) -> ProductModel:
+        product = Product.query.filter(Product.id == product_id).first()
+
+        if not product:
+            raise NotFoundError("Product not found")
+
+        return ProductModel.from_orm(product)
 
     def get_products_for_order(self, order_id: uuid.UUID) -> List[ProductModel]:
         return [
@@ -110,3 +127,86 @@ class OrderService:
         created_order.products = [ProductModel.from_orm(product) for product in products]
 
         return created_order
+
+    def get_orders_by_status_and_not_older_then_days(
+        self, status: str, days: int, user_id: uuid.UUID = None
+    ) -> List[OrderModel]:
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        query = Order.query.filter(Order.status == status).filter(Order.created_at >= cutoff_date)
+
+        if user_id:
+            query = query.filter(Order.user_id == user_id)
+
+        orders = query.all()
+
+        return [OrderModel.from_orm(order) for order in orders]
+
+    def update_sku_for_product(self, product_id: uuid.UUID, sku: str) -> ProductModel:
+        try:
+            product = Product.query.filter(Product.id == product_id).first()
+            product.sku = sku
+
+            db.session.commit()
+            db.session.refresh(product)
+        except Exception as e:
+            raise ServiceError("Failed to update SKU for product.", e)
+
+        return ProductModel.from_orm(product)
+
+    def update_order_status(self, order_id: uuid.UUID, status: str) -> OrderModel:
+        try:
+            order = Order.query.filter(Order.id == order_id).first()
+            order.status = status
+
+            db.session.commit()
+            db.session.refresh(order)
+        except Exception as e:
+            raise ServiceError("Failed to update order status.", e)
+
+        return OrderModel.from_orm(order)
+
+    def update_order_skus_according_to_measurements(
+        self, order: OrderModel, size_model: SizeModel, measurement_model: MeasurementModel
+    ) -> OrderModel:
+        if order.status != ORDER_STATUS_PENDING_MEASUREMENTS:
+            raise ServiceError("Order is not in pending measurements status")
+
+        if not size_model or not measurement_model:
+            raise ServiceError("Size or measurement model is missing")
+
+        if not order.products:
+            return order
+
+        num_products = len(order.products)
+        num_products_with_sku = 0
+
+        for product in order.products:
+            if not product.shopify_sku:
+                logger.error(f"Product {product.id} is missing shopify SKU")
+                continue
+
+            current_shiphero_sku = product.sku
+            new_shiphero_sku = self.sku_builder.build(product.shopify_sku, size_model, measurement_model)
+
+            if current_shiphero_sku:
+                if current_shiphero_sku == new_shiphero_sku:
+                    num_products_with_sku += 1
+                else:
+                    logger.error(
+                        f"SKU mismatch for product {product.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
+                    )
+                    self.update_sku_for_product(product.id, new_shiphero_sku)
+                    num_products_with_sku += 1
+            else:
+                if new_shiphero_sku:
+                    num_products_with_sku += 1
+                    self.update_sku_for_product(product.id, new_shiphero_sku)
+                else:
+                    logger.error(
+                        f"Failed to build SKU for product {product.id} with shopify SKU {product.shopify_sku} in order {order.order_number}"
+                    )
+
+        if num_products_with_sku == num_products:
+            return self.update_order_status(order.id, ORDER_STATUS_READY)
+        else:
+            return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU)

@@ -325,8 +325,7 @@ class Order(Base):
         server_default=text("uuid_generate_v4()"),
         nullable=False,
     )
-
-    legacy_id = Column(String, unique=True)  # for consistency checking with legacy db
+    legacy_id = Column(String, unique=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"))
     order_number = Column(String, unique=True)
@@ -342,10 +341,8 @@ class Order(Base):
     outbound_tracking = Column(String)
     store_location = Column(Enum(StoreLocation))
     order_type = Column(ARRAY(Enum(OrderType)), default=[OrderType.NEW_ORDER])
-
-    # Shipping address snapshot
-    shipping_address_line1 = Column(String)  # Snapshot of address line 1
-    shipping_address_line2 = Column(String)  # Snapshot of address line 2
+    shipping_address_line1 = Column(String)
+    shipping_address_line2 = Column(String)
     shipping_city = Column(String)
     shipping_state = Column(String)
     shipping_zip_code = Column(String)
@@ -386,63 +383,6 @@ class OrderItem(Base):
         }
 
 
-class ProductItem(Base):
-    __tablename__ = "product_items"
-
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("uuid_generate_v4()"),
-        nullable=False,
-    )
-    is_active = Column(Boolean, index=True, default=True, nullable=False)
-    name = Column(String)
-    sku = Column(String)
-    weight_lb = Column(Float)
-    height_in = Column(Float)
-    width_in = Column(Float)
-    length_in = Column(Float)
-    value = Column(Float)
-    price = Column(Float)
-    on_hand = Column(Integer)
-    allocated = Column(Integer)
-    reserve = Column(Integer)
-    non_sellable_total = Column(Integer)
-    reorder_level = Column(Integer)
-    reorder_amount = Column(Integer)
-    replenishment_level = Column(Integer)
-    available = Column(Integer)
-    backorder = Column(Integer)
-    barcode = Column(Numeric)
-    tags = Column(ARRAY(VARCHAR))
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "is_active": self.is_active,
-            "name": self.name,
-            "sku": self.sku,
-            "weight_lb": self.weight_lb,
-            "height_in": self.height_in,
-            "width_in": self.width_in,
-            "length_in": self.length_in,
-            "value": self.value,
-            "price": self.price,
-            "on_hand": self.on_hand,
-            "allocated": self.allocated,
-            "reserve": self.reserve,
-            "non_sellable_total": self.non_sellable_total,
-            "reorder_level": self.reorder_level,
-            "reorder_amount": self.reorder_amount,
-            "replenishment_level": self.replenishment_level,
-            "available": self.available,
-            "backorder": self.backorder,
-            "barcode": self.barcode,
-            "tags": self.tags,
-        }
-
-
 class Product(Base):
     __tablename__ = "products"
     id = Column(
@@ -453,7 +393,7 @@ class Product(Base):
         nullable=False,
     )
     sku = Column(String)
-    shiphero_sku = Column(String)
+    shopify_sku = Column(String)
     name = Column(String)
     price = Column(Numeric)
     on_hand = Column(Integer, nullable=False, default=0)

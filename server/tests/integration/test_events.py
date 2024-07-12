@@ -321,7 +321,7 @@ class TestEvents(BaseTestCase):
 
         self.assertEqual(len(response.json.get("attendees")), 1)
         self.assertEqual(len(response.json.get("looks")), 1)
-        self.assertEqual(len(response.json.get("roles")), 2)
+        self.assertEqual(len(response.json.get("roles")), 3)
 
         response_attendee = response.json.get("attendees")[0]
         self.assertEqual(response_attendee.get("id"), str(attendee1.id))

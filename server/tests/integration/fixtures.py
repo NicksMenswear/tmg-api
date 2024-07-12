@@ -12,6 +12,7 @@ from server.models.order_model import CreateOrderModel, AddressModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.size_model import CreateSizeRequestModel, SizeModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.services.order import ORDER_STATUS_READY
 from server.tests import utils
 
 
@@ -109,15 +110,27 @@ def update_attendee_request(**attendee_data):
 
 def create_order_request(**order_data):
     return CreateOrderModel(
-        user_id=order_data.get("user_id", uuid.uuid4()),
-        event_id=order_data.get("event_id", uuid.uuid4()),
+        user_id=order_data.get("user_id"),
+        event_id=order_data.get("event_id"),
         outbound_tracking=order_data.get("outbound_tracking", None),
         order_type=order_data.get("order_type", []),
         shipping_address=order_data.get("shipping_address", AddressModel()),
-        order_number=order_data.get("order_number", "123456"),
-        shopify_order_number=order_data.get("shopify_order_number", str(uuid.uuid4())),
-        shopify_order_id=order_data.get("shopify_order_id", "7890"),
+        order_number=order_data.get("order_number", str(random.randint(100000, 1000000))),
+        shopify_order_number=order_data.get("shopify_order_number", str(random.randint(100000, 1000000))),
+        status=order_data.get("status", ORDER_STATUS_READY),
+        shopify_order_id=order_data.get("shopify_order_id", str(random.randint(100000, 1000000))),
+        products=order_data.get("products", []),
     )
+
+
+def create_product_request(**product_data):
+    return {
+        "name": product_data.get("name", str(uuid.uuid4())),
+        "sku": product_data.get("sku"),
+        "shopify_sku": product_data.get("shopify_sku"),
+        "price": product_data.get("price", random.randint(10, 100)),
+        "quantity": product_data.get("quantity", random.randint(1, 100)),
+    }
 
 
 def create_gift_discount_intent_request(**create_discount_intent):

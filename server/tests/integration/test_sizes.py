@@ -1,6 +1,8 @@
 import json
 
 from server import encoder
+from server.services.order import ORDER_STATUS_PENDING_MEASUREMENTS, ORDER_STATUS_READY
+from server.services.sku_builder import ProductType
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -71,3 +73,33 @@ class TestSizes(BaseTestCase):
         self.assertTrue(attendee.size)
         attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertTrue(attendee.size)
+
+    def test_create_size_for_and_there_is_pending_order(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        order = self.order_service.create_order(
+            fixtures.create_order_request(
+                user_id=user.id,
+                status=ORDER_STATUS_PENDING_MEASUREMENTS,
+                products=[
+                    fixtures.create_product_request(
+                        shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
+                    )
+                ],
+            )
+        )
+
+        # when
+        response = self.client.open(
+            "/sizes",
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(fixtures.store_size_request(user_id=user.id).model_dump(), cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        order = self.order_service.get_order_by_id(order.id)
+        self.assertEqual(order.status, ORDER_STATUS_READY)

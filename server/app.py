@@ -13,18 +13,18 @@ from sentry_sdk.integrations.logging import ignore_logger
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
+from server.services.activecampaign import ActiveCampaignService, FakeActiveCampaignService
 from server.services.attendee import AttendeeService
 from server.services.aws import AWSService, FakeAWSService
 from server.services.discount import DiscountService
 from server.services.email import EmailService, FakeEmailService
 from server.services.event import EventService
 from server.services.look import LookService
+from server.services.measurement import MeasurementService
 from server.services.order import OrderService
 from server.services.role import RoleService
 from server.services.shopify import ShopifyService, FakeShopifyService
 from server.services.size import SizeService
-from server.services.measurement import MeasurementService
-from server.services.activecampaign import ActiveCampaignService, FakeActiveCampaignService
 from server.services.sku_builder import SkuBuilder
 from server.services.superblocks import SuperblocksService, FakeSuperblocksService
 from server.services.user import UserService
@@ -106,16 +106,16 @@ def init_services(app, is_testing=False):
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
     app.attendee_service = AttendeeService(app.shopify_service, app.user_service, app.email_service)
-    app.order_service = OrderService(user_service=app.user_service)
+    app.sku_builder = SkuBuilder()
+    app.order_service = OrderService(user_service=app.user_service, sku_builder=app.sku_builder)
     app.event_service = EventService(
         attendee_service=app.attendee_service, role_service=app.role_service, look_service=app.look_service
     )
     app.discount_service = DiscountService(
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
-    app.size_service = SizeService(app.user_service)
     app.measurement_service = MeasurementService()
-    app.sku_builder = SkuBuilder()
+    app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService(
         app.user_service,
         app.attendee_service,

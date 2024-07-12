@@ -1,3 +1,5 @@
+from parameterized import parameterized
+
 from server.services.order import (
     ORDER_STATUS_PENDING_MISSING_SKU,
     ORDER_STATUS_READY,
@@ -24,6 +26,34 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         # then
         self.assert200(response)
         self.assertTrue("No items in order" in response.json["errors"])
+
+    def test_order_with_event_id_in_cart(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        self.assertIsNotNone(order)
+        self.assertEqual(order.event_id, event_id)
+
+        attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(attendee.pay)
 
     def test_order_status_for_general_product_without_sku(self):
         # given
@@ -184,22 +214,21 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(order.status, ORDER_STATUS_PENDING_MEASUREMENTS)
         self.assertEqual(len(order.products), 2)
 
-    def test_user_not_found(self):
-        raise NotImplementedError()
-
-    def test_order_paid_with_event(self):
+    def test_order_status_with_measurements_but_unknown_sku(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
-        attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        guest = self.user_service.create_user(fixtures.create_user_request())
+        self.size_service.create_size(fixtures.store_size_request(user_id=guest.id))
+        self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=guest.id))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=guest.id, event_id=event_id, email=guest.email)
         )
 
         # when
         webhook_request = fixtures.webhook_shopify_paid_order(
-            customer_email=attendee_user.email,
-            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            customer_email=guest.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=f"invalid-{utils.generate_unique_string()}")],
             event_id=str(event_id),
         )
 
@@ -207,10 +236,57 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        order_id = response.json["id"]
-        order = self.order_service.get_order_by_id(order_id)
+        order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
-        self.assertEqual(order.event_id, event_id)
+        self.assertEqual(order.products[0].shopify_sku, webhook_request["line_items"][0]["sku"])
+        self.assertIsNone(order.products[0].sku)
+        self.assertEqual(order.status, ORDER_STATUS_PENDING_MISSING_SKU)
 
-        attendee = self.attendee_service.get_attendee_by_id(attendee.id)
-        self.assertTrue(attendee.pay)
+    @parameterized.expand(
+        [
+            [["101A1BLK"], ["101A1BLK42RAF"]],  # jacket
+            [["201A1BLK"], ["201A1BLK40R"]],  # pants
+            [["301A2BLK"], ["301A2BLK00LRAF"]],  # vest
+            [["403A2BLK"], ["403A2BLK1605"]],  # shirt
+            [["503A400A"], ["503A400AOSR"]],  # bow tie
+            [["603A400A"], ["603A400AOSR"]],  # tie
+            [["703A4BLK"], ["703A4BLK460R"]],  # belt
+            [["803A4BLK"], ["803A4BLK070D"]],  # shoes
+            [["903A4BLK"], ["903A4BLKOSR"]],  # socks
+            [
+                ["101A1BLK", "201A1BLK", "301A2BLK", "903A4BLK"],
+                ["101A1BLK42RAF", "201A1BLK40R", "301A2BLK00LRAF", "903A4BLKOSR"],
+            ],
+        ]
+    )
+    def test_order_status_ready_shiphero_skus_correctness(self, shopify_skus, shiphero_skus):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        self.size_service.create_size(fixtures.store_size_request(user_id=attendee_user.id))
+        self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=attendee_user.id))
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=shopify_sku) for shopify_sku in shopify_skus],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+
+        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shiphero_skus = set([product.sku for product in order.products])
+
+        self.assertEqual(response_shopify_skus, set(shopify_skus))
+        self.assertEqual(response_shiphero_skus, set(shiphero_skus))

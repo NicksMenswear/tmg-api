@@ -18,11 +18,10 @@ PREDEFINED_ROLES = {
         "Father of the Groom",
         "Father of the Bride",
         "Officiant",
+        "Other",
     ],
-    EventTypeModel.PROM: ["Attendee", "Attendee Parent or Chaperone"],
-    EventTypeModel.OTHER: [
-        "Attendee",
-    ],
+    EventTypeModel.PROM: ["Attendee", "Attendee Parent or Chaperone", "Other"],
+    EventTypeModel.OTHER: ["Attendee", "Other"],
 }
 
 

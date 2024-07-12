@@ -44,7 +44,7 @@ class UserModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "first_name", "last_name", "email"})
+        return self.model_dump(include={"id", "first_name", "last_name", "email"})
 
 
 class UpdateUserModel(UserRequestModel):

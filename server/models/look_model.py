@@ -38,10 +38,10 @@ class LookModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "name", "product_specs", "image_path"})
+        return self.model_dump(include={"id", "name", "product_specs", "image_path"})
 
     def to_response_with_price(self):
-        return self.dict(include={"id", "name", "product_specs", "image_path", "price"})
+        return self.model_dump(include={"id", "name", "product_specs", "image_path", "price"})
 
 
 class UpdateLookModel(LookRequest):

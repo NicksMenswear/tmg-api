@@ -85,7 +85,7 @@ class OrderModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        data = self.dict(include={"id"})
+        data = self.model_dump(include={"id"})
         data["products"] = [product.to_response() for product in self.products]
         data["discount_codes"] = self.discount_codes
 

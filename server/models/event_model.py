@@ -72,7 +72,7 @@ class EventModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        response = self.dict(include={"id", "name", "event_at", "status", "type"})
+        response = self.model_dump(include={"id", "name", "event_at", "status", "type"})
 
         if self.owner:
             response["owner"] = self.owner.to_response()
@@ -80,7 +80,7 @@ class EventModel(CoreModel):
         return response
 
     def to_enriched_response(self):
-        response = self.dict(include={"id", "name", "event_at", "status", "type"})
+        response = self.model_dump(include={"id", "name", "event_at", "status", "type"})
 
         if self.owner:
             response["owner"] = self.owner.to_response()

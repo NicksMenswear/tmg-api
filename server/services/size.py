@@ -9,7 +9,7 @@ from server.services import ServiceError
 from server.services.measurement import MeasurementService
 from server.services.order import (
     ORDER_STATUS_PENDING_MEASUREMENTS,
-    MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS,
+    MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER,
     OrderService,
 )
 from server.services.user import UserService
@@ -50,10 +50,11 @@ class SizeService:
         measurement_model = self.measurement_service.get_latest_measurement_for_user(size.user_id)
 
         orders = self.order_service.get_orders_by_status_and_not_older_then_days(
-            ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS
+            ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER
         )
 
         for order in orders:
+            order.products = self.order_service.get_products_for_order(order.id)  # TODO: Do something smarter later
             self.order_service.update_order_skus_according_to_measurements(order, size_model, measurement_model)
 
         return size_model

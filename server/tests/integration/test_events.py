@@ -409,7 +409,7 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 3)
+        self.assertEqual(len(response.json), 4)
         response_role1 = response.json[1]
         response_role2 = response.json[2]
         self.assertEqual(response_role1.get("id"), str(role1.id))
@@ -435,7 +435,7 @@ class TestEvents(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 3)
+        self.assertEqual(len(response.json), 4)
         response_role = response.json[1]
         self.assertEqual(response_role.get("id"), str(role1.id))
         self.assertEqual(response_role.get("name"), role1.name)

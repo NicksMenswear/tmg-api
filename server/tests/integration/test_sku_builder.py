@@ -123,9 +123,6 @@ class TestSkuBuilder(unittest.TestCase):
 
     def test_neck_tie_ship_hero_product_availability(self):
         shopify_neck_ties = TestSkuBuilder.read_csv_into_set("assets/shopify_neck_ties.csv")
-        shiphero_skus_neck_ties_excludes = TestSkuBuilder.read_csv_into_set(
-            "assets/ship_hero_skus_neck_ties_known_excludes.csv"
-        )
 
         for shopify_neck_tie in shopify_neck_ties:
             shiphero_sku = self.sku_builder.build(
@@ -135,8 +132,6 @@ class TestSkuBuilder(unittest.TestCase):
             )
 
             if shiphero_sku in self.shiphero_skus:
-                continue
-            elif shiphero_sku in shiphero_skus_neck_ties_excludes:
                 continue
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
@@ -194,9 +189,6 @@ class TestSkuBuilder(unittest.TestCase):
 
     def test_swatches_ship_hero_product_availability(self):
         shopify_swatches = TestSkuBuilder.read_csv_into_set("assets/shopify_swatches.csv")
-        shiphero_skus_swatches_excludes = TestSkuBuilder.read_csv_into_set(
-            "assets/ship_hero_skus_swatches_known_excludes.csv"
-        )
 
         for shopify_swatch in shopify_swatches:
             shiphero_sku = self.sku_builder.build(
@@ -206,8 +198,6 @@ class TestSkuBuilder(unittest.TestCase):
             )
 
             if shiphero_sku in self.shiphero_skus:
-                continue
-            elif shiphero_sku in shiphero_skus_swatches_excludes:
                 continue
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")

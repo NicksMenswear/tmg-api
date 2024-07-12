@@ -1,5 +1,7 @@
+import csv
 import json
 import random
+from typing import Set
 
 from flask_testing import TestCase
 
@@ -22,6 +24,7 @@ from server.database.models import (
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
 from server.services.shopify import FakeShopifyService
+from server.services.sku_builder import ProductType
 
 CONTENT_TYPE_JSON = "application/json"
 WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
@@ -75,6 +78,8 @@ class BaseTestCase(TestCase):
         self.size_service = self.app.size_service
         self.measurement_service = self.app.measurement_service
 
+        self.shopify_skus_cache = {}
+
     def populate_shopify_variants(self, num_variants=100):
         if not isinstance(self.shopify_service, FakeShopifyService):
             return
@@ -123,3 +128,54 @@ class BaseTestCase(TestCase):
             headers={**self.request_headers, **headers},
             content_type=self.content_type,
         )
+
+    def __read_csv_into_set(self, file: str) -> Set[str]:
+        result = set()
+
+        with open(file, newline="") as csvfile:
+            csvreader = csv.reader(csvfile)
+
+            for row in csvreader:
+                if row[0]:
+                    result.add(row[0])
+
+        return result
+
+    def get_shopify_skus_set_from_cache(self, product_type: ProductType) -> Set[str]:
+        if product_type == ProductType.JACKET:
+            file_id = "jackets"
+        elif product_type == ProductType.VEST:
+            file_id = "vests"
+        elif product_type == ProductType.PANTS:
+            file_id = "pants"
+        elif product_type == ProductType.SHIRT:
+            file_id = "shirts"
+        elif product_type == ProductType.BOW_TIE:
+            file_id = "bow_ties"
+        elif product_type == ProductType.NECK_TIE:
+            file_id = "neck_ties"
+        elif product_type == ProductType.BELT:
+            file_id = "belts"
+        elif product_type == ProductType.SHOES:
+            file_id = "shoes"
+        elif product_type == ProductType.SOCKS:
+            file_id = "socks"
+        elif product_type == ProductType.SWATCHES:
+            file_id = "swatches"
+        elif product_type == ProductType.PREMIUM_POCKET_SQUARE:
+            file_id = "premium_pocket_squares"
+        else:
+            return set()
+
+        if product_type not in self.shopify_skus_cache:
+            self.shopify_skus_cache[product_type] = self.__read_csv_into_set(f"assets/shopify_{file_id}.csv")
+
+        return self.shopify_skus_cache[product_type]
+
+    def get_random_shopify_sku_by_product_type(self, product_type: ProductType) -> str:
+        skus = self.get_shopify_skus_set_from_cache(product_type)
+
+        if not skus:
+            raise ValueError(f"No SKUs found for product type: {product_type}")
+
+        return random.choice(list(skus))

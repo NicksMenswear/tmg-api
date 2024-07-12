@@ -73,19 +73,27 @@ class ProductModel(CoreModel):
 
 class OrderModel(CoreModel):
     id: UUID
+    user_id: Optional[UUID] = None
+    event_id: Optional[UUID] = None
     order_number: str
     shopify_order_id: str
     shopify_order_number: str
     order_date: datetime
+    status: Optional[str] = None
+    shipping_address_line1: Optional[str] = None
+    shipping_address_line2: Optional[str] = None
+    shipping_city: Optional[str] = None
+    shipping_state: Optional[str] = None
+    shipping_zip_code: Optional[str] = None
+    shipping_country: Optional[str] = None
     products: List[ProductModel] = []
     discount_codes: List[str] = []
-    event_id: Optional[UUID] = None
 
     class Config:
         from_attributes = True
 
     def to_response(self):
-        data = self.model_dump(include={"id"})
+        data = self.model_dump()
         data["products"] = [product.to_response() for product in self.products]
         data["discount_codes"] = self.discount_codes
 

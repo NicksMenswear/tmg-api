@@ -32,7 +32,7 @@ class RoleModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.dict(include={"id", "name", "event_id"})
+        return self.model_dump(include={"id", "name", "event_id"})
 
 
 class UpdateRoleModel(RoleRequestModel):

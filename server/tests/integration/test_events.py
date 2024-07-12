@@ -359,6 +359,38 @@ class TestEvents(BaseTestCase):
         self.assert200(response)
         self.assertIsNotNone(response.json.get("id"))
 
+    def test_get_event_enriched_shows_owner_attendee_on_top(self):
+        # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        guest1 = self.user_service.create_user(fixtures.create_user_request())
+        guest2 = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=guest1.email)
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=owner.email)
+        )
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=guest2.email)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string={**self.hmac_query_params.copy(), "enriched": True},
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(response.json.get("attendees")[0].get("user_id"), str(owner.id))
+        self.assertTrue(response.json.get("attendees")[0].get("is_owner"))
+        self.assertFalse(response.json.get("attendees")[1].get("is_owner"))
+        self.assertFalse(response.json.get("attendees")[2].get("is_owner"))
+
     def test_get_roles_by_event_id(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

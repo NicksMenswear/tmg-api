@@ -20,7 +20,7 @@ class DiscountGiftCodeModel(CoreModel):
     used: bool
 
     def to_response(self):
-        return self.dict()
+        return self.model_dump()
 
 
 class DiscountModel(CoreModel):
@@ -41,16 +41,8 @@ class DiscountModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        response = self.dict(
-            include={
-                "id",
-                "event_id",
-                "attendee_id",
-                "amount",
-                "used",
-                "shopify_discount_code",
-                "shopify_virtual_product_variant_id",
-            }
+        response = self.model_dump(
+            exclude={"shopify_virtual_product_id", "shopify_virtual_product_variant_id", "created_at", "updated_at"}
         )
 
         return {**response, "type": self.type.value}
@@ -93,7 +85,7 @@ class EventDiscountModel(CoreModel):
     gift_codes: List[DiscountGiftCodeModel] = []
 
     def to_response(self):
-        response = self.dict(
+        response = self.model_dump(
             include={"event_id", "amount", "remaining_amount", "attendee_id", "user_id", "first_name", "last_name"}
         )
         response["type"] = self.type.value

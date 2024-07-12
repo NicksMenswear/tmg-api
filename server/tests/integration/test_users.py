@@ -229,8 +229,8 @@ class TestUsers(BaseTestCase):
         response_event1 = response.json[0]
         self.assertEqual(response_event1["id"], str(event1.id))
         self.assertEqual(response_event1["status"], str(EventUserStatus.OWNER))
-        self.assertEqual(len(response_event1["roles"]), 2)
-        self.assertEqual(response_event1["roles"][1]["id"], str(role11.id))
+        self.assertEqual(len(response_event1["roles"]), 3)
+        self.assertEqual(response_event1["roles"][2]["id"], str(role11.id))
         self.assertEqual(len(response_event1["looks"]), 1)
         self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
         self.assertEqual(len(response_event1["attendees"]), 1)
@@ -246,7 +246,7 @@ class TestUsers(BaseTestCase):
         response_event2 = response.json[1]
         self.assertEqual(response_event2["id"], str(event2.id))
         self.assertEqual(response_event2["status"], str(EventUserStatus.OWNER))
-        self.assertEqual(len(response_event2["roles"]), 1)
+        self.assertEqual(len(response_event2["roles"]), 2)
         self.assertEqual(response_event2["looks"][0]["id"], str(look.id))
         self.assertEqual(len(response_event2["attendees"]), 0)
 

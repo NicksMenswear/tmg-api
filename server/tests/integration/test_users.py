@@ -246,7 +246,7 @@ class TestUsers(BaseTestCase):
         response_event2 = response.json[1]
         self.assertEqual(response_event2["id"], str(event2.id))
         self.assertEqual(response_event2["status"], str(EventUserStatus.OWNER))
-        self.assertEqual(len(response_event2["roles"]), 3)
+        self.assertEqual(len(response_event2["roles"]), 2)
         self.assertEqual(response_event2["looks"][0]["id"], str(look.id))
         self.assertEqual(len(response_event2["attendees"]), 0)
 

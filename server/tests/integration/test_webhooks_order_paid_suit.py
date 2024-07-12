@@ -37,8 +37,8 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
         self.assert200(response)
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
-        self.assertEqual(order.products[0].sku, webhook_request["line_items"][0]["sku"])
-        self.assertIsNone(order.products[0].shiphero_sku)
+        self.assertEqual(order.products[0].shopify_sku, webhook_request["line_items"][0]["sku"])
+        self.assertIsNone(order.products[0].sku)
 
     @parameterized.expand(
         [
@@ -82,8 +82,8 @@ class TestWebhooksOrderPaidSuit(BaseTestCase):
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
 
-        response_shopify_skus = set([product.sku for product in order.products])
-        response_shiphero_skus = set([product.shiphero_sku for product in order.products])
+        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shiphero_skus = set([product.sku for product in order.products])
 
         self.assertEqual(response_shopify_skus, set(shopify_skus))
         self.assertEqual(response_shiphero_skus, set(shiphero_skus))

@@ -235,22 +235,22 @@ class WebhookService:
 
         if items:
             for line_item in items:
-                sku = line_item.get("sku")
+                shopify_sku = line_item.get("sku")
                 shiphero_sku = None
 
-                if sku and size_model and measurement_model:
+                if shopify_sku and size_model and measurement_model:
                     try:
-                        shiphero_sku = self.sku_builder.build(sku, size_model, measurement_model)
+                        shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
 
                         if shiphero_sku:
                             num_shiphero_skus += 1
                     except ServiceError as e:
-                        logger.error(f"Error building ShipHero SKU for '{sku}': {e}")
+                        logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
                 create_product = CreateProductModel(
                     name=line_item.get("name"),
-                    sku=sku,
-                    shiphero_sku=shiphero_sku,
+                    sku=shiphero_sku,
+                    shopify_sku=shopify_sku,
                     price=line_item.get("price"),
                     quantity=line_item.get("quantity"),
                     meta={

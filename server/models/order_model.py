@@ -27,7 +27,7 @@ class AddressModel(CoreModel):
 class CreateProductModel(CoreModel):
     name: str
     sku: Optional[str] = None
-    shiphero_sku: Optional[str] = None
+    shopify_sku: Optional[str] = None
     price: float = 0.0
     quantity: int = 0
     on_hand: int = 0
@@ -60,7 +60,7 @@ class ProductModel(CoreModel):
     id: UUID
     name: str
     sku: Optional[str] = None
-    shiphero_sku: Optional[str] = None
+    shopify_sku: Optional[str] = None
     price: float = 0.0
     on_hand: int = 0
 
@@ -68,7 +68,7 @@ class ProductModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.model_dump(include={"id", "name", "sku", "shiphero_sku"})
+        return self.model_dump(include={"id", "name", "sku", "shopify_sku"})
 
 
 class OrderModel(CoreModel):

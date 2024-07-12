@@ -172,6 +172,22 @@ class TestSkuBuilder(unittest.TestCase):
                 else:
                     raise Exception(f"SKU not found: {shiphero_sku}")
 
+    def test_belt_ship_hero_product_availability(self):
+        shopify_belts = TestSkuBuilder.read_csv_into_set("assets/shopify_belts.csv")
+
+        for shopify_belt in shopify_belts:
+            for pant_size in PANT_SIZES:
+                shiphero_sku = self.sku_builder.build(
+                    shopify_belt,
+                    fixtures.size_model(pant_size=pant_size),
+                    fixtures.measurement_model(),
+                )
+
+                if shiphero_sku in self.shiphero_skus:
+                    continue
+                else:
+                    raise Exception(f"SKU not found: {shiphero_sku}")
+
     def test_socks_ship_hero_product_availability(self):
         shopify_socks = TestSkuBuilder.read_csv_into_set("assets/shopify_socks.csv")
 

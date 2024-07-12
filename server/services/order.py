@@ -10,6 +10,10 @@ from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.user import UserService
 
+ORDER_STATUS_READY = "ORDER_READY"
+ORDER_STATUS_PENDING_MEASUREMENTS = "ORDER_PENDING_MEASUREMENTS"
+ORDER_STATUS_PENDING_MISSING_SKU = "ORDER_PENDING_MISSING_SKU"
+
 
 # noinspection PyMethodMayBeStatic
 class OrderService:
@@ -61,7 +65,6 @@ class OrderService:
                 ship_by_date=create_order.ship_by_date,
                 shipping_method=create_order.shipping_method,
                 outbound_tracking=create_order.outbound_tracking,
-                store_location=StoreLocation(create_order.store_location) if create_order.store_location else None,
                 order_type=[OrderType(order_type) for order_type in create_order.order_type],
                 shipping_address_line1=create_order.shipping_address.line1,
                 shipping_address_line2=create_order.shipping_address.line2,

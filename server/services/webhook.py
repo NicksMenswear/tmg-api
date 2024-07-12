@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from server.database.models import SourceType, OrderType, StoreLocation
+from server.database.models import SourceType, OrderType
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError, ServiceError
@@ -16,7 +16,12 @@ from server.services.discount import (
 )
 from server.services.look import LookService
 from server.services.measurement import MeasurementService
-from server.services.order import OrderService
+from server.services.order import (
+    OrderService,
+    ORDER_STATUS_PENDING_MEASUREMENTS,
+    ORDER_STATUS_PENDING_MISSING_SKU,
+    ORDER_STATUS_READY,
+)
 from server.services.shopify import ShopifyService
 from server.services.size import SizeService
 from server.services.sku_builder import SkuBuilder
@@ -232,18 +237,28 @@ class WebhookService:
 
         items = payload.get("line_items")
         num_shiphero_skus = 0
+        has_products_that_requires_measurements = False
 
         if items:
             for line_item in items:
                 shopify_sku = line_item.get("sku")
                 shiphero_sku = None
 
-                if shopify_sku and size_model and measurement_model:
+                if not shopify_sku:
+                    logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
+                else:
                     try:
                         shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
 
                         if shiphero_sku:
                             num_shiphero_skus += 1
+                        else:
+                            logger.error(
+                                f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
+                            )
+
+                        if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
+                            has_products_that_requires_measurements = True
                     except ServiceError as e:
                         logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
@@ -264,6 +279,14 @@ class WebhookService:
 
         order_number = self.order_service.generate_order_number()
 
+        if num_shiphero_skus < len(items):
+            if has_products_that_requires_measurements and not (size_model or measurement_model):
+                order_status = ORDER_STATUS_PENDING_MEASUREMENTS
+            else:
+                order_status = ORDER_STATUS_PENDING_MISSING_SKU
+        else:
+            order_status = ORDER_STATUS_READY
+
         create_order = CreateOrderModel(
             user_id=user.id,
             order_number=order_number,
@@ -273,10 +296,10 @@ class WebhookService:
             order_date=created_at,
             order_type=[OrderType.NEW_ORDER.value],
             shipping_address=shipping_address,
-            store_location=StoreLocation.ONLINE.value,
             products=create_products,
             event_id=event_id,
             meta=payload,
+            status=order_status,
         )
 
         try:

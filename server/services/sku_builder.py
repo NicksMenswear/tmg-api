@@ -129,7 +129,18 @@ class ProductType(Enum):
     THREE_PIECE_SUIT_OR_TUX = "0"
     SWATCHES = "S"
     PREMIUM_POCKET_SQUARE = "P"
+    UNKNOWN = "UNKNOWN"
 
+
+PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS = {
+    ProductType.SUIT,
+    ProductType.JACKET,
+    ProductType.PANTS,
+    ProductType.VEST,
+    ProductType.SHIRT,
+    ProductType.BELT,
+    ProductType.SHOES,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -137,10 +148,7 @@ logger = logging.getLogger(__name__)
 # noinspection PyMethodMayBeStatic
 class SkuBuilder:
     def build(self, shopify_sku: str, size_model: SizeModel, measurement_model: MeasurementModel) -> Optional[str]:
-        if not shopify_sku or not size_model or not measurement_model:
-            raise ServiceError("Missing required data")
-
-        product_type = self.__get_product_type_by_sku(shopify_sku)
+        product_type = self.get_product_type_by_sku(shopify_sku)
 
         if product_type == ProductType.JACKET:
             return self.__build_jacket_sku(shopify_sku, size_model)
@@ -167,18 +175,26 @@ class SkuBuilder:
         elif product_type == ProductType.PREMIUM_POCKET_SQUARE:
             return self.__build_premium_pocket_square_sku(shopify_sku)
         else:
-            raise ServiceError("Unsupported product type")
+            return None
 
-    def __get_product_type_by_sku(self, sku: str) -> ProductType:
-        prefix = sku[0]
+    def does_product_requires_measurements(self, sku) -> bool:
+        product_type = self.get_product_type_by_sku(sku)
+        return product_type in PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
+
+    def get_product_type_by_sku(self, sku: str) -> ProductType:
+        prefix = sku[0] if sku else ""
 
         for product_type in ProductType:
             if product_type.value == prefix:
                 return product_type
 
-        raise ServiceError(f"Unsupported SKU type: {sku}")
+        return ProductType.UNKNOWN
 
-    def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
+    def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for jacket SKU: {shopify_sku}")
+            return None
+
         if size_model.jacket_size not in JACKET_SIZES:
             raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
 
@@ -187,18 +203,23 @@ class SkuBuilder:
 
         return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
 
-    def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
+    def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for vest SKU: {shopify_sku}")
+            return None
+
         if size_model.vest_size not in VEST_SIZES:
             raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
 
         vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
 
-        if not vest_size_code:
-            raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
-
         return f"{shopify_sku}{vest_size_code}{size_model.vest_length}AF"
 
-    def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
+    def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
+            return None
+
         if size_model.pant_size not in PANT_SIZES:
             raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
 
@@ -209,7 +230,11 @@ class SkuBuilder:
 
         return f"{shopify_sku}{size_model.pant_size}{size_model.pant_length}{autofill_suffix}"
 
-    def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
+    def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
+            return None
+
         if size_model.shirt_neck_size not in SHIRT_NECK_SIZES:
             raise ServiceError(f"Unsupported shirt neck size: {size_model.shirt_neck_size}")
 
@@ -227,22 +252,28 @@ class SkuBuilder:
     def __build_bow_tie_sku(self, shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"
 
-    def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> str:
-        try:
-            pant_size_num = int(size_model.pant_size)
-        except ValueError:
-            raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
+    def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
+            return None
+
+        if size_model.pant_size not in PANT_SIZES:
+            raise ServiceError(f"Unsupported pant size for belt: {size_model.pant_size}")
+
+        pant_size_num = int(size_model.pant_size)
 
         if 28 <= pant_size_num <= 46:
             pant_size = "460"
-        elif 48 <= pant_size_num <= 60:
-            pant_size = "600"
         else:
-            raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
+            pant_size = "600"
 
         return f"{shopify_sku}{pant_size}R"
 
-    def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> str:
+    def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
+        if not measurement_model:
+            logger.debug(f"Measurements not provided for pants SKU: {shopify_sku}")
+            return None
+
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)
 
         if not shoe_size:

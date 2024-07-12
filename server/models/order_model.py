@@ -79,7 +79,7 @@ class OrderModel(CoreModel):
     shopify_order_id: str
     shopify_order_number: str
     order_date: datetime
-    status: str
+    status: Optional[str] = None
     shipping_address_line1: Optional[str] = None
     shipping_address_line2: Optional[str] = None
     shipping_city: Optional[str] = None

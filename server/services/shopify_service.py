@@ -60,10 +60,6 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_total_price_for_variants(self, variant_ids: List[str]) -> float:
-        pass
-
-    @abstractmethod
     def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
         pass
 
@@ -149,14 +145,6 @@ class FakeShopifyService(AbstractShopifyService):
             result[variant_id] = self.shopify_variants.get(variant_id).variant_price
 
         return result
-
-    def get_total_price_for_variants(self, variant_ids: List[str]) -> float:
-        if not variant_ids:
-            return 0.0
-
-        variant_prices = self.get_variant_prices(variant_ids)
-
-        return sum([variant_prices[variant_id] for variant_id in variant_ids])
 
     def delete_product(self, product_id):
         pass
@@ -632,11 +620,6 @@ class ShopifyService(AbstractShopifyService):
                 "variant_sku": variant["sku"],
             }
         )
-
-    def get_total_price_for_variants(self, variant_ids: List[str]) -> float:
-        variants_with_prices = self.get_variant_prices(variant_ids)
-
-        return sum([variants_with_prices.get(variant_id, 0.0) for variant_id in variant_ids])
 
     def add_image_to_product(self, product_id: str, image_url: str):
         mutation = """

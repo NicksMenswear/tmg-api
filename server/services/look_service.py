@@ -176,8 +176,10 @@ class LookService:
             if not bundle_product_variant_id:
                 raise ServiceError("Failed to create bundle product variant.")
 
+            bundle_product_variant = self.shopify_service.get_variants_by_id([bundle_product_variant_id])[0]
+
             enriched_product_specs = {
-                "bundle": {"variant_id": bundle_product_variant_id},
+                "bundle": bundle_product_variant.model_dump(),
                 "suit": id_to_variants[suit_variant_id].model_dump(),
                 "items": [id_to_variants[variant_id].model_dump() for variant_id in enriched_product_specs_variants],
             }

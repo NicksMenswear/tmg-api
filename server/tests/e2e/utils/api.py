@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from server.controllers.events import EVENT_FORCE_DELETE_HEADER
 from server.tests.e2e import API_PARAMS, ACTIVE_ENV, API_HEADERS
 
 BASE_API_URL = API_PARAMS[ACTIVE_ENV]["url"]
@@ -47,7 +48,9 @@ def get_all_events_by_email(email):
 
 def delete_event(event_id):
     response = requests.delete(
-        f"{BASE_API_URL}/events/{event_id}", params={**API_HMAC_QUERY_PARAMS, "force": "true"}, headers=API_HEADERS
+        f"{BASE_API_URL}/events/{event_id}",
+        params=API_HMAC_QUERY_PARAMS,
+        headers={**API_HEADERS, EVENT_FORCE_DELETE_HEADER: "true"},
     )
 
     if response.status_code == 204:

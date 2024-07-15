@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from server import encoder
+from server.controllers.events import EVENT_FORCE_DELETE_HEADER
 from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
 from server.services.event_service import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
@@ -757,10 +758,10 @@ class TestEvents(BaseTestCase):
         # when
         response = self.client.open(
             f"/events/{event.id}",
-            query_string={**self.hmac_query_params, "force": True},
+            query_string=self.hmac_query_params,
             method="DELETE",
             content_type=self.content_type,
-            headers=self.request_headers,
+            headers={**self.request_headers, EVENT_FORCE_DELETE_HEADER: "true"},
         )
 
         # then

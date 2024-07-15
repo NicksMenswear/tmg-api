@@ -13,22 +13,22 @@ from sentry_sdk.integrations.logging import ignore_logger
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
-from server.services.activecampaign import ActiveCampaignService, FakeActiveCampaignService
-from server.services.attendee import AttendeeService
-from server.services.aws import AWSService, FakeAWSService
-from server.services.discount import DiscountService
-from server.services.email import EmailService, FakeEmailService
-from server.services.event import EventService
-from server.services.look import LookService
-from server.services.measurement import MeasurementService
-from server.services.order import OrderService
-from server.services.role import RoleService
-from server.services.shopify import ShopifyService, FakeShopifyService
-from server.services.size import SizeService
-from server.services.sku_builder import SkuBuilder
-from server.services.superblocks import SuperblocksService, FakeSuperblocksService
-from server.services.user import UserService
-from server.services.webhook import WebhookService
+from server.services.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
+from server.services.attendee_service import AttendeeService
+from server.services.aws_service import AWSService, FakeAWSService
+from server.services.discount_service import DiscountService
+from server.services.email_service import EmailService, FakeEmailService
+from server.services.event_service import EventService
+from server.services.look_service import LookService
+from server.services.measurement_service import MeasurementService
+from server.services.order_service import OrderService
+from server.services.role_service import RoleService
+from server.services.shopify_service import ShopifyService, FakeShopifyService
+from server.services.size_service import SizeService
+from server.services.sku_builder_service import SkuBuilder
+from server.services.superblocks_service import SuperblocksService, FakeSuperblocksService
+from server.services.user_service import UserService
+from server.services.webhook_service import WebhookService
 
 
 def init_sentry():

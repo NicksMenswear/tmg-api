@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from server import encoder
 from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
-from server.services.event import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
-from server.services.role import PREDEFINED_ROLES
+from server.services.event_service import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
+from server.services.role_service import PREDEFINED_ROLES
 from server.tests.integration import BaseTestCase, fixtures
 
 

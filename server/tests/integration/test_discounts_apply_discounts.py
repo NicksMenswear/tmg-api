@@ -6,7 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import (
+from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
     TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX,

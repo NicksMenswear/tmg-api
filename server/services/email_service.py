@@ -6,7 +6,7 @@ from server.controllers.util import http
 from server.services import ServiceError
 from server.models.user_model import UserModel
 from server.models.event_model import EventModel, EventTypeModel
-from server.services.shopify import AbstractShopifyService
+from server.services.shopify_service import AbstractShopifyService
 
 POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
 POSTMARK_API_KEY = os.getenv("POSTMARK_API_KEY")

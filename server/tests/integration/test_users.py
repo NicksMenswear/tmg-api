@@ -8,7 +8,7 @@ from server import encoder
 from server.database.models import DiscountType
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
-from server.services.discount import GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 

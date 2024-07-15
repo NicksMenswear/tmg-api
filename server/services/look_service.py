@@ -12,9 +12,9 @@ from server.flask_app import FlaskApp
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
-from server.services.aws import AbstractAWSService
-from server.services.shopify import AbstractShopifyService
-from server.services.user import UserService
+from server.services.aws_service import AbstractAWSService
+from server.services.shopify_service import AbstractShopifyService
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 

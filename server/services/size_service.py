@@ -6,11 +6,11 @@ from server.database.database_manager import db
 from server.database.models import Size
 from server.models.size_model import SizeModel, CreateSizeRequestModel
 from server.services import ServiceError
-from server.services.measurement import MeasurementService
-from server.services.order import (
+from server.services.measurement_service import MeasurementService
+from server.services.order_service import (
     OrderService,
 )
-from server.services.user import UserService
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 

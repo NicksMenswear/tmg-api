@@ -1,7 +1,7 @@
 import random
 
 from server.database.models import DiscountType
-from server.services.discount import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 
 PAID_ORDER_REQUEST_HEADERS = {

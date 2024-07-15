@@ -2,7 +2,7 @@ import csv
 import unittest
 from typing import Set
 
-from server.services.sku_builder import (
+from server.services.sku_builder_service import (
     SkuBuilder,
     JACKET_LENGTHS,
     JACKET_SIZES,

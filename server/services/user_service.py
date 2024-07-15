@@ -8,8 +8,8 @@ from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
-from server.services.email import AbstractEmailService
-from server.services.shopify import AbstractShopifyService
+from server.services.email_service import AbstractEmailService
+from server.services.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 

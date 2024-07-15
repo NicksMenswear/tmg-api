@@ -8,9 +8,9 @@ from server.models.event_model import CreateEventModel, EventModel, UpdateEventM
 from server.models.role_model import CreateRoleModel
 from server.models.user_model import UserModel
 from server.services import ServiceError, NotFoundError, DuplicateError, BadRequestError
-from server.services.attendee import AttendeeService
-from server.services.look import LookService
-from server.services.role import RoleService, PREDEFINED_ROLES
+from server.services.attendee_service import AttendeeService
+from server.services.look_service import LookService
+from server.services.role_service import RoleService, PREDEFINED_ROLES
 
 NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 4
 

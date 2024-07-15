@@ -12,9 +12,9 @@ from server.models.measurement_model import MeasurementModel
 from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
-from server.services.measurement import MeasurementService
-from server.services.sku_builder import SkuBuilder
-from server.services.user import UserService
+from server.services.measurement_service import MeasurementService
+from server.services.sku_builder_service import SkuBuilder
+from server.services.user_service import UserService
 
 ORDER_STATUS_READY = "ORDER_READY"
 ORDER_STATUS_PENDING_MEASUREMENTS = "ORDER_PENDING_MEASUREMENTS"

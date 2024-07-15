@@ -5,12 +5,12 @@ from datetime import timedelta, datetime
 
 from server.database.database_manager import db
 from server.database.models import Order
-from server.services.order import (
+from server.services.order_service import (
     ORDER_STATUS_PENDING_MEASUREMENTS,
     ORDER_STATUS_PENDING_MISSING_SKU,
     ORDER_STATUS_READY,
 )
-from server.services.sku_builder import ProductType
+from server.services.sku_builder_service import ProductType
 from server.tests.integration import BaseTestCase, fixtures
 
 

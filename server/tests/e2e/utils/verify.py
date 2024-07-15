@@ -19,7 +19,7 @@ def event_to_be_visible(page: Page, event_name: str, event_date: str = "Tuesday,
 
 def attendee_to_be_visible(page: Page, attendee_first_name: str, attendee_last_name: str):
     attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item")]//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]//ancestor::div[@class="tmg-attendees-item"]'
+        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
     ).first
     attendee_item.scroll_into_view_if_needed()
     attendee_item.wait_for(state="visible")

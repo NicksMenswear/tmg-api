@@ -403,6 +403,20 @@ class Product(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
+class ShopifyWebhooks(Base):
+    __tablename__ = "shopify_webhooks"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    type = Column(String, nullable=False)
+    payload = Column(JSON, default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
 class RMA(Base):
     __tablename__ = "rmas"
     id = Column(

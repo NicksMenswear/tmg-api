@@ -155,7 +155,7 @@ class TestOrders(BaseTestCase):
         # then
         self.assertEqual(updated_order.status, ORDER_STATUS_PENDING_MISSING_SKU)
 
-    def test_update_order_status_if_shopify_sku_is_provided_by_invalid(self):
+    def test_update_order_status_if_shopify_sku_is_provided_but_invalid(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))

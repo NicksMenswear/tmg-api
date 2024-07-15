@@ -12,6 +12,7 @@ from server.models.measurement_model import MeasurementModel
 from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
+from server.services.measurement import MeasurementService
 from server.services.sku_builder import SkuBuilder
 from server.services.user import UserService
 
@@ -26,8 +27,9 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class OrderService:
-    def __init__(self, user_service: UserService, sku_builder: SkuBuilder):
+    def __init__(self, user_service: UserService, measurement_service: MeasurementService, sku_builder: SkuBuilder):
         self.user_service = user_service
+        self.measurement_service = measurement_service
         self.sku_builder = sku_builder
 
     def generate_order_number(self):
@@ -166,6 +168,17 @@ class OrderService:
 
         return OrderModel.from_orm(order)
 
+    def update_user_pending_orders_with_latest_measurements(self, size_model: SizeModel):
+        measurement_model = self.measurement_service.get_latest_measurement_for_user(size_model.user_id)
+
+        orders = self.get_orders_by_status_and_not_older_then_days(
+            ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER
+        )
+
+        for order in orders:
+            order.products = self.get_products_for_order(order.id)  # TODO: Do something smarter later
+            self.update_order_skus_according_to_measurements(order, size_model, measurement_model)
+
     def update_order_skus_according_to_measurements(
         self, order: OrderModel, size_model: SizeModel, measurement_model: MeasurementModel
     ) -> OrderModel:
@@ -187,7 +200,14 @@ class OrderService:
                 continue
 
             current_shiphero_sku = product.sku
-            new_shiphero_sku = self.sku_builder.build(product.shopify_sku, size_model, measurement_model)
+
+            try:
+                new_shiphero_sku = self.sku_builder.build(product.shopify_sku, size_model, measurement_model)
+            except ServiceError as e:
+                logger.error(
+                    f"Failed to build SKU for product with shopify sku {product.shopify_sku} in order {order.order_number}. Sizing model id: {size_model.id}. Measurement model id: {measurement_model.id}. Error: {e}"
+                )
+                new_shiphero_sku = None
 
             if current_shiphero_sku:
                 if current_shiphero_sku == new_shiphero_sku:
@@ -203,9 +223,7 @@ class OrderService:
                     num_products_with_sku += 1
                     self.update_sku_for_product(product.id, new_shiphero_sku)
                 else:
-                    logger.error(
-                        f"Failed to build SKU for product {product.id} with shopify SKU {product.shopify_sku} in order {order.order_number}"
-                    )
+                    pass
 
         if num_products_with_sku == num_products:
             return self.update_order_status(order.id, ORDER_STATUS_READY)

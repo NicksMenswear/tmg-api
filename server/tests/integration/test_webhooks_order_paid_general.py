@@ -1,11 +1,11 @@
 from parameterized import parameterized
 
-from server.services.order import (
+from server.services.order_service import (
     ORDER_STATUS_PENDING_MISSING_SKU,
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
 )
-from server.services.sku_builder import ProductType, PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
+from server.services.sku_builder_service import ProductType, PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 

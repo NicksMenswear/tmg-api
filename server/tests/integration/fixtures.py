@@ -12,7 +12,7 @@ from server.models.order_model import CreateOrderModel, AddressModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.size_model import CreateSizeRequestModel, SizeModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
-from server.services.order import ORDER_STATUS_READY
+from server.services.order_service import ORDER_STATUS_READY
 from server.tests import utils
 
 

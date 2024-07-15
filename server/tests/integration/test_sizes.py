@@ -1,8 +1,8 @@
 import json
 
 from server import encoder
-from server.services.order import ORDER_STATUS_PENDING_MEASUREMENTS, ORDER_STATUS_READY
-from server.services.sku_builder import ProductType
+from server.services.order_service import ORDER_STATUS_PENDING_MEASUREMENTS, ORDER_STATUS_READY
+from server.services.sku_builder_service import ProductType
 from server.tests.integration import BaseTestCase, fixtures
 
 

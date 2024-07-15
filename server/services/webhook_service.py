@@ -8,24 +8,24 @@ from server.database.models import SourceType, OrderType
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError, ServiceError
-from server.services.attendee import AttendeeService
-from server.services.discount import (
+from server.services.attendee_service import AttendeeService
+from server.services.discount_service import (
     DiscountService,
     DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
     GIFT_DISCOUNT_CODE_PREFIX,
 )
-from server.services.look import LookService
-from server.services.measurement import MeasurementService
-from server.services.order import (
+from server.services.look_service import LookService
+from server.services.measurement_service import MeasurementService
+from server.services.order_service import (
     OrderService,
     ORDER_STATUS_PENDING_MEASUREMENTS,
     ORDER_STATUS_PENDING_MISSING_SKU,
     ORDER_STATUS_READY,
 )
-from server.services.shopify import ShopifyService
-from server.services.size import SizeService
-from server.services.sku_builder import SkuBuilder
-from server.services.user import UserService
+from server.services.shopify_service import ShopifyService
+from server.services.size_service import SizeService
+from server.services.sku_builder_service import SkuBuilder
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 

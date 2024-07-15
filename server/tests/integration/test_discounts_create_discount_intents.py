@@ -6,7 +6,7 @@ import uuid
 
 from server import encoder
 from server.database.models import DiscountType
-from server.services.discount import (
+from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
 )
 from server.tests.integration import BaseTestCase, fixtures

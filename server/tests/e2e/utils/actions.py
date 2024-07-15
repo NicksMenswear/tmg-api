@@ -112,7 +112,7 @@ def add_first_attendee(
     add_attendee_button.click()
 
     attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item")]//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]//ancestor::div[@class="tmg-attendees-item"]'
+        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
     ).first
 
     attendee_id = attendee_item.get_attribute("data-attendee-id")

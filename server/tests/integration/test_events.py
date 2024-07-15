@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from server import encoder
+from server.controllers.events import EVENT_FORCE_DELETE_HEADER
 from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
 from server.services.event_service import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
@@ -744,6 +745,30 @@ class TestEvents(BaseTestCase):
         # then
         self.assertStatus(response, 400)
         self.assertEqual(response.json["errors"], "Cannot delete event with invited or paid attendees.")
+
+    def test_delete_event_attendee_is_invited_but_if_force_applied_then_it_is_ok(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, invite=True)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            content_type=self.content_type,
+            headers={**self.request_headers, EVENT_FORCE_DELETE_HEADER: "true"},
+        )
+
+        # then
+        self.assertStatus(response, 204)
+
+        looked_up_event = self.event_service.get_event_by_id(event.id)
+        self.assertEqual(looked_up_event.is_active, False)
 
     def test_create_event_name_too_short(self):
         # given

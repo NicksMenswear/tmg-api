@@ -745,6 +745,30 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertEqual(response.json["errors"], "Cannot delete event with invited or paid attendees.")
 
+    def test_delete_event_attendee_is_invited_but_if_force_applied_then_it_is_ok(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, invite=True)
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string={**self.hmac_query_params, "force": True},
+            method="DELETE",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assertStatus(response, 204)
+
+        looked_up_event = self.event_service.get_event_by_id(event.id)
+        self.assertEqual(looked_up_event.is_active, False)
+
     def test_create_event_name_too_short(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

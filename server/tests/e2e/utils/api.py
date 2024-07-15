@@ -46,7 +46,9 @@ def get_all_events_by_email(email):
 
 
 def delete_event(event_id):
-    response = requests.delete(f"{BASE_API_URL}/events/{event_id}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
+    response = requests.delete(
+        f"{BASE_API_URL}/events/{event_id}", params={**API_HMAC_QUERY_PARAMS, "force": "true"}, headers=API_HEADERS
+    )
 
     if response.status_code == 204:
         return

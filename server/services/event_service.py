@@ -122,7 +122,7 @@ class EventService:
 
         return event
 
-    def delete_event(self, event_id: uuid.UUID) -> None:
+    def delete_event(self, event_id: uuid.UUID, force: bool = False) -> None:
         db_event = Event.query.filter(Event.id == event_id).first()
 
         if not db_event:
@@ -134,7 +134,7 @@ class EventService:
             (attendee.is_active and (attendee.invite or attendee.pay)) for attendee in attendees
         )
 
-        if has_invited_or_paid_attendees:
+        if not force and has_invited_or_paid_attendees:
             raise BadRequestError("Cannot delete event with invited or paid attendees.")
 
         try:

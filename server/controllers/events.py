@@ -43,10 +43,10 @@ def update_event(event_id, update_event):
 
 @hmac_verification
 @error_handler
-def delete_event(event_id):
+def delete_event(event_id, force: bool = False):
     event_service = FlaskApp.current().event_service
 
-    event_service.delete_event(uuid.UUID(event_id))
+    event_service.delete_event(uuid.UUID(event_id), force)
 
     return None, 204
 

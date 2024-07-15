@@ -530,6 +530,11 @@ paths:
           schema:
             type: string
           required: false
+        - in: query
+          name: force
+          schema:
+            type: boolean
+          required: false
       responses:
         "204":
           description: Event Deleted Success

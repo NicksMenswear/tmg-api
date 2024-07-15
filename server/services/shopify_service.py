@@ -581,6 +581,7 @@ class ShopifyService(AbstractShopifyService):
                 id
                 title
                 sku
+                price
                 product {{
                   id
                   title
@@ -617,6 +618,7 @@ class ShopifyService(AbstractShopifyService):
                 "product_title": product["title"],
                 "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
                 "variant_title": variant["title"],
+                "variant_price": variant["price"],
                 "variant_sku": variant["sku"],
             }
         )

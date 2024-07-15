@@ -20,7 +20,7 @@ from server.models.discount_model import (
 )
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee import AttendeeService
-from server.services.event import EventService
+from server.services.event_service import EventService
 from server.services.look import LookService
 from server.services.shopify import AbstractShopifyService
 from server.services.user import UserService

@@ -18,7 +18,7 @@ from server.services.attendee import AttendeeService
 from server.services.aws import AWSService, FakeAWSService
 from server.services.discount import DiscountService
 from server.services.email import EmailService, FakeEmailService
-from server.services.event import EventService
+from server.services.event_service import EventService
 from server.services.look import LookService
 from server.services.measurement import MeasurementService
 from server.services.order import OrderService

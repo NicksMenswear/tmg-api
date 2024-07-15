@@ -107,7 +107,6 @@ def init_services(app, is_testing=False):
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
     app.attendee_service = AttendeeService(app.shopify_service, app.user_service, app.email_service)
     app.sku_builder = SkuBuilder()
-    app.order_service = OrderService(user_service=app.user_service, sku_builder=app.sku_builder)
     app.event_service = EventService(
         attendee_service=app.attendee_service, role_service=app.role_service, look_service=app.look_service
     )
@@ -115,6 +114,9 @@ def init_services(app, is_testing=False):
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
     app.measurement_service = MeasurementService()
+    app.order_service = OrderService(
+        user_service=app.user_service, measurement_service=app.measurement_service, sku_builder=app.sku_builder
+    )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService(
         app.user_service,

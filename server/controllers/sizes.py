@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 @error_handler
 def create(data):
     sizing_service = FlaskApp.current().size_service
+    order_service = FlaskApp.current().order_service
 
     sizing_model = sizing_service.create_size(CreateSizeRequestModel(**data))
+    order_service.update_user_pending_orders_with_latest_measurements(sizing_model)
 
     return {"id": sizing_model.id}, 201

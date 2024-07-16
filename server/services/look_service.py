@@ -160,6 +160,7 @@ class LookService:
                 suit_variant = self.shopify_service.get_variant_by_sku(suit_variant_sku)
                 suit_variant_id = suit_variant.variant_id if suit_variant else None
                 create_look.product_specs["suit_variant"] = suit_variant_id
+                create_look.product_specs["variants"] = [suit_variant_id]
 
             if not suit_variant_id:
                 raise ServiceError("Suit variant id is missing.")

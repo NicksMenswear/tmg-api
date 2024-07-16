@@ -1,7 +1,3 @@
-import random
-import uuid
-from datetime import datetime, timedelta
-
 from playwright.sync_api import Page, expect
 
 from server.tests.e2e import (
@@ -153,12 +149,16 @@ def add_attendee(
     add_attendee_button.click()
 
     attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item")]//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]//ancestor::div[@class="tmg-attendees-item"]'
+        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
     ).first
     attendee_item.scroll_into_view_if_needed()
     attendee_item.wait_for(state="visible")
 
-    return attendee_item.get_attribute("data-attendee-id")
+    attendee_id = attendee_item.get_attribute("data-attendee-id")
+
+    assert attendee_id is not None
+
+    return attendee_id
 
 
 def delete_event(page: Page, event_id: str, event_name: str):
@@ -176,7 +176,7 @@ def delete_event(page: Page, event_id: str, event_name: str):
 
 def delete_attendee(page: Page, attendee_id: str):
     delete_attendee_btn = page.locator(
-        f'//div[@class="tmg-attendees-item" and @data-attendee-id="{attendee_id}"]//button[contains(@class, "tmg-btn") and contains(@class, "removeAttendee")]'
+        f'//div[contains(@class, "tmg-attendees-item") and @data-attendee-id="{attendee_id}"]//button[contains(@class, "tmg-btn") and contains(@class, "removeAttendee")]'
     )
     delete_attendee_btn.scroll_into_view_if_needed()
     delete_attendee_btn.click()

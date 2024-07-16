@@ -109,7 +109,7 @@ def create_look(look_name, user_id, product_specs=None):
                     product_specs
                     if product_specs
                     else {
-                        "suit_variant_sku": "001A2BLK",  # Black Suit
+                        "suit_variant": "001A2BLK",  # Black Suit
                         "variants": [
                             "001A2BLK",  # Black Suit
                             "403A2WHT",  # White Shirt

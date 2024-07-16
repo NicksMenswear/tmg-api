@@ -100,7 +100,11 @@ def create_look(look_name, user_id, product_specs=None):
         params=API_HMAC_QUERY_PARAMS,
         headers=API_HEADERS,
         data=json.dumps(
-            {"name": look_name, "user_id": user_id, "product_specs": product_specs if product_specs else {}}
+            {
+                "name": look_name,
+                "user_id": user_id,
+                "product_specs": product_specs if product_specs else {"suit_variant_sku": "001A2BLK"},
+            }
         ),
     )
 

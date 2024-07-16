@@ -10,7 +10,6 @@ from server.tests.e2e import (
     EMAIL_FROM,
     EMAIL_SUBJECT_EVENT_INVITATION,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
-    DEFAULT_EVENT_PRETTY_DATE,
 )
 from server.tests.e2e.utils import api, actions, verify, email
 

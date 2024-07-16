@@ -121,7 +121,9 @@ class AttendeeService:
         return attendees
 
     def update_attendee_pay_status(self, event_id: uuid.UUID, user_id: uuid.UUID):
-        attendee = Attendee.query.filter(Attendee.event_id == event_id, Attendee.user_id == user_id).first()
+        attendee = Attendee.query.filter(
+            Attendee.event_id == event_id, Attendee.user_id == user_id, Attendee.is_active
+        ).first()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")

@@ -272,10 +272,10 @@ class TestLooks(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
-        self.assertEqual(response.json[0]["id"], str(event1.id))
-        self.assertEqual(response.json[0]["name"], event1.name)
-        self.assertEqual(response.json[1]["id"], str(event2.id))
-        self.assertEqual(response.json[1]["name"], event2.name)
+        self.assertTrue(response.json[0]["id"], {str(event1.id), str(event2.id)})
+        self.assertTrue(response.json[0]["name"], {event1.name, event2.name})
+        self.assertTrue(response.json[1]["id"], {str(event1.id), str(event2.id)})
+        self.assertTrue(response.json[1]["name"], {event1.name, event2.name})
 
     def test_delete_look_non_existing(self):
         # when

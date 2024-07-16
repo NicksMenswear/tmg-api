@@ -4,12 +4,12 @@ import os
 import time
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Dict, Any
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
 from server.flask_app import FlaskApp
-from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
+from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel, ProductSpecType
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.aws_service import AbstractAWSService
@@ -144,10 +144,25 @@ class LookService:
 
         return enriched_product_specs_variants
 
+    def __convert_sku_spec_to_variant_model(self, create_look: CreateLookModel):
+        create_look.product_specs["suit_variant"] = self.shopify_service.get_variant_by_sku(
+            create_look.product_specs["suit_variant"]
+        ).variant_id
+
+        variants = []
+
+        for sku in create_look.product_specs.get("variants", []):
+            variants.append(self.shopify_service.get_variant_by_sku(sku).variant_id)
+
+        create_look.product_specs["variants"] = variants
+
     def create_look(self, create_look: CreateLookModel) -> LookModel:
         self.__verify_that_look_does_not_exist(create_look)
 
         try:
+            if create_look.spec_type == ProductSpecType.SKU:
+                self.__convert_sku_spec_to_variant_model(create_look)
+
             db_look = self.__persist_new_look_to_db(create_look)
             s3_file = self.__store_look_image_to_s3(create_look, db_look) if create_look.image else None
 

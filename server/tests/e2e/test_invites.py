@@ -30,7 +30,7 @@ def test_invite_attendee(page: Page):
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
 
     api.delete_all_looks(user_id)
-    actions.create_default_look(page, look_name)
+    api.create_look(look_name, user_id)
     actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -103,7 +103,7 @@ def test_invite_multiple_attendees(page: Page):
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
 
     api.delete_all_looks(user_id)
-    actions.create_default_look(page, look_name)
+    api.create_look(look_name, user_id)
     actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 

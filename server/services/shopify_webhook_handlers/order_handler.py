@@ -233,7 +233,8 @@ class ShopifyWebhookOrderHandler:
         else:
             order_status = ORDER_STATUS_READY
 
-        ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None
+        # ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this
+        ship_by_date = None
 
         create_order = CreateOrderModel(
             user_id=user.id,

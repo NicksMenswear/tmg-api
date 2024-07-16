@@ -63,7 +63,7 @@ class ShopifyWebhookOrderHandler:
             logger.debug(f"Found paid discount order with sku '{sku}'")
             return self.__process_gift_discount(payload)
 
-        return self.__process_paid_order(payload)
+        return self.__process_paid_order(webhook_id, payload)
 
     def __error(self, message):
         return {"errors": message}
@@ -153,7 +153,7 @@ class ShopifyWebhookOrderHandler:
 
         return used_discount_codes
 
-    def __process_paid_order(self, payload):
+    def __process_paid_order(self, webhook_id: uuid.UUID, payload: Dict[str, Any]):
         shopify_customer_email = payload.get("customer").get("email")
 
         try:
@@ -216,11 +216,6 @@ class ShopifyWebhookOrderHandler:
                     shopify_sku=shopify_sku,
                     price=line_item.get("price"),
                     quantity=line_item.get("quantity"),
-                    meta={
-                        "webhook_line_item_id": line_item.get("id"),
-                        "used_size_model_id": str(size_model.id) if size_model else None,
-                        "used_measurement_model_id": str(measurement_model.id) if measurement_model else None,
-                    },
                 )
 
                 create_products.append(create_product)
@@ -246,7 +241,7 @@ class ShopifyWebhookOrderHandler:
             shipping_address=shipping_address,
             products=create_products,
             event_id=event_id,
-            meta=payload,
+            meta={"webhook_id": str(webhook_id)},
             status=order_status,
         )
 

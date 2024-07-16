@@ -106,7 +106,6 @@ class OrderService:
                     name=create_product.name,
                     price=create_product.price,
                     on_hand=create_product.on_hand,
-                    meta=create_product.meta,
                 )
                 db.session.add(product)
                 db.session.flush()

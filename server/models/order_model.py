@@ -31,7 +31,6 @@ class CreateProductModel(CoreModel):
     price: float = 0.0
     quantity: int = 0
     on_hand: int = 0
-    meta: Optional[dict] = None
 
 
 class CreateOrderModel(CoreModel):

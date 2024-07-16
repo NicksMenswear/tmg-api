@@ -24,6 +24,8 @@ from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.role_service import RoleService
 from server.services.shopify_service import ShopifyService, FakeShopifyService
+from server.services.shopify_webhook_handlers.order_handler import ShopifyWebhookOrderHandler
+from server.services.shopify_webhook_handlers.user_handler import ShopifyWebhookUserHandler
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.superblocks_service import SuperblocksService, FakeSuperblocksService
@@ -118,22 +120,24 @@ def init_services(app, is_testing=False):
         user_service=app.user_service, measurement_service=app.measurement_service, sku_builder=app.sku_builder
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
-    app.webhook_service = WebhookService(
-        app.user_service,
-        app.attendee_service,
-        app.discount_service,
-        app.look_service,
-        app.shopify_service,
-        app.order_service,
-        app.size_service,
-        app.measurement_service,
-        app.sku_builder,
-    )
+    app.webhook_service = WebhookService()
     app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
     app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()
     app.stage = os.getenv("STAGE", "dev")
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+    app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
+        app.shopify_service,
+        app.discount_service,
+        app.user_service,
+        app.attendee_service,
+        app.look_service,
+        app.size_service,
+        app.measurement_service,
+        app.order_service,
+        app.sku_builder,
+    )
+    app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
 
 
 def init_db():

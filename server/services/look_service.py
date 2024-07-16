@@ -135,10 +135,8 @@ class LookService:
     def __enrich_product_specs_variants_with_suit_parts(
         self, suit_variant_id: str, product_specs: dict, suit_parts_variants: List[ShopifyVariantModel]
     ) -> List[str]:
-        enriched_product_specs_variants = product_specs.get("variants", []).copy()
-
-        if suit_variant_id in enriched_product_specs_variants:
-            enriched_product_specs_variants.remove(suit_variant_id)
+        enriched_product_specs_variants = product_specs.get("variants").copy()
+        enriched_product_specs_variants.remove(suit_variant_id)
 
         enriched_product_specs_variants = [
             variant.variant_id for variant in suit_parts_variants
@@ -153,14 +151,7 @@ class LookService:
             db_look = self.__persist_new_look_to_db(create_look)
             s3_file = self.__store_look_image_to_s3(create_look, db_look) if create_look.image else None
 
-            suit_variant_sku = create_look.product_specs.get("suit_variant_sku")  # used for testing only
             suit_variant_id = create_look.product_specs.get("suit_variant")
-
-            if suit_variant_sku and not suit_variant_id:  # used for testing only
-                suit_variant = self.shopify_service.get_variant_by_sku(suit_variant_sku)
-                suit_variant_id = suit_variant.variant_id if suit_variant else None
-                create_look.product_specs["suit_variant"] = suit_variant_id
-                create_look.product_specs["variants"] = [suit_variant_id]
 
             if not suit_variant_id:
                 raise ServiceError("Suit variant id is missing.")

@@ -1,3 +1,5 @@
+import time
+
 from playwright.sync_api import Page, expect
 
 from server.tests.e2e import (
@@ -288,7 +290,7 @@ def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
     pay_button.click()
 
 
-def create_default_look(page, name):
+def create_default_look(page: Page, name):
     page.goto(f"{STORE_URL}/products/suit-builder")
 
     look_name_input = page.locator(f'input[name="properties[_Name this Look]"]')
@@ -298,7 +300,7 @@ def create_default_look(page, name):
     save_look_button.click()
 
 
-def get_look_by_name_on_looks_page(page, look_name):
+def get_look_by_name_on_looks_page(page: Page, look_name):
     page.wait_for_selector('div.tmg-heading h1:text("My Looks")')
 
     look_card_locator = page.locator(f'div.tmg-look-card:has-text("{look_name}")')
@@ -312,7 +314,7 @@ def get_look_by_name_on_looks_page(page, look_name):
     return data_look_id, data_look_variant_id, price
 
 
-def delete_look_by_look_id(page, look_id):
+def delete_look_by_look_id(page: Page, look_id):
     look_card_locator = page.locator(f'div.tmg-look-card[data-look-id="{look_id}"]')
     remove_button = look_card_locator.locator("button.removeLook")
     remove_button.click()
@@ -341,7 +343,34 @@ def pay_in_full_attendee_by_id(page: Page, event_id, attendee_id, expected_amoun
     pay_button.click()
 
 
-def add_look_to_cart(page, look_id):
+def add_look_to_cart(page: Page, look_id):
     look_card_locator = page.locator(f'div.tmg-look-card[data-look-id="{look_id}"]')
     add_to_cart_button = look_card_locator.locator("button.tmg-btn.lookToCart")
     add_to_cart_button.click()
+
+
+def shopify_pay_with_credit_card_for_order(page: Page):
+    iframe = page.frame_locator("iframe.card-fields-iframe").first
+
+    input_cc_number = iframe.locator("input#number")
+    input_cc_number.fill("1")
+
+    time.sleep(1)
+
+    input_name_number = iframe.locator("input#name")
+    input_name_number.fill("Test Test")
+
+    time.sleep(1)
+
+    input_expiry_number = iframe.locator("input#expiry")
+    input_expiry_number.fill("11/28")
+
+    time.sleep(1)
+
+    input_cvc_number = iframe.locator("input#verification_value")
+    input_cvc_number.fill("123")
+
+    time.sleep(1)
+
+    pay_now_button = page.locator('button:has-text("Pay now")').first
+    pay_now_button.click()

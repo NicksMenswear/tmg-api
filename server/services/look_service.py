@@ -149,7 +149,7 @@ class LookService:
             create_look.product_specs["suit_variant"]
         ).variant_id
 
-        variants = []
+        variants = [create_look.product_specs["suit_variant"]]
 
         for sku in create_look.product_specs.get("variants", []):
             variants.append(self.shopify_service.get_variant_by_sku(sku).variant_id)

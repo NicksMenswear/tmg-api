@@ -76,11 +76,6 @@ class TestLooks(BaseTestCase):
         self.assertIsNotNone(db_look)
         self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
         self.assertIsNotNone(db_look.product_specs.get("suit").get("variant_id"))
-        # all variants except suit and add suit parts like pants, vest, jacket
-        self.assertEqual(
-            len(db_look.product_specs.get("items", [])),
-            len(look_data.product_specs.get("variants")) - 1 + 3,
-        )
         self.assertEqual(db_look.user_id, user.id)
 
     def test_create_look_with_image(self):

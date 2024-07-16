@@ -37,6 +37,7 @@ def test_pay_dialog_correctness(page: Page):
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -92,6 +93,7 @@ def test_discount_intent_saved(page: Page):
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -140,6 +142,7 @@ def test_pay_in_full_click(page: Page):
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     _, _, price = actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -187,6 +190,7 @@ def test_grooms_gift(page):
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     _, _, price = actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 

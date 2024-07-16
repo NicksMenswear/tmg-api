@@ -31,7 +31,7 @@ def test_invite_attendee(page: Page):
 
     api.delete_all_looks(user_id)
     actions.create_default_look(page, look_name)
-    page.wait_for_url(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
@@ -104,7 +104,7 @@ def test_invite_multiple_attendees(page: Page):
 
     api.delete_all_looks(user_id)
     actions.create_default_look(page, look_name)
-    page.wait_for_url(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)

@@ -21,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.create_table(
-        "shopify_webhooks",
+        "webhooks",
         sa.Column("id", sa.UUID(), server_default=sa.text("uuid_generate_v4()"), nullable=False),
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("payload", sa.JSON(), nullable=False),
@@ -31,4 +31,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("shopify_webhooks")
+    op.drop_table("webhooks")

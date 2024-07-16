@@ -403,8 +403,8 @@ class Product(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class ShopifyWebhook(Base):
-    __tablename__ = "shopify_webhooks"
+class Webhook(Base):
+    __tablename__ = "webhooks"
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,

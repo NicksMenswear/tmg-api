@@ -19,22 +19,25 @@ def shopify_webhook(payload):
     logger.info(f"Received Shopify webhook with topic: {topic}")
 
     webhook_service = FlaskApp.current().webhook_service
+    order_handler = FlaskApp.current().shopify_webhook_order_handler
+    user_handler = FlaskApp.current().shopify_webhook_user_handler
 
     response_payload = {}
 
     try:
         topic_handlers = {
-            "orders/paid": webhook_service.handle_orders_paid,
-            "customers/create": webhook_service.handle_customer_update,
-            "customers/update": webhook_service.handle_customer_update,
-            "customers/enable": webhook_service.handle_customer_update,
-            "customers/disable": webhook_service.handle_customer_update,
+            "orders/paid": order_handler.order_paid,
+            "customers/create": user_handler.customer_update,
+            "customers/update": user_handler.customer_update,
+            "customers/enable": user_handler.customer_update,
+            "customers/disable": user_handler.customer_update,
         }
 
-        if topic in topic_handlers:
-            webhook_service.store_webhook(payload)
-            # store webhook
-            response_payload = topic_handlers[topic](payload)
+        if topic not in topic_handlers:
+            return None, 200
+
+        webhook = webhook_service.store_webhook(topic, payload)
+        response_payload = topic_handlers[topic](webhook.id, payload)
     except Exception as e:
         logger.exception(f"Error handling Shopify webhook: {e}")
     finally:

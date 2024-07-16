@@ -74,6 +74,8 @@ class BaseTestCase(TestCase):
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service
+        self.shopify_webhook_user_handler = self.app.shopify_webhook_user_handler
+        self.shopify_webhook_order_handler = self.app.shopify_webhook_order_handler
         self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service
         self.measurement_service = self.app.measurement_service

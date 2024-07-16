@@ -55,7 +55,7 @@ class TestLooks(BaseTestCase):
         # when
         look_data = fixtures.create_look_request(
             user_id=user.id,
-            spect_type=ProductSpecType.SKU,
+            spec_type=ProductSpecType.SKU,
             product_specs=self.create_look_test_product_specs_of_type_sku(),
         )
 

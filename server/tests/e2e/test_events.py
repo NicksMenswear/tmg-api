@@ -12,10 +12,11 @@ DEFAULT_WEDDING_ROLES = {
     "Groom",
     "Groomsman",
     "Officiant",
+    "Other",
     "Usher",
 }
-DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone"}
-DEFAULT_OTHER_ROLES = {"Attendee"}
+DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
+DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 
 def test_basic_create_event(page: Page):

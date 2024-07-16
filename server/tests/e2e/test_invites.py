@@ -10,7 +10,7 @@ from server.tests.e2e import (
     EMAIL_FROM,
     EMAIL_SUBJECT_EVENT_INVITATION,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
-    DEFAULT_EVENT_PRETTY_DATE,
+    STORE_URL,
 )
 from server.tests.e2e.utils import api, actions, verify, email
 
@@ -28,8 +28,12 @@ def test_invite_attendee(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
@@ -98,8 +102,12 @@ def test_invite_multiple_attendees(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 

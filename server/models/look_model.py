@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 from uuid import UUID
 
@@ -18,8 +19,14 @@ class LookRequest(CoreModel):
         return v
 
 
+class ProductSpecType(str, Enum):
+    VARIANT = "variant"
+    SKU = "sku"
+
+
 class CreateLookModel(LookRequest):
     user_id: UUID
+    spec_type: ProductSpecType = ProductSpecType.VARIANT
     product_specs: dict
     is_active: bool = True
     image: Optional[str] = None

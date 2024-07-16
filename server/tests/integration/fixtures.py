@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.discount_model import ApplyDiscountModel, CreateDiscountIntent
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
-from server.models.look_model import CreateLookModel, UpdateLookModel
+from server.models.look_model import CreateLookModel, UpdateLookModel, ProductSpecType
 from server.models.measurement_model import CreateMeasurementsRequestModel, MeasurementModel
 from server.models.order_model import CreateOrderModel, AddressModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
@@ -55,6 +55,7 @@ def create_look_request(**look_data) -> CreateLookModel:
     return CreateLookModel(
         name=look_data.get("name", str(uuid.uuid4())),
         user_id=look_data.get("user_id", uuid.uuid4()),
+        spec_type=look_data.get("spec_type", ProductSpecType.VARIANT),
         product_specs=look_data["product_specs"],
         is_active=look_data.get("is_active", True),
         image=look_data.get("image"),

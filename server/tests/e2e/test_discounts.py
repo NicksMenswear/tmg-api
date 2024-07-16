@@ -34,8 +34,12 @@ def test_pay_dialog_correctness(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
@@ -86,8 +90,12 @@ def test_discount_intent_saved(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
@@ -115,7 +123,7 @@ def test_discount_intent_saved(page: Page):
     actions.open_event_accordion(page, event_id)
     actions.open_pay_dialog(page, event_id)
 
-    verify.input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name, attendee_last_name, amount)
+    verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
 def test_pay_in_full_click(page: Page):
@@ -131,8 +139,10 @@ def test_pay_in_full_click(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
-    actions.create_default_look(page, look_name)
+    api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     _, _, price = actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -160,7 +170,7 @@ def test_pay_in_full_click(page: Page):
     actions.open_event_accordion(page, event_id)
     actions.open_pay_dialog(page, event_id)
 
-    verify.input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name, attendee_last_name, price)
+    verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, price)
 
 
 def test_grooms_gift(page):
@@ -177,8 +187,10 @@ def test_grooms_gift(page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
     api.delete_all_looks(user_id)
-    actions.create_default_look(page, look_name)
+    api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
     _, _, price = actions.get_look_by_name_on_looks_page(page, look_name)
     page.goto(f"{STORE_URL}/account")
 
@@ -206,18 +218,7 @@ def test_grooms_gift(page):
     continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
     continue_to_payment_button.click()
 
-    iframe = page.frame_locator("iframe.card-fields-iframe").first
-    input_cc_number = iframe.locator("input#number")
-    input_cc_number.fill("1")
-    input_name_number = iframe.locator("input#name")
-    input_name_number.fill("Test Test")
-    input_expiry_number = iframe.locator("input#expiry")
-    input_expiry_number.fill("11/28")
-    input_cvc_number = iframe.locator("input#verification_value")
-    input_cvc_number.fill("123")
-
-    pay_now_button = page.locator('button:has-text("Pay now")').first
-    pay_now_button.click()
+    actions.shopify_pay_with_credit_card_for_order(page)
 
     actions.logout(page)
 

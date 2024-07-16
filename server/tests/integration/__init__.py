@@ -120,6 +120,19 @@ class BaseTestCase(TestCase):
             "variants": variants,
         }
 
+    def create_look_test_product_specs_of_type_sku(self, num_variants=5):
+        suit_variant = self.get_random_shopify_variant()
+
+        variants = [suit_variant.variant_sku]
+
+        for _ in range(num_variants):
+            variants.append(self.get_random_shopify_variant().variant_sku)
+
+        return {
+            "suit_variant": suit_variant.variant_sku,
+            "variants": variants,
+        }
+
     def _post(self, endpoint, payload, headers):
         return self.client.open(
             endpoint,

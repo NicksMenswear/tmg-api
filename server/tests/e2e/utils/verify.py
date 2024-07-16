@@ -12,9 +12,10 @@ def no_upcoming_events_visible(page: Page):
     tmg_event_content.locator(".preloader").wait_for(state="hidden")
 
 
-def event_to_be_visible(page: Page, event_name: str, event_date: str = "Tuesday, April 18, 2028"):
-    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
-    # expect(page.get_by_text(event_date).first).to_be_visible()
+def event_to_be_visible(page: Page, event_name: str):
+    event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
+    event_item.scroll_into_view_if_needed()
+    expect(event_item.first).to_be_visible()
 
 
 def attendee_to_be_visible(page: Page, attendee_first_name: str, attendee_last_name: str):
@@ -115,6 +116,15 @@ def not_logged_in(page: Page):
     assert login_link.get_attribute("href") == "/account" and login_link.is_visible()
 
 
+def input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, value):
+    attendee_input = page.locator(
+        f'//li[contains(@class, "tmg-pay-attendee-item") and @data-attendee-id="{attendee_id}"]//input[contains(@class, "tmg-pay-attendee-item-input")]'
+    )
+    attendee_input.scroll_into_view_if_needed()
+
+    assert float(attendee_input.get_attribute("value")) == float(value)
+
+
 def input_value_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, value):
     attendee_1 = page.locator(
         f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
@@ -138,6 +148,13 @@ def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, it
     price_locator_in_row.wait_for(state="visible")
 
     assert price_locator_in_row.count() > 0
+
+
+def shopify_order_confirmed(page: Page):
+    content_text = "Your order is confirmed"
+    h2_element = page.locator(f'//h2[text()="{content_text}"]').first
+    h2_element.scroll_into_view_if_needed()
+    expect(h2_element.first).to_be_visible()
 
 
 def looks_page_is_empty(page: Page):

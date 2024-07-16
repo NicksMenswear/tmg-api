@@ -3,6 +3,7 @@ import json
 import requests
 
 from server.controllers.events import EVENT_FORCE_DELETE_HEADER
+from server.models.look_model import ProductSpecType
 from server.tests.e2e import API_PARAMS, ACTIVE_ENV, API_HEADERS
 
 BASE_API_URL = API_PARAMS[ACTIVE_ENV]["url"]
@@ -100,7 +101,26 @@ def create_look(look_name, user_id, product_specs=None):
         params=API_HMAC_QUERY_PARAMS,
         headers=API_HEADERS,
         data=json.dumps(
-            {"name": look_name, "user_id": user_id, "product_specs": product_specs if product_specs else {}}
+            {
+                "name": look_name,
+                "user_id": user_id,
+                "spec_type": ProductSpecType.SKU,
+                "product_specs": (
+                    product_specs
+                    if product_specs
+                    else {
+                        "suit_variant": "001A2BLK",  # Black Suit
+                        "variants": [
+                            "001A2BLK",  # Black Suit
+                            "403A2WHT",  # White Shirt
+                            "603A40NI",  # Apple Red Neck Tie
+                            "703A4BLK",  # Black Adjustable Belt
+                            "803A4BLK",  # Black Dress Shoes
+                            "903A4BLK",  # Solid Black Dress Socks
+                        ],
+                    }
+                ),
+            }
         ),
     )
 

@@ -135,8 +135,10 @@ class LookService:
     def __enrich_product_specs_variants_with_suit_parts(
         self, suit_variant_id: str, product_specs: dict, suit_parts_variants: List[ShopifyVariantModel]
     ) -> List[str]:
-        enriched_product_specs_variants = product_specs.get("variants").copy()
-        enriched_product_specs_variants.remove(suit_variant_id)
+        enriched_product_specs_variants = product_specs.get("variants", []).copy()
+
+        if suit_variant_id in enriched_product_specs_variants:
+            enriched_product_specs_variants.remove(suit_variant_id)
 
         enriched_product_specs_variants = [
             variant.variant_id for variant in suit_parts_variants

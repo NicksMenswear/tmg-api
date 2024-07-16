@@ -136,6 +136,7 @@ def init_services(app, is_testing=False):
         app.measurement_service,
         app.order_service,
         app.sku_builder,
+        app.event_service,
     )
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
 

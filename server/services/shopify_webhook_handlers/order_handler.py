@@ -1,7 +1,7 @@
 import logging
 import random
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 from server.database.models import SourceType, OrderType
@@ -9,6 +9,7 @@ from server.models.order_model import AddressModel, CreateProductModel, CreateOr
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.event_service import EventService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -38,6 +39,7 @@ class ShopifyWebhookOrderHandler:
         measurement_service: MeasurementService,
         order_service: OrderService,
         sku_builder: SkuBuilder,
+        event_service: EventService,
     ):
         self.shopify_service = shopify_service
         self.discount_service = discount_service
@@ -48,6 +50,7 @@ class ShopifyWebhookOrderHandler:
         self.measurement_service = measurement_service
         self.order_service = order_service
         self.sku_builder = sku_builder
+        self.event_service = event_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -230,6 +233,8 @@ class ShopifyWebhookOrderHandler:
         else:
             order_status = ORDER_STATUS_READY
 
+        ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None
+
         create_order = CreateOrderModel(
             user_id=user.id,
             order_number=order_number,
@@ -243,6 +248,7 @@ class ShopifyWebhookOrderHandler:
             event_id=event_id,
             meta={"webhook_id": str(webhook_id)},
             status=order_status,
+            ship_by_date=ship_by_date,
         )
 
         try:
@@ -275,3 +281,17 @@ class ShopifyWebhookOrderHandler:
                         return None
 
         return None
+
+    def __calculate_ship_by_date(self, event_id: uuid.UUID, num_week_before_event: int = 6) -> Optional[datetime]:
+        try:
+            event = self.event_service.get_event_by_id(event_id)
+        except NotFoundError:
+            return None
+
+        date_n_weeks_ago = event.event_at - timedelta(weeks=num_week_before_event)
+        monday_of_week = date_n_weeks_ago - timedelta(days=date_n_weeks_ago.weekday())  # Find the Monday of that week
+
+        if monday_of_week < datetime.now():
+            return None
+
+        return monday_of_week

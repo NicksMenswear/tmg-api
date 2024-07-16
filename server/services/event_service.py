@@ -44,7 +44,9 @@ class EventService:
 
         return event_model
 
-    def create_event(self, create_event: CreateEventModel) -> EventModel:
+    def create_event(
+        self, create_event: CreateEventModel, ignore_event_date_creation_condition: bool = False
+    ) -> EventModel:
         user = User.query.filter_by(id=create_event.user_id).first()
 
         if not user:
@@ -60,7 +62,9 @@ class EventService:
         if db_event:
             raise DuplicateError("Event with the same name and date already exists.")
 
-        if not self.__is_ahead_n_weeks(create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION):
+        if not ignore_event_date_creation_condition and not self.__is_ahead_n_weeks(
+            create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
+        ):
             raise BadRequestError(
                 f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks."
             )

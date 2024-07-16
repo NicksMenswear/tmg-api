@@ -291,7 +291,7 @@ def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
 
 
 def create_default_look(page: Page, name):
-    page.goto(f"{STORE_URL}/products/suit-builder", timeout=90000)
+    page.goto(f"{STORE_URL}/products/suit-builder", timeout=120000)
 
     look_name_input = page.locator(f'input[name="properties[_Name this Look]"]')
     look_name_input.fill(name)
@@ -301,7 +301,7 @@ def create_default_look(page: Page, name):
 
 
 def get_look_by_name_on_looks_page(page: Page, look_name):
-    page.wait_for_selector('div.tmg-heading h1:text("My Looks")', timeout=60000)
+    page.wait_for_selector('div.tmg-heading h1:text("My Looks")', timeout=90000)
 
     look_card_locator = page.locator(f'div.tmg-look-card:has-text("{look_name}")')
     data_look_id = look_card_locator.get_attribute("data-look-id")

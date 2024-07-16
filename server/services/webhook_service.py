@@ -4,7 +4,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from server.database.models import SourceType, OrderType
+from server.database.database_manager import db
+from server.database.models import SourceType, OrderType, ShopifyWebhook
 from server.models.order_model import CreateOrderModel, AddressModel, CreateProductModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError, ServiceError
@@ -53,6 +54,20 @@ class WebhookService:
         self.size_service = size_service
         self.measurement_service = measurement_service
         self.sku_builder = sku_builder
+
+    def store_webhook(self, payload: Dict[str, Any]) -> uuid.UUID:
+        try:
+            shopify_webhook = ShopifyWebhook(
+                event_type=payload.get("topic"),
+                payload=payload,
+            )
+            db.session.add(shopify_webhook)
+            db.session.commit()
+            db.session.refresh(shopify_webhook)
+
+            return shopify_webhook.id
+        except Exception as e:
+            raise ServiceError("Failed to store webhook", e)
 
     def handle_orders_paid(self, payload: Dict[str, Any]):
         items = payload.get("line_items")

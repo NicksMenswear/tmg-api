@@ -1,3 +1,4 @@
+import logging
 import random
 import time
 
@@ -11,6 +12,8 @@ from server.tests.e2e import (
     e2e_error_handling,
 )
 from server.tests.e2e.utils import api, actions, verify
+
+logger = logging.getLogger(__name__)
 
 
 @e2e_error_handling
@@ -228,6 +231,9 @@ def test_grooms_gift(page):
     activation_link = api.get_user_activation_url(attendee_user_id)
     assert activation_link is not None
 
+    print("activation_link: " + activation_link)
+    logger.info(f"activation_link: {activation_link}")
+
     page.goto(activation_link)
 
     actions.activation_enter_password(page, attendee_password)
@@ -242,5 +248,3 @@ def test_grooms_gift(page):
     discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
     discount_tag_locator = page.locator(f'span:has-text("{discount_code_prefix}")').first
     discount_tag_locator.wait_for(state="visible")
-
-    assert discount_tag_locator.is_visible()

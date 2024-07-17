@@ -231,9 +231,6 @@ def test_grooms_gift(page):
     activation_link = api.get_user_activation_url(attendee_user_id)
     assert activation_link is not None
 
-    print("activation_link: " + activation_link)
-    logger.info(f"activation_link: {activation_link}")
-
     page.goto(activation_link)
 
     actions.activation_enter_password(page, attendee_password)

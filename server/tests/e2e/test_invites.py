@@ -58,19 +58,11 @@ def test_invite_attendee(page: Page):
     assert email_content is not None
 
     activation_link = email.get_activate_account_link_from_email(email_content)
-
-    if activation_link is None:
-        print("email_content: " + email_content)
-
     assert activation_link is not None
 
     page.goto(activation_link)
 
-    try:
-        actions.activation_enter_password(page, attendee_password)
-    except Exception as e:
-        print(activation_link)
-        raise e
+    actions.activation_enter_password(page, attendee_password)
 
     confirmation_email_body = email.look_for_email(
         EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email, 300

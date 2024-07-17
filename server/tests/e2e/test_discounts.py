@@ -189,7 +189,6 @@ def test_grooms_gift(page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
-    attendee_user_id = api.get_user_by_email(attendee_email).get("id")
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
@@ -211,6 +210,7 @@ def test_grooms_gift(page):
     time.sleep(2)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+    attendee_user_id = api.get_user_by_email(attendee_email).get("id")
 
     amount = round(random.uniform(0.01, 171.99), 2)
 

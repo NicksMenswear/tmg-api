@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from email import policy
 from time import time, sleep
+from urllib.parse import unquote
 
 from server.tests.e2e import IMAP_HOST, IMAP_PORT, EMAIL_ACCOUNT_PASSWORD, EMAIL_ACCOUNT_USERNAME
 
@@ -74,7 +75,20 @@ def get_activate_account_link_from_email(email_body: str):
     pattern = r'(https://[^/]+/account/activate/[^"\s]+)'
     match = re.search(pattern, email_body)
 
-    if match:
-        return match.group(1)
+    result = None
 
-    return None
+    if match:
+        result = match.group(1)
+
+        if result:
+            return result
+
+    pattern = r'https://click\.pstmrk\.it/[a-zA-Z0-9]+/([^"]+%2Faccount%2Factivate%2F[^/]+%2F[^/]+)'
+    match = re.search(pattern, email_body)
+
+    if match:
+        encoded_url = match.group(1)
+        decoded_url = unquote(encoded_url)
+        result = f"https://{decoded_url}"
+
+    return result

@@ -84,7 +84,7 @@ services:
       BROWSER: ${BROWSER:-chromium}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2"
+      pytest --verbose --browser $BROWSER --reruns 2 -v --random-order-bucket=package"
     deploy:
       replicas: ${LOAD:-1}
     tty: false

@@ -227,6 +227,7 @@ def test_grooms_gift(page):
     actions.logout(page)
 
     activation_link = api.get_user_activation_url(attendee_user_id)
+    print("activation_link: " + activation_link)
     assert activation_link is not None
 
     page.goto(activation_link)

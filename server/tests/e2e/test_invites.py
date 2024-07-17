@@ -60,7 +60,7 @@ def test_invite_attendee(page: Page):
     activation_link = email.get_activate_account_link_from_email(email_content)
 
     if activation_link is None:
-        print(email_content)
+        print("email_content: " + email_content)
 
     assert activation_link is not None
 

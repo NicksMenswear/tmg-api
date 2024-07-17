@@ -241,6 +241,6 @@ def test_grooms_gift(page):
 
     discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
     discount_tag_locator = page.locator(f'span:has-text("{discount_code_prefix}")').first
-    discount_tag_locator.first.wait_for(state="visible")
+    discount_tag_locator.wait_for(state="visible")
 
     assert discount_tag_locator.is_visible()

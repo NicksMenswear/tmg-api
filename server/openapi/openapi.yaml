@@ -254,7 +254,7 @@ paths:
       x-openapi-router-controller: server.controllers.users
   /users/{user_id}/activation-url:
     get:
-      operationId: generate_activation_url_for_user
+      operationId: generate_activation_url
       parameters:
         - description: Unique ID of the user to generate activation URL for
           explode: false

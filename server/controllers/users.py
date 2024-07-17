@@ -73,7 +73,7 @@ def update_user(user_id, update_user):
 
 @hmac_verification
 @error_handler
-def generate_activation_url_for_user(user_id):
+def generate_activation_url(user_id):
     user_service: UserService = FlaskApp.current().user_service
 
     return {"activation_url": user_service.generate_activation_url(user_id)}

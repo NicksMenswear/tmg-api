@@ -1,3 +1,4 @@
+import logging
 import random
 import time
 
@@ -8,13 +9,14 @@ from server.tests.e2e import (
     TEST_USER_EMAIL,
     TEST_USER_PASSWORD,
     STORE_URL,
-    EMAIL_SUBJECT_EVENT_INVITATION,
-    EMAIL_FROM,
-    EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
+    e2e_error_handling,
 )
-from server.tests.e2e.utils import api, actions, verify, email
+from server.tests.e2e.utils import api, actions, verify
+
+logger = logging.getLogger(__name__)
 
 
+@e2e_error_handling
 def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -77,6 +79,7 @@ def test_pay_dialog_correctness(page: Page):
     )
 
 
+@e2e_error_handling
 def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -126,6 +129,7 @@ def test_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
+@e2e_error_handling
 def test_pay_in_full_click(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -173,6 +177,7 @@ def test_pay_in_full_click(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, price)
 
 
+@e2e_error_handling
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -208,6 +213,7 @@ def test_grooms_gift(page):
     time.sleep(2)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+    attendee_user_id = api.get_user_by_email(attendee_email).get("id")
 
     amount = round(random.uniform(0.01, 171.99), 2)
 
@@ -222,20 +228,12 @@ def test_grooms_gift(page):
 
     actions.logout(page)
 
-    email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email)
-    assert email_content is not None
-
-    activation_link = email.get_activate_account_link_from_email(email_content, "Activate Account &amp; Get Started")
+    activation_link = api.get_user_activation_url(attendee_user_id)
     assert activation_link is not None
 
     page.goto(activation_link)
 
     actions.activation_enter_password(page, attendee_password)
-
-    confirmation_email_body = email.look_for_email(
-        EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email, 300
-    )
-    assert "You've activated your customer account." in confirmation_email_body
 
     add_suit_to_cart_button = page.locator(
         f'button.tmg-btn.addLookToCart[data-event-id="{event_id}"]:has-text("Add suit to Cart")'
@@ -245,5 +243,5 @@ def test_grooms_gift(page):
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
 
     discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
-    span_locator = page.locator(f'span:has-text("{discount_code_prefix}")')
-    assert span_locator.count() > 0
+    discount_tag_locator = page.locator(f'span:has-text("{discount_code_prefix}")').first
+    discount_tag_locator.wait_for(state="visible")

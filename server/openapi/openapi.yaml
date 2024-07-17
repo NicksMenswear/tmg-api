@@ -252,6 +252,50 @@ paths:
       tags:
         - Users
       x-openapi-router-controller: server.controllers.users
+  /users/{user_id}/activation-url:
+    get:
+      operationId: generate_activation_url
+      parameters:
+        - description: Unique ID of the user to generate activation URL for
+          explode: false
+          in: path
+          name: user_id
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+          style: simple
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      responses:
+        "201":
+          description: Activation URL generated
+      summary: Generate activation URL for user
+      tags:
+        - Users
+      x-openapi-router-controller: server.controllers.users
   /users/{user_id}/looks:
     get:
       operationId: get_user_looks

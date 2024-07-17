@@ -79,6 +79,10 @@ class AbstractShopifyService(ABC):
     def add_image_to_product(self, product_id: str, image_url: str):
         pass
 
+    @abstractmethod
+    def generate_activation_url(self, customer_id: str) -> str:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -192,6 +196,9 @@ class FakeShopifyService(AbstractShopifyService):
         return bundle_model.variant_id
 
     def add_image_to_product(self, product_id: str, image_url: str):
+        pass
+
+    def generate_activation_url(self, customer_id: str) -> str:
         pass
 
 
@@ -820,3 +827,35 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
 
         return body
+
+    def generate_activation_url(self, customer_id: str) -> str:
+        mutation = """
+            mutation customerGenerateAccountActivationUrl($customerId: ID!) {
+              customerGenerateAccountActivationUrl(customerId: $customerId) {
+                accountActivationUrl
+                userErrors
+                {
+                    field
+                    message
+                }
+              }
+            }
+            """
+
+        variables = {
+            "customerId": f"gid://shopify/Customer/{customer_id}",
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to generate activation url in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to generate activation url in shopify store. {body['errors']}")
+
+        return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")

@@ -11,10 +11,12 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_EVENT_INVITATION,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
     STORE_URL,
+    e2e_error_handling,
 )
 from server.tests.e2e.utils import api, actions, verify, email
 
 
+@e2e_error_handling
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -55,7 +57,7 @@ def test_invite_attendee(page: Page):
     email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email)
     assert email_content is not None
 
-    activation_link = email.get_activate_account_link_from_email(email_content, "Activate Account &amp; Get Started")
+    activation_link = email.get_activate_account_link_from_email(email_content)
     assert activation_link is not None
 
     page.goto(activation_link)
@@ -70,11 +72,11 @@ def test_invite_attendee(page: Page):
     verify.no_upcoming_events_visible(page)
     verify.invite_is_of_type(page, "Wedding")
     verify.invite_has_name(page, event_name)
-    # verify.invite_event_date(page, DEFAULT_EVENT_PRETTY_DATE)
     verify.invite_role_is(page, role_name)
     verify.invite_look_is(page, look_name)
 
 
+@e2e_error_handling
 def test_invite_multiple_attendees(page: Page):
     event_name = utils.generate_event_name()
 

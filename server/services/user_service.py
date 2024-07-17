@@ -129,3 +129,11 @@ class UserService:
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to update attendee size.", e)
+
+    def generate_activation_url(self, user_id: uuid.UUID) -> str:
+        user = User.query.filter_by(id=user_id).first()
+
+        if not user or not user.shopify_id:
+            raise ServiceError("User does not have a Shopify ID.")
+
+        return self.shopify_service.generate_activation_url(user.shopify_id)

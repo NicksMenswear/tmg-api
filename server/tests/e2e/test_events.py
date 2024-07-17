@@ -1,7 +1,7 @@
 from playwright.sync_api import Page
 
 from server.tests import utils
-from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD
+from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling
 from server.tests.e2e.utils import api, actions, verify
 
 DEFAULT_WEDDING_ROLES = {
@@ -19,6 +19,7 @@ DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
 DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 
+@e2e_error_handling
 def test_basic_create_event(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -41,6 +42,7 @@ def test_basic_create_event(page: Page):
     verify.attendee_to_be_visible(page, attendee_first_name, attendee_last_name)
 
 
+@e2e_error_handling
 def test_create_multiple_events(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -72,6 +74,7 @@ def test_create_multiple_events(page: Page):
     verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
 
 
+@e2e_error_handling
 def test_create_event_and_add_few_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -104,6 +107,7 @@ def test_create_event_and_add_few_attendees(page: Page):
     verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
 
 
+@e2e_error_handling
 def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -135,6 +139,7 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
     verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
 
 
+@e2e_error_handling
 def test_create_event_add_and_remove_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -160,6 +165,7 @@ def test_create_event_add_and_remove_attendees(page: Page):
     actions.delete_attendee(page, attendee_id_1)
 
 
+@e2e_error_handling
 def test_delete_event(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -187,6 +193,7 @@ def test_delete_event(page: Page):
     actions.delete_event(page, event_id_1, event_name_1)
 
 
+@e2e_error_handling
 def test_delete_all_events(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -206,6 +213,7 @@ def test_delete_all_events(page: Page):
     actions.delete_event(page, event_id_1, event_name)
 
 
+@e2e_error_handling
 def test_delete_all_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -234,6 +242,7 @@ def test_delete_all_attendees(page: Page):
     verify.no_attendee_added_to_be_visible(page, event_id)
 
 
+@e2e_error_handling
 def test_create_all_types_of_events_and_check_roles(page: Page):
     event_name1 = utils.generate_event_name()
     attendee_first_name1 = utils.generate_unique_name()
@@ -280,6 +289,7 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     verify.event_has_type(page, event_id3, "Other")
 
 
+@e2e_error_handling
 def test_roles_persistence(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()

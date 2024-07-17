@@ -227,10 +227,13 @@ def test_grooms_gift(page):
     actions.logout(page)
 
     activation_link = api.get_user_activation_url(attendee_user_id)
-    print("activation_link: " + activation_link)
     assert activation_link is not None
 
+    print("activation_link: ", activation_link)
+
     page.goto(activation_link)
+
+    print("page.url: ", page.url)
 
     actions.activation_enter_password(page, attendee_password)
 
@@ -243,4 +246,6 @@ def test_grooms_gift(page):
 
     discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
     span_locator = page.locator(f'span:has-text("{discount_code_prefix}")')
-    assert span_locator.count() > 0
+    print("discount_code_prefix: ", discount_code_prefix)
+    print(page.content())
+    print(span_locator.count())

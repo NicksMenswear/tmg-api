@@ -7,6 +7,7 @@ from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UpdateUserModel
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -68,3 +69,11 @@ def update_user(user_id, update_user):
     user = user_service.update_user(uuid.UUID(user_id), UpdateUserModel(**update_user))
 
     return user.to_response(), 200
+
+
+@hmac_verification
+@error_handler
+def generate_activation_url_for_user(user_id):
+    user_service: UserService = FlaskApp.current().user_service
+
+    return {"activation_url": user_service.generate_activation_url(user_id)}

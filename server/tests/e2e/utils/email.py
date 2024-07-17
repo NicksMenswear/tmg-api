@@ -31,7 +31,7 @@ def look_for_email(subject, email_from, email_to, timeout_seconds=120):
 def search_emails(mail, subject, email_from, email_to):
     mail.select("inbox")
 
-    formatted_date = datetime.fromtimestamp(time() - 60 * 60 * 24 * 2).strftime("%d-%b-%Y")
+    formatted_date = datetime.fromtimestamp(time() - 60 * 60 * 24).strftime("%d-%b-%Y")
     result, data = mail.uid("search", None, f'(SINCE "{formatted_date}")')
 
     if result == "OK":
@@ -70,9 +70,9 @@ def get_email_body(msg):
     return content
 
 
-def get_activate_account_link_from_email(email_body: str, link_text: str = " Activate Account "):
-    pattern = rf'<a href="([^"]+)"[^>]*>.*?<span[^>]*>{link_text}</span>.*?</a>'
-    match = re.search(pattern, email_body, re.IGNORECASE)
+def get_activate_account_link_from_email(email_body: str):
+    pattern = r'(https://[^/]+/account/activate/[^"\s]+)'
+    match = re.search(pattern, email_body)
 
     if match:
         return match.group(1)

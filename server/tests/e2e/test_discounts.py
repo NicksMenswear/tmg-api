@@ -1,6 +1,5 @@
 import random
 import time
-import unittest
 
 from playwright.sync_api import Page
 
@@ -9,13 +8,12 @@ from server.tests.e2e import (
     TEST_USER_EMAIL,
     TEST_USER_PASSWORD,
     STORE_URL,
-    EMAIL_SUBJECT_EVENT_INVITATION,
-    EMAIL_FROM,
-    EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
+    e2e_error_handling,
 )
-from server.tests.e2e.utils import api, actions, verify, email
+from server.tests.e2e.utils import api, actions, verify
 
 
+@e2e_error_handling
 def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -78,6 +76,7 @@ def test_pay_dialog_correctness(page: Page):
     )
 
 
+@e2e_error_handling
 def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -127,6 +126,7 @@ def test_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
+@e2e_error_handling
 def test_pay_in_full_click(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -174,7 +174,7 @@ def test_pay_in_full_click(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, price)
 
 
-@unittest.skip("Skipping. Does not work in CI/docker.")
+@e2e_error_handling
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -189,6 +189,7 @@ def test_grooms_gift(page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+    attendee_user_id = api.get_user_by_email(attendee_email).get("id")
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
@@ -224,20 +225,12 @@ def test_grooms_gift(page):
 
     actions.logout(page)
 
-    email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email)
-    assert email_content is not None
-
-    activation_link = email.get_activate_account_link_from_email(email_content, "Activate Account &amp; Get Started")
+    activation_link = api.get_user_activation_url(attendee_user_id)
     assert activation_link is not None
 
     page.goto(activation_link)
 
     actions.activation_enter_password(page, attendee_password)
-
-    confirmation_email_body = email.look_for_email(
-        EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email, 300
-    )
-    assert "You've activated your customer account." in confirmation_email_body
 
     add_suit_to_cart_button = page.locator(
         f'button.tmg-btn.addLookToCart[data-event-id="{event_id}"]:has-text("Add suit to Cart")'

@@ -412,6 +412,117 @@ def get_owner_add_suit_to_cart_button(page: Page, event_id: str, attendee_id: st
     return add_suit_to_cart_button
 
 
+def get_fit_survey_dialog(page: Page) -> Locator:
+    fit_survey_dialog = page.locator("div#size-selection.tmg-modal.showed")
+    fit_survey_dialog.scroll_into_view_if_needed()
+    fit_survey_dialog.wait_for(state="visible")
+
+    return fit_survey_dialog
+
+
+def populate_fit_survey(
+    page: Page,
+    age: int = 40,
+    gender: str = "Male",  # Male | Female
+    weight: int = 180,
+    height_feet: int = 5,
+    height_inch: int = 10,
+    shoe_size: str = "10.5 Wide",  # 7 | 7.5 | 8 | 8.5 | 9 | 9 Wide | 9.5 | 9.5 Wide | 10 | 10 Wide | 10.5 | 10.5 Wide | 11 | 11 Wide | 11.5 | 11.5 Wide | 12 | 12 Wide | 13 | 13 Wide | 14 | 14 Wide | 15 | 16 |
+    chest_shape: str = "Moderate",  # Low | Moderate | High
+    stomach_shape: str = "Average",  # Flat | Average | Belly
+    hip_shape: str = "Moderate",  # Low | Moderate | High
+):
+    fit_survey_dialog = get_fit_survey_dialog(page)
+
+    # age
+    age_input = fit_survey_dialog.locator("#measurement_age")
+    age_input.fill(str(age))
+
+    # gender
+    gender_radio_button = page.locator(
+        f'//label[.//span[text()="{gender}"] and .//input[@name="measurement_gender" and @value="{gender}"]]'
+    )
+    gender_radio_button.click()
+
+    # weight
+    weight_input = fit_survey_dialog.locator("#measurement_weight")
+    weight_input.scroll_into_view_if_needed()
+    weight_input.wait_for(state="visible")
+    weight_input.fill(str(weight))
+
+    # height
+    height_feet_input = fit_survey_dialog.locator("#measurement_height")
+    height_feet_input.scroll_into_view_if_needed()
+    height_feet_input.wait_for(state="visible")
+    height_feet_input.fill(str(height_feet))
+    height_feet_inch_input = fit_survey_dialog.locator("#measurement_height_inch")
+    height_feet_inch_input.fill(str(height_inch))
+
+    # shoes size
+    measurement_shoe_size_select = fit_survey_dialog.locator("#measurement_shoe_size")
+    measurement_shoe_size_select.scroll_into_view_if_needed()
+    measurement_shoe_size_select.wait_for(state="visible")
+    measurement_shoe_size_select.select_option(shoe_size)
+
+    # chest shape
+    measurement_chest_shape_radio_button = page.locator(
+        f'//input[@name="measurement_chest_shape" and @value="{chest_shape}"]/parent::label'
+    )
+    measurement_chest_shape_radio_button.scroll_into_view_if_needed()
+    measurement_chest_shape_radio_button.wait_for(state="visible")
+    measurement_chest_shape_radio_button.click()
+
+    # stomach shape
+    measurement_stomach_shape_radio_button = page.locator(
+        f'//input[@name="measurement_stomach_shape" and @value="{stomach_shape}"]/parent::label'
+    )
+    measurement_stomach_shape_radio_button.scroll_into_view_if_needed()
+    measurement_stomach_shape_radio_button.wait_for(state="visible")
+    measurement_stomach_shape_radio_button.click()
+
+    # hip shape
+    measurement_hip_shape_radio_button = page.locator(
+        f'//input[@name="measurement_hip_shape" and @value="{hip_shape}"]/parent::label'
+    )
+    measurement_hip_shape_radio_button.scroll_into_view_if_needed()
+    measurement_hip_shape_radio_button.wait_for(state="visible")
+    measurement_hip_shape_radio_button.click()
+
+    # submit
+    submit_button = fit_survey_dialog.locator("button.tmg-btn.setMeasurementBtn")
+    submit_button.scroll_into_view_if_needed()
+    submit_button.wait_for(state="visible")
+    submit_button.click()
+
+
+def attendee_checkbox_selected(page, event_id: str, attendee_id: str, type: str) -> bool:
+    attendee_item = get_attendee_block(page, event_id, attendee_id)
+
+    check_element = attendee_item.locator(f'//li[.//span[text()="{type}"]]')
+
+    return check_element.evaluate("element => element.classList.contains('active')")
+
+
+def is_style_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Style")
+
+
+def is_invite_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Invite")
+
+
+def is_fit_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Fit")
+
+
+def is_pay_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Pay")
+
+
+def is_ship_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Ship")
+
+
 def shopify_checkout_pay_with_credit_card_for_order(page: Page, firstname: str, lastname: str):
     iframe = page.frame_locator("iframe.card-fields-iframe").first
 

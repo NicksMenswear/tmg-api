@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -399,3 +401,87 @@ def test_add_myself_and_then_remove(page: Page):
 
     actions.delete_attendee(page, event_id, owner_attendee_id)
     expect(add_myself_button).to_be_enabled()
+
+
+@e2e_error_handling
+@pytest.mark.group_3
+def test_add_myself_and_fill_fit_survey(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
+
+    event_id = actions.create_new_event(page, event_name, event_type="prom")
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.open_event_accordion(page, event_id)
+
+    add_myself_button = actions.get_add_myself_button(page, event_id)
+    add_myself_button.click()
+
+    owner_user = api.get_user_by_email(TEST_USER_EMAIL)
+    owner_attendee_id = actions.get_attendee_id_by_name(
+        page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
+    )
+
+    fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
+    expect(fit_survey_button).to_be_visible()
+    fit_survey_button.click()
+
+    actions.populate_fit_survey(page, 50)
+    page.reload()
+
+    actions.open_event_accordion(page, event_id)
+
+    assert not actions.is_style_checkbox_selected(page, event_id, owner_attendee_id)
+    assert actions.is_invite_checkbox_selected(page, event_id, owner_attendee_id)
+    assert actions.is_fit_checkbox_selected(page, event_id, owner_attendee_id)
+    assert not actions.is_pay_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_ship_checkbox_selected(page, event_id, attendee_id)
+
+
+@e2e_error_handling
+@pytest.mark.group_3
+def test_style_and_invite_checkboxes(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+    look_name = "Test Look"
+    role_name = "Attendee Parent or Chaperone"
+
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    api.delete_all_looks(user_id)
+    api.create_look("Test Look", user_id)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
+
+    event_id = actions.create_new_event(page, event_name, event_type="prom")
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.open_event_accordion(page, event_id)
+
+    assert not actions.is_style_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_invite_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_fit_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_pay_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_ship_checkbox_selected(page, event_id, attendee_id)
+
+    actions.select_role_for_attendee(page, event_id, attendee_id, role_name)
+    time.sleep(2)
+    actions.select_look_for_attendee(page, event_id, attendee_id, look_name)
+    time.sleep(2)
+
+    assert actions.is_style_checkbox_selected(page, event_id, attendee_id)
+
+    actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+    time.sleep(2)
+    assert actions.is_invite_checkbox_selected(page, event_id, attendee_id)

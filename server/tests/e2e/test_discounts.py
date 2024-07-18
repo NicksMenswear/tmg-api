@@ -3,7 +3,7 @@ import random
 import time
 
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
 from server.tests import utils
 from server.tests.e2e import (
@@ -49,7 +49,8 @@ def test_pay_dialog_correctness(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -107,7 +108,8 @@ def test_discount_intent_saved(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -158,7 +160,8 @@ def test_pay_in_full_click(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -208,7 +211,8 @@ def test_grooms_gift(page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -237,7 +241,11 @@ def test_grooms_gift(page):
     page.goto(activation_link)
     actions.activation_enter_password(page, attendee_password)
 
+    # wait for discount codes being processed by webhook
+    codes = actions.get_processed_discount_codes_for_event(event_id)
+    assert len(codes) > 0
+
     actions.attendee_add_suit_to_cart(page, event_id)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
-    verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
+    verify.shopify_checkout_has_discount_with_name(page, codes[0])

@@ -78,7 +78,7 @@ jobs:
         if: ${{ failure() && inputs.notify }}
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: 'C06KT69EN30,C06V758NKQF' # Notifications
+          channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
             *E2E "${{ inputs.stage }}" failed* :red_circle:
             *Ref:* "${{ inputs.ref }}"

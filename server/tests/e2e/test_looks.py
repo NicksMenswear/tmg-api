@@ -9,7 +9,7 @@ from server.tests.e2e.utils import api, actions, verify
 
 
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_5
 def test_create_delete_looks(page: Page):
     look_name = utils.generate_look_name()
 

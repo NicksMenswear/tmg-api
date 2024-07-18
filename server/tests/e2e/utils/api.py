@@ -139,3 +139,16 @@ def get_user_activation_url(user_id):
         return response.json().get("activation_url")
 
     raise Exception(f"Failed to get user activation url by user_id: {user_id}")
+
+
+def get_discounts_for_event(event_id):
+    response = requests.get(
+        f"{BASE_API_URL}/events/{event_id}/discounts",
+        params=API_HMAC_QUERY_PARAMS,
+        headers=API_HEADERS,
+    )
+
+    if response.status_code == 200:
+        return response.json()
+
+    raise Exception(f"Failed to get discounts for event by event_id: {event_id}")

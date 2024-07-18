@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from playwright.sync_api import Page, expect, Locator
 
@@ -8,6 +9,7 @@ from server.tests.e2e import (
     STORE_PASSWORD,
     HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS,
 )
+from server.tests.e2e.utils import api
 
 
 def access_store(page: Page):
@@ -549,6 +551,11 @@ def shopify_checkout_pay_with_credit_card_for_order(page: Page, firstname: str, 
     pay_now_button = page.locator('button:has-text("Pay now")').first
     pay_now_button.click()
 
+    time.sleep(5)
+
+    order_confirmed_element = page.locator('h2:has-text("Your order is confirmed")')
+    expect(order_confirmed_element.first).to_be_visible()
+
 
 def shopify_checkout_enter_billing_address(
     page: Page,
@@ -581,3 +588,21 @@ def shopify_checkout_enter_billing_address(
 def shopify_checkout_continue_to_payment(page: Page):
     continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
     continue_to_payment_button.click()
+
+
+def get_processed_discount_codes_for_event(event_id: str) -> List[str]:
+    iteration = 0
+
+    while iteration <= 24:  # 2 minutes
+        discounts = api.get_discounts_for_event(event_id)
+
+        assert len(discounts) == 1
+
+        if len(discounts[0].get("gift_codes")) == 0:
+            time.sleep(5)
+            iteration += 1
+            break
+
+        return [discount.get("code") for discount in discounts[0].get("gift_codes")]
+
+    return []

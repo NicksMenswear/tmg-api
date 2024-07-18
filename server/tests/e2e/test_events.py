@@ -434,6 +434,9 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     fit_survey_button.click()
 
     actions.populate_fit_survey(page, 50)
+
+    time.sleep(3)  # wait for the survey to be saved
+
     page.reload()
 
     actions.open_event_accordion(page, event_id)

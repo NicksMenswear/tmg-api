@@ -241,7 +241,11 @@ def test_grooms_gift(page):
     page.goto(activation_link)
     actions.activation_enter_password(page, attendee_password)
 
+    # wait for discount codes being processed by webhook
+    codes = actions.get_processed_discount_codes_for_event(event_id)
+    assert len(codes) > 0
+
     actions.attendee_add_suit_to_cart(page, event_id)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
-    verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
+    verify.shopify_checkout_has_discount_with_name(page, codes[0])

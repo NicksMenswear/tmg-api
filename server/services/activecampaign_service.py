@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
+import json
 from urllib.parse import urlencode
 
 from server.controllers.util import http
@@ -56,11 +57,11 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             "actid": "1000679488",
             "key": "d19165c01ccb298a7b080576932716047ce11d5c",
             "event": event,
-            "visit": {"email": email},
+            "visit": json.dumps({"email": email}),
         }
         headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
 
-        response = http("POST", url, headers=headers, json=payload)
+        response = http("POST", url, headers=headers, body=urlencode(payload))
         if response.status >= 400:
             raise ServiceError(f"Error using ActiveCampaign Tracking: {response.data.decode('utf-8')}")
 

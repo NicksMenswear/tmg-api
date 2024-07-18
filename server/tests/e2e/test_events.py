@@ -1,5 +1,5 @@
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
 from server.tests import utils
 from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling
@@ -35,13 +35,15 @@ def test_basic_create_event(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
 
-    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
 
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
-    verify.attendee_to_be_visible(page, attendee_first_name, attendee_last_name)
+    attendee_block = actions.get_attendee_block(page, event_id, attendee_id)
+    expect(attendee_block).to_be_visible()
 
 
 @e2e_error_handling
@@ -63,18 +65,24 @@ def test_create_multiple_events(page: Page):
     verify.no_upcoming_events_visible(page)
 
     event_id_1 = actions.create_new_event(page, event_name_1)
-    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name_1)
+    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    event_block = actions.get_event_block(page, event_id_1)
+    expect(event_block).to_be_visible()
 
     event_id_2 = actions.create_new_event(page, event_name_2)
-    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    verify.event_to_be_visible(page, event_name_2)
+    attendee_id_2 = actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    event_block = actions.get_event_block(page, event_id_2)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id_1)
-    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
+
+    attendee_block_1 = actions.get_attendee_block(page, event_id_1, attendee_id_1)
+    expect(attendee_block_1).to_be_visible()
 
     actions.open_event_accordion(page, event_id_2)
-    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
+
+    attendee_block_2 = actions.get_attendee_block(page, event_id_2, attendee_id_2)
+    expect(attendee_block_2).to_be_visible()
 
 
 @e2e_error_handling
@@ -97,18 +105,24 @@ def test_create_event_and_add_few_attendees(page: Page):
     verify.no_upcoming_events_visible(page)
 
     event_id = actions.create_new_event(page, event_name)
-    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
 
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
-    actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
+    attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    attendee_id_3 = actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
 
-    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
-    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
-    verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
+    attendee_block_1 = actions.get_attendee_block(page, event_id, attendee_id_1)
+    expect(attendee_block_1).to_be_visible()
+
+    attendee_block_2 = actions.get_attendee_block(page, event_id, attendee_id_2)
+    expect(attendee_block_2).to_be_visible()
+
+    attendee_block_3 = actions.get_attendee_block(page, event_id, attendee_id_3)
+    expect(attendee_block_3).to_be_visible()
 
 
 @e2e_error_handling
@@ -131,17 +145,29 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
     verify.no_upcoming_events_visible(page)
 
     event_id = actions.create_new_event(page, event_name)
-    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1, "Save & Add Next")
-    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2, "Save & Add Next")
-    actions.add_first_attendee(page, attendee_first_name_3, attendee_last_name_3, attendee_email_3, "Save")
+    attendee_id_1 = actions.add_first_attendee(
+        page, attendee_first_name_1, attendee_last_name_1, attendee_email_1, "Save & Add Next"
+    )
+    attendee_id_2 = actions.add_first_attendee(
+        page, attendee_first_name_2, attendee_last_name_2, attendee_email_2, "Save & Add Next"
+    )
+    attendee_id_3 = actions.add_first_attendee(
+        page, attendee_first_name_3, attendee_last_name_3, attendee_email_3, "Save"
+    )
 
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
-    verify.attendee_to_be_visible(page, attendee_first_name_1, attendee_last_name_1)
-    verify.attendee_to_be_visible(page, attendee_first_name_2, attendee_last_name_2)
-    verify.attendee_to_be_visible(page, attendee_first_name_3, attendee_last_name_3)
+    attendee_block_1 = actions.get_attendee_block(page, event_id, attendee_id_1)
+    expect(attendee_block_1).to_be_visible()
+
+    attendee_block_2 = actions.get_attendee_block(page, event_id, attendee_id_2)
+    expect(attendee_block_2).to_be_visible()
+
+    attendee_block_3 = actions.get_attendee_block(page, event_id, attendee_id_3)
+    expect(attendee_block_3).to_be_visible()
 
 
 @e2e_error_handling
@@ -162,13 +188,14 @@ def test_create_event_add_and_remove_attendees(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
     actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
 
-    actions.delete_attendee(page, attendee_id_1)
+    actions.delete_attendee(page, event_id, attendee_id_1)
 
 
 @e2e_error_handling
@@ -191,11 +218,13 @@ def test_delete_event(page: Page):
 
     event_id_1 = actions.create_new_event(page, event_name_1)
     actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name_1)
+    event_block = actions.get_event_block(page, event_id_1)
+    expect(event_block).to_be_visible()
 
-    actions.create_new_event(page, event_name_2)
+    event_id_2 = actions.create_new_event(page, event_name_2)
     actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
-    verify.event_to_be_visible(page, event_name_2)
+    event_block = actions.get_event_block(page, event_id_2)
+    expect(event_block).to_be_visible()
 
     actions.delete_event(page, event_id_1, event_name_1)
 
@@ -214,11 +243,12 @@ def test_delete_all_events(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
-    event_id_1 = actions.create_new_event(page, event_name)
+    event_id = actions.create_new_event(page, event_name)
     actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
-    actions.delete_event(page, event_id_1, event_name)
+    actions.delete_event(page, event_id, event_name)
 
 
 @e2e_error_handling
@@ -239,14 +269,15 @@ def test_delete_all_attendees(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
     attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
 
-    actions.delete_attendee(page, attendee_id_1)
-    actions.delete_attendee(page, attendee_id_2)
+    actions.delete_attendee(page, event_id, attendee_id_1)
+    actions.delete_attendee(page, event_id, attendee_id_2)
 
     verify.no_attendee_added_to_be_visible(page, event_id)
 
@@ -325,3 +356,46 @@ def test_roles_persistence(page: Page):
     actions.open_event_accordion(page, event_id)
 
     verify.role_is_selected_for_attendee(page, event_id, attendee_id, role_id)
+
+
+@e2e_error_handling
+@pytest.mark.group_3
+def test_add_myself_and_then_remove(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
+
+    event_id = actions.create_new_event(page, event_name, event_type="prom")
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.open_event_accordion(page, event_id)
+
+    add_myself_button = actions.get_add_myself_button(page, event_id)
+    add_myself_button.click()
+    expect(add_myself_button).to_be_disabled()
+
+    owner_user = api.get_user_by_email(TEST_USER_EMAIL)
+    owner_attendee_id = actions.get_attendee_id_by_name(
+        page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
+    )
+
+    fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
+    expect(fit_survey_button).to_be_visible()
+
+    add_suitor_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    expect(add_suitor_button).to_be_visible()
+
+    owner_attendee_block = actions.get_attendee_block(page, event_id, owner_attendee_id)
+    expect(owner_attendee_block).to_be_visible()
+
+    attendee_block = actions.get_attendee_block(page, event_id, attendee_id)
+    expect(attendee_block).to_be_visible()
+
+    actions.delete_attendee(page, event_id, owner_attendee_id)
+    expect(add_myself_button).to_be_enabled()

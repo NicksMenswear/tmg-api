@@ -1,6 +1,6 @@
 import time
 
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page, expect, Locator
 
 from server.tests.e2e import (
     REQUIRE_STORE_PASSWORD,
@@ -62,24 +62,6 @@ def select_max_available_day_in_calendar(page: Page):
             return
         else:
             day -= 1
-
-
-def expect_no_upcoming_events_visible(page: Page):
-    expect(page.get_by_text("No Upcoming Events.").first).to_be_visible()
-
-
-def expect_event_to_be_visible(page: Page, event_name: str, event_date: str):
-    expect(page.get_by_role("heading", name=event_name).first).to_be_visible()
-    expect(page.get_by_text(event_date).first).to_be_visible()
-
-
-def expect_attendee_to_be_visible(page: Page, attendee_first_name: str, attendee_last_name: str):
-    attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item")]//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]//ancestor::div[@class="tmg-attendees-item"]'
-    ).first
-    attendee_item.scroll_into_view_if_needed()
-    attendee_item.wait_for(state="visible")
-    expect(attendee_item.first).to_be_visible()
 
 
 def open_event_accordion(page: Page, event_id: str):
@@ -176,8 +158,10 @@ def delete_event(page: Page, event_id: str, event_name: str):
     expect(page.get_by_role("heading", name=event_name).first).not_to_be_visible()
 
 
-def delete_attendee(page: Page, attendee_id: str):
-    delete_attendee_btn = page.locator(
+def delete_attendee(page: Page, event_id: str, attendee_id: str):
+    event_locator = page.locator(f'div[data-event-id="{event_id}"]')
+
+    delete_attendee_btn = event_locator.locator(
         f'//div[contains(@class, "tmg-attendees-item") and @data-attendee-id="{attendee_id}"]//button[contains(@class, "tmg-btn") and contains(@class, "removeAttendee")]'
     )
     delete_attendee_btn.scroll_into_view_if_needed()
@@ -188,7 +172,7 @@ def delete_attendee(page: Page, attendee_id: str):
     confirm_btn.wait_for(state="visible")
     confirm_btn.click()
 
-    attendee_item = page.locator(f'div.tmg-attendees-item[data-attendee-id="{attendee_id}"]')
+    attendee_item = event_locator.locator(f'div.tmg-attendees-item[data-attendee-id="{attendee_id}"]')
     attendee_item.wait_for(state="hidden")
 
     expect(attendee_item.first).not_to_be_visible()
@@ -354,6 +338,78 @@ def attendee_add_suit_to_cart(page: Page, event_id: str):
         f'button.tmg-btn.addLookToCart[data-event-id="{event_id}"]:has-text("Add suit to Cart")'
     )
     add_suit_to_cart_button.click()
+
+
+def get_add_myself_button(page: Page, event_id: str):
+    event_locator = get_event_block(page, event_id)
+
+    add_myself_button = event_locator.locator(f'button[data-event-id="{event_id}"].tmg-btn.addMySelf')
+    add_myself_button.scroll_into_view_if_needed()
+    add_myself_button.wait_for(state="visible")
+
+    return add_myself_button
+
+
+def get_attendee_id_by_name(page: Page, event_id: str, attendee_firstname: str, attendee_lastname: str) -> str:
+    event_locator = get_event_block(page, event_id)
+
+    attendee_item = event_locator.locator(
+        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_firstname} {attendee_lastname}")]]'
+    ).first
+    attendee_item.scroll_into_view_if_needed()
+    attendee_item.wait_for(state="visible")
+
+    attendee_id = attendee_item.get_attribute("data-attendee-id")
+
+    assert attendee_id is not None
+
+    return attendee_id
+
+
+def get_event_id_by_name(page: Page, event_name: str):
+    event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]').first
+    event_item.scroll_into_view_if_needed()
+    return event_item.get_attribute("data-event-id")
+
+
+def get_event_block(page: Page, event_id: str) -> Locator:
+    event_locator = page.locator(f'div[data-event-id="{event_id}"]')
+    event_locator.scroll_into_view_if_needed()
+    event_locator.wait_for(state="visible")
+
+    return page.locator(f'div[data-event-id="{event_id}"]')
+
+
+def get_attendee_block(page: Page, event_id: str, attendee_id: str) -> Locator:
+    event_locator = get_event_block(page, event_id)
+
+    attendee_locator = event_locator.locator(
+        f'//div[contains(@class, "tmg-attendees-item") and @data-attendee-id="{attendee_id}"]'
+    )
+    attendee_locator.scroll_into_view_if_needed()
+    attendee_locator.wait_for(state="visible")
+
+    return attendee_locator
+
+
+def get_owner_fit_survey_button(page: Page, event_id: str, attendee_id: str) -> Locator:
+    attendee_locator = get_attendee_block(page, event_id, attendee_id)
+
+    fit_survey_button = attendee_locator.locator('button:has-text("Fit Survey")').first
+    fit_survey_button.scroll_into_view_if_needed()
+    fit_survey_button.wait_for(state="visible")
+
+    return fit_survey_button
+
+
+def get_owner_add_suit_to_cart_button(page: Page, event_id: str, attendee_id: str) -> Locator:
+    attendee_locator = get_attendee_block(page, event_id, attendee_id)
+
+    add_suit_to_cart_button = attendee_locator.locator("button.addSuitToCart").first
+    add_suit_to_cart_button.scroll_into_view_if_needed()
+    add_suit_to_cart_button.wait_for(state="visible")
+
+    return add_suit_to_cart_button
 
 
 def shopify_checkout_pay_with_credit_card_for_order(page: Page, firstname: str, lastname: str):

@@ -12,21 +12,6 @@ def no_upcoming_events_visible(page: Page):
     tmg_event_content.locator(".preloader").wait_for(state="hidden")
 
 
-def event_to_be_visible(page: Page, event_name: str):
-    event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
-    event_item.scroll_into_view_if_needed()
-    expect(event_item.first).to_be_visible()
-
-
-def attendee_to_be_visible(page: Page, attendee_first_name: str, attendee_last_name: str):
-    attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
-    ).first
-    attendee_item.scroll_into_view_if_needed()
-    attendee_item.wait_for(state="visible")
-    expect(attendee_item.first).to_be_visible()
-
-
 def no_attendee_added_to_be_visible(page: Page, event_id: str):
     expect(page.locator(f'div[data-event-id="{event_id}"] >> text=No attendees added.')).to_be_visible()
 

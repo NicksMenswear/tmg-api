@@ -17,17 +17,21 @@ class AbstractActiveCampaignService(ABC):
     def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
         pass
 
+    @abstractmethod
+    def track_event(self, email, event):
+        pass
+
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
         pass
 
+    def track_event(self, email, event):
+        pass
+
 
 class ActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
-        # if STAGE != "prd":
-        #     return
-
         body = {
             "contact": {
                 "email": email,
@@ -46,9 +50,6 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             self.track_event(email, event)
 
     def track_event(self, email, event):
-        # if STAGE != "prd":
-        #     return
-
         url = "https://trackcmp.net/event"
         payload = {
             # These IDs are shared on FE so safe to hardcode

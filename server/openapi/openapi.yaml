@@ -347,7 +347,7 @@ paths:
         - Users
         - Looks
       x-openapi-router-controller: server.controllers.users
-  /ac:
+  /ac/contact:
     post:
       operationId: sync_contact
       parameters:
@@ -387,6 +387,60 @@ paths:
         "201":
           description: Contact synced
       summary: Sync contact
+      tags:
+        - ActiveCampaign
+      x-openapi-router-controller: server.controllers.activecampaign
+  /ac/event:
+    post:
+      operationId: track_event
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  title: email
+                  $ref: '#/components/schemas/email'
+                event:
+                  title: event
+                  type: string
+              required:
+                - email
+                - event
+              title: TrackEvent
+              type: object
+        required: true
+        x-body-name: track_event
+      responses:
+        "201":
+          description: Event tracked
+      summary: Track Event
       tags:
         - ActiveCampaign
       x-openapi-router-controller: server.controllers.activecampaign

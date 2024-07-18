@@ -305,7 +305,7 @@ paths:
       x-openapi-router-controller: server.controllers.users
   /ac:
     post:
-      operationId: create_contact
+      operationId: sync_contact
       parameters:
         - in: query
           name: logged_in_customer_id
@@ -336,13 +336,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/SyncContact"
         required: true
-        x-body-name: create_user
+        x-body-name: sync_contact
       responses:
         "201":
-          description: Contact created
-      summary: Create contact
+          description: Contact synced
+      summary: Sync contact
       tags:
         - ActiveCampaign
       x-openapi-router-controller: server.controllers.activecampaign
@@ -2008,4 +2008,28 @@ components:
         - user_id
         - data
       title: Measurement
+      type: object
+
+    SyncContact:
+      properties:
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        fields:
+          title: fields
+          type: object
+        events:
+          title: events
+          type: array
+          items:
+            type: string
+      required:
+        - email
+      title: SyncContact
       type: object

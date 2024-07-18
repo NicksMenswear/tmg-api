@@ -1,9 +1,11 @@
 import os
 from abc import ABC, abstractmethod
 
+from urllib.parse import urlencode
+
 from server.controllers.util import http
-from server.services import ServiceError
-from server.models.user_model import CreateUserModel
+from server.services import ServiceError, DuplicateError
+from server.services.activecampaign_fields import field_resolver
 
 ACTIVECAMPAIGN_API_URL = os.getenv("ACTIVECAMPAIGN_API_URL")
 ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
@@ -11,25 +13,47 @@ ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 
 class AbstractActiveCampaignService(ABC):
     @abstractmethod
-    def create_contact(self, user: CreateUserModel):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
         pass
 
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
-    def create_contact(self, user: CreateUserModel):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
         pass
 
 
 class ActiveCampaignService(AbstractActiveCampaignService):
-    def create_contact(self, user: CreateUserModel):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
         body = {
             "contact": {
-                "email": user.email,
-                "firstName": user.first_name,
-                "lastName": user.last_name,
-            }
+                "email": email,
+            },
         }
-        self._activecampaign_request("POST", "contacts", body)
+        if first_name:
+            body["contact"]["firstName"] = first_name
+        if last_name:
+            body["contact"]["lastName"] = last_name
+        if fields:
+            body["fieldValues"] = field_resolver(fields)
+
+        self._activecampaign_request("POST", "contact/sync", body)
+        for event in events:
+            self.track_event(email, event)
+
+    def track_event(email, event):
+        url = "https://trackcmp.net/event"
+        payload = {
+            # These IDs are shared on FE so safe to hardcode
+            "actid": "1000679488",
+            "key": "d19165c01ccb298a7b080576932716047ce11d5c",
+            "event": event,
+            "visit": {"email": email},
+        }
+        headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
+
+        response = http(url, data=urlencode(payload), headers=headers)
+        if response.status >= 400:
+            raise ServiceError(f"Error using ActiveCampaign Tracking: {response.data.decode('utf-8')}")
 
     def _activecampaign_request(self, method, path, json):
         headers = {
@@ -44,7 +68,6 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             json=json,
         )
         if response.status == 422:
-            # Ignore duplicates
-            return
+            raise DuplicateError()
         if response.status >= 400:
             raise ServiceError(f"Error using ActiveCampaign: {response.data.decode('utf-8')}")

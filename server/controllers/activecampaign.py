@@ -1,7 +1,6 @@
 import logging
 
 from server.controllers.util import hmac_verification, error_handler
-from server.models.user_model import CreateUserModel
 from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
@@ -9,9 +8,19 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def create_contact(create_user):
+def sync_contact(sync_contact):
     activecampaign_service = FlaskApp.current().activecampaign_service
 
-    activecampaign_service.create_contact(CreateUserModel(**create_user))
+    activecampaign_service.sync_contact(**sync_contact)
+
+    return None, 201
+
+
+@hmac_verification
+@error_handler
+def track_event(track_event):
+    activecampaign_service = FlaskApp.current().activecampaign_service
+
+    activecampaign_service.track_event(**track_event)
 
     return None, 201

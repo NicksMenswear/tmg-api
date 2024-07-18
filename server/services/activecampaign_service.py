@@ -7,6 +7,7 @@ from server.controllers.util import http
 from server.services import ServiceError, DuplicateError
 from server.services.activecampaign_fields import field_resolver
 
+STAGE = os.getenv("STAGE")
 ACTIVECAMPAIGN_API_URL = os.getenv("ACTIVECAMPAIGN_API_URL")
 ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 
@@ -24,6 +25,9 @@ class FakeActiveCampaignService(AbstractActiveCampaignService):
 
 class ActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[]):
+        # if STAGE != "prd":
+        #     return
+
         body = {
             "contact": {
                 "email": email,
@@ -37,10 +41,14 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             body["fieldValues"] = field_resolver(fields)
 
         self._activecampaign_request("POST", "contact/sync", body)
+
         for event in events:
             self.track_event(email, event)
 
-    def track_event(email, event):
+    def track_event(self, email, event):
+        # if STAGE != "prd":
+        #     return
+
         url = "https://trackcmp.net/event"
         payload = {
             # These IDs are shared on FE so safe to hardcode

@@ -199,6 +199,7 @@ class AttendeeService:
                 db.session.add(new_attendee)
                 db.session.commit()
                 db.session.refresh(new_attendee)
+                track_event()
             except Exception as e:
                 raise ServiceError("Failed to create attendee.", e)
 

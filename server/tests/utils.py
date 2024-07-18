@@ -3,6 +3,7 @@ import string
 
 
 def generate_unique_string(min_length: int = 5, max_length: int = 10) -> str:
+    random.seed()
     length = random.randint(min_length, max_length)
 
     return "".join(random.choices(string.ascii_lowercase, k=length))

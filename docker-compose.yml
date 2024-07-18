@@ -90,5 +90,95 @@ services:
     tty: false
     restart: "no"
 
+  test-e2e-group-1:
+    image: mcr.microsoft.com/playwright/python:latest
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/server/tests/e2e/
+    environment:
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
+      BROWSER: ${BROWSER:-chromium}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+01@hotmail.com}
+    command: >
+      bash -c "pip install -r ../../../requirements-dev.txt &&
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_1"
+    deploy:
+      replicas: ${LOAD:-1}
+    tty: false
+    restart: "no"
+
+  test-e2e-group-2:
+    image: mcr.microsoft.com/playwright/python:latest
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/server/tests/e2e/
+    environment:
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
+      BROWSER: ${BROWSER:-chromium}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+02@hotmail.com}
+    command: >
+      bash -c "pip install -r ../../../requirements-dev.txt &&
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_2"
+    deploy:
+      replicas: ${LOAD:-1}
+    tty: false
+    restart: "no"
+
+  test-e2e-group-3:
+    image: mcr.microsoft.com/playwright/python:latest
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/server/tests/e2e/
+    environment:
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
+      BROWSER: ${BROWSER:-chromium}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+03@hotmail.com}
+    command: >
+      bash -c "pip install -r ../../../requirements-dev.txt &&
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_3"
+    deploy:
+      replicas: ${LOAD:-1}
+    tty: false
+    restart: "no"
+
+  test-e2e-group-4:
+    image: mcr.microsoft.com/playwright/python:latest
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/server/tests/e2e/
+    environment:
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
+      BROWSER: ${BROWSER:-chromium}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+04@hotmail.com}
+    command: >
+      bash -c "pip install -r ../../../requirements-dev.txt &&
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_4"
+    deploy:
+      replicas: ${LOAD:-1}
+    tty: false
+    restart: "no"
+
+  test-e2e-group-5:
+    image: mcr.microsoft.com/playwright/python:latest
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app/server/tests/e2e/
+    environment:
+      PYTHONUNBUFFERED: 1
+      ACTIVE_ENV: ${ACTIVE_ENV:-stg}
+      BROWSER: ${BROWSER:-chromium}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+05@hotmail.com}
+    command: >
+      bash -c "pip install -r ../../../requirements-dev.txt &&
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_5"
+    deploy:
+      replicas: ${LOAD:-1}
+    tty: false
+    restart: "no"
+
 volumes:
   postgres_data:

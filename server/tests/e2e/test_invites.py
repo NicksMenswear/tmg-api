@@ -1,7 +1,8 @@
 import time
 import uuid
 
-from playwright.sync_api import Page
+import pytest
+from playwright.sync_api import Page, expect
 
 from server.tests import utils
 from server.tests.e2e import (
@@ -11,10 +12,13 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_EVENT_INVITATION,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
     STORE_URL,
+    e2e_error_handling,
 )
 from server.tests.e2e.utils import api, actions, verify, email
 
 
+@e2e_error_handling
+@pytest.mark.group_1
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -39,7 +43,8 @@ def test_invite_attendee(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -55,7 +60,7 @@ def test_invite_attendee(page: Page):
     email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email)
     assert email_content is not None
 
-    activation_link = email.get_activate_account_link_from_email(email_content, "Activate Account &amp; Get Started")
+    activation_link = email.get_activate_account_link_from_email(email_content)
     assert activation_link is not None
 
     page.goto(activation_link)
@@ -70,11 +75,12 @@ def test_invite_attendee(page: Page):
     verify.no_upcoming_events_visible(page)
     verify.invite_is_of_type(page, "Wedding")
     verify.invite_has_name(page, event_name)
-    # verify.invite_event_date(page, DEFAULT_EVENT_PRETTY_DATE)
     verify.invite_role_is(page, role_name)
     verify.invite_look_is(page, look_name)
 
 
+@e2e_error_handling
+@pytest.mark.group_2
 def test_invite_multiple_attendees(page: Page):
     event_name = utils.generate_event_name()
 
@@ -113,7 +119,8 @@ def test_invite_multiple_attendees(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 

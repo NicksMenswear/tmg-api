@@ -1,8 +1,12 @@
 import os
+import traceback
+from functools import wraps
+
+from playwright.sync_api import Page
 
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
-TEST_USER_EMAIL = "e2etmg+01@hotmail.com"
+TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2etmg+05@hotmail.com")
 TEST_USER_PASSWORD = "123456"
 EMAIL_FROM = "info@themoderngroom.com"
 IMAP_HOST = "outlook.office365.com"
@@ -19,7 +23,7 @@ STORE_CONFIG = {
     "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123", "require_store_password": True},
     "stg": {"url": "https://tmg-staging.myshopify.com", "password": "test123", "require_store_password": True},
     "prd": {
-        "url": "https://themodern-groom.myshopify.com",
+        "url": "https://new.themoderngroom.com",
         "password": "test123",
         "require_store_password": False,
         "has_additional_initial_screen_on_store_access": True,
@@ -70,3 +74,18 @@ API_HEADERS = {
     "Content-Type": "application/json",
     "Accept": "application/json",
 }
+
+
+def e2e_error_handling(func):
+    @wraps(func)
+    def wrapper(page: Page, *args, **kwargs):
+        try:
+            return func(page, *args, **kwargs)
+        except Exception as e:
+            print("An error occurred: ============================================\n", e)
+            print("Traceback: ============================================\n", traceback.format_exc())
+            print("Current URL: ============================================\n", page.url)
+            print("HTML Content: ============================================\n", page.content())
+            raise
+
+    return wrapper

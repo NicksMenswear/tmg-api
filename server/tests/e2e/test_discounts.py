@@ -1,20 +1,24 @@
+import logging
 import random
 import time
 
-from playwright.sync_api import Page
+import pytest
+from playwright.sync_api import Page, expect
 
 from server.tests import utils
 from server.tests.e2e import (
     TEST_USER_EMAIL,
     TEST_USER_PASSWORD,
     STORE_URL,
-    EMAIL_SUBJECT_EVENT_INVITATION,
-    EMAIL_FROM,
-    EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
+    e2e_error_handling,
 )
-from server.tests.e2e.utils import api, actions, verify, email
+from server.tests.e2e.utils import api, actions, verify
+
+logger = logging.getLogger(__name__)
 
 
+@e2e_error_handling
+@pytest.mark.group_4
 def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -45,7 +49,8 @@ def test_pay_dialog_correctness(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -77,6 +82,8 @@ def test_pay_dialog_correctness(page: Page):
     )
 
 
+@e2e_error_handling
+@pytest.mark.group_3
 def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -101,7 +108,8 @@ def test_discount_intent_saved(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -126,6 +134,8 @@ def test_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
+@e2e_error_handling
+@pytest.mark.group_2
 def test_pay_in_full_click(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -150,7 +160,8 @@ def test_pay_in_full_click(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -173,6 +184,8 @@ def test_pay_in_full_click(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, price)
 
 
+@e2e_error_handling
+@pytest.mark.group_5
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -198,7 +211,8 @@ def test_grooms_gift(page):
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
-    verify.event_to_be_visible(page, event_name)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
 
     actions.open_event_accordion(page, event_id)
 
@@ -208,6 +222,7 @@ def test_grooms_gift(page):
     time.sleep(2)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+    attendee_user_id = api.get_user_by_email(attendee_email).get("id")
 
     amount = round(random.uniform(0.01, 171.99), 2)
 
@@ -215,35 +230,22 @@ def test_grooms_gift(page):
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(amount))
 
-    continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
-    continue_to_payment_button.click()
-
-    actions.shopify_pay_with_credit_card_for_order(page)
+    actions.shopify_checkout_enter_billing_address(page, attendee_first_name, attendee_last_name)
+    actions.shopify_checkout_continue_to_payment(page)
+    actions.shopify_checkout_pay_with_credit_card_for_order(page, attendee_first_name, attendee_last_name)
 
     actions.logout(page)
 
-    email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email)
-    assert email_content is not None
-
-    activation_link = email.get_activate_account_link_from_email(email_content, "Activate Account &amp; Get Started")
+    activation_link = api.get_user_activation_url(attendee_user_id)
     assert activation_link is not None
-
     page.goto(activation_link)
-
     actions.activation_enter_password(page, attendee_password)
 
-    confirmation_email_body = email.look_for_email(
-        EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email, 300
-    )
-    assert "You've activated your customer account." in confirmation_email_body
+    # wait for discount codes being processed by webhook
+    codes = actions.get_processed_discount_codes_for_event(event_id)
+    assert len(codes) > 0
 
-    add_suit_to_cart_button = page.locator(
-        f'button.tmg-btn.addLookToCart[data-event-id="{event_id}"]:has-text("Add suit to Cart")'
-    )
-    add_suit_to_cart_button.click()
+    actions.attendee_add_suit_to_cart(page, event_id)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
-
-    discount_code_prefix = f"GIFT-{int(amount)}-OFF-"
-    span_locator = page.locator(f'span:has-text("{discount_code_prefix}")')
-    assert span_locator.count() > 0
+    verify.shopify_checkout_has_discount_with_name(page, codes[0])

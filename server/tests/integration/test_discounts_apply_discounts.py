@@ -60,12 +60,16 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(response.json, [])
 
-    def test_apply_event_of_4_but_one_not_styled(self):
+    def test_apply_event_of_4_but_not_completely_styled_or_invited(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())
         event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
+        # hack to reduce price of the look so smaller discount is applied
+        self.shopify_service.shopify_variants.get(
+            look.product_specs["bundle"]["variant_id"]
+        ).variant_price = random.randint(200, 299)
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -103,7 +107,8 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
 
         # then
         self.assertStatus(response, 200)
-        self.assertEqual(len(response.json), 0)
+        self.assertEqual(len(response.json), 1)
+        self.assertTrue(response.json[0].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX))
 
     def test_apply_event_of_4_and_all_styled_and_invited(self):
         user = self.app.user_service.create_user(fixtures.create_user_request())

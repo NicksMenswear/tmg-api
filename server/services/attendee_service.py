@@ -52,9 +52,9 @@ class AttendeeService:
         return Attendee.query.filter(
             Attendee.event_id == event_id,
             Attendee.is_active == True,
-            Attendee.look_id != None,
-            Attendee.style == True,
-            Attendee.invite == True,
+            # Attendee.look_id != None,
+            # Attendee.style == True,
+            # Attendee.invite == True,
         ).count()
 
     def get_attendees_for_events(

@@ -349,7 +349,14 @@ def add_look_to_cart(page: Page, look_id):
     add_to_cart_button.click()
 
 
-def shopify_pay_with_credit_card_for_order(page: Page):
+def attendee_add_suit_to_cart(page: Page, event_id: str):
+    add_suit_to_cart_button = page.locator(
+        f'button.tmg-btn.addLookToCart[data-event-id="{event_id}"]:has-text("Add suit to Cart")'
+    )
+    add_suit_to_cart_button.click()
+
+
+def shopify_checkout_pay_with_credit_card_for_order(page: Page, firstname: str, lastname: str):
     iframe = page.frame_locator("iframe.card-fields-iframe").first
 
     input_cc_number = iframe.locator("input#number")
@@ -358,12 +365,12 @@ def shopify_pay_with_credit_card_for_order(page: Page):
     time.sleep(1)
 
     input_name_number = iframe.locator("input#name")
-    input_name_number.fill("Test Test")
+    input_name_number.fill(f"{firstname} {lastname}")
 
     time.sleep(1)
 
     input_expiry_number = iframe.locator("input#expiry")
-    input_expiry_number.fill("11/28")
+    input_expiry_number.fill("11/32")
 
     time.sleep(1)
 
@@ -374,3 +381,36 @@ def shopify_pay_with_credit_card_for_order(page: Page):
 
     pay_now_button = page.locator('button:has-text("Pay now")').first
     pay_now_button.click()
+
+
+def shopify_checkout_enter_billing_address(
+    page: Page,
+    firstname: str,
+    lastname: str,
+    address1: str = "709 Redwood Drive",
+    city: str = "Cedar Falls",
+    state: str = "IA",
+    zip: str = "50613",
+):
+    input_firstname = page.locator('input[name="firstName"]').first
+    input_firstname.fill(firstname)
+
+    input_lastname = page.locator('input[name="lastName"]').first
+    input_lastname.fill(lastname)
+
+    input_address1 = page.locator("#billing-address1").first
+    input_address1.fill(address1)
+
+    input_city = page.locator('input[name="city"]').first
+    input_city.fill(city)
+
+    select_state_element = page.locator('select[name="zone"]').first
+    select_state_element.select_option(state)
+
+    input_zip = page.locator('input[name="postalCode"]').first
+    input_zip.fill(zip)
+
+
+def shopify_checkout_continue_to_payment(page: Page):
+    continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
+    continue_to_payment_button.click()

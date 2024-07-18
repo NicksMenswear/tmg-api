@@ -42,7 +42,7 @@ class ActiveCampaignService(AbstractActiveCampaignService):
         if last_name:
             body["contact"]["lastName"] = last_name
         if fields:
-            body["fieldValues"] = field_resolver(fields)
+            body["contact"]["fieldValues"] = field_resolver(fields)
 
         self._activecampaign_request("POST", "contact/sync", body)
 

@@ -100,10 +100,12 @@ def init_app(is_testing=False):
 
 
 def init_services(app, is_testing=False):
+    app.stage = os.getenv("STAGE", "dev")
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
+    app.activecampaign_service = ActiveCampaignService()  # if app.stage == "prd" else FakeActiveCampaignService()
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
@@ -121,10 +123,8 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
-    app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
     app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()
-    app.stage = os.getenv("STAGE", "dev")
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
         app.shopify_service,

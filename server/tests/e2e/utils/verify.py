@@ -150,6 +150,11 @@ def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, it
     assert price_locator_in_row.count() > 0
 
 
+def shopify_checkout_has_discount_with_name(page: Page, discount_code_prefix: str):
+    discount_tag_locator = page.locator(f'span:has-text("{discount_code_prefix}")').first
+    discount_tag_locator.wait_for(state="visible")
+
+
 def shopify_order_confirmed(page: Page):
     content_text = "Your order is confirmed"
     h2_element = page.locator(f'//h2[text()="{content_text}"]').first

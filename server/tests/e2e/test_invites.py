@@ -1,6 +1,7 @@
 import time
 import uuid
 
+import pytest
 from playwright.sync_api import Page
 
 from server.tests import utils
@@ -17,6 +18,7 @@ from server.tests.e2e.utils import api, actions, verify, email
 
 
 @e2e_error_handling
+@pytest.mark.group_1
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -77,6 +79,7 @@ def test_invite_attendee(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_2
 def test_invite_multiple_attendees(page: Page):
     event_name = utils.generate_event_name()
 

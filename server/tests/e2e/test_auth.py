@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from playwright.sync_api import Page
 
 from server.tests import utils
@@ -15,6 +16,7 @@ from server.tests.e2e.utils import actions, email, verify, api
 
 
 @e2e_error_handling
+@pytest.mark.group_3
 def test_login(page: Page):
     api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
@@ -29,6 +31,7 @@ def test_login(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_4
 def test_signup_form(page: Page):
     first_name = f"{utils.generate_unique_name(8, 12)}"
     last_name = f"{utils.generate_unique_name(8, 12)}"
@@ -56,6 +59,7 @@ def test_signup_form(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_5
 def test_logout(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)

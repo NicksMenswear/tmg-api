@@ -26,6 +26,11 @@ on:
         type: boolean
         default: true
         description: Notify Slack
+      test_group:
+        required: false
+        type: string
+        default: all
+        description: Test Group
     secrets:
       DATADOG_API_KEY:
         required: true
@@ -63,6 +68,7 @@ jobs:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}
           LOAD: ${{ inputs.load }}
+          TEST_GROUP: ${{ inputs.test_group }}
 
       - name: Clean up
         if: always()
@@ -72,7 +78,7 @@ jobs:
         if: ${{ failure() && inputs.notify }}
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: 'C06KT69EN30' # Notifications
+          channel-id: 'C06KT69EN30,C06V758NKQF' # Notifications
           slack-message: |
             *E2E "${{ inputs.stage }}" failed* :red_circle:
             *Ref:* "${{ inputs.ref }}"

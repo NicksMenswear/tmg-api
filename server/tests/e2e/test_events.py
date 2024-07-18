@@ -1,3 +1,4 @@
+import pytest
 from playwright.sync_api import Page
 
 from server.tests import utils
@@ -20,6 +21,7 @@ DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 
 @e2e_error_handling
+@pytest.mark.group_2
 def test_basic_create_event(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -43,6 +45,7 @@ def test_basic_create_event(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_1
 def test_create_multiple_events(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -75,6 +78,7 @@ def test_create_multiple_events(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_2
 def test_create_event_and_add_few_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -108,6 +112,7 @@ def test_create_event_and_add_few_attendees(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_3
 def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -140,6 +145,7 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
 
 
 @e2e_error_handling
+@pytest.mark.group_4
 def test_create_event_add_and_remove_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -166,6 +172,7 @@ def test_create_event_add_and_remove_attendees(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_5
 def test_delete_event(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -194,6 +201,7 @@ def test_delete_event(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_4
 def test_delete_all_events(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
@@ -214,6 +222,7 @@ def test_delete_all_events(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_3
 def test_delete_all_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
@@ -243,6 +252,7 @@ def test_delete_all_attendees(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_2
 def test_create_all_types_of_events_and_check_roles(page: Page):
     event_name1 = utils.generate_event_name()
     attendee_first_name1 = utils.generate_unique_name()
@@ -290,6 +300,7 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
 
 
 @e2e_error_handling
+@pytest.mark.group_1
 def test_roles_persistence(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()

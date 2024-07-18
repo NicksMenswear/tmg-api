@@ -182,7 +182,7 @@ def test_pay_in_full_click(page: Page):
 
 
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_5
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()

@@ -60,7 +60,7 @@ class ActiveCampaignService(AbstractActiveCampaignService):
         }
         headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
 
-        response = http("POST", url, data=urlencode(payload), headers=headers)
+        response = http("POST", url, headers=headers, json=payload)
         if response.status >= 400:
             raise ServiceError(f"Error using ActiveCampaign Tracking: {response.data.decode('utf-8')}")
 

@@ -18,7 +18,6 @@ from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
 from server.models.event_model import EventModel
 from server.services import DuplicateError, ServiceError, NotFoundError
-from server.services.activecampaign_service import AbstractActiveCampaignService
 from server.services.email_service import AbstractEmailService
 from server.services.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
@@ -27,16 +26,11 @@ from server.services.user_service import UserService
 # noinspection PyMethodMayBeStatic
 class AttendeeService:
     def __init__(
-        self,
-        shopify_service: AbstractShopifyService,
-        user_service: UserService,
-        email_service: AbstractEmailService,
-        activecampaign_service: AbstractActiveCampaignService,
+        self, shopify_service: AbstractShopifyService, user_service: UserService, email_service: AbstractEmailService
     ):
         self.shopify_service = shopify_service
         self.user_service = user_service
         self.email_service = email_service
-        self.activecampaign_service = activecampaign_service
 
     def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
@@ -155,11 +149,7 @@ class AttendeeService:
         return attendees[event_id]
 
     def create_attendee(self, create_attendee: CreateAttendeeModel) -> AttendeeModel:
-        event, owner = (
-            db.session.query(Event, User)
-            .join(User, User.id == Event.user_id)
-            .filter(Event.id == create_attendee.event_id, Event.is_active)
-        ).first()
+        event = Event.query.filter(Event.id == create_attendee.event_id, Event.is_active).first()
 
         if not event:
             raise NotFoundError("Event not found.")
@@ -211,14 +201,6 @@ class AttendeeService:
                 db.session.refresh(new_attendee)
             except Exception as e:
                 raise ServiceError("Failed to create attendee.", e)
-
-            self.activecampaign_service.track_event(owner.email, "Added Attendee")
-            self.activecampaign_service.sync_contact(
-                create_attendee.email,
-                create_attendee.first_name,
-                create_attendee.last_name,
-                events=["Was Invited to Event"],
-            )
 
             return AttendeeModel.from_orm(new_attendee)
 

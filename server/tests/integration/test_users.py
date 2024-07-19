@@ -179,7 +179,11 @@ class TestUsers(BaseTestCase):
         )
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee2 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user2.email, is_active=False)
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user2.email)
+        )
+        attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
+        attendee3 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_user3.email, is_active=False)
         )
         not_used_paid_discount = self.app.discount_service.create_discount(
             event1.id,
@@ -233,15 +237,23 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_event1["roles"][2]["id"], str(role11.id))
         self.assertEqual(len(response_event1["looks"]), 1)
         self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
-        self.assertEqual(len(response_event1["attendees"]), 1)
-        self.assertEqual(response_event1["attendees"][0]["id"], str(attendee1.id))
-        self.assertEqual(response_event1["attendees"][0]["user"]["email"], str(attendee_user1.email))
-        gift_codes1 = response_event1["attendees"][0]["gift_codes"]
+        self.assertEqual(len(response_event1["attendees"]), 2)
+
+        response_attendee1 = response_event1["attendees"][0]
+        self.assertEqual(response_attendee1["id"], str(attendee1.id))
+        self.assertEqual(response_attendee1["user"]["email"], str(attendee_user1.email))
+        self.assertFalse(response_attendee1["can_be_deleted"])
+        gift_codes1 = response_attendee1["gift_codes"]
         self.assertEqual(len(gift_codes1), 2)
         self.assertEqual(
             {gift_codes1[0]["code"], gift_codes1[1]["code"]},
             {not_used_paid_discount.shopify_discount_code, used_paid_discount.shopify_discount_code},
         )
+
+        response_attendee2 = response_event1["attendees"][1]
+        self.assertEqual(response_attendee2["id"], str(attendee2.id))
+        self.assertEqual(response_attendee2["user"]["email"], str(attendee_user2.email))
+        self.assertTrue(response_attendee2["can_be_deleted"])
 
         response_event2 = response.json[1]
         self.assertEqual(response_event2["id"], str(event2.id))

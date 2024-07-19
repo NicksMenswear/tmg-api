@@ -67,6 +67,7 @@ class EnrichedAttendeeModel(AttendeeModel):
     look: Optional[LookModel] = None
     gift_codes: Optional[List[DiscountGiftCodeModel]] = []
     tracking: Optional[List[TrackingModel]] = []
+    can_be_deleted: bool = False
 
     def to_response(self):
         attendee = super().to_response()
@@ -77,6 +78,7 @@ class EnrichedAttendeeModel(AttendeeModel):
         attendee["look"] = self.look.to_response() if self.look else None
         attendee["gift_codes"] = [gift_code.to_response() for gift_code in self.gift_codes]
         attendee["tracking"] = [tracking.to_response() for tracking in self.tracking]
+        attendee["can_be_deleted"] = self.can_be_deleted
 
         return attendee
 

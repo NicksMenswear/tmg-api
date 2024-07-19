@@ -150,7 +150,9 @@ class SkuBuilder:
     def build(self, shopify_sku: str, size_model: SizeModel, measurement_model: MeasurementModel) -> Optional[str]:
         product_type = self.get_product_type_by_sku(shopify_sku)
 
-        if product_type == ProductType.JACKET:
+        if product_type == ProductType.SUIT:
+            return self.__build_suit_sku(shopify_sku, size_model)
+        elif product_type == ProductType.JACKET:
             return self.__build_jacket_sku(shopify_sku, size_model)
         elif product_type == ProductType.PANTS:
             return self.__build_pants_sku(shopify_sku, size_model)
@@ -189,6 +191,19 @@ class SkuBuilder:
                 return product_type
 
         return ProductType.UNKNOWN
+
+    def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            return None
+
+        if size_model.jacket_size not in JACKET_SIZES:
+            raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
+
+        if size_model.jacket_length not in JACKET_LENGTHS:
+            raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
+
+        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
 
     def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:

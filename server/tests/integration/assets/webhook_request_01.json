@@ -1,0 +1,772 @@
+{
+    "id": 5750435053699,
+    "admin_graphql_api_id": "gid://shopify/Order/5750435053699",
+    "app_id": 580111,
+    "browser_ip": "45.89.90.150",
+    "buyer_accepts_marketing": false,
+    "cancel_reason": null,
+    "cancelled_at": null,
+    "cart_token": "Z2NwLXVzLWNlbnRyYWwxOjAxSjMzSlBIUzVEMkY3R04yUVM1QTQwOVRL",
+    "checkout_id": 44019741065347,
+    "checkout_token": "b9429e46604167a79089f59b0fae0ad7",
+    "client_details": {
+        "accept_language": "en-US",
+        "browser_height": null,
+        "browser_ip": "45.89.90.150",
+        "browser_width": null,
+        "session_hash": null,
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    },
+    "closed_at": null,
+    "company": null,
+    "confirmation_number": "FETL9EI8P",
+    "confirmed": true,
+    "contact_email": "zinovii+05@themoderngroom.com",
+    "created_at": "2024-07-19T06:58:16-04:00",
+    "currency": "USD",
+    "current_subtotal_price": "337.50",
+    "current_subtotal_price_set": {
+        "shop_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        }
+    },
+    "current_total_additional_fees_set": null,
+    "current_total_discounts": "112.50",
+    "current_total_discounts_set": {
+        "shop_money": {
+            "amount": "112.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "112.50",
+            "currency_code": "USD"
+        }
+    },
+    "current_total_duties_set": null,
+    "current_total_price": "337.50",
+    "current_total_price_set": {
+        "shop_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        }
+    },
+    "current_total_tax": "0.00",
+    "current_total_tax_set": {
+        "shop_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        }
+    },
+    "customer_locale": "en-US",
+    "device_id": null,
+    "discount_codes": [
+        {
+            "code": "TMG-GROUP-25%-OFF-692128",
+            "amount": "112.50",
+            "type": "fixed_amount"
+        }
+    ],
+    "email": "zinovii+05@themoderngroom.com",
+    "estimated_taxes": false,
+    "financial_status": "paid",
+    "fulfillment_status": null,
+    "landing_site": "/cart?view=ajax&_=1720689590718",
+    "landing_site_ref": null,
+    "location_id": null,
+    "merchant_of_record_app_id": null,
+    "name": "#1265",
+    "note": null,
+    "note_attributes": [
+        {
+            "name": "__bundle_variant_id",
+            "value": "44619091443843"
+        },
+        {
+            "name": "__event_id",
+            "value": "752f5577-ac4f-41ac-888c-dd741d8635a1"
+        }
+    ],
+    "number": 265,
+    "order_number": 1265,
+    "order_status_url": "https://quickstart-a91e1214.myshopify.com/56965365891/orders/1c251f9306157892b5d7789d04601b33/authenticate?key=207ece3f0e866464dc7f6c09ce4a4dea",
+    "original_total_additional_fees_set": null,
+    "original_total_duties_set": null,
+    "payment_gateway_names": [
+        "bogus"
+    ],
+    "phone": null,
+    "po_number": null,
+    "presentment_currency": "USD",
+    "processed_at": "2024-07-19T06:58:14-04:00",
+    "reference": "c85123c42c4f2b8e5b6f73f06107941f",
+    "referring_site": "https://quickstart-a91e1214.myshopify.com/account",
+    "source_identifier": "c85123c42c4f2b8e5b6f73f06107941f",
+    "source_name": "web",
+    "source_url": null,
+    "subtotal_price": "337.50",
+    "subtotal_price_set": {
+        "shop_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        }
+    },
+    "tags": "",
+    "tax_exempt": false,
+    "tax_lines": [],
+    "taxes_included": false,
+    "test": true,
+    "token": "1c251f9306157892b5d7789d04601b33",
+    "total_discounts": "112.50",
+    "total_discounts_set": {
+        "shop_money": {
+            "amount": "112.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "112.50",
+            "currency_code": "USD"
+        }
+    },
+    "total_line_items_price": "450.00",
+    "total_line_items_price_set": {
+        "shop_money": {
+            "amount": "450.00",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "450.00",
+            "currency_code": "USD"
+        }
+    },
+    "total_outstanding": "0.00",
+    "total_price": "337.50",
+    "total_price_set": {
+        "shop_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "337.50",
+            "currency_code": "USD"
+        }
+    },
+    "total_shipping_price_set": {
+        "shop_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        }
+    },
+    "total_tax": "0.00",
+    "total_tax_set": {
+        "shop_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        },
+        "presentment_money": {
+            "amount": "0.00",
+            "currency_code": "USD"
+        }
+    },
+    "total_tip_received": "0.00",
+    "total_weight": 0,
+    "updated_at": "2024-07-19T06:58:17-04:00",
+    "user_id": null,
+    "billing_address": {
+        "first_name": "asdasd",
+        "address1": "1110 Purdue Drive",
+        "phone": null,
+        "city": "Davis",
+        "zip": "95616",
+        "province": "California",
+        "country": "United States",
+        "last_name": "asdasd",
+        "address2": null,
+        "company": null,
+        "latitude": 38.5538445,
+        "longitude": -121.7629929,
+        "name": "asdasd asdasd",
+        "country_code": "US",
+        "province_code": "CA"
+    },
+    "customer": {
+        "id": 7174115098755,
+        "email": "zinovii+05@themoderngroom.com",
+        "created_at": "2024-06-08T02:16:24-04:00",
+        "updated_at": "2024-07-19T06:58:17-04:00",
+        "first_name": "Zinovii",
+        "last_name": "Test",
+        "state": "enabled",
+        "note": null,
+        "verified_email": true,
+        "multipass_identifier": null,
+        "tax_exempt": false,
+        "phone": null,
+        "email_marketing_consent": {
+            "state": "not_subscribed",
+            "opt_in_level": "confirmed_opt_in",
+            "consent_updated_at": null
+        },
+        "sms_marketing_consent": null,
+        "tags": "",
+        "currency": "USD",
+        "tax_exemptions": [],
+        "admin_graphql_api_id": "gid://shopify/Customer/7174115098755",
+        "default_address": {
+            "id": 9014017753219,
+            "customer_id": 7174115098755,
+            "first_name": "asdasd",
+            "last_name": "asdasd",
+            "company": null,
+            "address1": "1110 Purdue Drive",
+            "address2": null,
+            "city": "Davis",
+            "province": "California",
+            "country": "United States",
+            "zip": "95616",
+            "phone": null,
+            "name": "asdasd asdasd",
+            "province_code": "CA",
+            "country_code": "US",
+            "country_name": "United States",
+            "default": true
+        }
+    },
+    "discount_applications": [
+        {
+            "target_type": "line_item",
+            "type": "discount_code",
+            "value": "112.5",
+            "value_type": "fixed_amount",
+            "allocation_method": "across",
+            "target_selection": "entitled",
+            "code": "TMG-GROUP-25%-OFF-692128"
+        }
+    ],
+    "fulfillments": [],
+    "line_items": [
+        {
+            "id": 13604766580867,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766580867",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Charcoal Grey Suit Jacket",
+            "price": "130.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "130.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "130.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397791035523,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "101A2CHA",
+            "taxable": true,
+            "title": "Charcoal Grey Suit Jacket",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610669838467,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "32.50",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "32.50",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "32.50",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766613635,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766613635",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Charcoal Grey Suit Pants",
+            "price": "80.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "80.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "80.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397790544003,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "201A2CHA",
+            "taxable": true,
+            "title": "Charcoal Grey Suit Pants",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610669183107,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "20.00",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "20.00",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "20.00",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766646403,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766646403",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Charcoal Gray Suit Vest",
+            "price": "50.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "50.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "50.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397778485379,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "301A2CHA",
+            "taxable": true,
+            "title": "Charcoal Gray Suit Vest",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610654568579,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "12.50",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "12.50",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "12.50",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766679171,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766679171",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Ballet Pink Neck Tie",
+            "price": "40.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "40.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "40.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397798506627,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "603A40RR",
+            "taxable": true,
+            "title": "Ballet Pink Neck Tie",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610681634947,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "10.00",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "10.00",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "10.00",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766711939,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766711939",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Cognac Adjustable Belt",
+            "price": "30.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "30.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "30.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397791559811,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "703A4COG",
+            "taxable": true,
+            "title": "Cognac Adjustable Belt",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610671018115,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "7.50",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "7.50",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "7.50",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766744707,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766744707",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Cognac Dress Shoes",
+            "price": "115.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "115.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "115.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397791395971,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "803A4COG",
+            "taxable": true,
+            "title": "Cognac Dress Shoes",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610670755971,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "28.75",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "28.75",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "28.75",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        },
+        {
+            "id": 13604766777475,
+            "admin_graphql_api_id": "gid://shopify/LineItem/13604766777475",
+            "attributed_staffs": [],
+            "current_quantity": 1,
+            "fulfillable_quantity": 1,
+            "fulfillment_service": "manual",
+            "fulfillment_status": null,
+            "gift_card": false,
+            "grams": 0,
+            "name": "Solid Light Grey Dress Socks",
+            "price": "5.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "5.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "5.00",
+                    "currency_code": "USD"
+                }
+            },
+            "product_exists": true,
+            "product_id": 8397791789187,
+            "properties": [],
+            "quantity": 1,
+            "requires_shipping": true,
+            "sku": "903A4LTG",
+            "taxable": true,
+            "title": "Solid Light Grey Dress Socks",
+            "total_discount": "0.00",
+            "total_discount_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "variant_id": 44610671247491,
+            "variant_inventory_management": null,
+            "variant_title": null,
+            "vendor": "themodern-groom",
+            "tax_lines": [],
+            "duties": [],
+            "discount_allocations": [
+                {
+                    "amount": "1.25",
+                    "amount_set": {
+                        "shop_money": {
+                            "amount": "1.25",
+                            "currency_code": "USD"
+                        },
+                        "presentment_money": {
+                            "amount": "1.25",
+                            "currency_code": "USD"
+                        }
+                    },
+                    "discount_application_index": 0
+                }
+            ]
+        }
+    ],
+    "payment_terms": null,
+    "refunds": [],
+    "shipping_address": {
+        "first_name": "asdasd",
+        "address1": "1110 Purdue Drive",
+        "phone": null,
+        "city": "Davis",
+        "zip": "95616",
+        "province": "California",
+        "country": "United States",
+        "last_name": "asdasd",
+        "address2": null,
+        "company": null,
+        "latitude": 38.5538445,
+        "longitude": -121.7629929,
+        "name": "asdasd asdasd",
+        "country_code": "US",
+        "province_code": "CA"
+    },
+    "shipping_lines": [
+        {
+            "id": 4513271480451,
+            "carrier_identifier": "650f1a14fa979ec5c74d063e968411d4",
+            "code": "Free",
+            "discounted_price": "0.00",
+            "discounted_price_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "is_removed": false,
+            "phone": null,
+            "price": "0.00",
+            "price_set": {
+                "shop_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                },
+                "presentment_money": {
+                    "amount": "0.00",
+                    "currency_code": "USD"
+                }
+            },
+            "requested_fulfillment_service_id": null,
+            "source": "shopify",
+            "title": "Free",
+            "tax_lines": [],
+            "discount_allocations": []
+        }
+    ]
+}

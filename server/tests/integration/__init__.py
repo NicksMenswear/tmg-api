@@ -1,7 +1,7 @@
 import csv
 import json
 import random
-from typing import Set
+from typing import Set, Any, Dict
 
 from flask_testing import TestCase
 
@@ -30,6 +30,7 @@ CONTENT_TYPE_JSON = "application/json"
 WEBHOOK_SHOPIFY_ENDPOINT = "/webhooks/shopify"
 
 
+# noinspection PyMethodMayBeStatic
 class BaseTestCase(TestCase):
     def create_app(self):
         FlaskApp.cleanup()
@@ -155,6 +156,12 @@ class BaseTestCase(TestCase):
                     result.add(row[0])
 
         return result
+
+    def _read_json_into_dict(self, file: str) -> Dict[str, Any]:
+        with open(file, "r") as f:
+            data = json.load(f)
+
+        return data
 
     def get_shopify_skus_set_from_cache(self, product_type: ProductType) -> Set[str]:
         if product_type == ProductType.JACKET:

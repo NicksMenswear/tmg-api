@@ -3,9 +3,9 @@ from datetime import timedelta, datetime
 from parameterized import parameterized
 
 from server.services.order_service import (
-    ORDER_STATUS_PENDING_MISSING_SKU,
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
+    ORDER_STATUS_PENDING_MISSING_SKU,
 )
 from server.services.sku_builder_service import ProductType, PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
 from server.tests import utils
@@ -384,3 +384,73 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         self.assertEqual(len(response_shopify_skus), len(shopify_skus) + 1)
         self.assertEqual(response_shiphero_skus, set(shiphero_skus))
+
+    def test_order_process_from_file_without_measurements(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+        webhook_order_payload = self._read_json_into_dict("assets/webhook_request_01.json")
+        webhook_order_payload["customer"]["email"] = attendee_user.email
+        webhook_order_payload["note_attributes"][1]["value"] = str(event_id)
+
+        # when
+        response = self._post(
+            WEBHOOK_SHOPIFY_ENDPOINT,
+            webhook_order_payload,
+            PAID_ORDER_REQUEST_HEADERS,
+        )
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_PENDING_MEASUREMENTS)
+
+        response_shopify_skus = set([product.shopify_sku for product in order.products])
+
+        self.assertTrue(len(response_shopify_skus) == 8)
+
+    def test_order_process_from_file_with_measurements(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+        self.measurement_service.create_measurement(
+            fixtures.store_measurement_request(
+                user_id=attendee_user.id,
+                data=fixtures.test_measurements(),
+            )
+        )
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+        webhook_order_payload = self._read_json_into_dict("assets/webhook_request_01.json")
+        webhook_order_payload["customer"]["email"] = attendee_user.email
+        webhook_order_payload["note_attributes"][1]["value"] = str(event_id)
+
+        # when
+        response = self._post(
+            WEBHOOK_SHOPIFY_ENDPOINT,
+            webhook_order_payload,
+            PAID_ORDER_REQUEST_HEADERS,
+        )
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+
+        response_shopify_skus = set([product.shopify_sku for product in order.products])
+
+        self.assertTrue(len(response_shopify_skus) == 8)

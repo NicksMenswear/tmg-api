@@ -211,7 +211,7 @@ class ShopifyWebhookOrderHandler:
 
                         if shiphero_sku:
                             num_shiphero_skus += 1
-                        else:
+                        elif size_model and measurement_model:
                             logger.error(
                                 f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
                             )

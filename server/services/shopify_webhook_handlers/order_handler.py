@@ -20,7 +20,7 @@ from server.services.order_service import (
 )
 from server.services.shopify_service import ShopifyService
 from server.services.size_service import SizeService
-from server.services.sku_builder_service import SkuBuilder
+from server.services.sku_builder_service import SkuBuilder, ProductType
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -190,6 +190,8 @@ class ShopifyWebhookOrderHandler:
         num_shiphero_skus = 0
         has_products_that_requires_measurements = False
 
+        track_suit_parts = {}
+
         if items:
             for line_item in items:
                 shopify_sku = line_item.get("sku")
@@ -200,6 +202,12 @@ class ShopifyWebhookOrderHandler:
                 else:
                     try:
                         shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
+                        product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
+
+                        if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
+                            shopify_suit_sku = f"0{shopify_sku[1:]}"
+                            track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
+                            track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
 
                         if shiphero_sku:
                             num_shiphero_skus += 1
@@ -218,10 +226,29 @@ class ShopifyWebhookOrderHandler:
                     sku=shiphero_sku,
                     shopify_sku=shopify_sku,
                     price=line_item.get("price"),
-                    quantity=line_item.get("quantity"),
+                    quantity=1,
                 )
 
                 create_products.append(create_product)
+
+            if track_suit_parts:
+                for shopify_suit_sku, suit_parts in track_suit_parts.items():
+                    if len(suit_parts) != 3:
+                        # Looks like order is not a full suit split, skipping
+                        continue
+
+                    suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
+                    shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
+
+                    create_product = CreateProductModel(
+                        name=suit_variant.product_title,
+                        sku=shiphero_suit_sku,
+                        shopify_sku=shopify_suit_sku,
+                        price=suit_variant.variant_price,
+                        quantity=1,
+                    )
+
+                    create_products.append(create_product)
 
         order_number = self.order_service.generate_order_number()
 
@@ -233,7 +260,7 @@ class ShopifyWebhookOrderHandler:
         else:
             order_status = ORDER_STATUS_READY
 
-        # ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this
+        # ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this - manual process only for now
         ship_by_date = None
 
         create_order = CreateOrderModel(
@@ -270,18 +297,20 @@ class ShopifyWebhookOrderHandler:
             return self.__error(f"Error creating order: {str(e)}")
 
     def __get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
-        note_attributes = payload.get("note_attributes", [])
+        note_attributes = payload.get("note_attributes")
 
-        if note_attributes:
-            for note_attribute in note_attributes:
-                if note_attribute.get("name") == "__event_id":
-                    try:
-                        return uuid.UUID(note_attribute.get("value"))
-                    except ValueError:
-                        logger.error(f"Invalid event_id in note attributes: {note_attribute.get('value')}")
-                        return None
+        if not note_attributes:
+            return None
 
-        return None
+        for note_attribute in note_attributes:
+            if note_attribute.get("name") != "__event_id":
+                continue
+
+            try:
+                return uuid.UUID(note_attribute.get("value"))
+            except ValueError:
+                logger.error(f"Invalid event_id in note attributes: {note_attribute.get('value')}")
+                return None
 
     def __calculate_ship_by_date(self, event_id: uuid.UUID, num_week_before_event: int = 6) -> Optional[datetime]:
         try:

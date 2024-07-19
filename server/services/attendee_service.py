@@ -88,6 +88,8 @@ class AttendeeService:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
+            attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
+
             attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
                     id=attendee.id,
@@ -104,8 +106,9 @@ class AttendeeService:
                     role=RoleModel.from_orm(role) if role else None,
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
-                    gift_codes=attendees_gift_codes.get(attendee.id, set()),
+                    gift_codes=attendee_gift_codes,
                     tracking=self._get_tracking_for_attendee(attendee),
+                    can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
                         first_name=user.first_name,
                         last_name=user.last_name,

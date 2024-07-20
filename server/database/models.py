@@ -137,6 +137,7 @@ class Event(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     type = Column(Enum(EventType), default=EventType.WEDDING, nullable=False)
+    meta = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -310,7 +311,7 @@ class User(Base):
     orders = relationship("Order", backref="user")
     account_status = Column(Boolean, default=False, nullable=False)
     addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
-    meta = Column(JSON, default=dict, nullable=True)
+    meta = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

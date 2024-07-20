@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 from uuid import UUID
 
 from pydantic import field_validator
@@ -67,6 +67,7 @@ class EventModel(CoreModel):
     attendees: Optional[List[AttendeeModel]] = []
     looks: Optional[List[LookModel]] = []
     roles: Optional[List[RoleModel]] = []
+    meta: Optional[Dict[str, Any]] = {}
 
     class Config:
         from_attributes = True

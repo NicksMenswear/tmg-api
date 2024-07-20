@@ -405,9 +405,7 @@ class DiscountService:
                 body_html=product_body,
                 price=total_intent_amount,
                 sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
-                tags=",".join(
-                    ["virtual", "gift_discount", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]
-                ),
+                tags=",".join(["hidden", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]),
             )
 
             for discount_intent in intents:

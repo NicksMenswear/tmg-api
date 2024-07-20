@@ -505,8 +505,8 @@ def attendee_checkbox_selected(page, event_id: str, attendee_id: str, type: str)
     return check_element.evaluate("element => element.classList.contains('active')")
 
 
-def is_style_checkbox_selected(page, event_id: str, attendee_id: str):
-    return attendee_checkbox_selected(page, event_id, attendee_id, "Style")
+def is_assign_look_checkbox_selected(page, event_id: str, attendee_id: str):
+    return attendee_checkbox_selected(page, event_id, attendee_id, "Assign Look")
 
 
 def is_invite_checkbox_selected(page, event_id: str, attendee_id: str):

@@ -441,7 +441,7 @@ def test_add_myself_and_fill_fit_survey(page: Page):
 
     actions.open_event_accordion(page, event_id)
 
-    assert not actions.is_style_checkbox_selected(page, event_id, owner_attendee_id)
+    assert not actions.is_assign_look_checkbox_selected(page, event_id, owner_attendee_id)
     assert actions.is_invite_checkbox_selected(page, event_id, owner_attendee_id)
     assert actions.is_fit_checkbox_selected(page, event_id, owner_attendee_id)
     assert not actions.is_pay_checkbox_selected(page, event_id, attendee_id)
@@ -472,7 +472,7 @@ def test_style_and_invite_checkboxes(page: Page):
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
-    assert not actions.is_style_checkbox_selected(page, event_id, attendee_id)
+    assert not actions.is_assign_look_checkbox_selected(page, event_id, attendee_id)
     assert not actions.is_invite_checkbox_selected(page, event_id, attendee_id)
     assert not actions.is_fit_checkbox_selected(page, event_id, attendee_id)
     assert not actions.is_pay_checkbox_selected(page, event_id, attendee_id)
@@ -483,7 +483,7 @@ def test_style_and_invite_checkboxes(page: Page):
     actions.select_look_for_attendee(page, event_id, attendee_id, look_name)
     time.sleep(2)
 
-    assert actions.is_style_checkbox_selected(page, event_id, attendee_id)
+    assert actions.is_assign_look_checkbox_selected(page, event_id, attendee_id)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
     time.sleep(2)

@@ -702,6 +702,7 @@ class ShopifyService(AbstractShopifyService):
             product {
               id
               title
+              tags
               variants(first: 10) {
                 edges{
                   node{
@@ -718,7 +719,7 @@ class ShopifyService(AbstractShopifyService):
           }
         }
         """
-        variables = {"input": {"title": product_name, "variants": []}}
+        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"]}}
 
         status, body = self.admin_api_request(
             "POST",

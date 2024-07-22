@@ -89,6 +89,7 @@ class AttendeeService:
                 attendees[attendee.event_id] = list()
 
             attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
+            attendee_tracking = self._get_tracking_for_attendee(attendee)
 
             attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
@@ -100,14 +101,14 @@ class AttendeeService:
                     invite=attendee.invite,
                     pay=attendee.pay,
                     size=attendee.size,
-                    ship=attendee.ship,
+                    ship=attendee.ship or bool(attendee_tracking),
                     role_id=attendee.role_id,
                     look_id=attendee.look_id,
                     role=RoleModel.from_orm(role) if role else None,
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendee_gift_codes,
-                    tracking=self._get_tracking_for_attendee(attendee),
+                    tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
                         first_name=user.first_name,

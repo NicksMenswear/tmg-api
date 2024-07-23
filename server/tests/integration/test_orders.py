@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import uuid
 from datetime import timedelta, datetime
 
 from server.database.database_manager import db
@@ -140,12 +139,9 @@ class TestOrders(BaseTestCase):
             fixtures.store_measurement_request(user_id=user.id)
         )
         order = self.order_service.create_order(
-            fixtures.create_order_request(
-                user_id=user.id,
-                status=ORDER_STATUS_PENDING_MEASUREMENTS,
-                products=[fixtures.create_product_request(shopify_sku=None)],
-            )
+            fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
         )
+        self.order_service.create_order_item(fixtures.create_order_item_request(order_id=order.id, shopify_sku=None))
 
         # when
         updated_order = self.order_service.update_order_skus_according_to_measurements(
@@ -166,9 +162,9 @@ class TestOrders(BaseTestCase):
             fixtures.create_order_request(
                 user_id=user.id,
                 status=ORDER_STATUS_PENDING_MEASUREMENTS,
-                products=[fixtures.create_product_request(shopify_sku=f"z-{uuid.uuid4()}")],
             )
         )
+        self.order_service.create_order_item(fixtures.create_order_item_request(order_id=order.id, shopify_sku="asdf"))
 
         # when
         updated_order = self.order_service.update_order_skus_according_to_measurements(
@@ -186,19 +182,17 @@ class TestOrders(BaseTestCase):
             fixtures.store_measurement_request(user_id=user.id)
         )
         order = self.order_service.create_order(
-            fixtures.create_order_request(
-                user_id=user.id,
-                status=ORDER_STATUS_PENDING_MEASUREMENTS,
-                products=[
-                    fixtures.create_product_request(
-                        shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.BOW_TIE)
-                    )
-                ],
+            fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
+        )
+        self.order_service.create_order_item(
+            fixtures.create_order_item_request(
+                order_id=order.id, shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.BOW_TIE)
             )
         )
 
         # when
-        self.assertIsNone(order.products[0].sku)
+        products = self.product_service.get_products_for_order(order.id)
+        self.assertTrue(len(products) == 0)
 
         updated_order = self.order_service.update_order_skus_according_to_measurements(
             order, size_model, measurement_model
@@ -206,7 +200,8 @@ class TestOrders(BaseTestCase):
 
         # then
         self.assertEqual(updated_order.status, ORDER_STATUS_READY)
-        self.assertIsNotNone(self.product_service.get_product_by_id(order.products[0].id).sku)
+        products = self.product_service.get_products_for_order(order.id)
+        self.assertIsNotNone(self.product_service.get_product_by_id(products[0].id).sku)
 
     def test_update_order_status_if_product_requires_measurements(self):
         # given
@@ -215,20 +210,22 @@ class TestOrders(BaseTestCase):
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
         )
+        shopify_sku = self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
         order = self.order_service.create_order(
             fixtures.create_order_request(
                 user_id=user.id,
                 status=ORDER_STATUS_PENDING_MEASUREMENTS,
-                products=[
-                    fixtures.create_product_request(
-                        shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
-                    )
-                ],
+                products=[fixtures.create_product_request(shopify_sku=shopify_sku)],
             )
         )
+        order_item = self.order_service.create_order_item(
+            fixtures.create_order_item_request(order_id=order.id, shopify_sku=shopify_sku)
+        )
+        self.order_service.create_order_item(order_item)
 
         # when
-        self.assertIsNone(order.products[0].sku)
+        products = self.product_service.get_products_for_order(order.id)
+        self.assertEqual(len(products), 0)
 
         updated_order = self.order_service.update_order_skus_according_to_measurements(
             order, size_model, measurement_model
@@ -236,4 +233,7 @@ class TestOrders(BaseTestCase):
 
         # then
         self.assertEqual(updated_order.status, ORDER_STATUS_READY)
-        self.assertIsNotNone(self.product_service.get_product_by_id(order.products[0].id).sku)
+
+        products = self.product_service.get_products_for_order(order.id)
+        self.assertEqual(len(products), 1)
+        self.assertIsNotNone(self.product_service.get_product_by_id(products[0].id).sku)

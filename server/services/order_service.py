@@ -156,6 +156,15 @@ class OrderService:
             order.products = self.product_service.get_products_for_order(order.id)  # TODO: Do something smarter later
             self.update_order_skus_according_to_measurements(order, size_model, measurement_model)
 
+    def associate_order_item_with_product(self, order_item_id: uuid.UUID, product_id: uuid.UUID):
+        try:
+            order_item = OrderItem.query.filter(OrderItem.id == order_item_id).first()
+            order_item.product_id = product_id
+
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to associate order item with product.")
+
     def update_order_skus_according_to_measurements(
         self, order: OrderModel, size_model: SizeModel, measurement_model: MeasurementModel
     ) -> OrderModel:
@@ -165,44 +174,54 @@ class OrderService:
         if not size_model or not measurement_model:
             raise ServiceError("Size or measurement model is missing")
 
-        if not order.products:
+        order_items = self.get_order_items_by_order_id(order.id)
+
+        if not order_items:
             return order
 
-        num_products = len(order.products)
-        num_products_with_sku = 0
+        num_order_items = len(order_items)
+        num_products = 0
 
-        for product in order.products:
-            if not product.shopify_sku:
-                logger.error(f"Product {product.id} is missing shopify SKU")
+        for order_item in order_items:
+            if not order_item.shopify_sku:
+                logger.error(
+                    f"Order item {order_item.id} is missing shopify SKU for order {order.order_number} / {order.id} / {order.shopify_order_id}"
+                )
                 continue
 
-            current_shiphero_sku = product.sku
+            current_shiphero_sku = None
+
+            if order_item.product_id:
+                product = self.product_service.get_product_by_id(order_item.product_id)
+                current_shiphero_sku = product.sku
 
             try:
-                new_shiphero_sku = self.sku_builder.build(product.shopify_sku, size_model, measurement_model)
+                new_shiphero_sku = self.sku_builder.build(order_item.shopify_sku, size_model, measurement_model)
             except ServiceError as e:
                 logger.error(
-                    f"Failed to build SKU for product with shopify sku {product.shopify_sku} in order {order.order_number}. Sizing model id: {size_model.id}. Measurement model id: {measurement_model.id}. Error: {e}"
+                    f"Failed to build SKU for product with shopify sku {order_item.shopify_sku} in order {order.order_number}. Sizing model id: {size_model.id}. Measurement model id: {measurement_model.id}. Error: {e}"
                 )
                 new_shiphero_sku = None
 
             if current_shiphero_sku:
                 if current_shiphero_sku == new_shiphero_sku:
-                    num_products_with_sku += 1
+                    num_products += 1
                 else:
                     logger.error(
-                        f"SKU mismatch for product {product.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
+                        f"SKU mismatch for product {order_item.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
                     )
-                    self.product_service.update_sku_for_product(product.id, new_shiphero_sku)
-                    num_products_with_sku += 1
+                    product = self.product_service.get_product_by_sku(new_shiphero_sku)
+                    num_products += 1
+                    self.associate_order_item_with_product(order_item.id, product.id)
             else:
                 if new_shiphero_sku:
-                    num_products_with_sku += 1
-                    self.product_service.update_sku_for_product(product.id, new_shiphero_sku)
+                    num_products += 1
+                    product = self.product_service.get_product_by_sku(new_shiphero_sku)
+                    self.associate_order_item_with_product(order_item.id, product.id)
                 else:
                     pass
 
-        if num_products_with_sku == num_products:
+        if num_products == num_order_items:
             return self.update_order_status(order.id, ORDER_STATUS_READY)
         else:
             return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU)

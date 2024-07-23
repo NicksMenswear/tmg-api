@@ -72,7 +72,7 @@ class OrderItemModel(CoreModel):
     id: UUID
     order_id: UUID
     product_id: Optional[UUID] = None
-    shopify_sku: str
+    shopify_sku: Optional[str]
     purchased_price: float
     quantity: int
 

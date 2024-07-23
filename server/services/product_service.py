@@ -43,15 +43,3 @@ class ProductService:
             ProductModel.from_orm(product)
             for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
         ]
-
-    def update_sku_for_product(self, product_id: uuid.UUID, sku: str) -> ProductModel:
-        try:
-            product = Product.query.filter(Product.id == product_id).first()
-            product.sku = sku
-
-            db.session.commit()
-            db.session.refresh(product)
-        except Exception as e:
-            raise ServiceError("Failed to update SKU for product.", e)
-
-        return ProductModel.from_orm(product)

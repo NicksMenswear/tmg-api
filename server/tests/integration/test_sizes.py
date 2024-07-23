@@ -77,16 +77,13 @@ class TestSizes(BaseTestCase):
     def test_create_size_for_and_there_is_pending_order(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
         order = self.order_service.create_order(
-            fixtures.create_order_request(
-                user_id=user.id,
-                status=ORDER_STATUS_PENDING_MEASUREMENTS,
-                products=[
-                    fixtures.create_product_request(
-                        shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
-                    )
-                ],
+            fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
+        )
+        self.order_service.create_order_item(
+            fixtures.create_order_item_request(
+                order_id=order.id, shopify_sku=self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
             )
         )
 

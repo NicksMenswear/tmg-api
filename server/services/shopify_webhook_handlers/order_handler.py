@@ -196,31 +196,31 @@ class ShopifyWebhookOrderHandler:
 
         for line_item in items:
             shopify_sku = line_item.get("sku")
-            shiphero_sku = None
 
             if not shopify_sku:
                 logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
-            else:
-                try:
-                    shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
-                    product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
+                continue
 
-                    if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
-                        shopify_suit_sku = f"0{shopify_sku[1:]}"
-                        track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
-                        track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
+            shiphero_sku = None
 
-                    if shiphero_sku:
-                        num_shiphero_skus += 1
-                    elif size_model and measurement_model:
-                        logger.error(
-                            f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
-                        )
+            try:
+                shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
+                product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
-                    if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
-                        has_products_that_requires_measurements = True
-                except ServiceError as e:
-                    logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
+                if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
+                    shopify_suit_sku = f"0{shopify_sku[1:]}"
+                    track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
+                    track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
+
+                if shiphero_sku:
+                    num_shiphero_skus += 1
+                elif size_model and measurement_model:
+                    logger.error(f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'")
+
+                if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
+                    has_products_that_requires_measurements = True
+            except ServiceError as e:
+                logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
             create_product = CreateProductModel(
                 name=line_item.get("name"),

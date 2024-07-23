@@ -169,7 +169,7 @@ class ShopifyWebhookOrderHandler:
                 f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}"
             )
 
-        tmg_issued_discount_codes = self.__process_used_discount_code(payload)
+        self.__process_used_discount_code(payload)
 
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
@@ -204,7 +204,6 @@ class ShopifyWebhookOrderHandler:
             shipping_address=shipping_address,
             event_id=event_id,
             ship_by_date=ship_by_date,
-            discount_codes=tmg_issued_discount_codes,
             meta={"webhook_id": str(webhook_id)},
         )
 

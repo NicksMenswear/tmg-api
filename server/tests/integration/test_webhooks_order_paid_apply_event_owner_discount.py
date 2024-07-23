@@ -84,10 +84,11 @@ class TestWebhooksOrderPaidEventOwnerDiscount(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json["discount_codes"][0], discount.shopify_discount_code)
 
         discount_in_db = self.discount_service.get_discount_by_shopify_code(discount.shopify_discount_code)
+
         self.assertTrue(discount_in_db.used)
+        self.assertEqual(discount_in_db.shopify_discount_code, discount.shopify_discount_code)
 
     def test_order_with_multiple_discount_codes(self):
         # given
@@ -138,8 +139,13 @@ class TestWebhooksOrderPaidEventOwnerDiscount(BaseTestCase):
         # then
         self.assert200(response)
 
-        discount_codes = response.json["discount_codes"]
-        self.assertEqual(len(discount_codes), 2)
+        discount_in_db_1 = self.discount_service.get_discount_by_shopify_code(discount1.shopify_discount_code)
+        discount_in_db_2 = self.discount_service.get_discount_by_shopify_code(discount2.shopify_discount_code)
+
+        self.assertTrue(discount_in_db_1.used)
+        self.assertTrue(discount_in_db_2.used)
+
         self.assertEqual(
-            {discount_codes[0], discount_codes[1]}, {discount1.shopify_discount_code, discount2.shopify_discount_code}
+            {discount_in_db_1.shopify_discount_code, discount_in_db_2.shopify_discount_code},
+            {discount1.shopify_discount_code, discount2.shopify_discount_code},
         )

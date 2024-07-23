@@ -42,7 +42,6 @@ class CreateOrderModel(CoreModel):
     store_location: Optional[str] = None
     order_type: Optional[List[str]] = None
     shipping_address: Optional[AddressModel] = None
-    discount_codes: Optional[List[str]] = None
     meta: Optional[dict] = None
 
 
@@ -97,12 +96,15 @@ class OrderModel(CoreModel):
     shipping_state: Optional[str] = None
     shipping_zip_code: Optional[str] = None
     shipping_country: Optional[str] = None
-    discount_codes: List[str] = []
     products: List[ProductModel] = []
+    discount_codes: List[str] = []
     order_items: List[OrderItemModel] = []
 
     class Config:
         from_attributes = True
 
     def to_response(self):
-        return self.model_dump()
+        data = self.model_dump()
+        data["discount_codes"] = self.discount_codes
+
+        return data

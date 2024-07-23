@@ -8,7 +8,7 @@ from server.models.discount_model import ApplyDiscountModel, CreateDiscountInten
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
 from server.models.look_model import CreateLookModel, UpdateLookModel, ProductSpecType
 from server.models.measurement_model import CreateMeasurementsRequestModel, MeasurementModel
-from server.models.order_model import CreateOrderModel, AddressModel
+from server.models.order_model import CreateOrderModel, AddressModel, CreateOrderItemModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.size_model import CreateSizeRequestModel, SizeModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
@@ -120,7 +120,16 @@ def create_order_request(**order_data):
         shopify_order_number=order_data.get("shopify_order_number", str(random.randint(100000, 1000000))),
         status=order_data.get("status", ORDER_STATUS_READY),
         shopify_order_id=order_data.get("shopify_order_id", str(random.randint(100000, 1000000))),
-        products=order_data.get("products", []),
+    )
+
+
+def create_order_item_request(**order_item_data):
+    return CreateOrderItemModel(
+        order_id=order_item_data.get("order_id", uuid.uuid4()),
+        product_id=order_item_data.get("product_id"),
+        shopify_sku=order_item_data.get("shopify_sku", str(uuid.uuid4())),
+        purchased_price=order_item_data.get("purchased_price", random.randint(10, 100)),
+        quantity=order_item_data.get("quantity", random.randint(1, 5)),
     )
 
 
@@ -197,37 +206,6 @@ def apply_discounts_request(**apply_discounts_data):
         event_id=apply_discounts_data.get("event_id", uuid.uuid4()),
         shopify_cart_id=apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
     )
-
-
-######################
-# LEGACY FIXTURES
-######################
-
-
-def order_request(**order_data):
-    return {
-        "email": order_data.get("email", f"{str(uuid.uuid4())}@example.com"),
-        "user_id": order_data.get("user_id", str(uuid.uuid4())),
-        "event_id": order_data.get("event_id", str(uuid.uuid4())),
-        "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
-        "received_date": order_data.get("received_date", datetime.now().isoformat()),
-        "items": order_data.get("items", []),
-    }
-
-
-def order_item(**order_item_data):
-    return {
-        "name": order_item_data.get("name", str(uuid.uuid4())),
-        "quantity": order_item_data.get("quantity", random.randint(1, 100)),
-    }
-
-
-def update_order_request(**order_data):
-    return {
-        "id": order_data.get("id", str(uuid.uuid4())),
-        "shipped_date": order_data.get("shipped_date", datetime.now().isoformat()),
-        "received_date": order_data.get("received_date", datetime.now().isoformat()),
-    }
 
 
 def get_look_1_image_in_b64():

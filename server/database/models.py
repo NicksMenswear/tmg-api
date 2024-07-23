@@ -371,6 +371,7 @@ class OrderItem(Base):
     order = relationship("Order", backref="order_items")
     product = relationship("Product", backref="order_items")
     price = Column(Float)
+    shopify_sku = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

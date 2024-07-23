@@ -9,10 +9,11 @@ from typing import List
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType
 from server.models.measurement_model import MeasurementModel
-from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
+from server.models.order_model import OrderModel, CreateOrderModel, ProductModel, CreateOrderItemModel, OrderItemModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
 from server.services.measurement_service import MeasurementService
+from server.services.product_service import ProductService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.user_service import UserService
 
@@ -27,12 +28,19 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class OrderService:
-    def __init__(self, user_service: UserService, measurement_service: MeasurementService, sku_builder: SkuBuilder):
+    def __init__(
+        self,
+        user_service: UserService,
+        product_service: ProductService,
+        measurement_service: MeasurementService,
+        sku_builder: SkuBuilder,
+    ):
         self.user_service = user_service
+        self.product_service = product_service
         self.measurement_service = measurement_service
         self.sku_builder = sku_builder
 
-    def generate_order_number(self):
+    def generate_order_number(self) -> str:
         prefix = "MG"
 
         timestamp = time.strftime("%y%m%d%H%M%S")
@@ -53,20 +61,6 @@ class OrderService:
         order_model.products = [ProductModel.from_orm(product) for product in products]
 
         return order_model
-
-    def get_product_by_id(self, product_id: uuid.UUID) -> ProductModel:
-        product = Product.query.filter(Product.id == product_id).first()
-
-        if not product:
-            raise NotFoundError("Product not found")
-
-        return ProductModel.from_orm(product)
-
-    def get_products_for_order(self, order_id: uuid.UUID) -> List[ProductModel]:
-        return [
-            ProductModel.from_orm(product)
-            for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
-        ]
 
     def create_order(self, create_order: CreateOrderModel) -> OrderModel:
         try:
@@ -95,40 +89,36 @@ class OrderService:
                 meta=create_order.meta,
             )
             db.session.add(order)
-            db.session.flush()
-
-            products = []
-
-            for create_product in create_order.products:
-                product = Product(
-                    sku=create_product.sku,
-                    shopify_sku=create_product.shopify_sku,
-                    name=create_product.name,
-                    price=create_product.price,
-                    on_hand=create_product.on_hand,
-                )
-                db.session.add(product)
-                db.session.flush()
-
-                products.append(product)
-
-                order_item = OrderItem(
-                    order_id=order.id,
-                    product_id=product.id,
-                    purchased_price=product.price,
-                    quantity=create_product.quantity,
-                )
-                db.session.add(order_item)
-
             db.session.commit()
+            db.session.refresh(order)
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to create order.", e)
 
-        created_order = OrderModel.from_orm(order)
-        created_order.products = [ProductModel.from_orm(product) for product in products]
+        return OrderModel.from_orm(order)
 
-        return created_order
+    def create_order_item(self, create_order_item: CreateOrderItemModel) -> OrderItemModel:
+        try:
+            order_item = OrderItem(
+                order_id=create_order_item.order_id,
+                product_id=create_order_item.product_id,
+                shopify_sku=create_order_item.shopify_sku,
+                purchased_price=create_order_item.purchased_price,
+                quantity=create_order_item.quantity,
+            )
+            db.session.add(order_item)
+            db.session.commit()
+            db.session.refresh(order_item)
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceError("Failed to create order.", e)
+
+        return OrderItemModel.from_orm(order_item)
+
+    def get_order_items_by_order_id(self, order_id: uuid.UUID) -> List[OrderItemModel]:
+        order_items = OrderItem.query.filter(OrderItem.order_id == order_id).all()
+
+        return [OrderItemModel.from_orm(order_item) for order_item in order_items]
 
     def get_orders_by_status_and_not_older_then_days(
         self, status: str, days: int, user_id: uuid.UUID = None
@@ -142,18 +132,6 @@ class OrderService:
         orders = query.all()
 
         return [OrderModel.from_orm(order) for order in orders]
-
-    def update_sku_for_product(self, product_id: uuid.UUID, sku: str) -> ProductModel:
-        try:
-            product = Product.query.filter(Product.id == product_id).first()
-            product.sku = sku
-
-            db.session.commit()
-            db.session.refresh(product)
-        except Exception as e:
-            raise ServiceError("Failed to update SKU for product.", e)
-
-        return ProductModel.from_orm(product)
 
     def update_order_status(self, order_id: uuid.UUID, status: str) -> OrderModel:
         try:
@@ -175,8 +153,17 @@ class OrderService:
         )
 
         for order in orders:
-            order.products = self.get_products_for_order(order.id)  # TODO: Do something smarter later
+            order.products = self.product_service.get_products_for_order(order.id)  # TODO: Do something smarter later
             self.update_order_skus_according_to_measurements(order, size_model, measurement_model)
+
+    def associate_order_item_with_product(self, order_item_id: uuid.UUID, product_id: uuid.UUID):
+        try:
+            order_item = OrderItem.query.filter(OrderItem.id == order_item_id).first()
+            order_item.product_id = product_id
+
+            db.session.commit()
+        except Exception as e:
+            raise ServiceError("Failed to associate order item with product.")
 
     def update_order_skus_according_to_measurements(
         self, order: OrderModel, size_model: SizeModel, measurement_model: MeasurementModel
@@ -187,44 +174,54 @@ class OrderService:
         if not size_model or not measurement_model:
             raise ServiceError("Size or measurement model is missing")
 
-        if not order.products:
+        order_items = self.get_order_items_by_order_id(order.id)
+
+        if not order_items:
             return order
 
-        num_products = len(order.products)
-        num_products_with_sku = 0
+        num_order_items = len(order_items)
+        num_products = 0
 
-        for product in order.products:
-            if not product.shopify_sku:
-                logger.error(f"Product {product.id} is missing shopify SKU")
+        for order_item in order_items:
+            if not order_item.shopify_sku:
+                logger.error(
+                    f"Order item {order_item.id} is missing shopify SKU for order {order.order_number} / {order.id} / {order.shopify_order_id}"
+                )
                 continue
 
-            current_shiphero_sku = product.sku
+            current_shiphero_sku = None
+
+            if order_item.product_id:
+                product = self.product_service.get_product_by_id(order_item.product_id)
+                current_shiphero_sku = product.sku
 
             try:
-                new_shiphero_sku = self.sku_builder.build(product.shopify_sku, size_model, measurement_model)
+                new_shiphero_sku = self.sku_builder.build(order_item.shopify_sku, size_model, measurement_model)
             except ServiceError as e:
                 logger.error(
-                    f"Failed to build SKU for product with shopify sku {product.shopify_sku} in order {order.order_number}. Sizing model id: {size_model.id}. Measurement model id: {measurement_model.id}. Error: {e}"
+                    f"Failed to build SKU for product with shopify sku {order_item.shopify_sku} in order {order.order_number}. Sizing model id: {size_model.id}. Measurement model id: {measurement_model.id}. Error: {e}"
                 )
                 new_shiphero_sku = None
 
             if current_shiphero_sku:
                 if current_shiphero_sku == new_shiphero_sku:
-                    num_products_with_sku += 1
+                    num_products += 1
                 else:
                     logger.error(
-                        f"SKU mismatch for product {product.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
+                        f"SKU mismatch for product {order_item.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
                     )
-                    self.update_sku_for_product(product.id, new_shiphero_sku)
-                    num_products_with_sku += 1
+                    product = self.product_service.get_product_by_sku(new_shiphero_sku)
+                    num_products += 1
+                    self.associate_order_item_with_product(order_item.id, product.id)
             else:
                 if new_shiphero_sku:
-                    num_products_with_sku += 1
-                    self.update_sku_for_product(product.id, new_shiphero_sku)
+                    num_products += 1
+                    product = self.product_service.get_product_by_sku(new_shiphero_sku)
+                    self.associate_order_item_with_product(order_item.id, product.id)
                 else:
                     pass
 
-        if num_products_with_sku == num_products:
+        if num_products == num_order_items:
             return self.update_order_status(order.id, ORDER_STATUS_READY)
         else:
             return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU)

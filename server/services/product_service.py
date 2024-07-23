@@ -17,6 +17,9 @@ class ProductService:
     def __init__(self):
         pass
 
+    def get_num_products(self) -> int:
+        return Product.query.count()
+
     def get_product_by_id(self, product_id: uuid.UUID) -> ProductModel:
         product = Product.query.filter(Product.id == product_id).first()
 

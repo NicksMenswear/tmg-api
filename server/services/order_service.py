@@ -9,7 +9,7 @@ from typing import List
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType
 from server.models.measurement_model import MeasurementModel
-from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
+from server.models.order_model import OrderModel, CreateOrderModel, ProductModel, CreateOrderItemModel, OrderItemModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
 from server.services.measurement_service import MeasurementService
@@ -89,40 +89,36 @@ class OrderService:
                 meta=create_order.meta,
             )
             db.session.add(order)
-            db.session.flush()
-
-            products = []
-
-            for create_product in create_order.products:
-                product = Product(
-                    sku=create_product.sku,
-                    shopify_sku=create_product.shopify_sku,
-                    name=create_product.name,
-                    price=create_product.price,
-                    on_hand=create_product.on_hand,
-                )
-                db.session.add(product)
-                db.session.flush()
-
-                products.append(product)
-
-                order_item = OrderItem(
-                    order_id=order.id,
-                    product_id=product.id,
-                    purchased_price=product.price,
-                    quantity=create_product.quantity,
-                )
-                db.session.add(order_item)
-
             db.session.commit()
+            db.session.refresh(order)
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to create order.", e)
 
-        created_order = OrderModel.from_orm(order)
-        created_order.products = [ProductModel.from_orm(product) for product in products]
+        return OrderModel.from_orm(order)
 
-        return created_order
+    def create_order_item(self, create_order_item: CreateOrderItemModel) -> OrderItemModel:
+        try:
+            order_item = OrderItem(
+                order_id=create_order_item.order_id,
+                product_id=create_order_item.product_id,
+                shopify_sku=create_order_item.shopify_sku,
+                purchased_price=create_order_item.purchased_price,
+                quantity=create_order_item.quantity,
+            )
+            db.session.add(order_item)
+            db.session.commit()
+            db.session.refresh(order_item)
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceError("Failed to create order.", e)
+
+        return OrderItemModel.from_orm(order_item)
+
+    def get_order_items_by_order_id(self, order_id: uuid.UUID) -> List[OrderItemModel]:
+        order_items = OrderItem.query.filter(OrderItem.order_id == order_id).all()
+
+        return [OrderItemModel.from_orm(order_item) for order_item in order_items]
 
     def get_orders_by_status_and_not_older_then_days(
         self, status: str, days: int, user_id: uuid.UUID = None

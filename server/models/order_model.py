@@ -24,15 +24,6 @@ class AddressModel(CoreModel):
     country: Optional[str] = None
 
 
-class CreateProductModel(CoreModel):
-    name: str
-    sku: Optional[str] = None
-    shopify_sku: Optional[str] = None
-    price: float = 0.0
-    quantity: int = 0
-    on_hand: int = 0
-
-
 class CreateOrderModel(CoreModel):
     legacy_id: Optional[str] = None
     user_id: Optional[UUID] = None
@@ -51,7 +42,7 @@ class CreateOrderModel(CoreModel):
     store_location: Optional[str] = None
     order_type: Optional[List[str]] = None
     shipping_address: Optional[AddressModel] = None
-    products: List[CreateProductModel] = []
+    discount_codes: Optional[List[str]] = None
     meta: Optional[dict] = None
 
 
@@ -73,9 +64,21 @@ class ProductModel(CoreModel):
 class CreateOrderItemModel(CoreModel):
     order_id: UUID
     product_id: Optional[UUID] = None
-    shopify_sku: str = None
+    shopify_sku: Optional[str] = None
     purchased_price: float = 0.0
     quantity: int = 1
+
+
+class OrderItemModel(CoreModel):
+    id: UUID
+    order_id: UUID
+    product_id: Optional[UUID] = None
+    shopify_sku: str
+    purchased_price: float
+    quantity: int
+
+    class Config:
+        from_attributes = True
 
 
 class OrderModel(CoreModel):
@@ -94,15 +97,12 @@ class OrderModel(CoreModel):
     shipping_state: Optional[str] = None
     shipping_zip_code: Optional[str] = None
     shipping_country: Optional[str] = None
-    products: List[ProductModel] = []
     discount_codes: List[str] = []
+    products: List[ProductModel] = []
+    order_items: List[OrderItemModel] = []
 
     class Config:
         from_attributes = True
 
     def to_response(self):
-        data = self.model_dump()
-        data["products"] = [product.to_response() for product in self.products]
-        data["discount_codes"] = self.discount_codes
-
-        return data
+        return self.model_dump()

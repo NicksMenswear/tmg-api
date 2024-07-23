@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 from server.database.models import SourceType, OrderType
-from server.models.order_model import AddressModel, CreateProductModel, CreateOrderModel
+from server.models.order_model import AddressModel, CreateOrderModel, CreateOrderItemModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
@@ -189,19 +189,35 @@ class ShopifyWebhookOrderHandler:
 
         num_shiphero_skus = 0
         has_products_that_requires_measurements = False
-
         track_suit_parts = {}
+        order_number = self.order_service.generate_order_number()
+        ship_by_date = None  # self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this - manual process only for now
 
-        products = []
+        create_order = CreateOrderModel(
+            user_id=user.id,
+            order_number=order_number,
+            shopify_order_id=str(shopify_order_id),
+            shopify_order_number=str(shopify_order_number),
+            order_origin=SourceType.TMG.value,
+            order_date=created_at,
+            order_type=[OrderType.NEW_ORDER.value],
+            shipping_address=shipping_address,
+            event_id=event_id,
+            ship_by_date=ship_by_date,
+            discount_codes=tmg_issued_discount_codes,
+            meta={"webhook_id": str(webhook_id)},
+        )
+
+        order = self.order_service.create_order(create_order)
 
         for line_item in items:
             shopify_sku = line_item.get("sku")
 
             if not shopify_sku:
                 logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
-                continue
 
             shiphero_sku = None
+            product = None
 
             try:
                 shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
@@ -214,23 +230,34 @@ class ShopifyWebhookOrderHandler:
 
                 if shiphero_sku:
                     num_shiphero_skus += 1
-                elif size_model and measurement_model:
-                    logger.error(f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'")
+                else:
+                    if size_model and measurement_model:
+                        logger.error(
+                            f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
+                        )
 
-                if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
-                    has_products_that_requires_measurements = True
+                    if self.sku_builder.does_product_requires_measurements(shopify_sku):
+                        has_products_that_requires_measurements = True
             except ServiceError as e:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
-            create_product = CreateProductModel(
-                name=line_item.get("name"),
-                sku=shiphero_sku,
+            if shiphero_sku:
+                try:
+                    product = self.product_service.get_product_by_sku(shiphero_sku)
+                except NotFoundError:
+                    logger.error(
+                        f"Product with SKU '{shiphero_sku}' not found in database. Order number {order_number}"
+                    )
+
+            create_order_item = CreateOrderItemModel(
+                order_id=order.id,
+                product_id=product.id if product else None,
                 shopify_sku=shopify_sku,
-                price=line_item.get("price"),
-                quantity=1,
+                purchased_price=line_item.get("price"),
+                quantity=line_item.get("quantity"),
             )
 
-            products.append(create_product)
+            self.order_service.create_order_item(create_order_item)
 
         if track_suit_parts:
             for shopify_suit_sku, suit_parts in track_suit_parts.items():
@@ -240,18 +267,20 @@ class ShopifyWebhookOrderHandler:
 
                 suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
                 shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
+                suit_product = None
 
-                create_product = CreateProductModel(
-                    name=suit_variant.product_title,
-                    sku=shiphero_suit_sku,
+                if shiphero_suit_sku:
+                    suit_product = self.product_service.get_product_by_sku(shiphero_suit_sku)
+
+                create_suit_order_item = CreateOrderItemModel(
+                    order_id=order.id,
+                    product_id=suit_product.id if suit_product else None,
                     shopify_sku=shopify_suit_sku,
-                    price=suit_variant.variant_price,
+                    purchased_price=suit_variant.variant_price,
                     quantity=1,
                 )
 
-                products.append(create_product)
-
-        order_number = self.order_service.generate_order_number()
+                self.order_service.create_order_item(create_suit_order_item)
 
         if num_shiphero_skus < len(items):
             if has_products_that_requires_measurements and not (size_model or measurement_model):
@@ -261,40 +290,19 @@ class ShopifyWebhookOrderHandler:
         else:
             order_status = ORDER_STATUS_READY
 
-        # ship_by_date = self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this - manual process only for now
-        ship_by_date = None
+        if event_id and user.id:
+            try:
+                self.attendee_service.update_attendee_pay_status(event_id, user.id)
+            except NotFoundError:
+                logger.error(
+                    f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
+                )
 
-        create_order = CreateOrderModel(
-            user_id=user.id,
-            order_number=order_number,
-            shopify_order_id=str(shopify_order_id),
-            shopify_order_number=str(shopify_order_number),
-            order_origin=SourceType.TMG.value,
-            order_date=created_at,
-            order_type=[OrderType.NEW_ORDER.value],
-            shipping_address=shipping_address,
-            products=products,
-            event_id=event_id,
-            meta={"webhook_id": str(webhook_id)},
-            status=order_status,
-            ship_by_date=ship_by_date,
-        )
+        order_model = self.order_service.update_order_status(order.id, order_status)
+        order_model.order_items = self.order_service.get_order_items_by_order_id(order.id)
+        order_model.products = self.product_service.get_products_for_order(order.id)
 
-        try:
-            order_model = self.order_service.create_order(create_order)
-            order_model.discount_codes = tmg_issued_discount_codes
-
-            if event_id and user.id:
-                try:
-                    self.attendee_service.update_attendee_pay_status(event_id, user.id)
-                except NotFoundError:
-                    logger.error(
-                        f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
-                    )
-
-            return order_model.to_response()
-        except Exception as e:
-            return self.__error(f"Error creating order: {str(e)}")
+        return order_model.to_response()
 
     def __get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
         note_attributes = payload.get("note_attributes")

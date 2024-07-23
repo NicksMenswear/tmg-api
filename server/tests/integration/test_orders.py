@@ -206,7 +206,7 @@ class TestOrders(BaseTestCase):
 
         # then
         self.assertEqual(updated_order.status, ORDER_STATUS_READY)
-        self.assertIsNotNone(self.order_service.get_product_by_id(order.products[0].id).sku)
+        self.assertIsNotNone(self.product_service.get_product_by_id(order.products[0].id).sku)
 
     def test_update_order_status_if_product_requires_measurements(self):
         # given
@@ -236,4 +236,4 @@ class TestOrders(BaseTestCase):
 
         # then
         self.assertEqual(updated_order.status, ORDER_STATUS_READY)
-        self.assertIsNotNone(self.order_service.get_product_by_id(order.products[0].id).sku)
+        self.assertIsNotNone(self.product_service.get_product_by_id(order.products[0].id).sku)

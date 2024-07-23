@@ -18,6 +18,7 @@ from server.services.order_service import (
     ORDER_STATUS_READY,
     OrderService,
 )
+from server.services.product_service import ProductService
 from server.services.shopify_service import ShopifyService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder, ProductType
@@ -38,6 +39,7 @@ class ShopifyWebhookOrderHandler:
         size_service: SizeService,
         measurement_service: MeasurementService,
         order_service: OrderService,
+        product_service: ProductService,
         sku_builder: SkuBuilder,
         event_service: EventService,
     ):
@@ -49,6 +51,7 @@ class ShopifyWebhookOrderHandler:
         self.size_service = size_service
         self.measurement_service = measurement_service
         self.order_service = order_service
+        self.product_service = product_service
         self.sku_builder = sku_builder
         self.event_service = event_service
 

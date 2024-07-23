@@ -70,6 +70,14 @@ class ProductModel(CoreModel):
         return self.model_dump(include={"id", "name", "sku", "shopify_sku"})
 
 
+class CreateOrderItemModel(CoreModel):
+    order_id: UUID
+    product_id: Optional[UUID] = None
+    shopify_sku: str = None
+    purchased_price: float = 0.0
+    quantity: int = 1
+
+
 class OrderModel(CoreModel):
     id: UUID
     user_id: Optional[UUID] = None

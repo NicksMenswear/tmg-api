@@ -72,6 +72,7 @@ class BaseTestCase(TestCase):
         self.look_service = self.app.look_service
         self.event_service = self.app.event_service
         self.order_service = self.app.order_service
+        self.product_service = self.app.product_service
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service

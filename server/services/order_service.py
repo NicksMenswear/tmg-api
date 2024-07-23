@@ -13,6 +13,7 @@ from server.models.order_model import OrderModel, CreateOrderModel, ProductModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
 from server.services.measurement_service import MeasurementService
+from server.services.product_service import ProductService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.user_service import UserService
 
@@ -27,12 +28,19 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class OrderService:
-    def __init__(self, user_service: UserService, measurement_service: MeasurementService, sku_builder: SkuBuilder):
+    def __init__(
+        self,
+        user_service: UserService,
+        product_service: ProductService,
+        measurement_service: MeasurementService,
+        sku_builder: SkuBuilder,
+    ):
         self.user_service = user_service
+        self.product_service = product_service
         self.measurement_service = measurement_service
         self.sku_builder = sku_builder
 
-    def generate_order_number(self):
+    def generate_order_number(self) -> str:
         prefix = "MG"
 
         timestamp = time.strftime("%y%m%d%H%M%S")
@@ -53,20 +61,6 @@ class OrderService:
         order_model.products = [ProductModel.from_orm(product) for product in products]
 
         return order_model
-
-    def get_product_by_id(self, product_id: uuid.UUID) -> ProductModel:
-        product = Product.query.filter(Product.id == product_id).first()
-
-        if not product:
-            raise NotFoundError("Product not found")
-
-        return ProductModel.from_orm(product)
-
-    def get_products_for_order(self, order_id: uuid.UUID) -> List[ProductModel]:
-        return [
-            ProductModel.from_orm(product)
-            for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
-        ]
 
     def create_order(self, create_order: CreateOrderModel) -> OrderModel:
         try:
@@ -143,18 +137,6 @@ class OrderService:
 
         return [OrderModel.from_orm(order) for order in orders]
 
-    def update_sku_for_product(self, product_id: uuid.UUID, sku: str) -> ProductModel:
-        try:
-            product = Product.query.filter(Product.id == product_id).first()
-            product.sku = sku
-
-            db.session.commit()
-            db.session.refresh(product)
-        except Exception as e:
-            raise ServiceError("Failed to update SKU for product.", e)
-
-        return ProductModel.from_orm(product)
-
     def update_order_status(self, order_id: uuid.UUID, status: str) -> OrderModel:
         try:
             order = Order.query.filter(Order.id == order_id).first()
@@ -175,7 +157,7 @@ class OrderService:
         )
 
         for order in orders:
-            order.products = self.get_products_for_order(order.id)  # TODO: Do something smarter later
+            order.products = self.product_service.get_products_for_order(order.id)  # TODO: Do something smarter later
             self.update_order_skus_according_to_measurements(order, size_model, measurement_model)
 
     def update_order_skus_according_to_measurements(
@@ -215,12 +197,12 @@ class OrderService:
                     logger.error(
                         f"SKU mismatch for product {product.id} in order {order.order_number}: current SKU {current_shiphero_sku}, new SKU {new_shiphero_sku}. Taking new SKU {new_shiphero_sku}"
                     )
-                    self.update_sku_for_product(product.id, new_shiphero_sku)
+                    self.product_service.update_sku_for_product(product.id, new_shiphero_sku)
                     num_products_with_sku += 1
             else:
                 if new_shiphero_sku:
                     num_products_with_sku += 1
-                    self.update_sku_for_product(product.id, new_shiphero_sku)
+                    self.product_service.update_sku_for_product(product.id, new_shiphero_sku)
                 else:
                     pass
 

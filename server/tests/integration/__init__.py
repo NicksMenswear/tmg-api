@@ -47,7 +47,6 @@ class BaseTestCase(TestCase):
         Look.query.delete()
         OrderItem.query.delete()
         Order.query.delete()
-        Product.query.delete()
         Event.query.delete()
         Size.query.delete()
         Measurement.query.delete()
@@ -72,6 +71,7 @@ class BaseTestCase(TestCase):
         self.look_service = self.app.look_service
         self.event_service = self.app.event_service
         self.order_service = self.app.order_service
+        self.product_service = self.app.product_service
         self.attendee_service = self.app.attendee_service
         self.discount_service = self.app.discount_service
         self.webhook_service = self.app.webhook_service
@@ -82,6 +82,11 @@ class BaseTestCase(TestCase):
         self.measurement_service = self.app.measurement_service
 
         self.shopify_skus_cache = {}
+
+        num_products_in_db = self.product_service.get_num_products()
+
+        if num_products_in_db == 0:
+            self.__load_products()
 
     def populate_shopify_variants(self, num_variants=100):
         if not isinstance(self.shopify_service, FakeShopifyService):
@@ -201,3 +206,18 @@ class BaseTestCase(TestCase):
             raise ValueError(f"No SKUs found for product type: {product_type}")
 
         return random.choice(list(skus))
+
+    def __load_products(self):
+        ship_hero_skus = self.__read_csv_into_set(f"assets/ship_hero_skus.csv")
+
+        for ship_hero_sku in ship_hero_skus:
+            product = Product(
+                sku=ship_hero_sku,
+                name=f"Test product with sku {ship_hero_sku}",
+                price=random.randint(100, 1000),
+                on_hand=0,
+                reserve_inventory=random.randint(0, 10),
+                meta={"test": True},
+            )
+
+            db.session.add(product)

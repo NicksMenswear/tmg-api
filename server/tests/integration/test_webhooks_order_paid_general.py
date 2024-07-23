@@ -27,7 +27,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertTrue("No items in order" in response.json["errors"])
+        self.assertTrue("Received paid order without items" in response.json["errors"])
 
     def test_order_with_event_id_in_cart(self):
         # given
@@ -104,8 +104,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(response.json["status"], ORDER_STATUS_PENDING_MISSING_SKU)
-        self.assertEqual(response.json["products"][0]["shopify_sku"], "")
-        self.assertIsNone(response.json["products"][0]["sku"])
+        self.assertEqual(response.json["order_items"][0]["shopify_sku"], "")
 
     def test_order_status_for_general_product_with_unknown_sku(self):
         # given
@@ -122,8 +121,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(response.json["status"], ORDER_STATUS_PENDING_MISSING_SKU)
-        self.assertEqual(response.json["products"][0]["shopify_sku"], line_item["sku"])
-        self.assertIsNone(response.json["products"][0]["sku"])
+        self.assertEqual(response.json["order_items"][0]["shopify_sku"], line_item["sku"])
+        self.assertTrue(len(response.json["products"]) == 0)
 
     def test_order_general_details(self):
         # given
@@ -156,10 +155,9 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(order.status, ORDER_STATUS_READY)
         self.assertEqual(len(order.products), 1)
         self.assertIsNone(order.event_id)
-        response_product = response.json["products"][0]
+        response_order_item = response.json["order_items"][0]
         request_line_item = webhook_request["line_items"][0]
-        self.assertEqual(response_product["name"], request_line_item["name"])
-        self.assertEqual(response_product["shopify_sku"], request_line_item["sku"])
+        self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
 
     def test_order_sku_and_status_for_one_non_measurable_product(self):
         for product_type in ProductType:
@@ -189,11 +187,10 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
             order = self.order_service.get_order_by_id(response.json["id"])
             self.assertIsNotNone(order)
             self.assertEqual(order.status, ORDER_STATUS_READY)
-            response_product = response.json["products"][0]
+            response_order_item = response.json["order_items"][0]
             request_line_item = webhook_request["line_items"][0]
-            self.assertEqual(response_product["name"], request_line_item["name"])
-            self.assertEqual(response_product["shopify_sku"], request_line_item["sku"])
-            self.assertTrue(response_product["shopify_sku"].startswith(product_sku))
+            self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
+            self.assertTrue(response_order_item["shopify_sku"].startswith(product_sku))
 
     def test_order_sku_and_status_for_one_measurable_product(self):
         for product_type in ProductType:
@@ -218,11 +215,10 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
             order = self.order_service.get_order_by_id(response.json["id"])
             self.assertIsNotNone(order)
             self.assertEqual(order.status, ORDER_STATUS_PENDING_MEASUREMENTS)
-            response_product = response.json["products"][0]
+            response_order_item = response.json["order_items"][0]
             request_line_item = webhook_request["line_items"][0]
-            self.assertEqual(response_product["name"], request_line_item["name"])
-            self.assertEqual(response_product["shopify_sku"], request_line_item["sku"])
-            self.assertTrue(response_product["shopify_sku"].startswith(product_sku))
+            self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
+            self.assertTrue(response_order_item["shopify_sku"].startswith(product_sku))
 
     def test_order_status_for_mix_of_measurable_and_non_measurable_products(self):
         # given
@@ -246,7 +242,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
         self.assertEqual(order.status, ORDER_STATUS_PENDING_MEASUREMENTS)
-        self.assertEqual(len(order.products), 2)
+        self.assertEqual(len(order.products), 1)
+        self.assertEqual(len(order.order_items), 2)
 
     def test_order_status_with_measurements_but_unknown_sku(self):
         # given
@@ -272,8 +269,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assert200(response)
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
-        self.assertEqual(order.products[0].shopify_sku, webhook_request["line_items"][0]["sku"])
-        self.assertIsNone(order.products[0].sku)
+        self.assertEqual(order.order_items[0].shopify_sku, webhook_request["line_items"][0]["sku"])
+        self.assertTrue(len(order.products) == 0)
         self.assertEqual(order.status, ORDER_STATUS_PENDING_MISSING_SKU)
 
     @parameterized.expand(
@@ -329,7 +326,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertIsNotNone(order)
         self.assertEqual(order.status, ORDER_STATUS_READY)
 
-        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
         response_shiphero_skus = set([product.sku for product in order.products])
 
         self.assertEqual(response_shopify_skus, set(shopify_skus))
@@ -338,8 +335,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
     @parameterized.expand(
         [
             [
-                ["101A1BLK", "201A1BLK", "301A1BLK", "903A4BLK"],
-                ["001A1BLK42R", "101A1BLK42RAF", "201A1BLK40R", "301A1BLK00LRAF", "903A4BLKOSR"],
+                ["101A2BLK", "201A2BLK", "301A2BLK", "903A4BLK"],
+                ["001A2BLK42R", "101A2BLK42RAF", "201A2BLK40R", "301A2BLK00LRAF", "903A4BLKOSR"],
             ]
         ]
     )
@@ -379,7 +376,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertIsNotNone(order)
         self.assertEqual(order.status, ORDER_STATUS_READY)
 
-        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
         response_shiphero_skus = set([product.sku for product in order.products])
 
         self.assertEqual(len(response_shopify_skus), len(shopify_skus) + 1)
@@ -410,9 +407,11 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertIsNotNone(order)
         self.assertEqual(order.status, ORDER_STATUS_PENDING_MEASUREMENTS)
 
-        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
+        response_shiphero_skus = set([product.sku for product in order.products])
 
         self.assertTrue(len(response_shopify_skus) == 8)
+        self.assertTrue(len(response_shiphero_skus) == 2)  # only non-measurable products
 
     def test_order_process_from_file_with_measurements(self):
         # given
@@ -451,6 +450,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertIsNotNone(order)
         self.assertEqual(order.status, ORDER_STATUS_READY)
 
-        response_shopify_skus = set([product.shopify_sku for product in order.products])
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
+        response_shiphero_skus = set([product.sku for product in order.products])
 
         self.assertTrue(len(response_shopify_skus) == 8)
+        self.assertTrue(len(response_shiphero_skus) == 8)

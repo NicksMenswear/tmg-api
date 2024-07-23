@@ -22,6 +22,7 @@ from server.services.event_service import EventService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
+from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shopify_service import ShopifyService, FakeShopifyService
 from server.services.shopify_webhook_handlers.order_handler import ShopifyWebhookOrderHandler
@@ -118,8 +119,12 @@ def init_services(app, is_testing=False):
         app.shopify_service, app.user_service, app.event_service, app.attendee_service, app.look_service
     )
     app.measurement_service = MeasurementService()
+    app.product_service = ProductService()
     app.order_service = OrderService(
-        user_service=app.user_service, measurement_service=app.measurement_service, sku_builder=app.sku_builder
+        user_service=app.user_service,
+        product_service=app.product_service,
+        measurement_service=app.measurement_service,
+        sku_builder=app.sku_builder,
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
@@ -135,6 +140,7 @@ def init_services(app, is_testing=False):
         app.size_service,
         app.measurement_service,
         app.order_service,
+        app.product_service,
         app.sku_builder,
         app.event_service,
     )

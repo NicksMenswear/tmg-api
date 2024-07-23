@@ -61,8 +61,7 @@ class ShopifyWebhookOrderHandler:
         items = payload.get("line_items")
 
         if not items or len(items) == 0:
-            logger.debug(f"Received paid order without items")
-            return self.__error("No items in order")
+            return self.__error(f"Received paid order without items")
 
         if len(items) == 1 and items[0].get("sku") and items[0].get("sku").startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
             sku = items[0].get("sku")
@@ -72,6 +71,7 @@ class ShopifyWebhookOrderHandler:
         return self.__process_paid_order(webhook_id, payload)
 
     def __error(self, message):
+        logger.error(message)
         return {"errors": message}
 
     def __process_gift_discount(self, payload):
@@ -96,8 +96,7 @@ class ShopifyWebhookOrderHandler:
         discounts = self.discount_service.get_gift_discount_intents_for_product_variant(shopify_variant_id)
 
         if not discounts:
-            logger.error(f"No discounts found for product_id: {shopify_product_id}")
-            return self.__error("No discounts found for product")
+            return self.__error(f"No discounts found for product_id: {shopify_product_id}")
 
         discounts_codes = []
 
@@ -106,7 +105,6 @@ class ShopifyWebhookOrderHandler:
             attendee = self.attendee_service.get_attendee_by_id(discount.attendee_id)
 
             if not attendee.look_id:
-                logger.error(f"No look associated for attendee '{attendee.id}' can't create discount code")
                 return self.__error(f"No look associated for attendee '{attendee.id}' can't create discount code")
 
             look = self.look_service.get_look_by_id(attendee.look_id)
@@ -117,7 +115,6 @@ class ShopifyWebhookOrderHandler:
                 or not look.product_specs.get("bundle", {}).get("variant_id")
                 or not look.product_specs.get("items")
             ):
-                logger.error(f"No shopify variants founds for look {look.id}. Can't create discount code")
                 return self.__error(f"No shopify variants founds for look {look.id}. Can't create discount code")
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
@@ -160,18 +157,21 @@ class ShopifyWebhookOrderHandler:
         return used_discount_codes
 
     def __process_paid_order(self, webhook_id: uuid.UUID, payload: Dict[str, Any]):
+        shopify_order_number = payload.get("order_number")
+        items = payload.get("line_items")
+
         shopify_customer_email = payload.get("customer").get("email")
 
         try:
             user = self.user_service.get_user_by_email(shopify_customer_email)
         except NotFoundError:
-            logger.error(f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}")
-            return self.__error(f"No user found for email '{shopify_customer_email}'")
+            return self.__error(
+                f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}"
+            )
 
         tmg_issued_discount_codes = self.__process_used_discount_code(payload)
 
         shopify_order_id = payload.get("id")
-        shopify_order_number = payload.get("order_number")
         created_at = datetime.fromisoformat(payload.get("created_at"))
         shipping_address = payload.get("shipping_address")
         shipping_address = AddressModel(
@@ -183,75 +183,73 @@ class ShopifyWebhookOrderHandler:
             country=shipping_address.get("country"),
         )
 
-        create_products = []
-
         event_id = self.__get_event_id_from_note_attributes(payload)
         size_model = self.size_service.get_latest_size_for_user(user.id)
         measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id) if size_model else None
 
-        items = payload.get("line_items")
         num_shiphero_skus = 0
         has_products_that_requires_measurements = False
 
         track_suit_parts = {}
 
-        if items:
-            for line_item in items:
-                shopify_sku = line_item.get("sku")
-                shiphero_sku = None
+        products = []
 
-                if not shopify_sku:
-                    logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
-                else:
-                    try:
-                        shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
-                        product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
+        for line_item in items:
+            shopify_sku = line_item.get("sku")
+            shiphero_sku = None
 
-                        if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
-                            shopify_suit_sku = f"0{shopify_sku[1:]}"
-                            track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
-                            track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
+            if not shopify_sku:
+                logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
+            else:
+                try:
+                    shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
+                    product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
-                        if shiphero_sku:
-                            num_shiphero_skus += 1
-                        elif size_model and measurement_model:
-                            logger.error(
-                                f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
-                            )
+                    if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
+                        shopify_suit_sku = f"0{shopify_sku[1:]}"
+                        track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
+                        track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
 
-                        if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
-                            has_products_that_requires_measurements = True
-                    except ServiceError as e:
-                        logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
+                    if shiphero_sku:
+                        num_shiphero_skus += 1
+                    elif size_model and measurement_model:
+                        logger.error(
+                            f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
+                        )
+
+                    if not shiphero_sku and self.sku_builder.does_product_requires_measurements(shopify_sku):
+                        has_products_that_requires_measurements = True
+                except ServiceError as e:
+                    logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
+
+            create_product = CreateProductModel(
+                name=line_item.get("name"),
+                sku=shiphero_sku,
+                shopify_sku=shopify_sku,
+                price=line_item.get("price"),
+                quantity=1,
+            )
+
+            products.append(create_product)
+
+        if track_suit_parts:
+            for shopify_suit_sku, suit_parts in track_suit_parts.items():
+                if len(suit_parts) != 3:
+                    # Looks like order is not a full suit split, skipping
+                    continue
+
+                suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
+                shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
 
                 create_product = CreateProductModel(
-                    name=line_item.get("name"),
-                    sku=shiphero_sku,
-                    shopify_sku=shopify_sku,
-                    price=line_item.get("price"),
+                    name=suit_variant.product_title,
+                    sku=shiphero_suit_sku,
+                    shopify_sku=shopify_suit_sku,
+                    price=suit_variant.variant_price,
                     quantity=1,
                 )
 
-                create_products.append(create_product)
-
-            if track_suit_parts:
-                for shopify_suit_sku, suit_parts in track_suit_parts.items():
-                    if len(suit_parts) != 3:
-                        # Looks like order is not a full suit split, skipping
-                        continue
-
-                    suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
-                    shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
-
-                    create_product = CreateProductModel(
-                        name=suit_variant.product_title,
-                        sku=shiphero_suit_sku,
-                        shopify_sku=shopify_suit_sku,
-                        price=suit_variant.variant_price,
-                        quantity=1,
-                    )
-
-                    create_products.append(create_product)
+                products.append(create_product)
 
         order_number = self.order_service.generate_order_number()
 
@@ -275,7 +273,7 @@ class ShopifyWebhookOrderHandler:
             order_date=created_at,
             order_type=[OrderType.NEW_ORDER.value],
             shipping_address=shipping_address,
-            products=create_products,
+            products=products,
             event_id=event_id,
             meta={"webhook_id": str(webhook_id)},
             status=order_status,
@@ -296,7 +294,6 @@ class ShopifyWebhookOrderHandler:
 
             return order_model.to_response()
         except Exception as e:
-            logger.error(f"Error creating order: {e}")
             return self.__error(f"Error creating order: {str(e)}")
 
     def __get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:

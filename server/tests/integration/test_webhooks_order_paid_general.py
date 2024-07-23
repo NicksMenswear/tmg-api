@@ -27,7 +27,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertTrue("No items in order" in response.json["errors"])
+        self.assertTrue("Received paid order without items" in response.json["errors"])
 
     def test_order_with_event_id_in_cart(self):
         # given

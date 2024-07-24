@@ -191,7 +191,7 @@ class ShopifyWebhookOrderHandler:
         size_model = self.size_service.get_latest_size_for_user(user.id)
         measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id) if size_model else None
 
-        num_shiphero_skus = 0
+        num_valid_products = 0
         has_products_that_requires_measurements = False
         track_suit_parts = {}
         order_number = self.order_service.generate_order_number()
@@ -231,9 +231,7 @@ class ShopifyWebhookOrderHandler:
                     track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
                     track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
 
-                if shiphero_sku:
-                    num_shiphero_skus += 1
-                else:
+                if not shiphero_sku:
                     if size_model and measurement_model:
                         logger.error(
                             f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
@@ -246,6 +244,9 @@ class ShopifyWebhookOrderHandler:
 
             if shiphero_sku:
                 product = self.__get_product_by_shiphero_sku(shiphero_sku)
+
+                if product:
+                    num_valid_products += 1
 
             create_order_item = CreateOrderItemModel(
                 order_id=order.id,
@@ -280,7 +281,7 @@ class ShopifyWebhookOrderHandler:
 
                 self.order_service.create_order_item(create_suit_order_item)
 
-        if num_shiphero_skus < len(items):
+        if num_valid_products < len(items):
             if has_products_that_requires_measurements and not (size_model or measurement_model):
                 order_status = ORDER_STATUS_PENDING_MEASUREMENTS
             else:

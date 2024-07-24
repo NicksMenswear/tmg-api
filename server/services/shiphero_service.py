@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import random
 import uuid
 from abc import ABC, abstractmethod
 
@@ -19,10 +20,14 @@ class AbstractShipHeroService(ABC):
 
 class FakeShipHeroService(AbstractShipHeroService):
     def get_product_by_sku(self, sku: str) -> ShipHeroProductModel:
+        if "SHIPHERO_NOT_FOUND" in sku:
+            raise ServiceError(f"Product with SKU {sku} not found")
+
         return ShipHeroProductModel(
             id=f"{uuid.uuid4()}",
             name=f"Fake Product {uuid.uuid4()}",
             sku=sku,
+            price=random.randint(100, 1000),
         )
 
 

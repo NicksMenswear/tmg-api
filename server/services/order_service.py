@@ -9,7 +9,8 @@ from typing import List
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType
 from server.models.measurement_model import MeasurementModel
-from server.models.order_model import OrderModel, CreateOrderModel, ProductModel, CreateOrderItemModel, OrderItemModel
+from server.models.order_model import OrderModel, CreateOrderModel, CreateOrderItemModel, OrderItemModel
+from server.models.product_model import ProductModel
 from server.models.size_model import SizeModel
 from server.services import NotFoundError, ServiceError
 from server.services.measurement_service import MeasurementService

@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 from server.database.database_manager import db
 from server.database.models import Product, OrderItem
-from server.models.order_model import ProductModel
+from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 
 logger = logging.getLogger(__name__)
@@ -44,3 +44,15 @@ class ProductService:
             ProductModel.from_orm(product)
             for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
         ]
+
+    def create_product(self, create_product: CreateProductModel) -> ProductModel:
+        try:
+            new_product = Product(sku=create_product.sku, name=create_product.name, price=create_product.price)
+
+            db.session.add(new_product)
+            db.session.commit()
+            db.session.refresh(new_product)
+        except Exception as e:
+            raise ServiceError("Failed to save new product.", e)
+
+        return ProductModel.from_orm(new_product)

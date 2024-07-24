@@ -28,7 +28,7 @@ class FakeShipHeroService(AbstractShipHeroService):
 
 class ShipHeroService(AbstractShipHeroService):
     def __init__(self):
-        self.__shiphero_api_url = os.getenv("SHIPHERO_API_URL")
+        self.__shiphero_api_url = os.getenv("SHIPHERO_API_URL", "https://public-api.shiphero.com/")
         self.__shiphero_api_graphql_endpoint = f"{self.__shiphero_api_url}/graphql"
         self.__shiphero_api_access_token = os.getenv("SHIPHERO_API_ACCESS_TOKEN")
 

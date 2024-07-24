@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 
 from server.database.models import SourceType, OrderType
 from server.models.order_model import AddressModel, CreateOrderModel, CreateOrderItemModel
+from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
@@ -19,7 +20,8 @@ from server.services.order_service import (
     OrderService,
 )
 from server.services.product_service import ProductService
-from server.services.shopify_service import ShopifyService
+from server.services.shiphero_service import AbstractShipHeroService
+from server.services.shopify_service import AbstractShopifyService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder, ProductType
 from server.services.user_service import UserService
@@ -31,7 +33,7 @@ logger = logging.getLogger(__name__)
 class ShopifyWebhookOrderHandler:
     def __init__(
         self,
-        shopify_service: ShopifyService,
+        shopify_service: AbstractShopifyService,
         discount_service: DiscountService,
         user_service: UserService,
         attendee_service: AttendeeService,
@@ -42,6 +44,7 @@ class ShopifyWebhookOrderHandler:
         product_service: ProductService,
         sku_builder: SkuBuilder,
         event_service: EventService,
+        shiphero_service: AbstractShipHeroService,
     ):
         self.shopify_service = shopify_service
         self.discount_service = discount_service
@@ -54,6 +57,7 @@ class ShopifyWebhookOrderHandler:
         self.product_service = product_service
         self.sku_builder = sku_builder
         self.event_service = event_service
+        self.shiphero_service = shiphero_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -187,7 +191,7 @@ class ShopifyWebhookOrderHandler:
         size_model = self.size_service.get_latest_size_for_user(user.id)
         measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id) if size_model else None
 
-        num_shiphero_skus = 0
+        num_valid_products = 0
         has_products_that_requires_measurements = False
         track_suit_parts = {}
         order_number = self.order_service.generate_order_number()
@@ -227,9 +231,7 @@ class ShopifyWebhookOrderHandler:
                     track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
                     track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
 
-                if shiphero_sku:
-                    num_shiphero_skus += 1
-                else:
+                if not shiphero_sku:
                     if size_model and measurement_model:
                         logger.error(
                             f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
@@ -241,12 +243,10 @@ class ShopifyWebhookOrderHandler:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
             if shiphero_sku:
-                try:
-                    product = self.product_service.get_product_by_sku(shiphero_sku)
-                except NotFoundError:
-                    logger.error(
-                        f"Product with SKU '{shiphero_sku}' not found in database. Order number {order_number}"
-                    )
+                product = self.__get_product_by_shiphero_sku(shiphero_sku)
+
+                if product:
+                    num_valid_products += 1
 
             create_order_item = CreateOrderItemModel(
                 order_id=order.id,
@@ -269,7 +269,7 @@ class ShopifyWebhookOrderHandler:
                 suit_product = None
 
                 if shiphero_suit_sku:
-                    suit_product = self.product_service.get_product_by_sku(shiphero_suit_sku)
+                    suit_product = self.__get_product_by_shiphero_sku(shiphero_suit_sku)
 
                 create_suit_order_item = CreateOrderItemModel(
                     order_id=order.id,
@@ -281,7 +281,7 @@ class ShopifyWebhookOrderHandler:
 
                 self.order_service.create_order_item(create_suit_order_item)
 
-        if num_shiphero_skus < len(items):
+        if num_valid_products < len(items):
             if has_products_that_requires_measurements and not (size_model or measurement_model):
                 order_status = ORDER_STATUS_PENDING_MEASUREMENTS
             else:
@@ -332,3 +332,30 @@ class ShopifyWebhookOrderHandler:
             return None
 
         return monday_of_week
+
+    def __get_product_by_shiphero_sku(self, shiphero_sku: str) -> Optional[ProductModel]:
+        product = None
+
+        try:
+            product = self.product_service.get_product_by_sku(shiphero_sku)
+        except NotFoundError:
+            logger.debug(f"No product found for ShipHero SKU '{shiphero_sku}' in our db. Pulling from ShipHero API")
+
+        if product:
+            return product
+
+        try:
+            shiphero_product = self.shiphero_service.get_product_by_sku(shiphero_sku)
+        except Exception as e:
+            logger.error(f"Error fetching product from ShipHero for SKU '{shiphero_sku}': {e}")
+            return None
+
+        try:
+            product = self.product_service.create_product(
+                CreateProductModel(**shiphero_product.model_dump(exclude={"id"}))
+            )
+        except ServiceError as e:
+            logger.error(f"Error creating product from ShipHero for SKU '{shiphero_sku}': {e}")
+            return None
+
+        return ProductModel.from_orm(product)

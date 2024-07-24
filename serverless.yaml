@@ -62,6 +62,9 @@ functions:
       # ActiveCampaign Env Variables
       ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com"
       ACTIVECAMPAIGN_API_KEY: ${ssm:/${sls:stage}/activecampaign/api_key}
+      # ShipHero Env Variables
+      SHIPHERO_API_URL: "https://public-api.shiphero.com"
+      SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
 
 plugins:
   - serverless-python-requirements

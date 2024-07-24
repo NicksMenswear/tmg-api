@@ -24,6 +24,7 @@ from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
+from server.services.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.shopify_service import ShopifyService, FakeShopifyService
 from server.services.shopify_webhook_handlers.order_handler import ShopifyWebhookOrderHandler
 from server.services.shopify_webhook_handlers.user_handler import ShopifyWebhookUserHandler
@@ -131,6 +132,7 @@ def init_services(app, is_testing=False):
     app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
     app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+    app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
         app.shopify_service,
         app.discount_service,
@@ -143,6 +145,7 @@ def init_services(app, is_testing=False):
         app.product_service,
         app.sku_builder,
         app.event_service,
+        app.shiphero_service,
     )
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
 

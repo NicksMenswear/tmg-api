@@ -4,6 +4,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from server.models import CoreModel
+from server.models.product_model import ProductModel
 
 
 class AddressTypeModel(str, Enum):
@@ -43,20 +44,6 @@ class CreateOrderModel(CoreModel):
     order_type: Optional[List[str]] = None
     shipping_address: Optional[AddressModel] = None
     meta: Optional[dict] = None
-
-
-class ProductModel(CoreModel):
-    id: UUID
-    name: str
-    sku: Optional[str] = None
-    price: float = 0.0
-    on_hand: int = 0
-
-    class Config:
-        from_attributes = True
-
-    def to_response(self):
-        return self.model_dump(include={"id", "name", "sku"})
 
 
 class CreateOrderItemModel(CoreModel):

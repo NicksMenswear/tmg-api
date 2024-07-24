@@ -85,7 +85,9 @@ class BaseTestCase(TestCase):
 
         num_products_in_db = self.product_service.get_num_products()
 
-        if num_products_in_db == 0:
+        # We should have few hundreds products and if few are left in db that means they are leftovers from previous test cases
+        if num_products_in_db < 100:
+            Product.query.delete()
             self.__load_products()
 
     def populate_shopify_variants(self, num_variants=100):

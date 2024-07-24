@@ -269,7 +269,7 @@ class ShopifyWebhookOrderHandler:
                 suit_product = None
 
                 if shiphero_suit_sku:
-                    suit_product = self.product_service.get_product_by_sku(shiphero_suit_sku)
+                    suit_product = self.__get_product_by_shiphero_sku(shiphero_suit_sku)
 
                 create_suit_order_item = CreateOrderItemModel(
                     order_id=order.id,

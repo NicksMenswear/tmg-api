@@ -30,7 +30,8 @@ class ProductService:
 
     def get_product_by_sku(self, sku: str) -> ProductModel:
         product = Product.query.filter(
-            Product.sku == sku, Product.shopify_sku.is_(None), func.length(Product.sku) > 8
+            Product.sku == sku,
+            func.length(Product.sku) > 8,  # this should be removed later once db is fixed
         ).first()
 
         if not product:

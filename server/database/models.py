@@ -370,7 +370,6 @@ class OrderItem(Base):
     item_status = Column(Enum(ItemStatus), default=ItemStatus.ORDERED)
     order = relationship("Order", backref="order_items")
     product = relationship("Product", backref="order_items")
-    price = Column(Float)
     shopify_sku = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -395,7 +394,6 @@ class Product(Base):
         nullable=False,
     )
     sku = Column(String)
-    shopify_sku = Column(String)
     name = Column(String)
     price = Column(Numeric)
     on_hand = Column(Integer, nullable=False, default=0)

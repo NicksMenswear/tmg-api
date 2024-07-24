@@ -93,4 +93,4 @@ class ShipHeroService(AbstractShipHeroService):
 
 if __name__ == "__main__":
     service = ShipHeroService()
-    print(service.get_product_by_sku("101A2BLK38SAF"))
+    print(service.get_product_by_sku("703A4COG460R"))

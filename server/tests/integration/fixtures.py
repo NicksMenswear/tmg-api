@@ -137,7 +137,6 @@ def create_product_request(**product_data):
     return {
         "name": product_data.get("name", str(uuid.uuid4())),
         "sku": product_data.get("sku"),
-        "shopify_sku": product_data.get("shopify_sku"),
         "price": product_data.get("price", random.randint(10, 100)),
         "quantity": product_data.get("quantity", random.randint(1, 100)),
     }

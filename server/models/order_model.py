@@ -49,7 +49,6 @@ class ProductModel(CoreModel):
     id: UUID
     name: str
     sku: Optional[str] = None
-    shopify_sku: Optional[str] = None
     price: float = 0.0
     on_hand: int = 0
 
@@ -57,7 +56,7 @@ class ProductModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.model_dump(include={"id", "name", "sku", "shopify_sku"})
+        return self.model_dump(include={"id", "name", "sku"})
 
 
 class CreateOrderItemModel(CoreModel):

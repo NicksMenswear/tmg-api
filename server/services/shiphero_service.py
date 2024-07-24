@@ -86,7 +86,9 @@ class ShipHeroService(AbstractShipHeroService):
             logger.error(f"Invalid response from shiphero for SKU {sku}: {response}")
             raise ServiceError(f"Invalid response from shiphero for SKU {sku}")
 
-        return ShipHeroProductModel(name=product["name"], sku=product["sku"], price=product.get("price") or 0.0)
+        return ShipHeroProductModel(
+            id=product["id"], name=product["name"], sku=product["sku"], price=product.get("price") or 0.0
+        )
 
 
 if __name__ == "__main__":

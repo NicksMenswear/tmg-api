@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import uuid
 
+from server.controllers import FORCE_DELETE_HEADER
 from server.models.attendee_model import CreateAttendeeModel
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -403,7 +404,7 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 404)
 
-    def test_deactivate_attendee(self):
+    def test_delete_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -431,7 +432,7 @@ class TestAttendees(BaseTestCase):
         soft_deleted_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
         self.assertEqual(False, soft_deleted_attendee.is_active)
 
-    def test_deactivate_attendee_with_invalid_id(self):
+    def test_delete_attendee_with_invalid_id(self):
         # when
         response = self.client.open(
             f"/attendees/{str(uuid.uuid4())}",
@@ -443,3 +444,55 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 404)
+
+    def test_delete_attendee_that_paid_already(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id, email=user.email, role_id=str(role.id), look_id=look.id, pay=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_delete_attendee_that_paid_already_but_force_applied(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        role = self.role_service.create_role(fixtures.create_role_request(event_id=event.id))
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id, email=user.email, role_id=str(role.id), look_id=look.id, pay=True
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="DELETE",
+            headers={**self.request_headers, FORCE_DELETE_HEADER: "true"},
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 204)

@@ -17,7 +17,7 @@ from server.models.event_model import EventModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
-from server.services import DuplicateError, ServiceError, NotFoundError
+from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
@@ -227,11 +227,14 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def delete_attendee(self, attendee_id: uuid.UUID) -> None:
+    def delete_attendee(self, attendee_id: uuid.UUID, force: bool = False) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
+
+        if not force and attendee.is_active and attendee.pay:
+            raise BadRequestError("Cannot delete attendee that has paid.")
 
         attendee.is_active = False
 

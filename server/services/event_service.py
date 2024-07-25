@@ -143,7 +143,7 @@ class EventService:
 
         try:
             for attendee in attendees:
-                self.attendee_service.delete_attendee(attendee.id)
+                self.attendee_service.delete_attendee(attendee.id, force)
 
             db_event.is_active = False
 

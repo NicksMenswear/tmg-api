@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from server.controllers.events import EVENT_FORCE_DELETE_HEADER
+from server.controllers import FORCE_DELETE_HEADER
 from server.models.look_model import ProductSpecType
 from server.tests.e2e import API_PARAMS, ACTIVE_ENV, API_HEADERS
 
@@ -51,7 +51,7 @@ def delete_event(event_id):
     response = requests.delete(
         f"{BASE_API_URL}/events/{event_id}",
         params=API_HMAC_QUERY_PARAMS,
-        headers={**API_HEADERS, EVENT_FORCE_DELETE_HEADER: "true"},
+        headers={**API_HEADERS, FORCE_DELETE_HEADER: "true"},
     )
 
     if response.status_code == 204:

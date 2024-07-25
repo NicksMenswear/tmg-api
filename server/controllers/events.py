@@ -3,13 +3,12 @@ import uuid
 
 from flask import request
 
+from server.controllers import FORCE_DELETE_HEADER
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.event_model import CreateEventModel, UpdateEventModel
 
 logger = logging.getLogger(__name__)
-
-EVENT_FORCE_DELETE_HEADER = "X-Force-Delete"
 
 
 @hmac_verification
@@ -50,7 +49,7 @@ def update_event(event_id, update_event):
 def delete_event(event_id):
     event_service = FlaskApp.current().event_service
 
-    force = request.headers.get(EVENT_FORCE_DELETE_HEADER, "false").lower() == "true"
+    force = request.headers.get(FORCE_DELETE_HEADER, "false").lower() == "true"
     event_service.delete_event(uuid.UUID(event_id), force)
 
     return None, 204

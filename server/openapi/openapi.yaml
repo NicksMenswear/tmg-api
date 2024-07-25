@@ -1440,6 +1440,11 @@ paths:
           schema:
             type: string
           required: false
+        - name: X-Force-Delete
+          in: header
+          required: false
+          schema:
+            type: string
       responses:
         "204":
           description: Attendee Deleted Successfully

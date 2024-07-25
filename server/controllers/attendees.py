@@ -1,6 +1,9 @@
 import logging
 import uuid
 
+from flask import request
+
+from server.controllers import FORCE_DELETE_HEADER
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
@@ -43,7 +46,8 @@ def update_attendee(attendee_id, update_attendee):
 def delete_attendee(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
-    attendee_service.delete_attendee(uuid.UUID(attendee_id))
+    force = request.headers.get(FORCE_DELETE_HEADER, "false").lower() == "true"
+    attendee_service.delete_attendee(uuid.UUID(attendee_id), force)
 
     return None, 204
 

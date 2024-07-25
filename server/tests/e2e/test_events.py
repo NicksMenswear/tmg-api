@@ -4,7 +4,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from server.tests import utils
-from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling
+from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling, STORE_URL
 from server.tests.e2e.utils import api, actions, verify
 
 DEFAULT_WEDDING_ROLES = {
@@ -390,8 +390,8 @@ def test_add_myself_and_then_remove(page: Page):
     fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
     expect(fit_survey_button).to_be_visible()
 
-    add_suitor_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
-    expect(add_suitor_button).to_be_visible()
+    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    expect(add_suit_to_cart_button).to_be_visible()
 
     owner_attendee_block = actions.get_attendee_block(page, event_id, owner_attendee_id)
     expect(owner_attendee_block).to_be_visible()
@@ -462,7 +462,7 @@ def test_style_and_invite_checkboxes(page: Page):
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
-    api.create_look("Test Look", user_id)
+    api.create_look(look_name, user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
@@ -488,3 +488,78 @@ def test_style_and_invite_checkboxes(page: Page):
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
     time.sleep(2)
     assert actions.is_invite_checkbox_selected(page, event_id, attendee_id)
+
+
+@e2e_error_handling
+@pytest.mark.group_4
+def test_add_myself_and_pay_for_suit(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = utils.generate_unique_name()
+    attendee_last_name = utils.generate_unique_name()
+    attendee_email = utils.generate_email()
+    look_name = "Test Look"
+    role_name = "Attendee Parent or Chaperone"
+
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    api.delete_all_looks(user_id)
+    api.create_look(look_name, user_id)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
+
+    event_id = actions.create_new_event(page, event_name, event_type="prom")
+    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.open_event_accordion(page, event_id)
+
+    add_myself_button = actions.get_add_myself_button(page, event_id)
+    add_myself_button.click()
+
+    owner_user = api.get_user_by_email(TEST_USER_EMAIL)
+    owner_attendee_id = actions.get_attendee_id_by_name(
+        page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
+    )
+
+    fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
+    expect(fit_survey_button).to_be_visible()
+    fit_survey_button.click()
+
+    actions.populate_fit_survey(page, 50)
+
+    time.sleep(3)  # wait for the survey to be saved
+
+    page.reload()
+
+    actions.open_event_accordion(page, event_id)
+
+    actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
+    time.sleep(2)
+    actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
+    time.sleep(2)
+
+    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    expect(add_suit_to_cart_button).to_be_visible()
+    add_suit_to_cart_button.click()
+
+    actions.shopify_checkout_continue_to_shipping(page)
+    actions.shopify_checkout_continue_to_payment(page)
+    actions.shopify_checkout_pay_with_credit_card_for_order(
+        page, owner_user.get("first_name"), owner_user.get("last_name")
+    )
+    verify.shopify_order_confirmed(page)
+
+    time.sleep(10)  # wait for 10 sec so shopify webhook gets triggered and order is processed by our backend
+
+    page.goto(f"{STORE_URL}/account")
+
+    actions.open_event_accordion(page, event_id)
+
+    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    expect(add_suit_to_cart_button).to_be_visible()
+    expect(add_suit_to_cart_button).to_be_disabled()
+
+    fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
+    expect(fit_survey_button).to_be_visible()
+    expect(fit_survey_button).to_be_disabled()

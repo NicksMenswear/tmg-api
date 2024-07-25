@@ -60,7 +60,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+    def create_product_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+        pass
+
+    @abstractmethod
+    def create_order_discount_code(self, title, code, shopify_customer_id, amount, minimum_order_amount=None):
         pass
 
     @abstractmethod
@@ -153,7 +157,13 @@ class FakeShopifyService(AbstractShopifyService):
     def delete_product(self, product_id):
         pass
 
-    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+    def create_product_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+        return {
+            "shopify_discount_code": code,
+            "shopify_discount_id": random.randint(1000, 100000),
+        }
+
+    def create_order_discount_code(self, title, code, shopify_customer_id, amount, minimum_order_amount=None):
         return {
             "shopify_discount_code": code,
             "shopify_discount_id": random.randint(1000, 100000),
@@ -389,7 +399,7 @@ class ShopifyService(AbstractShopifyService):
         if status >= 400:
             raise ServiceError(f"Failed to delete product by id '{shopify_product_id}' in shopify store.")
 
-    def create_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
+    def create_product_discount_code(self, title, code, shopify_customer_id, amount, variant_ids):
         mutation = """
         mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
           discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
@@ -402,7 +412,7 @@ class ShopifyService(AbstractShopifyService):
               codeDiscount {
                 ... on DiscountCodeBasic {
                   title
-                  codes(first: 10) {
+                  codes(first: 1) {
                     nodes {
                       code
                     }
@@ -450,7 +460,77 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
 
-        logger.info(f"Discount code created: {body}")
+        logger.info(f"Product discount code created: {body}")
+
+        shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]
+        shopify_discount_id = shopify_discount["id"].split("/")[-1]
+        shopify_discount_code = shopify_discount["codeDiscount"]["codes"]["nodes"][0]["code"]
+
+        return {
+            "shopify_discount_id": shopify_discount_id,
+            "shopify_discount_code": shopify_discount_code,
+        }
+
+    def create_order_discount_code(self, title, code, shopify_customer_id, amount, minimum_order_amount=None):
+        mutation = """
+        mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
+          discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+            userErrors {
+              field
+              message
+            }
+            codeDiscountNode {
+              id
+              codeDiscount {
+                ... on DiscountCodeBasic {
+                  title
+                  codes(first: 1) {
+                    nodes {
+                      code
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {
+            "basicCodeDiscount": {
+                "title": title,
+                "code": code,
+                "usageLimit": 1,
+                "customerSelection": {"customers": {"add": [f"gid://shopify/Customer/{shopify_customer_id}"]}},
+                "startsAt": datetime.now(timezone.utc).isoformat(),
+                "appliesOncePerCustomer": True,
+                "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
+                "customerGets": {
+                    "value": {"discountAmount": {"amount": amount, "appliesOnEachItem": False}},
+                    "items": {"all": True},
+                },
+            }
+        }
+
+        # If a specific customer is targeted
+        if shopify_customer_id:
+            variables["basicCodeDiscount"]["customerSelection"] = {
+                "customers": {"add": [f"gid://shopify/Customer/{shopify_customer_id}"]}
+            }
+
+        # If a minimum order amount is required
+        if minimum_order_amount:
+            variables["basicCodeDiscount"]["minimumRequirement"] = {
+                "subtotal": {"greaterThanOrEqualTo": minimum_order_amount}
+            }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        logger.info(f"Product discount code created: {body}")
 
         shopify_discount = body["data"]["discountCodeBasicCreate"]["codeDiscountNode"]
         shopify_discount_id = shopify_discount["id"].split("/")[-1]

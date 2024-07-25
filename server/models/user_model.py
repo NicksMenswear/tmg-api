@@ -10,6 +10,7 @@ from server.models import CoreModel
 class UserRequestModel(CoreModel):
     first_name: str
     last_name: str
+    email: EmailStr
     account_status: Optional[bool] = False
     shopify_id: Optional[str] = None
     phone_number: Optional[str] = None
@@ -27,7 +28,7 @@ class UserRequestModel(CoreModel):
 
 
 class CreateUserModel(UserRequestModel):
-    email: EmailStr
+    pass
 
 
 class UserModel(CoreModel):

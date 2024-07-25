@@ -77,6 +77,14 @@ class UserService:
 
         return UserModel.from_orm(db_user)
 
+    def get_user_by_shopify_id(self, shopify_id: str) -> UserModel:
+        db_user = User.query.filter(User.shopify_id == shopify_id).first()
+
+        if not db_user:
+            raise NotFoundError("User not found.")
+
+        return UserModel.from_orm(db_user)
+
     def get_user_for_attendee(self, attendee_id: uuid.UUID) -> UserModel:
         user = User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
 
@@ -108,6 +116,7 @@ class UserService:
             user.account_status = update_user.account_status
             user.shopify_id = update_user.shopify_id
             user.phone_number = update_user.phone_number
+            user.email = update_user.email
             user.updated_at = datetime.now()
 
             db.session.commit()

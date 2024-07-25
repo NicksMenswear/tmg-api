@@ -27,11 +27,11 @@ from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
-from server.services.shopify_webhook.order_handler import ShopifyWebhookOrderHandler
-from server.services.shopify_webhook.user_handler import ShopifyWebhookUserHandler
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.user_service import UserService
+from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
+from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
 
 

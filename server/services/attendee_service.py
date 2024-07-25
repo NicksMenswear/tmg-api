@@ -13,13 +13,13 @@ from server.models.attendee_model import (
     AttendeeUserModel,
     TrackingModel,
 )
+from server.models.event_model import EventModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import CreateUserModel, UserModel
-from server.models.event_model import EventModel
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.email_service import AbstractEmailService
-from server.services.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
 
 

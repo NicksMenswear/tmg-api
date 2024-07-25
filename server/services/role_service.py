@@ -4,8 +4,8 @@ from typing import List, Dict
 
 from server.database.database_manager import db
 from server.database.models import Role, Event, Attendee
-from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.models.event_model import EventTypeModel
+from server.models.role_model import RoleModel, CreateRoleModel, UpdateRoleModel
 from server.services import ServiceError, NotFoundError, DuplicateError, BadRequestError
 
 PREDEFINED_ROLES = {

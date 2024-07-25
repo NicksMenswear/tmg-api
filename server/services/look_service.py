@@ -4,7 +4,7 @@ import os
 import time
 import uuid
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
@@ -12,8 +12,8 @@ from server.flask_app import FlaskApp
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel, ProductSpecType
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
-from server.services.aws_service import AbstractAWSService
-from server.services.shopify_service import AbstractShopifyService
+from server.services.integrations.aws_service import AbstractAWSService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)

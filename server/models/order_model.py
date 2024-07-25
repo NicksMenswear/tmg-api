@@ -85,6 +85,7 @@ class OrderModel(CoreModel):
     products: List[ProductModel] = []
     discount_codes: List[str] = []
     order_items: List[OrderItemModel] = []
+    meta: Optional[dict] = None
 
     class Config:
         from_attributes = True

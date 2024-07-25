@@ -11,6 +11,8 @@ from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
 from server.services.event_service import EventService
+from server.services.integrations.shiphero_service import AbstractShipHeroService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -20,8 +22,6 @@ from server.services.order_service import (
     OrderService,
 )
 from server.services.product_service import ProductService
-from server.services.shiphero_service import AbstractShipHeroService
-from server.services.shopify_service import AbstractShopifyService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder, ProductType
 from server.services.user_service import UserService
@@ -208,7 +208,11 @@ class ShopifyWebhookOrderHandler:
             shipping_address=shipping_address,
             event_id=event_id,
             ship_by_date=ship_by_date,
-            meta={"webhook_id": str(webhook_id)},
+            meta={
+                "webhook_id": str(webhook_id),
+                "sizes_id": str(size_model.id) if size_model else None,
+                "measurements_id": str(measurement_model.id) if measurement_model else None,
+            },
         )
 
         order = self.order_service.create_order(create_order)

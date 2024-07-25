@@ -414,18 +414,21 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertTrue(len(response_shopify_skus) == 8)
         self.assertTrue(len(response_shiphero_skus) == 2)  # only non-measurable products
 
+        self.assertIsNone(order.meta.get("sizes_id"))
+        self.assertIsNone(order.meta.get("measurements_id"))
+
     def test_order_process_from_file_with_measurements(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
-        self.size_service.create_size(
+        size_model = self.size_service.create_size(
             fixtures.store_size_request(
                 user_id=attendee_user.id,
                 data=fixtures.test_sizes(),
             )
         )
-        self.measurement_service.create_measurement(
+        measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(
                 user_id=attendee_user.id,
                 data=fixtures.test_measurements(),
@@ -456,6 +459,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         self.assertTrue(len(response_shopify_skus) == 8)
         self.assertTrue(len(response_shiphero_skus) == 8)
+        self.assertEqual(order.meta.get("sizes_id"), str(size_model.id))
+        self.assertEqual(order.meta.get("measurements_id"), str(measurement_model.id))
 
     def test_order_process_not_found_in_db_but_found_in_shiphero(self):
         # given

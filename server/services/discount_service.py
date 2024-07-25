@@ -21,8 +21,8 @@ from server.models.discount_model import (
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.look_service import LookService
-from server.services.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
 
 DISCOUNT_VIRTUAL_PRODUCT_PREFIX = "DISCOUNT"

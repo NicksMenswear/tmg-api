@@ -1,12 +1,11 @@
+import json
 import os
 from abc import ABC, abstractmethod
-
-import json
 from urllib.parse import urlencode
 
 from server.controllers.util import http
 from server.services import ServiceError, DuplicateError
-from server.services.activecampaign_fields import field_resolver
+from server.services.integrations.activecampaign_fields import field_resolver
 
 STAGE = os.getenv("STAGE")
 ACTIVECAMPAIGN_API_URL = os.getenv("ACTIVECAMPAIGN_API_URL")

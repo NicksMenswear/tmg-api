@@ -99,7 +99,7 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+01@hotmail.com}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-automation+e2e01@themoderngroom.com}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_1"
@@ -117,7 +117,7 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+02@hotmail.com}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-automation+e2e02@themoderngroom.com}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_2"
@@ -135,7 +135,7 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+03@hotmail.com}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-automation+e2e03@themoderngroom.com}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_3"
@@ -153,7 +153,7 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+04@hotmail.com}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-automation+e2e04@themoderngroom.com}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_4"
@@ -171,7 +171,7 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2etmg+05@hotmail.com}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-automation+e2e05@themoderngroom.com}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_5"

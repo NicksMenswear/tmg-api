@@ -23,13 +23,13 @@ def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -88,7 +88,7 @@ def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -140,7 +140,7 @@ def test_pay_in_full_click(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -190,7 +190,7 @@ def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_password = utils.generate_unique_string()
 
     role_name = "Groomsman"
@@ -257,17 +257,17 @@ def test_group_of_discount(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_password_2 = utils.generate_unique_string()
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     attendee_first_name_4 = utils.generate_unique_name()
     attendee_last_name_4 = utils.generate_unique_name()
-    attendee_email_4 = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    attendee_email_4 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
 

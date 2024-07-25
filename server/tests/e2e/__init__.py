@@ -6,13 +6,13 @@ from playwright.sync_api import Page
 
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
-TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2etmg+01@hotmail.com")
+TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "automation+e2e01@themoderngroom.com")
 TEST_USER_PASSWORD = "123456"
 EMAIL_FROM = "info@themoderngroom.com"
-IMAP_HOST = "outlook.office365.com"
+IMAP_HOST = "imap.gmail.com"
 IMAP_PORT = 993
-EMAIL_ACCOUNT_USERNAME = "e2etmg@hotmail.com"
-EMAIL_ACCOUNT_PASSWORD = "9f7cdc58-e715-47f7-9fe1-a15074711aad"
+EMAIL_ACCOUNT_USERNAME = "automation@themoderngroom.com"
+EMAIL_ACCOUNT_PASSWORD = "yhbl hwgu voib swvk"
 EMAIL_SUBJECT_EVENT_INVITATION = "The Modern Groom: Event Invitation"
 EMAIL_SUBJECT_ACCOUNT_CREATED = "The Modern Groom: Account Created"
 EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION = "Customer account confirmation"

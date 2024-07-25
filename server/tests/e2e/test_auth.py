@@ -35,7 +35,7 @@ def test_login(page: Page):
 def test_signup_form(page: Page):
     first_name = f"{utils.generate_unique_name(8, 12)}"
     last_name = f"{utils.generate_unique_name(8, 12)}"
-    user_email = f"e2etmg+{utils.generate_unique_string()}@hotmail.com"
+    user_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
     password = str(uuid.uuid4())
 
     actions.access_store(page)

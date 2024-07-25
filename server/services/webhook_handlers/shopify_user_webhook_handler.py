@@ -16,7 +16,7 @@ class ShopifyWebhookUserHandler:
     def customer_update(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
 
-        shopify_id = payload.get("id")
+        shopify_id = str(payload.get("id"))
         email = payload.get("email")
         first_name = payload.get("first_name")
         last_name = payload.get("last_name")
@@ -24,7 +24,7 @@ class ShopifyWebhookUserHandler:
         phone = payload.get("phone")
 
         try:
-            user = self.user_service.get_user_by_email(email)
+            user = self.user_service.get_user_by_shopify_id(shopify_id)
         except NotFoundError:
             user = None
 
@@ -54,6 +54,7 @@ class ShopifyWebhookUserHandler:
                 UpdateUserModel(
                     first_name=first_name,
                     last_name=last_name,
+                    email=email,
                     account_status=True if state == "enabled" else False,
                     shopify_id=str(shopify_id),
                     phone_number=str(phone) if phone else None,

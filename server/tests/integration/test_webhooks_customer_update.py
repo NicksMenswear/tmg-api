@@ -74,7 +74,7 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
         # when
         webhook_customer = fixtures.webhook_customer_update(
             shopify_id=int(user.shopify_id),
-            email=user.email,
+            email=f"new-{user.email}",
             phone=random.randint(1000000000, 9999999999),
             account_status=not user.account_status,
         )

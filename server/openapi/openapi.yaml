@@ -1733,6 +1733,9 @@ components:
         last_name:
           title: last_name
           type: string
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
         shopify_id:
           title: shopify_id
           type: string

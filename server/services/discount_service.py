@@ -478,8 +478,8 @@ class DiscountService:
 
         title = code
 
-        shopify_discount = self.shopify_service.create_discount_code(
-            title, code, attendee_user.shopify_id, discount_amount, [look.product_specs.get("bundle").get("variant_id")]
+        shopify_discount = self.shopify_service.create_order_discount_code(
+            title, code, attendee_user.shopify_id, discount_amount
         )
 
         discount = Discount(

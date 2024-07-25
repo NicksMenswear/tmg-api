@@ -585,6 +585,14 @@ def shopify_checkout_enter_billing_address(
     input_zip.fill(zip)
 
 
+def shopify_checkout_continue_to_shipping(page: Page):
+    try:
+        continue_to_shipping_button = page.locator('button:has-text("Continue to shipping")').first
+        continue_to_shipping_button.click()
+    except:
+        pass
+
+
 def shopify_checkout_continue_to_payment(page: Page):
     continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
     continue_to_payment_button.click()

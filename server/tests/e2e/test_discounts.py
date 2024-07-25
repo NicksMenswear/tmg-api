@@ -384,4 +384,5 @@ def test_group_discount_and_groom_gift_as_well(page):
     actions.attendee_add_suit_to_cart(page, event_id)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+    verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")

@@ -507,7 +507,7 @@ class ShopifyService(AbstractShopifyService):
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True, "shippingDiscounts": True},
                 "customerGets": {
                     "value": {"discountAmount": {"amount": amount, "appliesOnEachItem": False}},
-                    "appliesOn": {"orderSubtotal": True},
+                    "items": {"all": True},
                 },
             }
         }

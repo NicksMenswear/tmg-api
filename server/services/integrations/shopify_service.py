@@ -4,7 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Dict, Any
+from typing import List, Dict
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp

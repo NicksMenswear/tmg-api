@@ -13,24 +13,24 @@ from sentry_sdk.integrations.logging import ignore_logger
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
-from server.services.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
 from server.services.attendee_service import AttendeeService
-from server.services.aws_service import AWSService, FakeAWSService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
+from server.services.integrations.activecampaign_service import ActiveCampaignService
+from server.services.integrations.aws_service import AWSService, FakeAWSService
+from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
+from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
+from server.services.integrations.superblocks_service import SuperblocksService, FakeSuperblocksService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
-from server.services.shiphero_service import ShipHeroService, FakeShipHeroService
-from server.services.shopify_service import ShopifyService, FakeShopifyService
-from server.services.shopify_webhook_handlers.order_handler import ShopifyWebhookOrderHandler
-from server.services.shopify_webhook_handlers.user_handler import ShopifyWebhookUserHandler
+from server.services.shopify_webhook.order_handler import ShopifyWebhookOrderHandler
+from server.services.shopify_webhook.user_handler import ShopifyWebhookUserHandler
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
-from server.services.superblocks_service import SuperblocksService, FakeSuperblocksService
 from server.services.user_service import UserService
 from server.services.webhook_service import WebhookService
 

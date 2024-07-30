@@ -369,6 +369,6 @@ class ShopifyWebhookOrderHandler:
         return ProductModel.from_orm(product)
 
     def __track_swatch_orders(self, user, payload):
-        items = payload.get("line_items", {})
+        items = payload.get("line_items", [])
         if any(item.get("sku", "").upper().startswith("S") for item in items):
             self.activecampaign_service.track_event(user.email, "Ordered Swatches")

@@ -13,6 +13,7 @@ from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, Di
 from server.services.event_service import EventService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
 from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -45,6 +46,7 @@ class ShopifyWebhookOrderHandler:
         sku_builder: SkuBuilder,
         event_service: EventService,
         shiphero_service: AbstractShipHeroService,
+        activecampaign_service: AbstractActiveCampaignService,
     ):
         self.shopify_service = shopify_service
         self.discount_service = discount_service
@@ -58,6 +60,7 @@ class ShopifyWebhookOrderHandler:
         self.sku_builder = sku_builder
         self.event_service = event_service
         self.shiphero_service = shiphero_service
+        self.activecampaign_service = activecampaign_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -174,6 +177,7 @@ class ShopifyWebhookOrderHandler:
             )
 
         self.__process_used_discount_code(payload)
+        self.__track_swatch_orders(user, payload)
 
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
@@ -363,3 +367,8 @@ class ShopifyWebhookOrderHandler:
             return None
 
         return ProductModel.from_orm(product)
+
+    def __track_swatch_orders(self, user, payload):
+        items = payload.get("line_items", [])
+        if any(item.get("sku", "").upper().startswith("S") for item in items):
+            self.activecampaign_service.track_event(user.email, "Ordered Swatches")

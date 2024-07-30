@@ -17,7 +17,7 @@ from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
-from server.services.integrations.activecampaign_service import ActiveCampaignService
+from server.services.integrations.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
 from server.services.integrations.aws_service import AWSService, FakeAWSService
 from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
@@ -107,7 +107,7 @@ def init_services(app, is_testing=False):
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
-    app.activecampaign_service = ActiveCampaignService()  # if app.stage == "prd" else FakeActiveCampaignService()
+    app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
@@ -146,6 +146,7 @@ def init_services(app, is_testing=False):
         app.sku_builder,
         app.event_service,
         app.shiphero_service,
+        app.activecampaign_service,
     )
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
 

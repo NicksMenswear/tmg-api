@@ -20,4 +20,4 @@ jobs:
         stage:
           - dev
           - stg
-          - prd
+          # - prd

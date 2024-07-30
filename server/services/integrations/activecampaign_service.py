@@ -18,24 +18,24 @@ ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 
 class AbstractActiveCampaignService(ABC):
     @abstractmethod
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_errors=True):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
         pass
 
     @abstractmethod
-    def track_event(self, email, event, suppress_errors=True):
+    def track_event(self, email, event, suppress_exceptions=True):
         pass
 
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_errors=True):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
         pass
 
-    def track_event(self, email, event, suppress_errors=True):
+    def track_event(self, email, event, suppress_exceptions=True):
         pass
 
 
 class ActiveCampaignService(AbstractActiveCampaignService):
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_errors=True):
+    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
         try:
             body = {
                 "contact": {
@@ -54,12 +54,12 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             for event in events:
                 self.track_event(email, event)
         except Exception as e:
-            if suppress_errors:
+            if suppress_exceptions:
                 logger.exception(e)
             else:
                 raise
 
-    def track_event(self, email, event, suppress_errors=True):
+    def track_event(self, email, event, suppress_exceptions=True):
         try:
             url = "https://trackcmp.net/event"
             payload = {
@@ -75,7 +75,7 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             if response.status >= 400:
                 raise ServiceError(f"Error using ActiveCampaign Tracking: {response.data.decode('utf-8')}")
         except Exception as e:
-            if suppress_errors:
+            if suppress_exceptions:
                 logger.exception(e)
             else:
                 raise

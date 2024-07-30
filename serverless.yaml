@@ -30,7 +30,7 @@ functions:
     events:
       - http: ANY /
       - http: ANY /{proxy+}
-    provisionedConcurrency: 15
+    provisionedConcurrency: ${self:custom.stageVars.${sls:stage}.provisionedConcurrency}
     reservedConcurrency: 400
     timeout: 30
     memorySize: 512
@@ -78,6 +78,7 @@ custom:
     dev:
       region: us-west-2
       data_bucket: "tmg-api-data-dev-fe58ee1e1337"
+      provisionedConcurrency: 5
       vpc:
         securityGroupIds:
           - sg-0649f5114f8fdde15
@@ -89,6 +90,7 @@ custom:
     prd:
       region: us-east-1
       data_bucket: "tmg-api-data-prd-e08bbe743c81"
+      provisionedConcurrency: 40
       vpc:
         securityGroupIds:
           - sg-02f3c6c3b0ac6cdb3

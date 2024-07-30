@@ -60,6 +60,7 @@ class ShopifyWebhookOrderHandler:
         self.sku_builder = sku_builder
         self.event_service = event_service
         self.shiphero_service = shiphero_service
+        self.activecampaign_service = activecampaign_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")

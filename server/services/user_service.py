@@ -3,6 +3,8 @@ import uuid
 from datetime import datetime
 from typing import List
 
+from sqlalchemy import func
+
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.discount_model import DiscountModel
@@ -21,7 +23,7 @@ class UserService:
         self.email_service = email_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
-        user = User.query.filter_by(email=create_user.email.lower()).first()
+        user = User.query.filter(func.lower(User.email) == create_user.lower()).first()
 
         if user:
             raise DuplicateError("User already exists with that email address.")
@@ -70,7 +72,7 @@ class UserService:
         return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
-        db_user = User.query.filter_by(email=email.lower()).first()
+        db_user = User.query.filter(func.lower(User.email) == email.lower()).first()
 
         if not db_user:
             raise NotFoundError("User not found.")

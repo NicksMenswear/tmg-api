@@ -36,7 +36,7 @@ class ShopifyWebhookUserHandler:
             updated_user = self.user_service.create_user(
                 CreateUserModel(
                     shopify_id=str(shopify_id),
-                    email=email.lower(),
+                    email=email,
                     first_name=first_name,
                     last_name=last_name,
                     account_status=True if state == "enabled" else False,
@@ -58,7 +58,7 @@ class ShopifyWebhookUserHandler:
                 UpdateUserModel(
                     first_name=first_name,
                     last_name=last_name,
-                    email=email.lower(),
+                    email=email,
                     account_status=True if state == "enabled" else False,
                     shopify_id=str(shopify_id),
                     phone_number=str(phone) if phone else None,

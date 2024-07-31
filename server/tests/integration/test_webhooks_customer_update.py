@@ -14,14 +14,6 @@ CUSTOMERS_UPDATE_REQUEST_HEADERS = {
     "X-Shopify-Topic": "customers/update",
 }
 
-CUSTOMERS_ENABLE_REQUEST_HEADERS = {
-    "X-Shopify-Topic": "customers/enable",
-}
-
-CUSTOMERS_DISABLE_REQUEST_HEADERS = {
-    "X-Shopify-Topic": "customers/disable",
-}
-
 
 class TestWebhooksCustomerUpdate(BaseTestCase):
     def setUp(self):
@@ -135,7 +127,7 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
             email=user.email,
             account_status=False,
         )
-        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_DISABLE_REQUEST_HEADERS)
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
 
         # then
         self.assert200(response)
@@ -156,7 +148,7 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
             email=user.email,
             account_status=True,
         )
-        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_ENABLE_REQUEST_HEADERS)
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
 
         # then
         self.assert200(response)

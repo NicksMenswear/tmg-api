@@ -23,7 +23,7 @@ class UserService:
         self.email_service = email_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
-        user = User.query.filter(func.lower(User.email) == create_user.lower()).first()
+        user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
 
         if user:
             raise DuplicateError("User already exists with that email address.")

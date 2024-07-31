@@ -57,7 +57,7 @@ class TestUsers(BaseTestCase):
             "/users",
             query_string=self.hmac_query_params,
             method="POST",
-            data=create_user.json(),
+            data=json.dumps(create_user.model_dump(), cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -69,13 +69,32 @@ class TestUsers(BaseTestCase):
         self.assertEqual(create_user.email, response.json["email"])
         self.assertIsNotNone(response.json["id"])
 
+    def test_create_user_with_existing_but_capitalized_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                fixtures.create_user_request(email=user.email.capitalize()).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 409)
+
     def test_update_non_existing_user(self):
         # when
         response = self.client.open(
             f"/users/{str(uuid.uuid4())}",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=fixtures.create_user_request().json(),
+            data=json.dumps(fixtures.create_user_request().model_dump(), cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -100,7 +119,7 @@ class TestUsers(BaseTestCase):
             f"/users/{str(user.id)}",
             query_string=self.hmac_query_params,
             method="PUT",
-            data=updated_user.json(),
+            data=json.dumps(updated_user.model_dump(), cls=encoder.CustomJSONEncoder),
             headers=self.request_headers,
             content_type=self.content_type,
         )
@@ -175,7 +194,7 @@ class TestUsers(BaseTestCase):
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
-        role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
+        self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=attendee_user1.email)
@@ -185,7 +204,7 @@ class TestUsers(BaseTestCase):
             fixtures.create_attendee_request(event_id=event1.id, email=attendee_user2.email)
         )
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.attendee_service.create_attendee(
+        self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=attendee_user3.email, is_active=False)
         )
         not_used_paid_discount = self.app.discount_service.create_discount(
@@ -210,7 +229,7 @@ class TestUsers(BaseTestCase):
             random.randint(10000, 100000),
             random.randint(10000, 100000),
         )
-        discount_intent = self.app.discount_service.create_discount(
+        self.app.discount_service.create_discount(
             event1.id,
             attendee1.id,
             random.randint(50, 200),
@@ -218,7 +237,7 @@ class TestUsers(BaseTestCase):
         )
 
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
-        event3 = self.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
+        self.event_service.create_event(fixtures.create_event_request(user_id=user.id, is_active=False))
 
         # when
         response = self.client.open(
@@ -278,7 +297,7 @@ class TestUsers(BaseTestCase):
             fixtures.create_look_request(user_id=user2.id, product_specs=self.create_look_test_product_specs())
         )
         role11 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id))
-        role12 = self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
+        self.role_service.create_role(fixtures.create_role_request(event_id=event1.id, is_active=False))
         role21 = self.role_service.create_role(fixtures.create_role_request(event_id=event2.id))
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.attendee_service.create_attendee(
@@ -337,13 +356,13 @@ class TestUsers(BaseTestCase):
         attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
         attendee_user3 = self.user_service.create_user(fixtures.create_user_request())
-        attendee1 = self.attendee_service.create_attendee(
+        self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email, invite=True)
         )
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email, invite=True)
         )
-        attendee3 = self.attendee_service.create_attendee(
+        self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=attendee_user3.email, invite=True)
         )
 
@@ -376,7 +395,7 @@ class TestUsers(BaseTestCase):
         attendee1 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=attendee_user.email, invite=True)
         )
-        attendee2 = self.attendee_service.create_attendee(
+        self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event2.id, email=attendee_user.email, invite=False)
         )
 
@@ -489,12 +508,8 @@ class TestUsers(BaseTestCase):
         event1 = self.event_service.create_event(fixtures.create_event_request(user_id=user1.id))
         user2 = self.user_service.create_user(fixtures.create_user_request())
         event2 = self.event_service.create_event(fixtures.create_event_request(user_id=user2.id))
-        event3_owner_inactive = self.event_service.create_event(
-            fixtures.create_event_request(user_id=user2.id, is_active=False)
-        )
-        event4_invited_inactive = self.event_service.create_event(
-            fixtures.create_event_request(user_id=user1.id, is_active=False)
-        )
+        self.event_service.create_event(fixtures.create_event_request(user_id=user2.id, is_active=False))
+        self.event_service.create_event(fixtures.create_event_request(user_id=user1.id, is_active=False))
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event1.id, email=user2.email, invite=True)
         )
@@ -557,7 +572,7 @@ class TestUsers(BaseTestCase):
         look2 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user1.id, product_specs=self.create_look_test_product_specs())
         )
-        look3 = self.look_service.create_look(
+        self.look_service.create_look(
             fixtures.create_look_request(
                 user_id=user1.id, is_active=False, product_specs=self.create_look_test_product_specs()
             )

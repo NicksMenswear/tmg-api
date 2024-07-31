@@ -125,6 +125,28 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertEqual(str(user2.id), response.json["user_id"])
 
+    def test_create_attendee_for_existing_user_but_capitalized_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email.capitalize())
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertEqual(str(attendee_user.id), response.json["user_id"])
+
     def test_create_attendee_for_the_user_that_exists_in_shopify_but_not_in_our_db(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

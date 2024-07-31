@@ -17,16 +17,20 @@ class ShopifyWebhookUserHandler:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
 
         shopify_id = str(payload.get("id"))
-        email = payload.get("email")
+        email = payload.get("email").lower()
         first_name = payload.get("first_name")
         last_name = payload.get("last_name")
         state = payload.get("state")
         phone = payload.get("phone")
 
         try:
-            user = self.user_service.get_user_by_shopify_id(shopify_id)
+            user = self.user_service.get_user_by_shopify_id(shopify_id)  # first search by shopify_id
         except NotFoundError:
-            user = None
+            try:
+                # some legacy users don't have shopify_id so search by email
+                user = self.user_service.get_user_by_email(email)
+            except NotFoundError:
+                user = None
 
         if not user:
             updated_user = self.user_service.create_user(

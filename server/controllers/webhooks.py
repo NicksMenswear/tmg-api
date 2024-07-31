@@ -29,8 +29,6 @@ def shopify_webhook(payload):
             "orders/paid": order_handler.order_paid,
             "customers/create": user_handler.customer_update,
             "customers/update": user_handler.customer_update,
-            "customers/enable": user_handler.customer_update,
-            "customers/disable": user_handler.customer_update,
         }
 
         if topic not in topic_handlers:

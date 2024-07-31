@@ -24,12 +24,10 @@ class ShopifyWebhookUserHandler:
         phone = payload.get("phone")
 
         try:
-            user = self.user_service.get_user_by_shopify_id(shopify_id)
+            user = self.user_service.get_user_by_shopify_id(shopify_id)  # first search by shopify_id
         except NotFoundError:
-            user = None
-
-        if not user:
             try:
+                # some legacy users don't have shopify_id so search by email
                 user = self.user_service.get_user_by_email(email)
             except NotFoundError:
                 user = None

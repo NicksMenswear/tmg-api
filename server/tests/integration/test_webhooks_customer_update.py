@@ -1,6 +1,8 @@
 import random
 import uuid
 
+from server.database.database_manager import db
+from server.database.models import User
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 
@@ -91,6 +93,35 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
         self.assertEqual(user.last_name, webhook_customer["last_name"])
         self.assertEqual(user.shopify_id, str(webhook_customer["id"]))
         self.assertEqual(user.account_status, webhook_customer["state"] == "enabled")
+
+    def test_customers_update_customer_by_email_with_shopify_id(self):
+        # given
+        create_user = fixtures.create_user_request()
+        db_user = User(
+            first_name=create_user.first_name,
+            last_name=create_user.last_name,
+            email=create_user.email,
+            account_status=True,
+        )
+
+        db.session.add(db_user)
+        db.session.commit()
+        db.session.refresh(db_user)
+
+        # when
+        shopify_id = random.randint(1000000000, 9999999999)
+        webhook_customer = fixtures.webhook_customer_update(shopify_id=shopify_id, email=f"{db_user.email}")
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, webhook_customer["email"])
+        self.assertEqual(user.first_name, webhook_customer["first_name"])
+        self.assertEqual(user.last_name, webhook_customer["last_name"])
+        self.assertEqual(user.shopify_id, str(shopify_id))
 
     def test_customers_disable_event(self):
         # given

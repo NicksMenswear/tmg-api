@@ -663,6 +663,27 @@ class TestUsers(BaseTestCase):
         # then
         self.assertStatus(response, 400)
 
+    def test_create_spanish_user(self):
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {
+                    "first_name": "Alejandro",
+                    "last_name": "Muñoz Mendieta",
+                    "email": "test@example.com",
+                },
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
     def test_create_user_invalid_email(self):
         # when
         response = self.client.open(

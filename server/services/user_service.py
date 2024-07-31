@@ -49,7 +49,7 @@ class UserService:
                 id=uuid.uuid4(),
                 first_name=create_user.first_name,
                 last_name=create_user.last_name,
-                email=create_user.email,
+                email=create_user.email.lower(),
                 shopify_id=str(shopify_customer_id),
                 phone_number=create_user.phone_number,
                 account_status=create_user.account_status,
@@ -118,7 +118,7 @@ class UserService:
             user.account_status = update_user.account_status
             user.shopify_id = update_user.shopify_id
             user.phone_number = update_user.phone_number
-            user.email = update_user.email
+            user.email = update_user.email.lower()
             user.updated_at = datetime.now()
 
             db.session.commit()

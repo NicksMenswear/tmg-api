@@ -21,7 +21,7 @@ class UserService:
         self.email_service = email_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
-        user = User.query.filter_by(email=create_user.email).first()
+        user = User.query.filter_by(email=create_user.email.lower()).first()
 
         if user:
             raise DuplicateError("User already exists with that email address.")
@@ -70,7 +70,7 @@ class UserService:
         return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
-        db_user = User.query.filter_by(email=email).first()
+        db_user = User.query.filter_by(email=email.lower()).first()
 
         if not db_user:
             raise NotFoundError("User not found.")

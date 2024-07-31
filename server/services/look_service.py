@@ -120,8 +120,13 @@ class LookService:
             raise ServiceError("Invalid suit variant sku.")
 
         jacket_sku = "1" + suit_sku[1:]
-        pants_sku = "2" + suit_sku[1:]
-        vest_sku = "3" + suit_sku[1:]
+
+        if suit_sku == "002A2BLK":  # HACK! tuxedo has same pants and vest as black suit
+            pants_sku = "201" + suit_sku[3:]
+            vest_sku = "301" + suit_sku[3:]
+        else:
+            pants_sku = "2" + suit_sku[1:]
+            vest_sku = "3" + suit_sku[1:]
 
         jacket_variant = self.shopify_service.get_variant_by_sku(jacket_sku)
         pants_variant = self.shopify_service.get_variant_by_sku(pants_sku)

@@ -236,7 +236,9 @@ def test_grooms_gift(page):
 
     actions.logout(page)
 
-    activation_link = api.get_user_activation_url(attendee_user_id)
+    activation_link = api.get_user_activation_url(
+        attendee_user_id, attendee_first_name, attendee_last_name, attendee_email
+    )
     assert activation_link is not None
     page.goto(activation_link)
     actions.activation_enter_password(page, attendee_password)
@@ -303,7 +305,9 @@ def test_group_discount(page):
 
     actions.logout(page)
 
-    activation_link = api.get_user_activation_url(attendee_user_id_2)
+    activation_link = api.get_user_activation_url(
+        attendee_user_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2
+    )
     assert activation_link is not None
     page.goto(activation_link)
     actions.activation_enter_password(page, attendee_password_2)
@@ -376,7 +380,9 @@ def test_group_discount_and_groom_gift_as_well(page):
 
     actions.logout(page)
 
-    activation_link = api.get_user_activation_url(attendee_user_id_2)
+    activation_link = api.get_user_activation_url(
+        attendee_user_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2
+    )
     assert activation_link is not None
     page.goto(activation_link)
     actions.activation_enter_password(page, attendee_password_2)

@@ -3,6 +3,7 @@ from typing import List
 
 from playwright.sync_api import Page, expect, Locator
 
+from server.tests import utils
 from server.tests.e2e import (
     REQUIRE_STORE_PASSWORD,
     STORE_URL,
@@ -196,10 +197,13 @@ def sign_up(page: Page, first_name: str, last_name: str, email: str):
 
 
 def activation_enter_password(page: Page, password: str):
-    page.locator("#customer_phone").fill("2412312123")
+    page.locator("#customer_phone").fill(utils.generate_phone_number())
     page.locator("#customer_password").fill(password)
     page.locator("#customer_password_confirmation").fill(password)
-    page.get_by_role("button", name="Activate Account").click()
+
+    activate_account_button = page.locator(f'//input[contains(@class, "tmg-btn") and @value="Activate Account"]').first
+    activate_account_button.scroll_into_view_if_needed()
+    activate_account_button.click()
 
 
 def select_role_for_attendee(page: Page, event_id, attendee_id, role_name: str):

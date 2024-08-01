@@ -54,6 +54,7 @@ class EmailService(AbstractEmailService):
 
     def send_activation_email(self, user: UserModel):
         activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+        activation_url = f"{activation_url}?first_name={user.first_name}&last_name={user.last_name}"
 
         template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {

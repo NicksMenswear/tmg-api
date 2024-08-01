@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urlencode
 
 from server.controllers.util import http
 from server.models.event_model import EventModel, EventTypeModel
@@ -54,7 +55,8 @@ class EmailService(AbstractEmailService):
 
     def send_activation_email(self, user: UserModel):
         activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
-        activation_url = f"{activation_url}?first_name={user.first_name}&last_name={user.last_name}"
+        url_params = urlencode({"first_name": user.first_name, "last_name": user.last_name})
+        activation_url = f"{activation_url}?{url_params}"
 
         template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {

@@ -1,4 +1,5 @@
 import logging
+import re
 import uuid
 from typing import Any, Dict
 
@@ -20,6 +21,13 @@ class ShopifyWebhookUserHandler:
         email = payload.get("email").lower()
         first_name = payload.get("first_name")
         last_name = payload.get("last_name")
+
+        if not first_name:
+            first_name = re.sub(r"\W+", "", email.split("@")[0])
+
+        if not last_name:
+            last_name = re.sub(r"\W+", "", email.split("@")[0])
+
         state = payload.get("state")
         phone = payload.get("phone")
 

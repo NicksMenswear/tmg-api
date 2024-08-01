@@ -130,13 +130,14 @@ def create_look(look_name, user_id, product_specs=None):
     raise Exception(f"Failed to create look - {look_name}/{user_id}")
 
 
-def get_user_activation_url(user_id):
+def get_user_activation_url(user_id, first_name, last_name, email):
     response = requests.get(
         f"{BASE_API_URL}/users/{user_id}/activation-url", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS
     )
 
     if response.status_code == 200:
-        return response.json().get("activation_url")
+        activation_url = response.json().get("activation_url")
+        return f"{activation_url}?first_name={first_name}&last_name={last_name}&email={email}"
 
     raise Exception(f"Failed to get user activation url by user_id: {user_id}")
 

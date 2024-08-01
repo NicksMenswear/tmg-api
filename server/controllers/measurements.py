@@ -14,4 +14,4 @@ def create(data):
 
     measurement = measurement_service.create_measurement(CreateMeasurementsRequestModel(**data))
 
-    return {"id": measurement.id}, 201
+    return measurement.to_response(), 201

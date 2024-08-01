@@ -1671,6 +1671,46 @@ paths:
       tags:
         - Sizing
       x-openapi-router-controller: server.controllers.sizes
+    get:
+      operationId: get_latest_size
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Latest user size
+      summary: Get latest user size
+      tags:
+        - Sizing
+      x-openapi-router-controller: server.controllers.sizes
   /measurements:
     post:
       operationId: create

@@ -196,6 +196,7 @@ def sign_up(page: Page, first_name: str, last_name: str, email: str):
 
 
 def activation_enter_password(page: Page, password: str):
+    page.locator("#customer_phone").fill("2412312123")
     page.locator("#customer_password").fill(password)
     page.locator("#customer_password_confirmation").fill(password)
     page.get_by_role("button", name="Activate Account").click()
@@ -397,7 +398,7 @@ def get_attendee_block(page: Page, event_id: str, attendee_id: str) -> Locator:
 def get_owner_fit_survey_button(page: Page, event_id: str, attendee_id: str) -> Locator:
     attendee_locator = get_attendee_block(page, event_id, attendee_id)
 
-    fit_survey_button = attendee_locator.locator('button:has-text("Fit Survey")').first
+    fit_survey_button = attendee_locator.locator('button:has-text("Fit Quiz")').first
     fit_survey_button.scroll_into_view_if_needed()
     fit_survey_button.wait_for(state="visible")
 

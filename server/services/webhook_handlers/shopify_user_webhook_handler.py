@@ -19,15 +19,8 @@ class ShopifyWebhookUserHandler:
 
         shopify_id = str(payload.get("id"))
         email = payload.get("email").lower()
-        first_name = payload.get("first_name")
-        last_name = payload.get("last_name")
-
-        if not first_name:
-            first_name = re.sub(r"\W+", "", email.split("@")[0])
-
-        if not last_name:
-            last_name = re.sub(r"\W+", "", email.split("@")[0])
-
+        first_name = payload.get("first_name", self.__get_name_from_email(email))
+        last_name = payload.get("last_name", self.__get_name_from_email(email))
         state = payload.get("state")
         phone = payload.get("phone")
 
@@ -76,3 +69,6 @@ class ShopifyWebhookUserHandler:
             return updated_user.to_response()
         else:
             return user.to_response()
+
+    def __get_name_from_email(self, email: str) -> str:
+        return re.sub(r"\W+", "", email.split("@")[0])

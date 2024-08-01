@@ -1,5 +1,6 @@
-from typing import List, Any
+from typing import List, Any, Optional
 from uuid import UUID
+from datetime import datetime
 
 from server.database.models import Size
 from server.models import CoreModel
@@ -22,6 +23,8 @@ class SizeModel(CoreModel):
     pant_length: str = "R"
     shirt_sleeve_length: str
     shirt_neck_size: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -41,4 +44,14 @@ class SizeModel(CoreModel):
             attribute_map[item["apparelId"]]: item["size"] for item in size.data if item["apparelId"] in attribute_map
         }
 
-        return cls(id=size.id, user_id=size.user_id, data=size.data, **sizing_map)
+        return cls(
+            id=size.id,
+            user_id=size.user_id,
+            data=size.data,
+            created_at=size.created_at,
+            updated_at=size.updated_at,
+            **sizing_map
+        )
+
+    def to_response(self):
+        return self.model_dump()

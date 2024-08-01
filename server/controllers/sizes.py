@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
@@ -13,7 +14,17 @@ def create(data):
     sizing_service = FlaskApp.current().size_service
     order_service = FlaskApp.current().order_service
 
-    sizing_model = sizing_service.create_size(CreateSizeRequestModel(**data))
-    order_service.update_user_pending_orders_with_latest_measurements(sizing_model)
+    size = sizing_service.create_size(CreateSizeRequestModel(**data))
+    order_service.update_user_pending_orders_with_latest_measurements(size)
 
-    return {"id": sizing_model.id}, 201
+    return size.to_response(), 201
+
+
+@hmac_verification
+@error_handler
+def get_latest_size(user_id):
+    sizing_service = FlaskApp.current().size_service
+
+    size = sizing_service.get_latest_size_for_user(uuid.UUID(user_id))
+
+    return size.to_response() if size else None, 201

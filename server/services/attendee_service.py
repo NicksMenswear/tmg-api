@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
@@ -21,6 +22,9 @@ from server.services import DuplicateError, ServiceError, NotFoundError, BadRequ
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
+
+
+STAGE = os.getenv("STAGE")
 
 
 # noinspection PyMethodMayBeStatic
@@ -273,6 +277,9 @@ class AttendeeService:
         for order in orders:
             if order.outbound_tracking:
                 tracking_number = order.outbound_tracking
-                tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
+                if STAGE == "prd":
+                    tracking_url = f"https://account.themoderngroom.com/orders/{order.shopify_order_id}"
+                else:
+                    tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.shopify_order_id}"
                 tracking.append(TrackingModel(tracking_number=tracking_number, tracking_url=tracking_url))
         return tracking

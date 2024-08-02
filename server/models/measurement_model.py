@@ -1,5 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from uuid import UUID
+from datetime import datetime
 
 from server.database.models import Measurement
 from server.models import CoreModel
@@ -23,6 +24,8 @@ class MeasurementModel(CoreModel):
     stomach_shape: str
     hip_shape: str
     shoe_size: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -42,4 +45,9 @@ class MeasurementModel(CoreModel):
             stomach_shape=measurement.data.get("stomachShape"),
             hip_shape=measurement.data.get("hipShape"),
             shoe_size=measurement.data.get("shoeSize"),
+            created_at=measurement.created_at,
+            updated_at=measurement.updated_at,
         )
+
+    def to_response(self):
+        return self.model_dump()

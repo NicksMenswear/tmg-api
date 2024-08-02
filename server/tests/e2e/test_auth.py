@@ -35,7 +35,7 @@ def test_login(page: Page):
 def test_signup_form(page: Page):
     first_name = f"{utils.generate_unique_name(8, 12)}"
     last_name = f"{utils.generate_unique_name(8, 12)}"
-    user_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    user_email = utils.generate_email()
     password = str(uuid.uuid4())
 
     actions.access_store(page)
@@ -50,7 +50,7 @@ def test_signup_form(page: Page):
 
     page.goto(activation_link)
 
-    actions.activation_enter_password(page, password)
+    actions.fill_activation_form(page, password, first_name, last_name)
 
     confirmation_email_body = email.look_for_email(EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, user_email, 300)
     assert "You've activated your customer account." in confirmation_email_body

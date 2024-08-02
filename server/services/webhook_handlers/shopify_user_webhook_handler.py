@@ -19,8 +19,8 @@ class ShopifyWebhookUserHandler:
 
         shopify_id = str(payload.get("id"))
         email = payload.get("email").lower()
-        first_name = payload.get("first_name", self.__get_name_from_email(email))
-        last_name = payload.get("last_name", self.__get_name_from_email(email))
+        first_name = payload.get("first_name") or self.__get_name_from_email(email)
+        last_name = payload.get("last_name") or self.__get_name_from_email(email)
         state = payload.get("state")
         phone = payload.get("phone")
 

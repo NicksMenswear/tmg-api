@@ -53,7 +53,7 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             if last_name:
                 body["contact"]["lastName"] = last_name
             if phone:
-                body["contact"]["phone"] = last_name
+                body["contact"]["phone"] = phone
             if fields:
                 body["contact"]["fieldValues"] = field_resolver(fields)
 

@@ -44,7 +44,6 @@ def upgrade() -> None:
     op.execute("ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT now()")
     op.execute("ALTER TABLE users ALTER COLUMN account_status SET DEFAULT FALSE")
     op.execute("ALTER TABLE webhooks ALTER COLUMN created_at SET DEFAULT now()")
-    op.execute("ALTER TABLE webhooks ALTER COLUMN updated_at SET DEFAULT now()")
 
 
 def downgrade() -> None:

@@ -6,13 +6,13 @@ from playwright.sync_api import Page
 
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
-TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "automation+e2e01@themoderngroom.com")
+TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2e+01@mail.dev.tmgcorp.net")
 TEST_USER_PASSWORD = "123456"
 EMAIL_FROM = "info@themoderngroom.com"
-IMAP_HOST = "imap.gmail.com"
+IMAP_HOST = "mail.dev.tmgcorp.net"
 IMAP_PORT = 993
-EMAIL_ACCOUNT_USERNAME = "automation@themoderngroom.com"
-EMAIL_ACCOUNT_PASSWORD = "yhbl hwgu voib swvk"
+EMAIL_ACCOUNT_USERNAME = "e2e"
+EMAIL_ACCOUNT_PASSWORD = "e5948b3e-50b1-11ef-88d6-478eb041eda8"
 EMAIL_SUBJECT_EVENT_INVITATION = "The Modern Groom: Event Invitation"
 EMAIL_SUBJECT_ACCOUNT_CREATED = "The Modern Groom: Account Created"
 EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION = "Customer account confirmation"
@@ -23,7 +23,7 @@ STORE_CONFIG = {
     "dev": {"url": "https://quickstart-a91e1214.myshopify.com", "password": "test123", "require_store_password": True},
     "stg": {"url": "https://tmg-staging.myshopify.com", "password": "test123", "require_store_password": True},
     "prd": {
-        "url": "https://new.themoderngroom.com",
+        "url": "https://themoderngroom.com",
         "password": "test123",
         "require_store_password": False,
         "has_additional_initial_screen_on_store_access": True,

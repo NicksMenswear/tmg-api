@@ -196,7 +196,11 @@ def sign_up(page: Page, first_name: str, last_name: str, email: str):
     page.get_by_role("button", name="Sign Up").click()
 
 
-def activation_enter_password(page: Page, password: str):
+def fill_activation_form(page: Page, password: str, first_name: str = None, last_name: str = None):
+    if first_name:
+        page.locator("input#first_name").first.fill(first_name)
+    if last_name:
+        page.locator("input#last_name").first.fill(last_name)
     page.locator("#customer_phone").fill(utils.generate_phone_number())
     page.locator("#customer_password").fill(password)
     page.locator("#customer_password_confirmation").fill(password)

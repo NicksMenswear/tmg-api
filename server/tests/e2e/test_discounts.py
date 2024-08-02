@@ -23,13 +23,13 @@ def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_1 = utils.generate_email()
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_2 = utils.generate_email()
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_3 = utils.generate_email()
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -88,7 +88,7 @@ def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email = utils.generate_email()
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -140,7 +140,7 @@ def test_pay_in_full_click(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email = utils.generate_email()
 
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -190,7 +190,7 @@ def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email = utils.generate_email()
     attendee_password = utils.generate_unique_string()
 
     role_name = "Groomsman"
@@ -241,7 +241,7 @@ def test_grooms_gift(page):
     )
     assert activation_link is not None
     page.goto(activation_link)
-    actions.activation_enter_password(page, attendee_password)
+    actions.fill_activation_form(page, attendee_password, attendee_first_name, attendee_last_name)
 
     # wait for discount codes being processed by webhook
     codes = actions.get_processed_discount_codes_for_event(event_id)
@@ -259,17 +259,17 @@ def test_group_discount(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_1 = utils.generate_email()
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_2 = utils.generate_email()
     attendee_password_2 = utils.generate_unique_string()
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_3 = utils.generate_email()
     attendee_first_name_4 = utils.generate_unique_name()
     attendee_last_name_4 = utils.generate_unique_name()
-    attendee_email_4 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_4 = utils.generate_email()
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
 
@@ -310,7 +310,7 @@ def test_group_discount(page):
     )
     assert activation_link is not None
     page.goto(activation_link)
-    actions.activation_enter_password(page, attendee_password_2)
+    actions.fill_activation_form(page, attendee_password_2, attendee_first_name_2, attendee_last_name_2)
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
@@ -324,17 +324,17 @@ def test_group_discount_and_groom_gift_as_well(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_1 = utils.generate_email()
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_2 = utils.generate_email()
     attendee_password_2 = utils.generate_unique_string()
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_3 = utils.generate_email()
     attendee_first_name_4 = utils.generate_unique_name()
     attendee_last_name_4 = utils.generate_unique_name()
-    attendee_email_4 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_4 = utils.generate_email()
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
 
@@ -385,7 +385,7 @@ def test_group_discount_and_groom_gift_as_well(page):
     )
     assert activation_link is not None
     page.goto(activation_link)
-    actions.activation_enter_password(page, attendee_password_2)
+    actions.fill_activation_form(page, attendee_password_2, attendee_first_name_2, attendee_last_name_2)
 
     actions.attendee_add_suit_to_cart(page, event_id)
 

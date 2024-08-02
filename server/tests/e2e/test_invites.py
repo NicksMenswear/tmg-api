@@ -23,7 +23,7 @@ def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()
-    attendee_email = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email = utils.generate_email()
     attendee_password = str(uuid.uuid4())
     role_name = "Groomsman"
     look_name = "Test Look"
@@ -65,7 +65,7 @@ def test_invite_attendee(page: Page):
 
     page.goto(activation_link)
 
-    actions.activation_enter_password(page, attendee_password)
+    actions.fill_activation_form(page, attendee_password, attendee_first_name, attendee_last_name)
 
     confirmation_email_body = email.look_for_email(
         EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email, 300
@@ -87,19 +87,19 @@ def test_invite_multiple_attendees(page: Page):
     # Attendee 1: Role and Look Selected
     attendee_first_name_1 = utils.generate_unique_name()
     attendee_last_name_1 = utils.generate_unique_name()
-    attendee_email_1 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_1 = utils.generate_email()
     # Attendee 2: Only Role Selected
     attendee_first_name_2 = utils.generate_unique_name()
     attendee_last_name_2 = utils.generate_unique_name()
-    attendee_email_2 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_2 = utils.generate_email()
     # Attendee 3: Only Look Selected
     attendee_first_name_3 = utils.generate_unique_name()
     attendee_last_name_3 = utils.generate_unique_name()
-    attendee_email_3 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_3 = utils.generate_email()
     # Attendee 4: Role and Look Selected as well
     attendee_first_name_4 = utils.generate_unique_name()
     attendee_last_name_4 = utils.generate_unique_name()
-    attendee_email_4 = f"automation+e2e{utils.generate_unique_string()}@themoderngroom.com"
+    attendee_email_4 = utils.generate_email()
 
     role_name = "Groomsman"
     look_name = "Test Look"

@@ -25,7 +25,7 @@ def generate_phone_number() -> str:
 
 def generate_email() -> str:
     rnd = generate_unique_string()
-    return f"automation+{rnd}@themoderngroom.com"
+    return f"e2e+{rnd}@mail.dev.tmgcorp.net"
 
 
 def generate_look_name() -> str:

@@ -2167,6 +2167,9 @@ components:
         last_name:
           title: last_name
           type: string
+        phone:
+          title: phone
+          type: string
         fields:
           title: fields
           type: object

@@ -18,7 +18,9 @@ ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 
 class AbstractActiveCampaignService(ABC):
     @abstractmethod
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
+    def sync_contact(
+        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+    ):
         pass
 
     @abstractmethod
@@ -27,7 +29,9 @@ class AbstractActiveCampaignService(ABC):
 
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
+    def sync_contact(
+        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+    ):
         pass
 
     def track_event(self, email, event, suppress_exceptions=True):
@@ -35,7 +39,9 @@ class FakeActiveCampaignService(AbstractActiveCampaignService):
 
 
 class ActiveCampaignService(AbstractActiveCampaignService):
-    def sync_contact(self, email, first_name=None, last_name=None, fields={}, events=[], suppress_exceptions=True):
+    def sync_contact(
+        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+    ):
         try:
             body = {
                 "contact": {
@@ -46,6 +52,8 @@ class ActiveCampaignService(AbstractActiveCampaignService):
                 body["contact"]["firstName"] = first_name
             if last_name:
                 body["contact"]["lastName"] = last_name
+            if phone:
+                body["contact"]["phone"] = phone
             if fields:
                 body["contact"]["fieldValues"] = field_resolver(fields)
 

@@ -92,7 +92,5 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             headers=headers,
             json=json,
         )
-        if response.status == 422:
-            raise DuplicateError()
         if response.status >= 400:
             raise ServiceError(f"Error using ActiveCampaign: {response.data.decode('utf-8')}")

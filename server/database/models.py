@@ -16,7 +16,6 @@ from sqlalchemy import (
     ARRAY,
     JSON,
     BigInteger,
-    VARCHAR,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -205,73 +204,6 @@ class Attendee(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-# class CurrentSize(Base):
-#     __tablename__ = 'current_sizes'
-# id = Column(UUID(as_uuid=True),
-#     primary_key=True,
-#     default=uuid.uuid4,
-#     server_default=text("uuid_generate_v4()"),
-#     nullable=False)
-#     age = Column(String)
-#     height = Column(String)
-#     weight = Column(Integer)
-#     inch = Column(String)
-#     chest_structure = Column(String)
-#     stomach_structure = Column(String)
-#     jean_waist_size = Column(Integer)
-#     waist = Column(Integer)
-#     suit_size = Column(String)  # Assuming "-" in the image represents a nullable field
-#     dress_shirt_size = Column(Integer)
-#     chest_size = Column(Integer)
-#     neck_size = Column(Numeric)
-#     sleeve_size = Column(Integer)
-#     t_shirt_size = Column(String)
-#     shoes_size = Column(Integer)
-#     seat = Column(Integer)
-#     jacket_waist = Column(Integer)
-#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))  # Link to the User model
-
-#     # Relationship back to the User model
-#     user = relationship('User', back_populates='current_size')
-
-# class HistoricalSize(Base):
-#     __tablename__ = 'historical_sizes'
-# id = Column(UUID(as_uuid=True),
-#     primary_key=True,
-#     default=uuid.uuid4,
-#     server_default=text("uuid_generate_v4()"),
-#     nullable=False)
-#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
-#     measurement_date = Column(DateTime, default=datetime.utcnow)
-#     suit_size_sent = Column(String)
-#     event_completed = Column(DateTime)
-#     age = Column(String)
-#     height = Column(String)
-#     weight = Column(Integer)
-#     inch = Column(String)
-#     chest_structure = Column(String)
-#     stomach_structure = Column(String)
-#     jean_waist_size = Column(Integer)
-#     waist = Column(Integer)
-#     suit_size = Column(String)  # Assuming "-" in the image represents a nullable field
-#     dress_shirt_size = Column(Integer)
-#     chest_size = Column(Integer)
-#     neck_size = Column(Numeric)
-#     sleeve_size = Column(Integer)
-#     t_shirt_size = Column(String)
-#     shoes_size = Column(Integer)
-#     seat = Column(Integer)
-#     jacket_waist = Column(Integer)
-#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))  # Link to the User model
-
-#     # Relationship back to the User model
-#     # user = relationship('User', back_populates='current_size')
-#     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
-
-#     user = relationship('User', back_populates='historical_sizes')
-
-
-# # Define the Address model
 class Address(Base):
     __tablename__ = "addresses"
     id = Column(
@@ -283,14 +215,15 @@ class Address(Base):
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     address_type = Column(String)  # e.g., 'shipping' or 'billing'
-    address_line1 = Column(String)  # Primary address line (e.g., street address, P.O. box)
-    address_line2 = Column(String)  # Secondary address line (e.g., apartment, suite number)
+    address_line1 = Column(String)
+    address_line2 = Column(String)
     city = Column(String)
     state = Column(String)
     zip_code = Column(String)
-    country = Column(String, default="US")  # Default set to 'US', change as needed
-    # Relationship back to the User model
+    country = Column(String, default="US")
     user = relationship("User", back_populates="addresses")
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class User(Base):

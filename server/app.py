@@ -107,9 +107,7 @@ def init_services(app, is_testing=False):
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
-    app.activecampaign_service = (
-        ActiveCampaignService()
-    )  # FakeActiveCampaignService() if is_testing else ActiveCampaignService()
+    app.activecampaign_service = FakeActiveCampaignService() if is_testing else ActiveCampaignService()
     app.user_service = UserService(app.shopify_service, app.email_service)
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)

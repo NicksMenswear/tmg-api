@@ -47,7 +47,7 @@ def fetch_users_from_legacy_db():
                 SELECT *
                 FROM users_user
                 ORDER BY date_joined DESC
-                LIMIT 1000
+                LIMIT 200
                 """
             )
         ).fetchall()
@@ -56,7 +56,12 @@ def fetch_users_from_legacy_db():
 
         for row in rows:
             user = dict(row._mapping)
-            email = user.get("email").lower()
+            email = user.get("email")
+
+            if not email:
+                continue
+
+            email = email.lower()
             user["email"] = email
             users[email] = user
 
@@ -68,7 +73,7 @@ def fetch_users_from_legacy_db():
         legacy_session.close()
 
 
-def get_users_with_legacy_ids_from_new_db():
+def get_users_with_email_in_new_db():
     try:
         db_users = new_session.query(User).all()
 
@@ -136,6 +141,8 @@ def create_shopify_customer_via_api(legacy_user):
             input_data["phone"] = legacy_user["phone"]
         elif len(legacy_user["phone"]) == 11:
             input_data["phone"] = "+" + legacy_user["phone"]
+        elif len(legacy_user["phone"]) == 10:
+            input_data["phone"] = "+1" + legacy_user["phone"]
     else:
         input_data["phone"] = None
 
@@ -209,15 +216,16 @@ def get_shopify_customer_id_by_email(email):
 
 
 def main():
-    new_db_users = get_users_with_legacy_ids_from_new_db()
+    new_db_users = get_users_with_email_in_new_db()
     legacy_db_users = fetch_users_from_legacy_db()
 
     for legacy_db_user_email in legacy_db_users.keys():
         logger.info(f"Processing user {legacy_db_user_email} ...")
+
         legacy_db_user = legacy_db_users[legacy_db_user_email]
         del legacy_db_user["password"]
 
-        new_db_user = new_db_users.get(legacy_db_user["email"])
+        new_db_user = new_db_users.get(legacy_db_user_email)
 
         if not new_db_user:
             logger.info(f"User by email '{legacy_db_user_email}' not found in new db. Creating ...")
@@ -271,12 +279,28 @@ def main():
                     new_session.rollback()
             else:
                 if not new_db_user.legacy_id:
-                    logger.error(f"user doesn't have legacy id but has shopify id: {new_db_user.id}")
+                    logger.error(f"User doesn't have legacy id but has shopify id: {new_db_user.id}, updating ...")
+                    try:
+                        new_db_user.legacy_id = legacy_db_user["id"]
+                        new_db_user.meta = {"legacy": json.loads(json.dumps(legacy_db_user, cls=CustomJSONEncoder))}
+                        new_session.commit()
+                        new_session.refresh(new_db_user)
+                    except Exception as e:
+                        logger.exception(e)
+                        new_session.rollback()
                     continue
 
                 if new_db_user.legacy_id != str(legacy_db_user["id"]):
                     logger.error(f"Legacy id doesn't match for user {new_db_user.id}")
                     continue
+
+                if (
+                    legacy_db_user.get("phone") is not None and legacy_db_user.get("phone") != ""
+                ) and new_db_user.phone_number is None:
+                    logger.error(f"User doesn't have phone number but has phone number in legacy db, updating ...")
+                    new_db_user.phone_number = legacy_db_user.get("phone")
+                    new_session.commit()
+                    new_session.refresh(new_db_user)
 
                 logger.info(f"User {legacy_db_user_email} already exists. Skipping ...")
 

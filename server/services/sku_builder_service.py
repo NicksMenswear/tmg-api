@@ -215,6 +215,18 @@ class SkuBuilder:
         if size_model.jacket_length not in JACKET_LENGTHS:
             raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
 
+        # special cases for suits
+        if int(size_model.jacket_size) < 36 and size_model.jacket_length == "R":
+            size_model.jacket_size = "36"
+            size_model.jacket_length = "R"
+        elif int(size_model.jacket_size) < 38 and size_model.jacket_length == "L":
+            size_model.jacket_size = "38"
+            size_model.jacket_length = "L"
+        elif int(size_model.jacket_size) >= 50 and size_model.jacket_length == "X":
+            size_model.jacket_length = "L"
+        elif int(size_model.jacket_size) >= 54 and size_model.jacket_length == "S":
+            size_model.jacket_length = "R"
+
         return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
 
     def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
@@ -227,6 +239,18 @@ class SkuBuilder:
 
         if size_model.jacket_length not in JACKET_LENGTHS:
             raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
+
+        # special cases for jackets
+        if int(size_model.jacket_size) < 36 and size_model.jacket_length == "R":
+            size_model.jacket_size = "36"
+            size_model.jacket_length = "R"
+        elif int(size_model.jacket_size) < 38 and size_model.jacket_length == "L":
+            size_model.jacket_size = "38"
+            size_model.jacket_length = "L"
+        elif int(size_model.jacket_size) >= 50 and size_model.jacket_length == "X":
+            size_model.jacket_length = "L"
+        elif int(size_model.jacket_size) >= 54 and size_model.jacket_length == "S":
+            size_model.jacket_length = "R"
 
         return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
 
@@ -267,6 +291,12 @@ class SkuBuilder:
 
         if size_model.shirt_sleeve_length not in SHIRT_SLEEVE_LENGTHS:
             raise ServiceError(f"Unsupported shirt sleeve length: {size_model.shirt_sleeve_length}")
+
+        # special cases for shirts
+        if size_model.shirt_neck_size == "14" and size_model.shirt_sleeve_length == "34/35":
+            size_model.shirt_neck_size = "14.5"
+        elif size_model.shirt_neck_size in ["14", "14.5"] and size_model.shirt_sleeve_length == "36/37":
+            size_model.shirt_neck_size = "15.5"
 
         shirt_neck_size = SHIRT_NECK_SIZES_MAP.get(size_model.shirt_neck_size)
         shirt_length_code = SHIRT_SLEEVE_LENGTHS_MAP.get(size_model.shirt_sleeve_length)

@@ -2,6 +2,8 @@ import csv
 import unittest
 from typing import Set
 
+from parameterized import parameterized
+
 from server.services.sku_builder_service import (
     SkuBuilder,
     JACKET_LENGTHS,
@@ -232,3 +234,84 @@ class TestSkuBuilder(unittest.TestCase):
                 continue
             else:
                 raise Exception(f"SKU not found: {shiphero_sku}")
+
+    @parameterized.expand(
+        [
+            ["001A1BLK", "34", "R", "001A1BLK36R"],
+            ["001A1BLK", "34", "L", "001A1BLK38L"],
+            ["001A1BLK", "36", "L", "001A1BLK38L"],
+            ["001A1BLK", "50", "X", "001A1BLK50L"],
+            ["001A1BLK", "52", "X", "001A1BLK52L"],
+            ["001A1BLK", "54", "X", "001A1BLK54L"],
+            ["001A1BLK", "56", "X", "001A1BLK56L"],
+            ["001A1BLK", "58", "X", "001A1BLK58L"],
+            ["001A1BLK", "60", "X", "001A1BLK60L"],
+            ["001A1BLK", "62", "X", "001A1BLK62L"],
+            ["001A1BLK", "64", "X", "001A1BLK64L"],
+            ["001A1BLK", "66", "X", "001A1BLK66L"],
+            ["001A1BLK", "54", "S", "001A1BLK54R"],
+            ["001A1BLK", "56", "S", "001A1BLK56R"],
+            ["001A1BLK", "58", "S", "001A1BLK58R"],
+            ["001A1BLK", "60", "S", "001A1BLK60R"],
+            ["001A1BLK", "62", "S", "001A1BLK62R"],
+            ["001A1BLK", "64", "S", "001A1BLK64R"],
+            ["001A1BLK", "66", "S", "001A1BLK66R"],
+        ]
+    )
+    def test_special_cases_correctness_for_suits(self, shopify_sku, jacket_size, jacket_length, expected_sku):
+        shiphero_sku = self.sku_builder.build(
+            shopify_sku,
+            fixtures.size_model(jacket_size=jacket_size, jacket_length=jacket_length),
+            fixtures.measurement_model(),
+        )
+
+        self.assertEqual(expected_sku, shiphero_sku)
+
+    @parameterized.expand(
+        [
+            ["101A1BLK", "34", "R", "101A1BLK36RAF"],
+            ["101A1BLK", "34", "L", "101A1BLK38LAF"],
+            ["101A1BLK", "36", "L", "101A1BLK38LAF"],
+            ["101A1BLK", "50", "X", "101A1BLK50LAF"],
+            ["101A1BLK", "52", "X", "101A1BLK52LAF"],
+            ["101A1BLK", "54", "X", "101A1BLK54LAF"],
+            ["101A1BLK", "56", "X", "101A1BLK56LAF"],
+            ["101A1BLK", "58", "X", "101A1BLK58LAF"],
+            ["101A1BLK", "60", "X", "101A1BLK60LAF"],
+            ["101A1BLK", "62", "X", "101A1BLK62LAF"],
+            ["101A1BLK", "64", "X", "101A1BLK64LAF"],
+            ["101A1BLK", "66", "X", "101A1BLK66LAF"],
+            ["101A1BLK", "54", "S", "101A1BLK54RAF"],
+            ["101A1BLK", "56", "S", "101A1BLK56RAF"],
+            ["101A1BLK", "58", "S", "101A1BLK58RAF"],
+            ["101A1BLK", "60", "S", "101A1BLK60RAF"],
+            ["101A1BLK", "62", "S", "101A1BLK62RAF"],
+            ["101A1BLK", "64", "S", "101A1BLK64RAF"],
+            ["101A1BLK", "66", "S", "101A1BLK66RAF"],
+        ]
+    )
+    def test_special_cases_correctness_for_jackets(self, shopify_sku, jacket_size, jacket_length, expected_sku):
+        shiphero_sku = self.sku_builder.build(
+            shopify_sku,
+            fixtures.size_model(jacket_size=jacket_size, jacket_length=jacket_length),
+            fixtures.measurement_model(),
+        )
+
+        self.assertEqual(expected_sku, shiphero_sku)
+
+    @parameterized.expand(
+        [
+            ["403A2BLK", "14", "34/35", "403A2BLK1455"],
+            ["403A2BLK", "15", "36/37", "403A2BLK1507"],
+        ]
+    )
+    def test_special_cases_correctness_for_shirts(
+        self, shopify_sku, shirt_neck_size, shirt_sleeve_length, expected_sku
+    ):
+        shiphero_sku = self.sku_builder.build(
+            shopify_sku,
+            fixtures.size_model(shirt_neck_size=shirt_neck_size, shirt_sleeve_length=shirt_sleeve_length),
+            fixtures.measurement_model(),
+        )
+
+        self.assertEqual(expected_sku, shiphero_sku)

@@ -1,8 +1,8 @@
-import awsgi
 import signal
 
-from server.app import init_app, init_logging, init_sentry, init_db, lambda_teardown
+import awsgi
 
+from server.app import init_app, init_logging, init_sentry, init_db, lambda_teardown
 
 if __name__ == "__main__":
     print("Running a local dev server...")
@@ -21,6 +21,14 @@ else:
 # This is the entry point for the AWS Lambda function
 def lambda_handler(event, context):
     return awsgi.response(app, event, context)
+
+
+def lambda_job_sync_users_from_legacy_db(event, context):
+    from server.jobs.sync_users_from_legacy_db import sync_users_from_legacy_db
+
+    init_logging(debug=True)
+    init_sentry()
+    sync_users_from_legacy_db()
 
 
 # Handle lambda termination gracefully

@@ -68,6 +68,16 @@ functions:
       # ShipHero Env Variables
       SHIPHERO_API_URL: "https://public-api.shiphero.com"
       SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
+  job-sync-users-from-legacy-db:
+    handler: main.lambda_job_sync_users_from_legacy_db
+    events:
+      - schedule: rate(1 minute)
+    timeout: 600
+    memorySize: 512
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+    environment:
+      STAGE: ${sls:stage}
 
 plugins:
   - serverless-python-requirements

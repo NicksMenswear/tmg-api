@@ -17,7 +17,7 @@ class ProductModel(CoreModel):
     id: UUID
     name: str
     sku: str
-    price: float = 0.0
+    price: Optional[float] = 0.0
     on_hand: int = 0
 
     class Config:

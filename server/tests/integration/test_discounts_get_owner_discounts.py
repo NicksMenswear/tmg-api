@@ -830,3 +830,112 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
 
                 self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX)
                 self.assertEqual(discount["gift_codes"][0]["amount"], look_price * TMG_GROUP_25_PERCENT_OFF)
+
+    def test_get_tmg_group_discounts_from_event_with_4_attendees_but_one_issued(self):
+        # given
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        look1 = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user1.id, product_specs=self.create_look_test_product_specs())
+        )
+        # hack to reduce price of the look so smaller discount is applied
+        self.shopify_service.shopify_variants.get(
+            look1.product_specs["bundle"]["variant_id"]
+        ).variant_price = random.randint(200, 299)
+        look2 = self.app.look_service.create_look(
+            fixtures.create_look_request(user_id=attendee_user2.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look1.id, invite=True, style=True
+            )
+        )
+        attendee2 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee3 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+        attendee4 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look2.id, invite=True, style=True
+            )
+        )
+
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            50,
+            DiscountType.PARTY_OF_FOUR,
+            False,
+            f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        look2_price = self.look_service.get_look_price(look2)
+
+        discount3 = self.app.discount_service.create_discount(
+            event.id,
+            attendee3.id,
+            look2_price * TMG_GROUP_25_PERCENT_OFF,
+            DiscountType.PARTY_OF_FOUR,
+            True,
+            f"{TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        discount4 = self.app.discount_service.create_discount(
+            event.id,
+            attendee4.id,
+            look2_price * TMG_GROUP_25_PERCENT_OFF,
+            DiscountType.PARTY_OF_FOUR,
+            False,
+            f"{TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}/discounts",
+            query_string=self.hmac_query_params,
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertEqual(len(response.json), 4)
+
+        for discount in response.json:
+            discount_attendee_id = discount["attendee_id"]
+
+            self.assertEqual(len(discount["gift_codes"]), 1)
+
+            if str(discount_attendee_id) == str(attendee1.id):
+                self.assertEqual(discount["gift_codes"][0]["code"], discount1.shopify_discount_code)
+                self.assertEqual(discount["gift_codes"][0]["amount"], discount1.amount)
+            elif str(discount_attendee_id) == str(attendee2.id):
+                self.assertEqual(len(discount["gift_codes"]), 1)
+                self.assertEqual(discount["gift_codes"][0]["code"], TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX)
+                self.assertEqual(discount["gift_codes"][0]["amount"], look2_price * TMG_GROUP_25_PERCENT_OFF)
+            elif str(discount_attendee_id) == str(attendee3.id):
+                self.assertEqual(discount["gift_codes"][0]["code"], discount3.shopify_discount_code)
+                self.assertEqual(discount["gift_codes"][0]["amount"], discount3.amount)
+            elif str(discount_attendee_id) == str(attendee4.id):
+                self.assertEqual(discount["gift_codes"][0]["code"], discount4.shopify_discount_code)
+                self.assertEqual(discount["gift_codes"][0]["amount"], discount4.amount)

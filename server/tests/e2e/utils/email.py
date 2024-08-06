@@ -34,7 +34,7 @@ def search_emails(mail, subject, email_from, email_to):
     if result != "OK":
         raise Exception(f"Error selecting inbox: {result}")
 
-    formatted_date = datetime.fromtimestamp(time() - 60 * 60 * 24).strftime("%d-%b-%Y")
+    formatted_date = datetime.fromtimestamp(time() - 60 * 60 * 2).strftime("%d-%b-%Y")
     result, data = mail.uid("search", None, f'(SINCE "{formatted_date}")')
 
     if result == "OK":

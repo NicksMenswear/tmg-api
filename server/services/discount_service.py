@@ -248,6 +248,17 @@ class DiscountService:
             if owner_discount.status.pay:
                 continue
 
+            already_has_group_discount_paid = False
+
+            if owner_discount.gift_codes:
+                for gift_code in owner_discount.gift_codes:
+                    if gift_code.type == str(DiscountType.PARTY_OF_FOUR):
+                        already_has_group_discount_paid = True
+                        break
+
+            if already_has_group_discount_paid:
+                continue
+
             look_price = owner_discount.look.price
 
             if look_price < TMG_GROUP_MIN_PERCENT_AMOUNT:

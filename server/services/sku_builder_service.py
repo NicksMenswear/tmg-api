@@ -11,7 +11,7 @@ JACKET_SIZES = {"34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54"
 JACKET_LENGTHS = {"S", "R", "L", "X"}
 
 # vests
-VEST_SIZES = {"34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "62", "64"}
+VEST_SIZES = {"34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "62", "64", "66"}
 VEST_LENGTHS = {"R"}  # set of 1 for now, ¯\_(ツ)_/¯
 VEST_SIZE_CODES = {
     "34": "2XS",
@@ -30,6 +30,7 @@ VEST_SIZE_CODES = {
     "60": "06X",
     "62": "06X",
     "64": "06X",
+    "66": "06X",
 }
 
 # pants
@@ -162,6 +163,10 @@ class SkuBuilder:
     def build(self, shopify_sku: str, size_model: SizeModel, measurement_model: MeasurementModel) -> Optional[str]:
         product_type = self.get_product_type_by_sku(shopify_sku)
 
+        if size_model:
+            self.__validate_size_model_correctness(size_model)
+            self.__handle_special_sizes(size_model)
+
         if product_type == ProductType.SUIT:
             return self.__build_suit_sku(shopify_sku, size_model)
         elif product_type == ProductType.JACKET:
@@ -204,48 +209,18 @@ class SkuBuilder:
 
         return ProductType.UNKNOWN
 
-    def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
-            return None
-
+    def __validate_size_model_correctness(self, size_model: SizeModel):
         if size_model.jacket_size not in JACKET_SIZES:
             raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
 
         if size_model.jacket_length not in JACKET_LENGTHS:
             raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
 
-        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
+        if size_model.shirt_neck_size not in SHIRT_NECK_SIZES:
+            raise ServiceError(f"Unsupported shirt neck size: {size_model.shirt_neck_size}")
 
-    def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for jacket SKU: {shopify_sku}")
-            return None
-
-        if size_model.jacket_size not in JACKET_SIZES:
-            raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
-
-        if size_model.jacket_length not in JACKET_LENGTHS:
-            raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
-
-        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
-
-    def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for vest SKU: {shopify_sku}")
-            return None
-
-        if size_model.vest_size not in VEST_SIZES:
-            raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
-
-        vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
-
-        return f"{shopify_sku}{vest_size_code}{size_model.vest_length}AF"
-
-    def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
-            return None
+        if size_model.shirt_sleeve_length not in SHIRT_SLEEVE_LENGTHS:
+            raise ServiceError(f"Unsupported shirt sleeve length: {size_model.shirt_sleeve_length}")
 
         if size_model.pant_size not in PANT_SIZES:
             raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
@@ -253,20 +228,66 @@ class SkuBuilder:
         if size_model.pant_length not in PANT_LENGTHS:
             raise ServiceError(f"Unsupported pant length: {size_model.pant_length}")
 
+        if size_model.vest_size not in VEST_SIZES:
+            raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
+
+    def __handle_special_sizes(self, size_model: SizeModel):
+        # special cases for jackets, suit and vest
+        if int(size_model.jacket_size) < 36 and size_model.jacket_length == "R":
+            size_model.jacket_size = "36"
+            size_model.jacket_length = "R"
+            size_model.vest_size = size_model.jacket_size
+        elif int(size_model.jacket_size) < 38 and size_model.jacket_length == "L":
+            size_model.jacket_size = "38"
+            size_model.jacket_length = "L"
+            size_model.vest_size = size_model.jacket_size
+        elif int(size_model.jacket_size) >= 50 and size_model.jacket_length == "X":
+            size_model.jacket_length = "L"
+        elif int(size_model.jacket_size) >= 54 and size_model.jacket_length == "S":
+            size_model.jacket_length = "R"
+
+        # special cases for shirts
+        if size_model.shirt_neck_size == "14" and size_model.shirt_sleeve_length == "34/35":
+            size_model.shirt_neck_size = "14.5"
+        elif size_model.shirt_neck_size in ["14", "14.5"] and size_model.shirt_sleeve_length == "36/37":
+            size_model.shirt_neck_size = "15.5"
+
+    def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
+            return None
+
+        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
+
+    def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
+            return None
+
+        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
+
+    def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
+            return None
+
+        vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
+
+        return f"{shopify_sku}{vest_size_code}{size_model.vest_length}AF"
+
+    def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+        if not size_model:
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
+            return None
+
         autofill_suffix = "AF" if int(size_model.jacket_size) - int(size_model.pant_size) == 6 else ""
 
         return f"{shopify_sku}{size_model.pant_size}{size_model.pant_length}{autofill_suffix}"
 
     def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
-
-        if size_model.shirt_neck_size not in SHIRT_NECK_SIZES:
-            raise ServiceError(f"Unsupported shirt neck size: {size_model.shirt_neck_size}")
-
-        if size_model.shirt_sleeve_length not in SHIRT_SLEEVE_LENGTHS:
-            raise ServiceError(f"Unsupported shirt sleeve length: {size_model.shirt_sleeve_length}")
 
         shirt_neck_size = SHIRT_NECK_SIZES_MAP.get(size_model.shirt_neck_size)
         shirt_length_code = SHIRT_SLEEVE_LENGTHS_MAP.get(size_model.shirt_sleeve_length)
@@ -281,11 +302,8 @@ class SkuBuilder:
 
     def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for pants SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
-
-        if size_model.pant_size not in PANT_SIZES:
-            raise ServiceError(f"Unsupported pant size for belt: {size_model.pant_size}")
 
         pant_size_num = int(size_model.pant_size)
 
@@ -298,7 +316,7 @@ class SkuBuilder:
 
     def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
         if not measurement_model:
-            logger.debug(f"Measurements not provided for pants SKU: {shopify_sku}")
+            logger.debug(f"Measurements not provided for SKU: {shopify_sku}")
             return None
 
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)

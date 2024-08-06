@@ -20,6 +20,7 @@ from server.database.models import (
     Product,
     Size,
     Measurement,
+    Address,
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
@@ -41,6 +42,7 @@ class BaseTestCase(TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
+        Address.query.delete()
         Discount.query.delete()
         Attendee.query.delete()
         Role.query.delete()

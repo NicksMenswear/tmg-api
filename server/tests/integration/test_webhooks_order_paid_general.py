@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 from parameterized import parameterized
 
-from server.database.models import Product
+from server.database.models import Product, Address
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -159,6 +159,16 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         response_order_item = response.json["order_items"][0]
         request_line_item = webhook_request["line_items"][0]
         self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
+
+        address = Address.query.filter(Address.user_id == user.id).first()
+        self.assertIsNotNone(address)
+        self.assertEqual(address.user_id, order.user_id)
+        self.assertEqual(address.address_line1, order.shipping_address_line1)
+        self.assertEqual(address.address_line2, order.shipping_address_line2)
+        self.assertEqual(address.city, order.shipping_city)
+        self.assertEqual(address.state, order.shipping_state)
+        self.assertEqual(address.zip_code, order.shipping_zip_code)
+        self.assertEqual(address.country, order.shipping_country)
 
     def test_order_sku_and_status_for_one_non_measurable_product(self):
         for product_type in ProductType:

@@ -1844,6 +1844,9 @@ components:
           format: date-time
           title: event_at
           type: string
+      required:
+        - name
+        - event_at
       title: Event
       type: object
     CreateLook:

@@ -94,4 +94,5 @@ class EventModel(CoreModel):
 
 
 class UpdateEventModel(EventRequestModel):
-    pass
+    name: Optional[str] = None
+    event_at: Optional[datetime] = None

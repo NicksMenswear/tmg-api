@@ -112,8 +112,10 @@ class EventService:
             raise DuplicateError("Event with the same details already exists.")
 
         try:
-            db_event.event_at = update_event.event_at
-            db_event.name = update_event.name
+            if update_event.name:
+                db_event.name = update_event.name
+            if update_event.event_at:
+                db_event.event_at = update_event.event_at
             db_event.updated_at = datetime.now()
 
             db.session.commit()

@@ -302,7 +302,10 @@ class TestSkuBuilder(unittest.TestCase):
     @parameterized.expand(
         [
             ["403A2BLK", "14", "34/35", "403A2BLK1455"],
-            ["403A2BLK", "15", "36/37", "403A2BLK1507"],
+            ["403A2BLK", "14", "36/37", "403A2BLK1557"],
+            ["403A2BLK", "14.5", "36/37", "403A2BLK1557"],
+            ["403A2BLK", "14 1/2", "36/37", "403A2BLK1557"],
+            ["403A2BLK", "15", "36/37", "403A2BLK1557"],
         ]
     )
     def test_special_cases_correctness_for_shirts(

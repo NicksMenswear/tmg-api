@@ -249,7 +249,7 @@ class SkuBuilder:
         # special cases for shirts
         if size_model.shirt_neck_size == "14" and size_model.shirt_sleeve_length == "34/35":
             size_model.shirt_neck_size = "14.5"
-        elif size_model.shirt_neck_size in ["14", "14.5"] and size_model.shirt_sleeve_length == "36/37":
+        elif size_model.shirt_neck_size in ["14", "14.5", "14 1/2", "15"] and size_model.shirt_sleeve_length == "36/37":
             size_model.shirt_neck_size = "15.5"
 
     def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:

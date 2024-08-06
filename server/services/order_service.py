@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from server.database.database_manager import db
-from server.database.models import Order, SourceType, Product, OrderItem, OrderType
+from server.database.models import Order, SourceType, Product, OrderItem, OrderType, Address
 from server.models.measurement_model import MeasurementModel
 from server.models.order_model import OrderModel, CreateOrderModel, CreateOrderItemModel, OrderItemModel
 from server.models.product_model import ProductModel
@@ -90,6 +90,17 @@ class OrderService:
                 meta=create_order.meta,
             )
             db.session.add(order)
+            address = Address(
+                user_id=create_order.user_id,
+                address_type="shipping",
+                address_line1=create_order.shipping_address.line1,
+                address_line2=create_order.shipping_address.line2,
+                city=create_order.shipping_address.city,
+                state=create_order.shipping_address.state,
+                zip_code=create_order.shipping_address.zip_code,
+                country=create_order.shipping_address.country,
+            )
+            db.session.add(address)
             db.session.commit()
             db.session.refresh(order)
         except Exception as e:

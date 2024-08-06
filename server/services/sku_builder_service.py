@@ -254,21 +254,21 @@ class SkuBuilder:
 
     def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
 
     def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
 
     def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
@@ -277,7 +277,7 @@ class SkuBuilder:
 
     def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         autofill_suffix = "AF" if int(size_model.jacket_size) - int(size_model.pant_size) == 6 else ""
@@ -286,7 +286,7 @@ class SkuBuilder:
 
     def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         shirt_neck_size = SHIRT_NECK_SIZES_MAP.get(size_model.shirt_neck_size)
@@ -302,7 +302,7 @@ class SkuBuilder:
 
     def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
-            logger.debug(f"Sizing not provided for suit SKU: {shopify_sku}")
+            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
         pant_size_num = int(size_model.pant_size)
@@ -316,7 +316,7 @@ class SkuBuilder:
 
     def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
         if not measurement_model:
-            logger.debug(f"Measurements not provided for pants SKU: {shopify_sku}")
+            logger.debug(f"Measurements not provided for SKU: {shopify_sku}")
             return None
 
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)

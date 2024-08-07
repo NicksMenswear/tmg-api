@@ -15,7 +15,7 @@ class CreateSizeRequestModel(CoreModel):
 class SizeModel(CoreModel):
     id: UUID
     user_id: UUID
-    measurement_id: UUID
+    measurement_id: Optional[UUID]
     data: List[Any]
     jacket_size: str
     jacket_length: str

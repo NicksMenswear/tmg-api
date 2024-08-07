@@ -303,6 +303,7 @@ def size_model(**data) -> SizeModel:
     return SizeModel(
         id=data.get("id", uuid.uuid4()),
         user_id=data.get("user_id", uuid.uuid4()),
+        measurement_id=data.get("measurement_id", uuid.uuid4()),
         data=data.get(
             "data",
             [

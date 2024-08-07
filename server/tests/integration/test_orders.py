@@ -115,10 +115,13 @@ class TestOrders(BaseTestCase):
     def test_update_order_skus_according_to_measurements_for_order_without_products(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
         )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement_model.id)
+        )
+
         order = self.order_service.create_order(
             fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
         )
@@ -134,10 +137,13 @@ class TestOrders(BaseTestCase):
     def test_update_order_status_if_shopify_sku_is_missing_but_measurements_provided(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
         )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement_model.id)
+        )
+
         order = self.order_service.create_order(
             fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
         )
@@ -154,9 +160,11 @@ class TestOrders(BaseTestCase):
     def test_update_order_status_if_shopify_sku_is_provided_but_invalid(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
+        )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement_model.id)
         )
         order = self.order_service.create_order(
             fixtures.create_order_request(
@@ -177,9 +185,11 @@ class TestOrders(BaseTestCase):
     def test_update_order_status_if_product_doesnt_require_measurements(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
+        )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement_model.id)
         )
         order = self.order_service.create_order(
             fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
@@ -206,9 +216,11 @@ class TestOrders(BaseTestCase):
     def test_update_order_status_if_product_requires_measurements(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        size_model = self.size_service.create_size(fixtures.store_size_request(user_id=user.id))
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(user_id=user.id)
+        )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement_model.id)
         )
         shopify_sku = self.get_random_shopify_sku_by_product_type(ProductType.PANTS)
         order = self.order_service.create_order(

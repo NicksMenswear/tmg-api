@@ -290,6 +290,7 @@ def store_size_request(**create_store_size_request) -> CreateSizeRequestModel:
     return CreateSizeRequestModel(
         **{
             "user_id": create_store_size_request.get("user_id"),
+            "measurement_id": create_store_size_request.get("measurement_id"),
             "data": create_store_size_request.get(
                 "data",
                 test_sizes(),

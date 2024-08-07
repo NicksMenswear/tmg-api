@@ -66,7 +66,7 @@ services:
     command: >
       bash -c "
       echo 'Waiting for up to 45 sec for app to start ...' &&
-      timeout 45 bash -c \"while ! curl -s -o /dev/null -H 'X-Api-Access-Token: Test123' -w '%{http_code}' 'http://app:8080/health' | grep -q 200; do
+      timeout 60 bash -c \"while ! curl -s -o /dev/null -H 'X-Api-Access-Token: Test123' -w '%{http_code}' 'http://app:8080/health' | grep -q 200; do
         sleep 1;
       done\""
     depends_on:

@@ -8,12 +8,14 @@ from server.models import CoreModel
 
 class CreateSizeRequestModel(CoreModel):
     user_id: UUID
+    measurement_id: UUID
     data: List[Any]
 
 
 class SizeModel(CoreModel):
     id: UUID
     user_id: UUID
+    measurement_id: Optional[UUID]
     data: List[Any]
     jacket_size: str
     jacket_length: str
@@ -47,6 +49,7 @@ class SizeModel(CoreModel):
         return cls(
             id=size.id,
             user_id=size.user_id,
+            measurement_id=size.measurement_id,
             data=size.data,
             created_at=size.created_at,
             updated_at=size.updated_at,

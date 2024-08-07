@@ -32,7 +32,11 @@ class SizeService:
 
     def create_size(self, create_size_request: CreateSizeRequestModel) -> SizeModel:
         try:
-            size = Size(user_id=create_size_request.user_id, data=create_size_request.data)
+            size = Size(
+                user_id=create_size_request.user_id,
+                measurement_id=create_size_request.measurement_id,
+                data=create_size_request.data,
+            )
 
             db.session.add(size)
             db.session.commit()

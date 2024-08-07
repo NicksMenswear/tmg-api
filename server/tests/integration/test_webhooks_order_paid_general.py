@@ -261,7 +261,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
         guest = self.user_service.create_user(fixtures.create_user_request())
-        self.size_service.create_size(fixtures.store_size_request(user_id=guest.id))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        self.size_service.create_size(fixtures.store_size_request(user_id=guest.id, measurement_id=measurement.id))
         self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=guest.id))
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=guest.id, event_id=event_id, email=guest.email)
@@ -306,18 +307,21 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        self.size_service.create_size(
-            fixtures.store_size_request(
-                user_id=attendee_user.id,
-                data=fixtures.test_sizes(),
-            )
-        )
-        self.measurement_service.create_measurement(
+
+        measurement = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(
                 user_id=attendee_user.id,
                 data=fixtures.test_measurements(),
             )
         )
+        self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                measurement_id=measurement.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
         )
@@ -356,18 +360,20 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
-        self.size_service.create_size(
-            fixtures.store_size_request(
-                user_id=attendee_user.id,
-                data=fixtures.test_sizes(),
-            )
-        )
-        self.measurement_service.create_measurement(
+        measurement = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(
                 user_id=attendee_user.id,
                 data=fixtures.test_measurements(),
             )
         )
+        self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                measurement_id=measurement.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
         )
@@ -432,18 +438,20 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
-        size_model = self.size_service.create_size(
-            fixtures.store_size_request(
-                user_id=attendee_user.id,
-                data=fixtures.test_sizes(),
-            )
-        )
         measurement_model = self.measurement_service.create_measurement(
             fixtures.store_measurement_request(
                 user_id=attendee_user.id,
                 data=fixtures.test_measurements(),
             )
         )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                measurement_id=measurement_model.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+
         self.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
         )

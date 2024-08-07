@@ -10,6 +10,7 @@ class TestSizes(BaseTestCase):
     def test_create_size(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
 
         # when
         response = self.client.open(
@@ -17,7 +18,10 @@ class TestSizes(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_size_request(user_id=user.id).model_dump(), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
         )
 
         # then
@@ -36,6 +40,7 @@ class TestSizes(BaseTestCase):
         attendee2 = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(email=user.email, event_id=str(event2.id))
         )
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
 
         # when
         response = self.client.open(
@@ -43,7 +48,10 @@ class TestSizes(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_size_request(user_id=user.id).model_dump(), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
         )
 
         # then
@@ -61,7 +69,8 @@ class TestSizes(BaseTestCase):
         owner = self.user_service.create_user(fixtures.create_user_request())
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
-        self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id)))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id), measurement_id=measurement.id))
 
         # when
         attendee = self.attendee_service.create_attendee(
@@ -77,7 +86,7 @@ class TestSizes(BaseTestCase):
     def test_create_size_for_and_there_is_pending_order(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
         order = self.order_service.create_order(
             fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
         )
@@ -93,7 +102,10 @@ class TestSizes(BaseTestCase):
             method="POST",
             headers=self.request_headers,
             content_type=self.content_type,
-            data=json.dumps(fixtures.store_size_request(user_id=user.id).model_dump(), cls=encoder.CustomJSONEncoder),
+            data=json.dumps(
+                fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
         )
 
         # then

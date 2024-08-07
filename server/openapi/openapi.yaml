@@ -2133,11 +2133,15 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+        measurement_id:
+          title: measurement_id
+          $ref: '#/components/schemas/uuid'
         data:
           title: data
           type: array
       required:
         - user_id
+        - measurement_id
         - data
       title: Size
       type: object

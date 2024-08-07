@@ -445,6 +445,7 @@ class Size(Base):
         nullable=False,
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    measurement_id = Column(UUID(as_uuid=True), ForeignKey("measurements.id"), nullable=True)
     data = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)

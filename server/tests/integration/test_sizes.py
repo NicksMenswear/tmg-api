@@ -70,7 +70,7 @@ class TestSizes(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
         measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
-        self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id, measurement_id=measurement.id)))
+        self.size_service.create_size(fixtures.store_size_request(user_id=str(user.id), measurement_id=measurement.id))
 
         # when
         attendee = self.attendee_service.create_attendee(

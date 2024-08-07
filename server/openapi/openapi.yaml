@@ -2141,6 +2141,7 @@ components:
           type: array
       required:
         - user_id
+        - measurement_id
         - data
       title: Size
       type: object

@@ -289,7 +289,6 @@ class AttendeeService:
     def _get_tracking_for_attendee(self, orders) -> List[TrackingModel]:
         shop_id = FlaskApp.current().online_store_shop_id
         tracking = []
-        print(orders)
         for order in orders:
             if not order:
                 continue

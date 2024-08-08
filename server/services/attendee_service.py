@@ -88,7 +88,6 @@ class AttendeeService:
             )
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())
-            .all()
         )
 
         if user_id is not None:

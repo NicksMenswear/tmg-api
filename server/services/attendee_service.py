@@ -3,6 +3,8 @@ import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
 
+from sqlalchemy import alias, and_
+
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User, Role, Look, Size, Order
 from server.flask_app import FlaskApp
@@ -64,14 +66,27 @@ class AttendeeService:
     def get_attendees_for_events(
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
-        query = (
-            db.session.query(Attendee, Event, User, Role, Look)
+
+        attendee_orders_subquery = (
+            db.session.query(Order)
+            .filter(Order.event_id == Attendee.event_id, Order.user_id == Attendee.user_id)
+            .subquery()
+        )
+        orders_alias = alias(Order, attendee_orders_subquery)
+
+        query = query = (
+            db.session.query(Attendee, Event, User, Role, Look, orders_alias)
             .join(Event, Event.id == Attendee.event_id)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
+            .outerjoin(
+                orders_alias,
+                and_(orders_alias.c.event_id == Attendee.event_id, orders_alias.c.user_id == Attendee.user_id),
+            )
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
-            .order_by(Attendee.created_at.asc())
+            .order_by(Attendee.created_at.asc(), orders_alias.c.created_at.asc())
+            .all()
         )
 
         if user_id is not None:
@@ -84,16 +99,16 @@ class AttendeeService:
 
         attendees = {}
 
-        attendee_ids = {attendee.id for attendee, _, _, _, _ in db_attendees}
+        attendee_ids = {attendee.id for attendee, _, _, _, _, _ in db_attendees}
 
         attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
 
-        for attendee, event, user, role, look in db_attendees:
+        for attendee, event, user, role, look, orders in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
             attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
-            attendee_tracking = self._get_tracking_for_attendee(attendee)
+            attendee_tracking = self._get_tracking_for_attendee(orders)
 
             attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
@@ -270,10 +285,9 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-    def _get_tracking_for_attendee(self, attendee: Attendee) -> List[TrackingModel]:
+    def _get_tracking_for_attendee(self, orders: List[Order]) -> List[TrackingModel]:
         shop_id = FlaskApp.current().online_store_shop_id
         tracking = []
-        orders = Order.query.filter(Order.event_id == attendee.event_id, Order.user_id == attendee.user_id).all()
         for order in orders:
             if order.outbound_tracking:
                 tracking_number = order.outbound_tracking

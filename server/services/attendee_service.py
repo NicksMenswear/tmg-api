@@ -85,7 +85,7 @@ class AttendeeService:
                 and_(orders_alias.c.event_id == Attendee.event_id, orders_alias.c.user_id == Attendee.user_id),
             )
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
-            .order_by(Attendee.created_at.asc(), orders_alias.c.created_at.asc())
+            .order_by(Attendee.created_at.asc())
             .all()
         )
 

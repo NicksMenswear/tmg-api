@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 from parameterized import parameterized
 
-from server.database.models import Product, Address
+from server.database.models import Product, Address, User
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -543,3 +543,79 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(len(order.products), 0)
         self.assertIsNone(order.order_items[0].product_id)
         self.assertEqual(order.order_items[0].shopify_sku, shopify_sku)
+
+    def test_order_user_phone_saved_into_user_that_had_no_phone(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request(phone_number=None))
+
+        # when
+        new_phone_number = utils.generate_phone_number()
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=user.email,
+            line_items=[
+                fixtures.webhook_shopify_line_item(sku=self.get_random_shopify_sku_by_product_type(ProductType.BOW_TIE))
+            ],
+            shipping_address_phone=new_phone_number,
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertEqual(order.user_id, user.id)
+        user = User.query.filter(User.id == user.id).first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.phone_number, new_phone_number)
+        self.assertTrue(new_phone_number in user.meta.get("phones"))
+
+    def test_order_user_phone_saved_into_user_that_already_had_phone(self):
+        # given
+        existing_phone_number = utils.generate_phone_number()
+        user = self.user_service.create_user(fixtures.create_user_request(phone_number=existing_phone_number))
+
+        # when
+        new_phone_number = utils.generate_phone_number()
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=user.email,
+            line_items=[
+                fixtures.webhook_shopify_line_item(sku=self.get_random_shopify_sku_by_product_type(ProductType.BOW_TIE))
+            ],
+            shipping_address_phone=new_phone_number,
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertEqual(order.user_id, user.id)
+        user = User.query.filter(User.id == user.id).first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.phone_number, new_phone_number)
+        self.assertTrue(existing_phone_number in user.meta.get("phones"))
+        self.assertTrue(new_phone_number in user.meta.get("phones"))
+
+    def test_order_user_used_same_phone(self):
+        # given
+        existing_phone_number = utils.generate_phone_number()
+        user = self.user_service.create_user(fixtures.create_user_request(phone_number=existing_phone_number))
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=user.email,
+            line_items=[
+                fixtures.webhook_shopify_line_item(sku=self.get_random_shopify_sku_by_product_type(ProductType.BOW_TIE))
+            ],
+            shipping_address_phone=existing_phone_number,
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertEqual(order.user_id, user.id)
+        user = User.query.filter(User.id == user.id).first()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.phone_number, existing_phone_number)

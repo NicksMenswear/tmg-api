@@ -162,7 +162,9 @@ def webhook_shopify_line_item(product_id=None, variant_id=None, sku=""):
     }
 
 
-def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=None, line_items=None, event_id=None):
+def webhook_shopify_paid_order(
+    customer_email=None, customer_id=None, discounts=None, line_items=None, event_id=None, shipping_address_phone=None
+):
     order = {
         "id": random.randint(1000, 1000000),
         "discount_codes": [] if not discounts else [{"code": discount} for discount in discounts],
@@ -178,6 +180,7 @@ def webhook_shopify_paid_order(customer_email=None, customer_id=None, discounts=
             "province": "Province",
             "zip": "12345",
             "country": "US",
+            "phone": shipping_address_phone,
         },
         "line_items": [] if not line_items else line_items,
     }

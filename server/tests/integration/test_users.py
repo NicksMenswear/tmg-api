@@ -669,6 +669,7 @@ class TestUsers(BaseTestCase):
         [
             ["Alejandro", "Muñoz Mendieta"],
             ["Hannah & Gabriel", "Geiger"],
+            ["De’Aveone", "Smith"],
         ]
     )
     def test_create_with_special_characters(self, first_name, last_name):

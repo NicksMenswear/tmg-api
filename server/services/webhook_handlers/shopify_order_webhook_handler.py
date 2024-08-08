@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 from server.database.models import SourceType, OrderType
 from server.models.order_model import AddressModel, CreateOrderModel, CreateOrderItemModel
 from server.models.product_model import CreateProductModel, ProductModel
+from server.models.user_model import UserModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
@@ -163,11 +164,21 @@ class ShopifyWebhookOrderHandler:
 
         return used_discount_codes
 
+    def __update_user_phone_from_last_order(self, user: UserModel, phone: str):
+        if not phone:
+            return
+
+        if user.phone_number == phone:
+            return
+
+        self.user_service.update_user_phone(user.id, phone)
+
     def __process_paid_order(self, webhook_id: uuid.UUID, payload: Dict[str, Any]):
         shopify_order_number = payload.get("order_number")
         items = payload.get("line_items")
 
         shopify_customer_email = payload.get("customer").get("email")
+        shopify_customer_shipping_phone = payload.get("shipping_address").get("phone")
 
         try:
             user = self.user_service.get_user_by_email(shopify_customer_email)
@@ -176,6 +187,7 @@ class ShopifyWebhookOrderHandler:
                 f"No user found for email '{shopify_customer_email}'. Processing order via webhook: {payload}"
             )
 
+        self.__update_user_phone_from_last_order(user, shopify_customer_shipping_phone)
         self.__process_used_discount_code(payload)
         self.__track_swatch_orders(user, payload)
 

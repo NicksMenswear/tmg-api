@@ -72,6 +72,7 @@ plugins:
   - serverless-plugin-datadog
   - serverless-plugin-resource-tagging
   - serverless-plugin-lambda-insights
+  - serverless-plugin-log-retention
 
 custom:
   stageVars:
@@ -101,7 +102,9 @@ custom:
 
   lambdaInsights:
     # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html 
-    lambdaInsightsVersion: 52
+    lambdaInsightsVersion: 53
+
+  logRetentionInDays: 30
 
   pythonRequirements:
     dockerizePip: true

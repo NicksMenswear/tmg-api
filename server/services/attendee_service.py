@@ -72,17 +72,19 @@ class AttendeeService:
             .filter(Order.event_id == Attendee.event_id, Order.user_id == Attendee.user_id)
             .subquery()
         )
-        orders_alias = alias(Order, attendee_orders_subquery)
 
         query = query = (
-            db.session.query(Attendee, Event, User, Role, Look, orders_alias)
+            db.session.query(Attendee, Event, User, Role, Look, attendee_orders_subquery)
             .join(Event, Event.id == Attendee.event_id)
             .join(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .outerjoin(
-                orders_alias,
-                and_(orders_alias.c.event_id == Attendee.event_id, orders_alias.c.user_id == Attendee.user_id),
+                attendee_orders_subquery,
+                and_(
+                    attendee_orders_subquery.c.event_id == Attendee.event_id,
+                    attendee_orders_subquery.c.user_id == Attendee.user_id,
+                ),
             )
             .filter(Attendee.event_id.in_(event_ids), Attendee.is_active)
             .order_by(Attendee.created_at.asc())

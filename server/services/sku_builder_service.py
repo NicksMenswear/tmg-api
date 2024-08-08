@@ -8,7 +8,14 @@ from server.services import ServiceError
 
 # jackets
 JACKET_SIZES = {"34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "62", "64", "66"}
-JACKET_LENGTHS = {"S", "R", "L", "X"}
+JACKET_LENGTHS = {"S", "R", "L", "X", "XL"}
+JACKET_LENGTHS_MAP = {
+    "S": "S",
+    "R": "R",
+    "L": "L",
+    "X": "X",
+    "XL": "X",
+}
 
 # vests
 VEST_SIZES = {"34", "36", "38", "40", "42", "44", "46", "48", "50", "52", "54", "56", "58", "60", "62", "64", "66"}
@@ -241,7 +248,9 @@ class SkuBuilder:
             size_model.jacket_size = "38"
             size_model.jacket_length = "L"
             size_model.vest_size = size_model.jacket_size
-        elif int(size_model.jacket_size) >= 50 and size_model.jacket_length == "X":
+        elif int(size_model.jacket_size) >= 50 and (
+            size_model.jacket_length == "X" or size_model.jacket_length == "XL"
+        ):
             size_model.jacket_length = "L"
         elif int(size_model.jacket_size) >= 54 and size_model.jacket_length == "S":
             size_model.jacket_length = "R"
@@ -257,14 +266,18 @@ class SkuBuilder:
             logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
-        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}"
+        jacket_length_code = JACKET_LENGTHS_MAP.get(size_model.jacket_length)
+
+        return f"{shopify_sku}{size_model.jacket_size}{jacket_length_code}"
 
     def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:
             logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
             return None
 
-        return f"{shopify_sku}{size_model.jacket_size}{size_model.jacket_length}AF"
+        jacket_length_code = JACKET_LENGTHS_MAP.get(size_model.jacket_length)
+
+        return f"{shopify_sku}{size_model.jacket_size}{jacket_length_code}AF"
 
     def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
         if not size_model:

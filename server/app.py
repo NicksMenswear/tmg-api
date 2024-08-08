@@ -103,6 +103,10 @@ def init_app(is_testing=False):
 
 def init_services(app, is_testing=False):
     app.stage = os.getenv("STAGE", "dev")
+    app.online_store_sales_channel_id = os.getenv(
+        "online_store_sales_channel_id", "gid://shopify/Publication/94480072835"
+    )
+    app.online_store_shop_id = os.getenv("online_store_shop_id", "56965365891")
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
@@ -129,8 +133,6 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
-    app.online_store_sales_channel_id = app.shopify_service.get_online_store_sales_channel_id()
-    app.online_store_shop_id = app.shopify_service.get_online_store_shop_id()
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
     app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(

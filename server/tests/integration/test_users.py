@@ -4,6 +4,8 @@ import json
 import random
 import uuid
 
+from parameterized import parameterized
+
 from server import encoder
 from server.database.models import DiscountType
 from server.models.event_model import EventUserStatus
@@ -663,7 +665,13 @@ class TestUsers(BaseTestCase):
         # then
         self.assertStatus(response, 400)
 
-    def test_create_spanish_user(self):
+    @parameterized.expand(
+        [
+            ["Alejandro", "Muñoz Mendieta"],
+            ["Hannah & Gabriel", "Geiger"],
+        ]
+    )
+    def test_create_with_special_characters(self, first_name, last_name):
         # when
         response = self.client.open(
             "/users",
@@ -671,8 +679,8 @@ class TestUsers(BaseTestCase):
             method="POST",
             data=json.dumps(
                 {
-                    "first_name": "Alejandro",
-                    "last_name": "Muñoz Mendieta",
+                    "first_name": first_name,
+                    "last_name": last_name,
                     "email": "test@example.com",
                 },
                 cls=encoder.CustomJSONEncoder,

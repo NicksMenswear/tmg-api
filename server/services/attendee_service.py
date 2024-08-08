@@ -290,6 +290,8 @@ class AttendeeService:
         shop_id = FlaskApp.current().online_store_shop_id
         tracking = []
         for order in orders:
+            if not order:
+                continue
             if order.outbound_tracking:
                 tracking_number = order.outbound_tracking
                 if STAGE == "prd":

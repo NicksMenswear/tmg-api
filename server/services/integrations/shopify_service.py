@@ -149,8 +149,8 @@ class FakeShopifyService(AbstractShopifyService):
     def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
         result = {}
 
-        for variant_id in variant_ids:
-            result[variant_id] = self.shopify_variants.get(variant_id).variant_price
+        # for variant_id in variant_ids:
+        #     result[variant_id] = self.shopify_variants.get(variant_id).variant_price
 
         return result
 

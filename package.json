@@ -2,6 +2,7 @@
   "devDependencies": {
     "serverless-domain-manager": "^7.3.3",
     "serverless-plugin-datadog": "^5.60.0",
+    "serverless-plugin-log-retention": "^2.0.0",
     "serverless-python-requirements": "^6.1.0"
   },
   "dependencies": {

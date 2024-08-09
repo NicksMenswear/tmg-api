@@ -18,8 +18,8 @@ class UserRequestModel(CoreModel):
     @field_validator("first_name", "last_name")
     @classmethod
     def name_length_and_characters(cls, v):
-        if len(v) < 2 or len(v) > 50:
-            raise ValueError("Name must be between 2 and 50 characters long")
+        if len(v) < 1 or len(v) > 63:
+            raise ValueError("Name must be between 1 and 63 characters long")
 
         if not re.match(r"^[\w\s\-'.À-ÖØ-öø-ÿĀ-ſ&’]+$", v, re.UNICODE):
             raise ValueError("Name must contain only alphabetic characters, spaces, dashes, apostrophes, or periods")

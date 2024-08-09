@@ -666,7 +666,12 @@ class TestUsers(BaseTestCase):
         self.assertStatus(response, 400)
 
     @parameterized.expand(
-        [["Alejandro", "Muñoz Mendieta"], ["Hannah & Gabriel", "Geiger"], ["De’Aveone", "Smith"], ["A", "B"]]
+        [
+            ["Alejandro", "Muñoz Mendieta"],
+            ["Hannah & Gabriel", "Geiger"],
+            ["De’Aveone", "Smith"],
+            ["A", "B"],
+        ]
     )
     def test_create_with_special_characters(self, first_name, last_name):
         # when

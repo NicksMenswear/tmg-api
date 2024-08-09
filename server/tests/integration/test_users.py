@@ -613,7 +613,7 @@ class TestUsers(BaseTestCase):
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(
-                {"first_name": "a", "last_name": "abcd", "email": "test@example.com"},
+                {"first_name": "", "last_name": "abcd", "email": "test@example.com"},
                 cls=encoder.CustomJSONEncoder,
             ),
             headers=self.request_headers,
@@ -666,11 +666,7 @@ class TestUsers(BaseTestCase):
         self.assertStatus(response, 400)
 
     @parameterized.expand(
-        [
-            ["Alejandro", "Muñoz Mendieta"],
-            ["Hannah & Gabriel", "Geiger"],
-            ["De’Aveone", "Smith"],
-        ]
+        [["Alejandro", "Muñoz Mendieta"], ["Hannah & Gabriel", "Geiger"], ["De’Aveone", "Smith"], ["A", "B"]]
     )
     def test_create_with_special_characters(self, first_name, last_name):
         # when

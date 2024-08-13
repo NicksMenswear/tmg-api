@@ -22,7 +22,7 @@ class ShopifyWebhookUserHandler:
         first_name = payload.get("first_name") or self.__get_name_from_email(email)
         last_name = payload.get("last_name") or self.__get_name_from_email(email)
         state = payload.get("state")
-        phone = payload.get("phone")
+        phone = payload.get("phone") or payload.get("default_address", {}).get("phone")
 
         try:
             user = self.user_service.get_user_by_shopify_id(shopify_id)  # first search by shopify_id

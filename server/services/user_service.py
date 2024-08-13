@@ -129,41 +129,6 @@ class UserService:
 
         return UserModel.from_orm(user)
 
-    def update_user_phone(self, user_id: uuid.UUID, phone_number: str) -> UserModel:
-        user: User = User.query.filter_by(id=user_id).first()
-
-        if not user:
-            raise NotFoundError("User not found.")
-
-        try:
-            current_phone_number = user.phone_number
-            current_meta = user.meta.copy()
-            phones = set(current_meta.get("phones", []))
-
-            if current_phone_number and current_phone_number not in phones:  # backfill old phone numbers
-                if not current_meta.get("phones"):
-                    current_meta["phones"] = []
-
-                current_meta["phones"].append(current_phone_number)
-
-            if phone_number and phone_number not in phones:  # add new phone number
-                if not current_meta.get("phones"):
-                    current_meta["phones"] = []
-
-                current_meta["phones"].append(phone_number)
-
-            user.phone_number = phone_number
-            user.meta = current_meta
-            user.updated_at = datetime.now()
-
-            db.session.commit()
-            db.session.refresh(user)
-        except Exception as e:
-            logger.exception(e)
-            raise ServiceError("Failed to update user.", e)
-
-        return UserModel.from_orm(user)
-
     def set_size(self, user_id: uuid.UUID) -> None:
         attendees = Attendee.query.filter(Attendee.user_id == user_id).all()
 

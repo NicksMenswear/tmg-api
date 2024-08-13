@@ -208,6 +208,7 @@ def apply_discounts_request(**apply_discounts_data):
     return ApplyDiscountModel(
         event_id=apply_discounts_data.get("event_id", uuid.uuid4()),
         shopify_cart_id=apply_discounts_data.get("shopify_cart_id", str(uuid.uuid4())),
+        bundle_variant_id=apply_discounts_data.get("bundle_variant_id", str(random.randint(1000, 1000000))),
     )
 
 

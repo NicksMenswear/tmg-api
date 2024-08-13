@@ -2111,6 +2111,15 @@ components:
         shopify_cart_id:
           title: shopify_cart_id
           type: string
+        event_id:
+          title: event_id
+          type: string
+          $ref: '#/components/schemas/uuid'
+          nullable: true
+        bundle_variant_id:
+          title: bundle_variant_id
+          type: string
+          nullable: true
       required:
         - shopify_cart_id
 

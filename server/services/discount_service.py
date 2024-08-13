@@ -506,11 +506,36 @@ class DiscountService:
 
         return DiscountModel.from_orm(discount)
 
-    def apply_discounts(self, attendee_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
+    def apply_discounts(
+        self,
+        attendee_id: uuid.UUID,
+        shopify_cart_id: str,
+        event_id: Optional[uuid.UUID] = None,
+        bundle_variant_id: Optional[str] = None,
+    ) -> List[str]:
         attendee = self.attendee_service.get_attendee_by_id(attendee_id)
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
+
+        if not attendee.look_id:
+            logger.warning(f"Attendee {attendee_id} has no look associated")
+            return []
+
+        if not event_id or not bundle_variant_id:
+            logger.warning(f"No discounts for if event or bundle is not provided")
+            return []
+
+        if attendee.event_id != event_id:
+            logger.warning(f"Attendee {attendee_id} is not part of event {event_id}")
+            return []
+
+        look = self.look_service.get_look_by_id(attendee.look_id)
+        look_bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+
+        if look_bundle_variant_id != bundle_variant_id:
+            logger.warning(f"Attendee {attendee_id} look is not associated with bundle {bundle_variant_id}")
+            return []
 
         discounts = self.user_service.get_gift_paid_but_not_used_discounts(attendee_id)
         num_attendees = self.attendee_service.get_num_discountable_attendees_for_event(attendee.event_id)

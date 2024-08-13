@@ -49,8 +49,9 @@ class DiscountModel(CoreModel):
 
 
 class ApplyDiscountModel(CoreModel):
-    event_id: UUID
     shopify_cart_id: str
+    event_id: Optional[UUID]
+    bundle_variant_id: Optional[str]
 
 
 class DiscountLookModel(CoreModel):

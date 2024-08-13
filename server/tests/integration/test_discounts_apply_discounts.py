@@ -101,7 +101,11 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=look.product_specs.get("bundle").get("variant_id"),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -153,7 +157,11 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=look.product_specs.get("bundle").get("variant_id"),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -216,7 +224,10 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id, bundle_variant_id=look.product_specs.get("bundle").get("variant_id")
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -279,7 +290,11 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=look1.product_specs.get("bundle").get("variant_id"),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -347,7 +362,11 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=look1.product_specs.get("bundle").get("variant_id"),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -427,7 +446,11 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             headers=self.request_headers,
             content_type=self.content_type,
             data=json.dumps(
-                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=look.product_specs.get("bundle").get("variant_id"),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
             ),
         )
 
@@ -435,3 +458,268 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
         self.assertEqual(set(response.json), {discount1.shopify_discount_code, discount2.shopify_discount_code})
+
+    def test_apply_without_event_associated(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        already_used_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(
+                    event_id=None,
+                    bundle_variant_id=None,
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)
+
+    def test_apply_with_different_event_associated(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        event2 = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        already_used_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(
+                    event_id=event2.id,
+                    bundle_variant_id=None,
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)
+
+    def test_apply_without_bundle(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        already_used_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=None,
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)
+
+    def test_apply_with_bundle_that_does_not_belong_to_attendee_look(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee_user = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        discount1 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        discount2 = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        already_used_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(100, 400),
+            DiscountType.GIFT,
+            True,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(
+                    event_id=event.id,
+                    bundle_variant_id=str(random.randint(100000, 1000000)),
+                ).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)

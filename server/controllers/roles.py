@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from server.controllers.util import hmac_verification, error_handler
+from server.controllers.util import hmac_verification, error_handler, log_request
 from server.flask_app import FlaskApp
 from server.models.role_model import UpdateRoleModel, CreateRoleModel
 
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
+@log_request
 def create_role(create_role):
     role_service = FlaskApp.current().role_service
 
@@ -20,6 +21,7 @@ def create_role(create_role):
 
 @hmac_verification
 @error_handler
+@log_request
 def get_role_by_id(role_id):
     role_service = FlaskApp.current().role_service
 
@@ -30,6 +32,7 @@ def get_role_by_id(role_id):
 
 @hmac_verification
 @error_handler
+@log_request
 def update_role(role_id, update_role):
     role_service = FlaskApp.current().role_service
 
@@ -40,6 +43,7 @@ def update_role(role_id, update_role):
 
 @hmac_verification
 @error_handler
+@log_request
 def delete_role(role_id):
     role_service = FlaskApp.current().role_service
 

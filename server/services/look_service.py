@@ -45,30 +45,13 @@ class LookService:
             for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
 
-        bundle_variants = set()
-
         for look_model in look_models:
-            bundle_variant_id = look_model.product_specs.get("bundle", {}).get("variant_id")
-
-            if bundle_variant_id:
-                bundle_variants.add(bundle_variant_id)
-
-        if bundle_variants:
-            bundle_variants_with_prices = self.shopify_service.get_variant_prices(list(bundle_variants))
-
-            for look_model in look_models:
-                bundle_variant_id = look_model.product_specs.get("bundle", {}).get("variant_id")
-                look_model.price = bundle_variants_with_prices.get(bundle_variant_id, 0.0) if bundle_variant_id else 0.0
+            look_model.price = self.get_look_price(look_model)
 
         return look_models
 
     def get_look_price(self, look) -> float:
-        bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-
-        if not bundle_variant_id:
-            return 0.0
-
-        return self.shopify_service.get_variant_prices([bundle_variant_id])[bundle_variant_id]
+        return look.product_specs.get("bundle", {}).get("variant_price")
 
     def __persist_new_look_to_db(self, create_look: CreateLookModel) -> Look:
         look = Look(

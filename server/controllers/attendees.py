@@ -4,7 +4,7 @@ import uuid
 from flask import request
 
 from server.controllers import FORCE_DELETE_HEADER
-from server.controllers.util import hmac_verification, error_handler
+from server.controllers.util import hmac_verification, error_handler, log_request
 from server.flask_app import FlaskApp
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
+@log_request
 def get_attendee_by_id(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
@@ -23,6 +24,7 @@ def get_attendee_by_id(attendee_id):
 
 @hmac_verification
 @error_handler
+@log_request
 def create_attendee(create_attendee):
     attendee_service = FlaskApp.current().attendee_service
 
@@ -33,6 +35,7 @@ def create_attendee(create_attendee):
 
 @hmac_verification
 @error_handler
+@log_request
 def update_attendee(attendee_id, update_attendee):
     attendee_service = FlaskApp.current().attendee_service
 
@@ -43,6 +46,7 @@ def update_attendee(attendee_id, update_attendee):
 
 @hmac_verification
 @error_handler
+@log_request
 def delete_attendee(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
@@ -54,6 +58,7 @@ def delete_attendee(attendee_id):
 
 @hmac_verification
 @error_handler
+@log_request
 def send_invites(attendee_ids):
     attendee_service = FlaskApp.current().attendee_service
 
@@ -65,6 +70,7 @@ def send_invites(attendee_ids):
 
 @hmac_verification
 @error_handler
+@log_request
 def apply_discounts(attendee_id, apply_discounts_request):
     discount_service = FlaskApp.current().discount_service
 

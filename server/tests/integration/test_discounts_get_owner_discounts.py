@@ -354,9 +354,9 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user1.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look1.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look1.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look1.name, product_specs=look1.product_specs)
+        self.app.look_service.update_look(look1.id, update_look_model)
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=attendee_user2.id, product_specs=self.create_look_test_product_specs())
         )
@@ -617,9 +617,9 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user1.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look1.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look1.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look1.name, product_specs=look1.product_specs)
+        self.app.look_service.update_look(look1.id, update_look_model)
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=attendee_user2.id, product_specs=self.create_look_test_product_specs())
         )
@@ -681,9 +681,9 @@ class TestDiscountsGetOwnerDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user1.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look1.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look1.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look1.name, product_specs=look1.product_specs)
+        self.app.look_service.update_look(look1.id, update_look_model)
         look2 = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=attendee_user2.id, product_specs=self.create_look_test_product_specs())
         )

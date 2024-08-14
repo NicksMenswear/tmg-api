@@ -39,6 +39,7 @@ def test_create_delete_looks(page: Page):
 def test_add_look_to_cart_from_looks_page(page: Page):
     look_name = utils.generate_look_name()
 
+    api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")

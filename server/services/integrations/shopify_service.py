@@ -4,7 +4,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Dict
+from typing import List, Optional
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -53,10 +53,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def delete_product(self, product_id):
-        pass
-
-    @abstractmethod
-    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
         pass
 
     @abstractmethod
@@ -145,14 +141,6 @@ class FakeShopifyService(AbstractShopifyService):
 
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
-
-    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
-        result = {}
-
-        for variant_id in variant_ids:
-            result[variant_id] = self.shopify_variants.get(variant_id).variant_price
-
-        return result
 
     def delete_product(self, product_id):
         pass
@@ -559,47 +547,6 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def get_variant_prices(self, variant_ids: List[str]) -> Dict[str, float]:
-        if not variant_ids:
-            return {}
-
-        ids_query = ", ".join(
-            [f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids if variant_id]
-        )
-
-        query = f"""
-        {{
-          nodes(ids: [{ids_query}]) {{
-            ... on ProductVariant {{
-              id
-              price
-            }}
-          }}
-        }}
-        """
-
-        status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get prices for {variant_ids} in shopify store. {body['errors']}")
-
-        variants_with_prices = {}
-
-        for variant in body["data"]["nodes"]:
-            if not variant or "id" not in variant or "price" not in variant:
-                continue
-
-            variants_with_prices[variant["id"].removeprefix("gid://shopify/ProductVariant/")] = float(variant["price"])
-
-        return variants_with_prices
-
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
         if not variant_ids:
             return []
@@ -659,7 +606,7 @@ class ShopifyService(AbstractShopifyService):
 
         return variants
 
-    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
+    def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
         query = f"""
         {{
           productVariants(first: 1, query: "sku:{sku}") {{

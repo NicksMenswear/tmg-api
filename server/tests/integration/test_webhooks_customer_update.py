@@ -86,6 +86,37 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
         self.assertEqual(user.shopify_id, str(webhook_customer["id"]))
         self.assertEqual(user.account_status, webhook_customer["state"] == "enabled")
 
+    def test_customers_update_event_user_phone_from_default_address(self):
+        # given
+        user = self.user_service.create_user(
+            fixtures.create_user_request(
+                shopify_id=str(random.randint(1000, 1000000)), phone_number=utils.generate_phone_number()
+            )
+        )
+
+        # when
+        new_phone_number = str(random.randint(1000000000, 9999999999))
+        webhook_customer = fixtures.webhook_customer_update(
+            shopify_id=int(user.shopify_id),
+            email=f"new-{user.email}",
+            phone=None,
+            account_status=not user.account_status,
+            default_address={"phone": new_phone_number},
+        )
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        user = self.user_service.get_user_by_email(webhook_customer["email"])
+
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, webhook_customer["email"])
+        self.assertEqual(user.phone_number, new_phone_number)
+        self.assertEqual(user.first_name, webhook_customer["first_name"])
+        self.assertEqual(user.last_name, webhook_customer["last_name"])
+        self.assertEqual(user.shopify_id, str(webhook_customer["id"]))
+        self.assertEqual(user.account_status, webhook_customer["state"] == "enabled")
+
     def test_customers_update_customer_by_email_with_shopify_id(self):
         # given
         create_user = fixtures.create_user_request()

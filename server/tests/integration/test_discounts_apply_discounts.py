@@ -67,9 +67,9 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -121,9 +121,9 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
@@ -243,9 +243,9 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
         # hack to reduce price of the look so smaller discount is applied
-        self.shopify_service.shopify_variants.get(
-            look1.product_specs["bundle"]["variant_id"]
-        ).variant_price = random.randint(200, 299)
+        look1.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look1.name, product_specs=look1.product_specs)
+        self.app.look_service.update_look(look1.id, update_look_model)
         attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
         attendee1 = self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(

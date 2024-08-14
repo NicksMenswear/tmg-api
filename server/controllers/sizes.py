@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from server.controllers.util import hmac_verification, error_handler
+from server.controllers.util import hmac_verification, error_handler, log_request
 from server.flask_app import FlaskApp
 from server.models.size_model import CreateSizeRequestModel
 
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
+@log_request
 def create(data):
     sizing_service = FlaskApp.current().size_service
     order_service = FlaskApp.current().order_service
@@ -22,6 +23,7 @@ def create(data):
 
 @hmac_verification
 @error_handler
+@log_request
 def get_latest_size(user_id):
     sizing_service = FlaskApp.current().size_service
 

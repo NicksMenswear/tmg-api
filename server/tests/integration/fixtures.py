@@ -192,7 +192,13 @@ def webhook_shopify_paid_order(
 
 
 def webhook_customer_update(
-    shopify_id=None, email: str = None, first_name=None, last_name=None, account_status=True, phone=None
+    shopify_id=None,
+    email: str = None,
+    first_name=None,
+    last_name=None,
+    account_status=True,
+    phone=None,
+    default_address=None,
 ):
     return {
         "id": shopify_id if shopify_id else random.randint(1000, 1000000),
@@ -200,7 +206,8 @@ def webhook_customer_update(
         "first_name": first_name if first_name else utils.generate_unique_name(),
         "last_name": last_name if last_name else utils.generate_unique_name(),
         "state": "enabled" if account_status else "disabled",
-        "phone": phone if phone else "",
+        "phone": phone if phone else None,
+        "default_address": default_address if default_address else {},
     }
 
 

@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from server.controllers.util import hmac_verification, error_handler
+from server.controllers.util import hmac_verification, error_handler, log_request
 from server.flask_app import FlaskApp
 from server.models.discount_model import CreateDiscountIntent
 
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
+@log_request
 def get_owner_discounts_for_event(event_id):
     discount_service = FlaskApp.current().discount_service
 
@@ -20,6 +21,7 @@ def get_owner_discounts_for_event(event_id):
 
 @hmac_verification
 @error_handler
+@log_request
 def create_discount_intents(event_id, intents):
     discount_service = FlaskApp.current().discount_service
 

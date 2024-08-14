@@ -191,20 +191,16 @@ class DiscountService:
                 owner_discount.remaining_amount -= gift_code.amount
 
     def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
-        look_bundle_ids = set()
+        look_bundle_prices: Dict[str, float] = dict()
 
         for _, _, look in users_attendees_looks:
             if not look or not look.product_specs:
                 continue
 
             bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+            look_bundle_prices[bundle_variant_id] = self.look_service.get_look_price(look)
 
-            if not bundle_variant_id:
-                continue
-
-            look_bundle_ids.add(bundle_variant_id)
-
-        return self.shopify_service.get_variant_prices(list(look_bundle_ids))
+        return look_bundle_prices
 
     def __enrich_owner_discounts_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
         discount_intents = Discount.query.filter(
@@ -340,15 +336,18 @@ class DiscountService:
 
         for intent in discount_intents:
             attendee = attendees.get(intent.attendee_id)
-            attendee_discounts = self.__filter_attendee_discounts(existing_discounts, attendee.id)
             look = self.look_service.get_look_by_id(attendee.look_id)
             look_price = self.look_service.get_look_price(look)
 
             already_paid_discount_amount = 0
 
-            if attendee_discounts:
-                for attendee_discount in attendee_discounts:
-                    already_paid_discount_amount += attendee_discount.amount
+            for discount in existing_discounts:
+                if (
+                    discount.attendee_id == attendee.id
+                    and discount.shopify_discount_code is not None
+                    and discount.type == DiscountType.GIFT
+                ):
+                    already_paid_discount_amount += discount.amount
 
             tmg_group_discount = 0
 
@@ -442,9 +441,6 @@ class DiscountService:
             for discount in discounts
             if not discount.shopify_discount_code and discount.type == DiscountType.GIFT
         ]
-
-    def __filter_attendee_discounts(self, discounts: List[Discount], attendee_id: uuid.UUID):
-        return [discount for discount in discounts if discount.attendee_id == attendee_id]
 
     def add_code_to_discount(self, discount_id: uuid.UUID, shopify_discount_id: uuid.UUID, code: str) -> DiscountModel:
         discount = self.get_discount_by_id(discount_id)

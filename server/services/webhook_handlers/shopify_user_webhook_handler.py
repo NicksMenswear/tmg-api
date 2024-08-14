@@ -22,7 +22,7 @@ class ShopifyWebhookUserHandler:
         first_name = payload.get("first_name") or self.__get_name_from_email(email)
         last_name = payload.get("last_name") or self.__get_name_from_email(email)
         state = payload.get("state")
-        phone = payload.get("phone")
+        phone = payload.get("phone") or payload.get("default_address", {}).get("phone")
 
         try:
             user = self.user_service.get_user_by_shopify_id(shopify_id)  # first search by shopify_id
@@ -41,7 +41,7 @@ class ShopifyWebhookUserHandler:
                     first_name=first_name,
                     last_name=last_name,
                     account_status=True if state == "enabled" else False,
-                    phone_number=str(phone),
+                    phone_number=str(phone) if phone else None,
                 )
             )
 
@@ -51,7 +51,7 @@ class ShopifyWebhookUserHandler:
             or email != user.email
             or first_name != user.first_name
             or last_name != user.last_name
-            or str(phone) != user.phone_number
+            or phone != user.phone_number
             or (state == "enabled" and not user.account_status)
         ):
             updated_user = self.user_service.update_user(

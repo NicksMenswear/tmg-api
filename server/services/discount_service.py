@@ -191,20 +191,16 @@ class DiscountService:
                 owner_discount.remaining_amount -= gift_code.amount
 
     def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
-        look_bundle_ids = set()
+        look_bundle_prices: Dict[str, float] = dict()
 
         for _, _, look in users_attendees_looks:
             if not look or not look.product_specs:
                 continue
 
             bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+            look_bundle_prices[bundle_variant_id] = self.look_service.get_look_price(look)
 
-            if not bundle_variant_id:
-                continue
-
-            look_bundle_ids.add(bundle_variant_id)
-
-        return self.shopify_service.get_variant_prices(list(look_bundle_ids))
+        return look_bundle_prices
 
     def __enrich_owner_discounts_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
         discount_intents = Discount.query.filter(

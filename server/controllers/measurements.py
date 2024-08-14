@@ -1,6 +1,6 @@
 import logging
 
-from server.controllers.util import hmac_verification, error_handler
+from server.controllers.util import hmac_verification, error_handler, log_request
 from server.flask_app import FlaskApp
 from server.models.measurement_model import CreateMeasurementsRequestModel
 
@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
+@log_request
 def create(data):
     measurement_service = FlaskApp.current().measurement_service
 

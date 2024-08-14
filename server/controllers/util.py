@@ -155,12 +155,6 @@ def log_request(func):
     def wrapper(*args, **kwargs):
         logger.debug(f"Request url: {request.url}")
 
-        if request.args:
-            logger.debug(f"Query Parameters: {dict(request.args)}")
-
-        if request.data:
-            logger.debug(f"Raw Data: {request.data.decode('utf-8')}")
-
         if kwargs:
             logger.debug(f"Parameters: {kwargs}")
 

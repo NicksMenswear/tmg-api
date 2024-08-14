@@ -39,14 +39,10 @@ def test_create_delete_looks(page: Page):
 def test_add_look_to_cart_from_looks_page(page: Page):
     look_name = utils.generate_look_name()
 
-    api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
     api.delete_all_looks(user_id)
-    verify.no_upcoming_events_visible(page)
-    # To keep looks "Add Suit To Cart" without button the "Get Started" wizard.
-    actions.create_new_event(page, "Stub Event")
 
     page.goto(f"{STORE_URL}/pages/looks")
     time.sleep(3)

@@ -45,7 +45,8 @@ def test_add_look_to_cart_from_looks_page(page: Page):
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
     api.delete_all_looks(user_id)
     verify.no_upcoming_events_visible(page)
-    actions.create_new_event(page, "Stub Event")  # To keep "Add Suit To Cart" without "Get Started" wizard.
+    # To keep looks "Add Suit To Cart" without button the "Get Started" wizard.
+    actions.create_new_event(page, "Stub Event")
 
     page.goto(f"{STORE_URL}/pages/looks")
     time.sleep(3)

@@ -344,6 +344,9 @@ class DiscountService:
 
             if attendee_discounts:
                 for attendee_discount in attendee_discounts:
+                    if attendee_discount.shopify_discount_code is None:
+                        continue
+
                     already_paid_discount_amount += attendee_discount.amount
 
             tmg_group_discount = 0

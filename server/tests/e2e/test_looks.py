@@ -66,3 +66,36 @@ def test_add_look_to_cart_from_looks_page(page: Page):
 
     actions.add_look_to_cart(page, data_look_id)
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+
+
+@e2e_error_handling
+@pytest.mark.group_2
+def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
+    look_name = utils.generate_look_name()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+    api.delete_all_looks(user_id)
+    verify.no_upcoming_events_visible(page)
+
+    page.goto(f"{STORE_URL}/pages/looks")
+    time.sleep(3)
+
+    verify.looks_page_is_empty(page)
+
+    actions.create_default_look(page, look_name)
+
+    data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
+
+    actions.add_look_to_cart(page, data_look_id)
+
+    actions.populate_what_is_special_occasion_dialog(page)
+    time.sleep(1)
+
+    page.goto(f"{STORE_URL}/pages/looks")
+
+    data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
+    actions.add_look_to_cart(page, data_look_id)
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))

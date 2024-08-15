@@ -623,3 +623,39 @@ def get_processed_discount_codes_for_event(event_id: str) -> List[str]:
         return [discount.get("code") for discount in discounts[0].get("gift_codes")]
 
     return []
+
+
+def get_get_started_dialog_locator(page: Page) -> Locator:
+    get_started_dialog = page.locator("div.tmg-get-started-modal")
+    get_started_dialog.scroll_into_view_if_needed()
+    get_started_dialog.wait_for(state="visible")
+
+    return get_started_dialog
+
+
+def get_started_select_event_type(get_started_dialog_locator: Locator, event_type: str = "wedding") -> None:
+    event_label = get_started_dialog_locator.locator(f"label.radio-image-item[data-event-type='{event_type}']")
+    event_label.click()
+
+
+def get_started_click_next_button(get_started_dialog_locator: Locator) -> None:
+    next_button = get_started_dialog_locator.locator("button#next")
+    next_button.click()
+
+
+def get_started_select_event_role(get_started_dialog_locator: Locator, event_role: str = "bride") -> None:
+    role_label = get_started_dialog_locator.locator(f"label.radio-image-item[data-event-role='{event_role}']")
+    role_label.click()
+
+
+def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedding"):
+    get_started_dialog_locator = get_get_started_dialog_locator(page)
+
+    get_started_select_event_type(get_started_dialog_locator, event_type)
+    get_started_click_next_button(get_started_dialog_locator)
+
+    get_started_select_event_role(get_started_dialog_locator, "bride")
+    get_started_click_next_button(get_started_dialog_locator)
+
+    select_max_available_day_in_calendar(page)
+    get_started_click_next_button(get_started_dialog_locator)

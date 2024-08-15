@@ -1,9 +1,12 @@
 from __future__ import absolute_import
 
+import random
 import uuid
 
 from server.controllers import FORCE_DELETE_HEADER
+from server.database.models import DiscountType
 from server.models.attendee_model import CreateAttendeeModel
+from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -407,6 +410,172 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 200)
         attendee_response = response.json
         self.assertEqual(str(look.id), str(attendee_response["look_id"]))
+
+    def test_update_attendee_can_not_update_look_once_paid(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=user.email,
+                look_id=look1.id,
+                pay=True,
+            )
+        )
+
+        # when
+        update_attendee = fixtures.update_attendee_request(look_id=look2.id)
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_update_attendee_can_not_update_look_when_gift_discount_code_issued(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=user.email,
+                look_id=look1.id,
+            )
+        )
+        not_used_paid_discount = self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        update_attendee = fixtures.update_attendee_request(look_id=look2.id)
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_update_attendee_update_look_when_just_gift_discount_intent_created(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=user.email,
+                look_id=look1.id,
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            None,
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        update_attendee = fixtures.update_attendee_request(look_id=look2.id)
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+
+    def test_update_attendee_update_look_when_just_group_discount_issued(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=user.email,
+                look_id=look1.id,
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee.id,
+            random.randint(50, 200),
+            DiscountType.PARTY_OF_FOUR,
+            False,
+            f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        update_attendee = fixtures.update_attendee_request(look_id=look2.id)
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
 
     def test_update_attendee_non_existing(self):
         # when

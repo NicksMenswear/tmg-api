@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
 
-from sqlalchemy import alias, and_, func
+from sqlalchemy import and_, func
 
 from server.database.database_manager import db
 from server.database.models import Attendee, Event, User, Role, Look, Size, Order
@@ -24,7 +24,6 @@ from server.services import DuplicateError, ServiceError, NotFoundError, BadRequ
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
-
 
 STAGE = os.getenv("STAGE")
 
@@ -234,8 +233,22 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
+        if attendee.look_id is None:
+            if update_attendee.look_id is not None:
+                attendee.look_id = update_attendee.look_id
+            else:
+                pass  # when look_id is None, then the attendee has not selected a look yet
+        else:
+            if update_attendee.look_id is None:
+                # Cannot update look for attendee that has already selected a look.
+                pass
+            else:
+                if attendee.pay or FlaskApp.current().discount_service.has_issued_gift_discounts(attendee.id):
+                    raise BadRequestError("Cannot update look for attendee that has already paid or has a gift code.")
+
+                attendee.look_id = update_attendee.look_id
+
         attendee.role_id = update_attendee.role_id or attendee.role_id
-        attendee.look_id = update_attendee.look_id or attendee.look_id
         attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()
 

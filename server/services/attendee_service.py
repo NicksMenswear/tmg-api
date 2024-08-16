@@ -242,7 +242,9 @@ class AttendeeService:
             and (attendee.look_id != update_attendee.look_id)
             and (
                 attendee.pay
-                or self.discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT)
+                or self.discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT).get(
+                    attendee_id
+                )
             )
         ):
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")

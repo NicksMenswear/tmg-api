@@ -248,8 +248,8 @@ class AttendeeService:
         ):
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
-        attendee.look_id = update_attendee.look_id
         attendee.role_id = update_attendee.role_id or attendee.role_id
+        attendee.look_id = update_attendee.look_id or attendee.look_id
         attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()
 

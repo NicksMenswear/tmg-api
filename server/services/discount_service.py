@@ -170,7 +170,21 @@ class DiscountService:
 
         self.__calculate_remaining_amount(owner_discounts)
 
-        return list(owner_discounts.values())
+        return self.__sort_owner_discounts(owner_discounts)
+
+    def __sort_owner_discounts(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]) -> List[EventDiscountModel]:
+        # Event owner
+        # Attendees without gift codes sorted by First Name, Last Name
+        # Attendees with gift codes sorted by First Name, Last Name
+        return sorted(
+            owner_discounts.values(),
+            key=lambda discount: (
+                not discount.is_owner,
+                bool(discount.gift_codes),
+                discount.last_name,
+                discount.first_name,
+            ),
+        )
 
     def __calculate_remaining_amount(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]):
         for attendee_id in owner_discounts.keys():

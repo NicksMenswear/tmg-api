@@ -174,13 +174,15 @@ class DiscountService:
 
     def __sort_owner_discounts(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]) -> List[EventDiscountModel]:
         # Event owner
-        # Attendees without gift codes sorted by Last Name, First Name
+        # Attendees without gift codes with style/invite, sorted by Last Name, First Name
+        # Attendees without gift codes without style/invite, sorted by Last Name, First Name
         # Attendees with gift codes sorted by Last Name, First Name
         return sorted(
             owner_discounts.values(),
             key=lambda discount: (
                 not discount.is_owner,
                 bool(discount.gift_codes),
+                not (discount.status.style and discount.status.invite),
                 discount.last_name,
                 discount.first_name,
             ),

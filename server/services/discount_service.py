@@ -181,7 +181,7 @@ class DiscountService:
             owner_discounts.values(),
             key=lambda discount: (
                 not discount.is_owner,
-                bool(discount.gift_codes),
+                bool(c for c in discount.gift_codes if c.type == str(DiscountType.GIFT)),
                 not (discount.status.style and discount.status.invite),
                 discount.last_name,
                 discount.first_name,

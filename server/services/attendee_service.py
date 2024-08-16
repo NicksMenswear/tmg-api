@@ -36,7 +36,6 @@ class AttendeeService:
         self.shopify_service = shopify_service
         self.user_service = user_service
         self.email_service = email_service
-        self.discount_service = FlaskApp.current().discount_service  # avoids circular dependency
 
     def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
@@ -101,7 +100,7 @@ class AttendeeService:
         attendees = {}
 
         attendee_ids = {attendee.id for attendee, _, _, _, _, _ in db_attendees}
-        attendees_gift_codes = self.discount_service.get_discount_codes_for_attendees(
+        attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(
             attendee_ids, type=DiscountType.GIFT
         )
 
@@ -242,9 +241,9 @@ class AttendeeService:
             and (attendee.look_id != update_attendee.look_id)
             and (
                 attendee.pay
-                or self.discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT).get(
-                    attendee_id
-                )
+                or FlaskApp.current()
+                .discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT)
+                .get(attendee_id)
             )
         ):
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")

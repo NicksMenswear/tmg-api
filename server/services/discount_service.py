@@ -7,7 +7,7 @@ from typing import List, Optional, Set, Dict
 from uuid import UUID
 
 from server.database.database_manager import db
-from server.database.models import Discount, Attendee, DiscountType, User, Look
+from server.database.models import Discount, Attendee, DiscountType, Event, User, Look
 from server.models.attendee_model import AttendeeModel
 from server.models.discount_model import (
     DiscountModel,
@@ -118,9 +118,10 @@ class DiscountService:
             raise NotFoundError("Event not found.")
 
         users_attendees_looks = (
-            db.session.query(User, Attendee, Look)
+            db.session.query(User, Attendee, Look, Event)
             .join(Attendee, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
+            .join(Event, event_id == Event.id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
             .all()
         )
@@ -134,7 +135,7 @@ class DiscountService:
 
         num_attendees = 0
 
-        for user, attendee, look in users_attendees_looks:
+        for user, attendee, look, event in users_attendees_looks:
             look_model = None
 
             if look and look.product_specs:
@@ -152,6 +153,7 @@ class DiscountService:
                 type=DiscountType.GIFT,
                 attendee_id=attendee.id,
                 user_id=user.id,
+                is_owner=(user.id == event.user_id),
                 first_name=user.first_name,
                 last_name=user.last_name,
                 look=look_model,
@@ -168,7 +170,23 @@ class DiscountService:
 
         self.__calculate_remaining_amount(owner_discounts)
 
-        return list(owner_discounts.values())
+        return self.__sort_owner_discounts(owner_discounts)
+
+    def __sort_owner_discounts(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]) -> List[EventDiscountModel]:
+        # Event owner
+        # Attendees without gift codes with style/invite, sorted by Last Name, First Name
+        # Attendees without gift codes without style/invite, sorted by Last Name, First Name
+        # Attendees with gift codes sorted by Last Name, First Name
+        return sorted(
+            owner_discounts.values(),
+            key=lambda discount: (
+                not discount.is_owner,
+                bool(discount.gift_codes),
+                not (discount.status.style and discount.status.invite),
+                discount.last_name,
+                discount.first_name,
+            ),
+        )
 
     def __calculate_remaining_amount(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]):
         for attendee_id in owner_discounts.keys():
@@ -193,7 +211,7 @@ class DiscountService:
     def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
         look_bundle_prices: Dict[str, float] = dict()
 
-        for _, _, look in users_attendees_looks:
+        for _, _, look, _ in users_attendees_looks:
             if not look or not look.product_specs:
                 continue
 

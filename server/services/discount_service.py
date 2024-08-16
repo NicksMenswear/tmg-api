@@ -464,15 +464,6 @@ class DiscountService:
 
         return DiscountModel.from_orm(discount)
 
-    def has_issued_gift_discounts(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
-        discounts = Discount.query.filter(
-            Discount.attendee_id == attendee_id,
-            Discount.type == DiscountType.GIFT,
-            Discount.shopify_discount_code != None,
-        ).all()
-
-        return discounts and len(discounts) > 0
-
     def create_tmg_group_discount_for_attendee(self, attendee: AttendeeModel, event_id: uuid.UUID) -> DiscountModel:
         if not attendee.look_id:
             raise NotFoundError("Attendee has no look associated.")
@@ -541,12 +532,15 @@ class DiscountService:
         return [discount.shopify_discount_code for discount in discounts]
 
     def get_discount_codes_for_attendees(
-        self, attendee_ids: Set[uuid.UUID]
+        self, attendee_ids: Set[uuid.UUID], type: DiscountType = None
     ) -> Dict[uuid.UUID, List[DiscountGiftCodeModel]]:
-        discounts = Discount.query.filter(
+        discounts_query = Discount.query.filter(
             Discount.attendee_id.in_(attendee_ids), Discount.shopify_discount_code != None
-        ).all()
+        )
+        if type:
+            discounts_query = discounts_query.filter(Discount.type == type)
 
+        discounts = discounts.all()
         attendee_discounts = {}
 
         for discount in discounts:

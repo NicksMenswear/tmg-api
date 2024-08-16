@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 from sqlalchemy import and_, func
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User, Role, Look, Size, Order
+from server.database.models import Attendee, DiscountType, Event, User, Role, Look, Size, Order
 from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
@@ -23,6 +23,7 @@ from server.models.user_model import CreateUserModel, UserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.discount_service import AbstractDiscountService
 from server.services.user_service import UserService
 
 STAGE = os.getenv("STAGE")
@@ -36,6 +37,7 @@ class AttendeeService:
         self.shopify_service = shopify_service
         self.user_service = user_service
         self.email_service = email_service
+        self.discount_service = FlaskApp.current().discount_service  # avoids circular dependency
 
     def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
@@ -100,14 +102,16 @@ class AttendeeService:
         attendees = {}
 
         attendee_ids = {attendee.id for attendee, _, _, _, _, _ in db_attendees}
-
-        attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
+        attendees_gift_codes = self.discount_service.get_discount_codes_for_attendees(
+            attendee_ids, type=DiscountType.GIFT
+        )
 
         for attendee, event, user, role, look, orders in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
             attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
+            has_gift_codes = len(attendee_gift_codes) > 0
             attendee_tracking = self._get_tracking_for_attendee(orders)
 
             attendees[attendee.event_id].append(
@@ -127,6 +131,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendee_gift_codes,
+                    has_gift_codes=has_gift_codes,
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
@@ -233,21 +238,17 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        if attendee.look_id is None:
-            if update_attendee.look_id is not None:
-                attendee.look_id = update_attendee.look_id
-            else:
-                pass  # when look_id is None, then the attendee has not selected a look yet
-        else:
-            if update_attendee.look_id is None:
-                # Cannot update look for attendee that has already selected a look.
-                pass
-            else:
-                if attendee.pay or FlaskApp.current().discount_service.has_issued_gift_discounts(attendee.id):
-                    raise BadRequestError("Cannot update look for attendee that has already paid or has a gift code.")
+        if (
+            attendee.look_id is not None
+            and (attendee.look_id != update_attendee.look_id)
+            and (
+                attendee.pay
+                or self.discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT)
+            )
+        ):
+            raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
-                attendee.look_id = update_attendee.look_id
-
+        attendee.look_id = update_attendee.look_id
         attendee.role_id = update_attendee.role_id or attendee.role_id
         attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()

@@ -66,6 +66,7 @@ class EnrichedAttendeeModel(AttendeeModel):
     role: Optional[RoleModel] = None
     look: Optional[LookModel] = None
     gift_codes: Optional[List[DiscountGiftCodeModel]] = []
+    has_gift_codes: bool = False
     tracking: Optional[List[TrackingModel]] = []
     can_be_deleted: bool = False
 

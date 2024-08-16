@@ -23,7 +23,6 @@ from server.models.user_model import CreateUserModel, UserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
-from server.services.discount_service import AbstractDiscountService
 from server.services.user_service import UserService
 
 STAGE = os.getenv("STAGE")

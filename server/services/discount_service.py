@@ -540,7 +540,7 @@ class DiscountService:
         if type:
             discounts_query = discounts_query.filter(Discount.type == type)
 
-        discounts = discounts.all()
+        discounts = discounts_query.all()
         attendee_discounts = {}
 
         for discount in discounts:

@@ -121,9 +121,9 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json["status"], ORDER_STATUS_PENDING_MISSING_SKU)
+        self.assertEqual(response.json["status"], ORDER_STATUS_READY)
         self.assertEqual(response.json["order_items"][0]["shopify_sku"], line_item["sku"])
-        self.assertTrue(len(response.json["products"]) == 0)
+        self.assertTrue(len(response.json["products"]) == 1)
 
     def test_order_general_details(self):
         # given
@@ -282,8 +282,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
         self.assertEqual(order.order_items[0].shopify_sku, webhook_request["line_items"][0]["sku"])
-        self.assertTrue(len(order.products) == 0)
-        self.assertEqual(order.status, ORDER_STATUS_PENDING_MISSING_SKU)
+        self.assertTrue(len(order.products) == 1)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
 
     @parameterized.expand(
         [

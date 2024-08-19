@@ -247,8 +247,8 @@ class ShopifyWebhookOrderHandler:
                             f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
                         )
 
-                        if self.sku_builder.does_product_requires_measurements(shopify_sku):
-                            has_products_that_requires_measurements = True
+                    if self.sku_builder.does_product_requires_measurements(shopify_sku):
+                        has_products_that_requires_measurements = True
             except ServiceError as e:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 

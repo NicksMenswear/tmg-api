@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
 
-from sqlalchemy import alias, and_, func
+from sqlalchemy import and_, func
 
 from server.database.database_manager import db
-from server.database.models import Attendee, Event, User, Role, Look, Size, Order
+from server.database.models import Attendee, DiscountType, Event, User, Role, Look, Size, Order
 from server.flask_app import FlaskApp
 from server.models.attendee_model import (
     AttendeeModel,
@@ -24,7 +24,6 @@ from server.services import DuplicateError, ServiceError, NotFoundError, BadRequ
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
-
 
 STAGE = os.getenv("STAGE")
 
@@ -101,14 +100,16 @@ class AttendeeService:
         attendees = {}
 
         attendee_ids = {attendee.id for attendee, _, _, _, _, _ in db_attendees}
-
-        attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(attendee_ids)
+        attendees_gift_codes = FlaskApp.current().discount_service.get_discount_codes_for_attendees(
+            attendee_ids, type=DiscountType.GIFT
+        )
 
         for attendee, event, user, role, look, orders in db_attendees:
             if attendee.event_id not in attendees:
                 attendees[attendee.event_id] = list()
 
             attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
+            has_gift_codes = len(attendee_gift_codes) > 0
             attendee_tracking = self._get_tracking_for_attendee(orders)
 
             attendees[attendee.event_id].append(
@@ -128,6 +129,7 @@ class AttendeeService:
                     look=LookModel.from_orm(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendee_gift_codes,
+                    has_gift_codes=has_gift_codes,
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
@@ -233,6 +235,18 @@ class AttendeeService:
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
+
+        if (
+            attendee.look_id is not None
+            and (attendee.look_id != update_attendee.look_id)
+            and (
+                attendee.pay
+                or FlaskApp.current()
+                .discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT)
+                .get(attendee_id)
+            )
+        ):
+            raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
         attendee.role_id = update_attendee.role_id or attendee.role_id
         attendee.look_id = update_attendee.look_id or attendee.look_id

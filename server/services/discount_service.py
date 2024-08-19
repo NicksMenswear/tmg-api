@@ -550,12 +550,15 @@ class DiscountService:
         return [discount.shopify_discount_code for discount in discounts]
 
     def get_discount_codes_for_attendees(
-        self, attendee_ids: Set[uuid.UUID]
+        self, attendee_ids: Set[uuid.UUID], type: DiscountType = None
     ) -> Dict[uuid.UUID, List[DiscountGiftCodeModel]]:
-        discounts = Discount.query.filter(
+        discounts_query = Discount.query.filter(
             Discount.attendee_id.in_(attendee_ids), Discount.shopify_discount_code != None
-        ).all()
+        )
+        if type:
+            discounts_query = discounts_query.filter(Discount.type == type)
 
+        discounts = discounts_query.all()
         attendee_discounts = {}
 
         for discount in discounts:

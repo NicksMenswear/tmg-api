@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
@@ -45,25 +45,36 @@ class UserService:
             send_activation_email = False
 
         try:
-            db_user = User(
-                id=uuid.uuid4(),
-                first_name=create_user.first_name,
-                last_name=create_user.last_name,
-                email=create_user.email.lower(),
-                shopify_id=str(shopify_customer_id),
-                phone_number=create_user.phone_number,
-                account_status=create_user.account_status,
+            insert_statement = text(
+                """
+                INSERT INTO users (id, first_name, last_name, email, shopify_id, phone_number, account_status, created_at, updated_at)
+                VALUES (:id, :first_name, :last_name, :email, :shopify_id, :phone_number, :account_status, :created_at, :updated_at)
+                ON CONFLICT (shopify_id) DO NOTHING
+            """
             )
 
-            db.session.add(db_user)
+            db.session.execute(
+                insert_statement,
+                {
+                    "id": str(uuid.uuid4()),
+                    "first_name": create_user.first_name,
+                    "last_name": create_user.last_name,
+                    "email": create_user.email.lower(),
+                    "shopify_id": str(shopify_customer_id),
+                    "phone_number": create_user.phone_number,
+                    "account_status": create_user.account_status,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                },
+            )
 
+            db.session.commit()
+
+            db_user = User.query.filter_by(email=create_user.email.lower(), shopify_id=str(shopify_customer_id)).first()
             user_model = UserModel.from_orm(db_user)
 
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
-
-            db.session.commit()
-            db.session.refresh(db_user)
         except Exception as e:
             db.session.rollback()
             logger.exception(e)

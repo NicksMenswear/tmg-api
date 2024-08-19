@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 from parameterized import parameterized
 
-from server.database.models import Product, Address, User
+from server.database.models import Product, Address
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -121,9 +121,9 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json["status"], ORDER_STATUS_PENDING_MISSING_SKU)
+        self.assertEqual(response.json["status"], ORDER_STATUS_READY)
         self.assertEqual(response.json["order_items"][0]["shopify_sku"], line_item["sku"])
-        self.assertTrue(len(response.json["products"]) == 0)
+        self.assertTrue(len(response.json["products"]) == 1)
 
     def test_order_general_details(self):
         # given
@@ -282,8 +282,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
         self.assertEqual(order.order_items[0].shopify_sku, webhook_request["line_items"][0]["sku"])
-        self.assertTrue(len(order.products) == 0)
-        self.assertEqual(order.status, ORDER_STATUS_PENDING_MISSING_SKU)
+        self.assertTrue(len(order.products) == 1)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
 
     @parameterized.expand(
         [
@@ -543,3 +543,36 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(len(order.products), 0)
         self.assertIsNone(order.order_items[0].product_id)
         self.assertEqual(order.order_items[0].shopify_sku, shopify_sku)
+
+    def test_order_process_unknown_product(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+        Product.query.delete()  # delete all products from the database
+        shopify_sku = "GB03A4BLKOSR"  # 'Black Garment Bag' - unknown product
+
+        # when
+        self.assertEqual(self.product_service.get_num_products(), 0)  # verify no products in products table
+
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=shopify_sku)],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+        order_product_shiphero_sku = order.products[0].sku
+
+        product = self.product_service.get_product_by_sku(order_product_shiphero_sku)
+        self.assertIsNotNone(product)
+        self.assertTrue(product.sku.startswith(shopify_sku))

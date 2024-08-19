@@ -7,14 +7,13 @@ from typing import Any, Dict, Optional
 from server.database.models import SourceType, OrderType
 from server.models.order_model import AddressModel, CreateOrderModel, CreateOrderItemModel
 from server.models.product_model import CreateProductModel, ProductModel
-from server.models.user_model import UserModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
 from server.services.event_service import EventService
+from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
 from server.services.integrations.shopify_service import AbstractShopifyService
-from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -241,13 +240,15 @@ class ShopifyWebhookOrderHandler:
                     track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
 
                 if not shiphero_sku:
-                    if size_model and measurement_model:
+                    if product_type is ProductType.UNKNOWN:
+                        shiphero_sku = shopify_sku
+                    elif size_model and measurement_model:
                         logger.error(
                             f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
                         )
 
-                    if self.sku_builder.does_product_requires_measurements(shopify_sku):
-                        has_products_that_requires_measurements = True
+                        if self.sku_builder.does_product_requires_measurements(shopify_sku):
+                            has_products_that_requires_measurements = True
             except ServiceError as e:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 

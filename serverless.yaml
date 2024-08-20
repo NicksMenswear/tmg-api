@@ -68,8 +68,8 @@ functions:
       # ShipHero Env Variables
       SHIPHERO_API_URL: "https://public-api.shiphero.com"
       SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
-  job-sync-users-from-legacy-db:
-    handler: main.lambda_job_sync_users_from_legacy_db
+  job-add-expedited-shipping-for-suit-bundles:
+    handler: main.lambda_job_add_expedited_shipping_for_suit_bundles
     events:
       - schedule: rate(1 minute)
     timeout: 600

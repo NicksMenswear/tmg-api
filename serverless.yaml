@@ -107,7 +107,7 @@ functions:
   job-add-expedited-shipping-for-suit-bundles:
     handler: main.lambda_job_add_expedited_shipping_for_suit_bundles
     events:
-      - schedule: rate(1 day)
+      - schedule: rate(1 minute)
     timeout: 600
     memorySize: 512
     lambdaInsights: true

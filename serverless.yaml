@@ -71,7 +71,7 @@ functions:
   job-sync-users-from-legacy-db:
     handler: main.lambda_job_sync_users_from_legacy_db
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(1 day)
     timeout: 600
     memorySize: 512
     lambdaInsights: true

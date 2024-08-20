@@ -36,7 +36,6 @@ def lambda_job_add_expedited_shipping_for_suit_bundles(event, context):
 
     init_logging(debug=True)
     init_sentry()
-    init_db()
     add_expedited_shipping_for_suit_bundles()
 
 

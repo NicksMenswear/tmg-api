@@ -35,6 +35,8 @@ def test_basic_create_event(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
 
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
@@ -65,6 +67,8 @@ def test_create_multiple_events(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id_1 = actions.create_new_event(page, event_name_1)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
@@ -106,6 +110,8 @@ def test_create_event_and_add_few_attendees(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
 
@@ -145,6 +151,8 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(
@@ -188,6 +196,8 @@ def test_create_event_add_and_remove_attendees(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
     event_block = actions.get_event_block(page, event_id)
@@ -218,6 +228,8 @@ def test_delete_event(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id_1 = actions.create_new_event(page, event_name_1)
     actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
     event_block = actions.get_event_block(page, event_id_1)
@@ -245,6 +257,8 @@ def test_delete_all_events(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
@@ -268,6 +282,8 @@ def test_delete_all_attendees(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
@@ -308,6 +324,8 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id1 = actions.create_new_event(page, event_name1, event_type="wedding")
     attendee_id1 = actions.add_first_attendee(page, attendee_first_name1, attendee_last_name1, attendee_email1)
 
@@ -346,6 +364,8 @@ def test_roles_persistence(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
@@ -373,6 +393,8 @@ def test_add_myself_and_then_remove(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
@@ -416,6 +438,8 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
@@ -468,6 +492,8 @@ def test_style_and_invite_checkboxes(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
@@ -509,6 +535,8 @@ def test_add_myself_and_pay_for_suit(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)

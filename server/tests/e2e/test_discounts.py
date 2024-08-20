@@ -47,6 +47,8 @@ def test_pay_dialog_correctness(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
     event_block = actions.get_event_block(page, event_id)
@@ -106,6 +108,8 @@ def test_discount_intent_saved(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
@@ -158,6 +162,8 @@ def test_pay_in_full_click(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
@@ -208,6 +214,8 @@ def test_grooms_gift(page):
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
@@ -286,6 +294,8 @@ def test_group_discount(page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
     actions.open_event_accordion(page, event_id)
@@ -350,6 +360,8 @@ def test_group_discount_and_groom_gift_as_well(page):
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)

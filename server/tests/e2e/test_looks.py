@@ -50,6 +50,8 @@ def test_add_look_to_cart_from_looks_page(page: Page):
     api.delete_all_looks(user_id)
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)

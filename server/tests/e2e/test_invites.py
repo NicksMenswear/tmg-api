@@ -41,6 +41,8 @@ def test_invite_attendee(page: Page):
 
     verify.no_upcoming_events_visible(page)
 
+    time.sleep(1)
+
     event_id = actions.create_new_event(page, event_name)
     attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
@@ -116,6 +118,8 @@ def test_invite_multiple_attendees(page: Page):
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)

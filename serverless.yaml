@@ -68,6 +68,78 @@ functions:
       # ShipHero Env Variables
       SHIPHERO_API_URL: "https://public-api.shiphero.com"
       SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
+  job-sync-users-from-legacy-db:
+    handler: main.lambda_job_sync_users_from_legacy_db
+    events:
+      - schedule: rate(1 day)
+    timeout: 600
+    memorySize: 512
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+    environment:
+      STAGE: ${sls:stage}
+      API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
+      DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
+      # SQLAlchemy Env Variables
+      DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
+      DB_PORT: 5432
+      DB_NAME: ${ssm:/${sls:stage}/db/DB_NAME}
+      DB_USER: ${ssm:/${sls:stage}/db/DB_USER}
+      DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
+      # Shopify Env Variables
+      API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
+      api_version: "2024-01"
+      shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
+      client_id: ${ssm:/${sls:stage}/shopify/client_id}
+      client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
+      webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
+      admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
+      storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
+      # Postmark Env Variables
+      POSTMARK_API_URL: "https://api.postmarkapp.com"
+      POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
+      # ActiveCampaign Env Variables
+      ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com"
+      ACTIVECAMPAIGN_API_KEY: ${ssm:/${sls:stage}/activecampaign/api_key}
+      # ShipHero Env Variables
+      SHIPHERO_API_URL: "https://public-api.shiphero.com"
+      SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
+  job-add-expedited-shipping-for-suit-bundles:
+    handler: main.lambda_job_add_expedited_shipping_for_suit_bundles
+    events:
+      - schedule: rate(1 day)
+    timeout: 600
+    memorySize: 512
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+    environment:
+      STAGE: ${sls:stage}
+      API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
+      DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
+      # SQLAlchemy Env Variables
+      DB_HOST: ${ssm:/${sls:stage}/db/DB_HOST}
+      DB_PORT: 5432
+      DB_NAME: ${ssm:/${sls:stage}/db/DB_NAME}
+      DB_USER: ${ssm:/${sls:stage}/db/DB_USER}
+      DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
+      # Shopify Env Variables
+      API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
+      api_version: "2024-01"
+      shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
+      client_id: ${ssm:/${sls:stage}/shopify/client_id}
+      client_secret: ${ssm:/${sls:stage}/shopify/client_secret}
+      webhook_signature_key: ${ssm:/${sls:stage}/shopify/webhook_signature_key}
+      admin_api_access_token: ${ssm:/${sls:stage}/shopify/admin_api_access_token}
+      storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
+      # Postmark Env Variables
+      POSTMARK_API_URL: "https://api.postmarkapp.com"
+      POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
+      # ActiveCampaign Env Variables
+      ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com"
+      ACTIVECAMPAIGN_API_KEY: ${ssm:/${sls:stage}/activecampaign/api_key}
+      # ShipHero Env Variables
+      SHIPHERO_API_URL: "https://public-api.shiphero.com"
+      SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
 
 plugins:
   - serverless-python-requirements

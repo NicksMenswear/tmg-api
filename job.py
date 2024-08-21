@@ -1,19 +1,20 @@
 import logging
-import os
 
 from server.app import init_logging
+from server.config import Config
 from server.controllers.util import http
 
 logger = logging.getLogger(__name__)
+
+config = Config()
 
 
 def lambda_handler_add_expedited_shipping_for_suit_bundles(event, context):
     init_logging(debug=True)
     # init_sentry()
 
-    stage = os.getenv("STAGE", "dev")
-    api_token = os.getenv("API_TOKEN", "123")
-    endpoint = os.getenv("API_URL", f"https://api.{stage}.tmgcorp.net/jobs/add-expedited-shipping-for-suit-bundles")
+    api_token = config.API_TOKEN
+    endpoint = config.API_ENDPOINT_URL
 
     try:
         response = http(

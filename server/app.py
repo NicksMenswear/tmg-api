@@ -11,6 +11,7 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
+from server.config import Config, TestConfig
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
 from server.services.attendee_service import AttendeeService
@@ -97,8 +98,8 @@ def init_app(is_testing=False):
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
-
     run_in_test_mode = is_testing or os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+    api.app.config.from_object(TestConfig if run_in_test_mode else Config)
 
     api.app.config["TMG_APP_TESTING"] = run_in_test_mode
 

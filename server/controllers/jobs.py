@@ -9,4 +9,4 @@ def add_expedited_shipping_for_suit_bundles():
 
     looks = look_service.add_expedited_shipping_for_suit_bundle()
 
-    return looks, 200
+    return [look.to_response() for look in looks], 200

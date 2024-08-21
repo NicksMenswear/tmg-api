@@ -25,7 +25,6 @@ DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
 TMP_DIR = os.environ.get("TMPDIR", "/tmp")
 
 NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING = 6
-EXPEDITED_SHIPPING_VARIANT_ID = "gid://shopify/ProductVariant/44714760372355"
 
 
 # noinspection PyMethodMayBeStatic
@@ -263,7 +262,10 @@ class LookService:
             bundle_variant_id = "gid://shopify/ProductVariant/" + str(look_product_specs["bundle"]["variant_id"])
 
             try:
-                self.shopify_service.add_variants_to_product_bundle(bundle_variant_id, [EXPEDITED_SHIPPING_VARIANT_ID])
+                expedited_shipping_variant_id = FlaskApp.current().config.get("EXPEDITED_SHIPPING_VARIANT_ID")
+                self.shopify_service.add_variants_to_product_bundle(
+                    bundle_variant_id, [f"gid://shopify/ProductVariant/{expedited_shipping_variant_id}"]
+                )
             except ServiceError as e:
                 logger.error(f"Error adding expedited shipping for look {look_id}: {e}")
                 continue

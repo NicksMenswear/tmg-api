@@ -258,8 +258,7 @@ class LookService:
             look_product_specs = look[1]
 
             if not look_product_specs or not look_product_specs.get("bundle", {}).get("variant_id"):
-                logger.error(f"Look {look_id} does not have a bundle variant id")
-                continue
+                continue  # Look does not have a bundle variant id. Skip.
 
             bundle_variant_id = "gid://shopify/ProductVariant/" + str(look_product_specs["bundle"]["variant_id"])
 

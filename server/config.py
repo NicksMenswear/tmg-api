@@ -12,4 +12,3 @@ class Config:
 class TestConfig(Config):
     STAGE = "test"
     TMG_APP_TESTING = True
-    NUM_WEEKS_ALLOWED_FOR_FREE_SHIPPING = 6

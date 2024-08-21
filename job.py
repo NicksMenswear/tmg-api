@@ -1,6 +1,6 @@
 import logging
 
-from server.app import init_logging
+from server.app import init_logging, init_sentry
 from server.config import Config
 from server.controllers.util import http
 
@@ -11,10 +11,10 @@ config = Config()
 
 def lambda_handler_add_expedited_shipping_for_suit_bundles(event, context):
     init_logging(debug=True)
-    # init_sentry()
+    init_sentry()
 
     api_token = config.API_TOKEN
-    endpoint = config.API_ENDPOINT_URL
+    endpoint = f"{config.API_ENDPOINT_URL}/jobs/add-expedited-shipping-for-suit-bundles"
 
     try:
         response = http(

@@ -12,7 +12,7 @@ def lambda_handler_add_expedited_shipping_for_suit_bundles(event, context):
     # init_sentry()
 
     stage = os.getenv("STAGE", "dev")
-    api_key = os.getenv("API_KEY", "123")
+    api_token = os.getenv("API_TOKEN", "123")
     endpoint = os.getenv("API_URL", f"https://api.{stage}.tmgcorp.net/jobs/add-expedited-shipping-for-suit-bundles")
 
     try:
@@ -22,12 +22,12 @@ def lambda_handler_add_expedited_shipping_for_suit_bundles(event, context):
             json=None,
             headers={
                 "Content-Type": "application/json",
-                "X-Api-Access-Token": api_key,
+                "X-Api-Access-Token": api_token,
             },
             timeout=600,
         )
 
         if response.status != 200:
-            logger.error(f"Failed to add expedited shipping for suit bundles {response.status}: {response.text}")
+            logger.error(f"Failed to add expedited shipping for suit bundles {response.status}: {response.json()}")
     except Exception as e:
         logger.exception(e)

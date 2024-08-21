@@ -23,17 +23,5 @@ def lambda_handler(event, context):
     return awsgi.response(app, event, context)
 
 
-def lambda_job_sync_users_from_legacy_db(event, context):
-    from server.jobs.sync_users_from_legacy_db import sync_users_from_legacy_db
-
-    sync_users_from_legacy_db()
-
-
-def lambda_job_add_expedited_shipping_for_suit_bundles(event, context):
-    from server.jobs.add_expedited_shipping_for_suit_bundles import add_expedited_shipping_for_suit_bundles
-
-    add_expedited_shipping_for_suit_bundles(app)
-
-
 # Handle lambda termination gracefully
 signal.signal(signal.SIGTERM, lambda_teardown)

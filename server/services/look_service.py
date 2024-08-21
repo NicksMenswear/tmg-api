@@ -1,10 +1,13 @@
 import base64
+import json
 import logging
 import os
 import time
 import uuid
 from datetime import datetime
 from typing import List
+
+from sqlalchemy import text
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
@@ -20,6 +23,9 @@ logger = logging.getLogger(__name__)
 
 DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
 TMP_DIR = os.environ.get("TMPDIR", "/tmp")
+
+NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING = 6
+EXPEDITED_SHIPPING_VARIANT_ID = "gid://shopify/ProductVariant/44714760372355"
 
 
 # noinspection PyMethodMayBeStatic
@@ -242,6 +248,42 @@ class LookService:
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
 
+    def add_expedited_shipping_for_suit_bundle(self) -> List[LookModel]:
+        looks = self.__get_looks_suitable_for_expedited_shipping()
+
+        updated_look_ids = []
+
+        for look in looks:
+            look_id = look[0]
+            look_product_specs = look[1]
+
+            if not look_product_specs or not look_product_specs.get("bundle", {}).get("variant_id"):
+                logger.error(f"Look {look_id} does not have a bundle variant id")
+                continue
+
+            bundle_variant_id = "gid://shopify/ProductVariant/" + str(look_product_specs["bundle"]["variant_id"])
+
+            try:
+                self.shopify_service.add_variants_to_product_bundle(bundle_variant_id, [EXPEDITED_SHIPPING_VARIANT_ID])
+            except ServiceError as e:
+                logger.error(f"Error adding expedited shipping for look {look_id}: {e}")
+                continue
+
+            try:
+                self.__update_looks_to_require_expedited_shipping(look_id, look_product_specs)
+            except Exception as e:
+                logger.error(f"Error updating look {look_id} to require expedited shipping: {e}")
+                continue
+
+            updated_look_ids.append(look_id)
+
+        updated_looks = []
+
+        if updated_look_ids:
+            updated_looks = Look.query.filter(Look.id.in_(updated_look_ids)).all()
+
+        return [LookModel.from_orm(updated_look) for updated_look in updated_looks]
+
     def __save_image(self, image_b64: str, local_file: str) -> None:
         try:
             image_b64 = image_b64.replace("data:image/png;base64,", "")
@@ -252,3 +294,47 @@ class LookService:
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to save image.", e)
+
+    def __get_looks_suitable_for_expedited_shipping(self):
+        try:
+            query = text(
+                f"""
+                SELECT l.id, l.product_specs
+                FROM events e
+                JOIN attendees a ON e.id = a.event_id 
+                JOIN looks l ON l.id = a.look_id 
+                WHERE e.is_active IS TRUE 
+                  AND e.event_at >= now() 
+                  AND e.event_at <= now() + interval '{NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING} weeks' 
+                  AND a.pay IS FALSE 
+                  AND a.look_id IS NOT NULL 
+                  AND a.is_active IS TRUE 
+                  AND (l.product_specs->>'requires_expedited_shipping' IS NULL OR l.product_specs->>'requires_expedited_shipping' = 'false')
+                GROUP BY l.id, l.product_specs::text
+            """
+            )
+
+            rows = db.session.execute(query).fetchall()
+
+            return rows
+        except Exception as e:
+            logger.error(f"Error getting looks suitable for expedited shipping: {e}")
+            raise e
+
+    def __update_looks_to_require_expedited_shipping(self, look_id: uuid.UUID, product_specs: dict):
+        try:
+            product_specs["requires_expedited_shipping"] = True
+
+            query = text(
+                """
+                UPDATE looks
+                SET product_specs = :product_specs, updated_at = now()
+                WHERE id = :look_id
+                """
+            )
+
+            db.session.execute(query, {"look_id": look_id, "product_specs": json.dumps(product_specs)})
+            db.session.commit()
+        except Exception as e:
+            logger.error(f"Error updating look {look_id} to require expedited shipping: {e}")
+            raise e

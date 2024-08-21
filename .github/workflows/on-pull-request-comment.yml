@@ -65,7 +65,7 @@ jobs:
   cd:
     if: ${{ github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cd') }}
     uses: ./.github/workflows/_sls_deploy.yml
-#    needs: await-ci
+    needs: await-ci
     with:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev

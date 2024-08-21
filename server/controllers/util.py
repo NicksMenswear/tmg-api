@@ -165,7 +165,7 @@ def log_request(func):
 
 def http(method, *args, **kwargs):
     merge_kwargs = {
-        "timeout": 2,
+        "timeout": kwargs.get("timeout", 2),
         "retries": urllib3.util.Retry(total=5, connect=None, read=None, redirect=0, status=None),
     }
     merge_kwargs.update(kwargs)

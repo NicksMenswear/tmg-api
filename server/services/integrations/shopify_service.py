@@ -83,6 +83,10 @@ class AbstractShopifyService(ABC):
     def generate_activation_url(self, customer_id: str) -> str:
         pass
 
+    @abstractmethod
+    def add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -197,6 +201,9 @@ class FakeShopifyService(AbstractShopifyService):
         pass
 
     def generate_activation_url(self, customer_id: str) -> str:
+        pass
+
+    def add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
         pass
 
 
@@ -711,7 +718,7 @@ class ShopifyService(AbstractShopifyService):
 
         shopify_variant_ids = [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids if variant_id]
 
-        self.__add_variants_to_product_bundle(parent_product_variant_id, shopify_variant_ids)
+        self.add_variants_to_product_bundle(parent_product_variant_id, shopify_variant_ids)
 
         self.__publish_and_add_to_online_sales_channel(
             bundle_parent_product_handle, parent_product_id, FlaskApp.current().online_store_sales_channel_id
@@ -764,7 +771,7 @@ class ShopifyService(AbstractShopifyService):
 
         return parent_product
 
-    def __add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
+    def add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
         bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]
 
         mutation = """

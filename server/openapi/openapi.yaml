@@ -1729,6 +1729,17 @@ paths:
         - Measurements
       x-openapi-router-controller: server.controllers.measurements
 
+  /jobs/add-expedited-shipping-for-suit-bundles:
+    post:
+      operationId: add_expedited_shipping_for_suit_bundles
+      responses:
+        "200":
+          description: Added expedited shipping for suit bundles
+      summary: Add expedited shipping for suit bundles
+      x-openapi-router-controller: server.controllers.jobs
+      tags:
+        - Jobs
+
 components:
   schemas:
     uuid:

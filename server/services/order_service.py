@@ -4,7 +4,7 @@ import string
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType, Address
@@ -145,10 +145,23 @@ class OrderService:
 
         return [OrderModel.from_orm(order) for order in orders]
 
-    def update_order_status(self, order_id: uuid.UUID, status: str) -> OrderModel:
+    def update_order_status(
+        self,
+        order_id: uuid.UUID,
+        status: str,
+        sizing_model: Optional[SizeModel] = None,
+        measurement_model: Optional[MeasurementModel] = None,
+    ) -> OrderModel:
         try:
             order = Order.query.filter(Order.id == order_id).first()
             order.status = status
+
+            if order.meta is None:
+                order.meta = {}
+
+            if not order.meta.get("sizes_id") and sizing_model is not None:
+                order.meta["sizes_id"] = str(sizing_model.id)
+                order.meta["measurements_id"] = str(measurement_model.id)
 
             db.session.commit()
             db.session.refresh(order)
@@ -161,7 +174,7 @@ class OrderService:
         measurement_model = self.measurement_service.get_latest_measurement_for_user(size_model.user_id)
 
         orders = self.get_orders_by_status_and_not_older_then_days(
-            ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER
+            ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER, size_model.user_id
         )
 
         for order in orders:
@@ -234,6 +247,6 @@ class OrderService:
                     pass
 
         if num_products == num_order_items:
-            return self.update_order_status(order.id, ORDER_STATUS_READY)
+            return self.update_order_status(order.id, ORDER_STATUS_READY, size_model, measurement_model)
         else:
-            return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU)
+            return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU, size_model, measurement_model)

@@ -52,6 +52,13 @@ def init_sentry():
         except FileNotFoundError:
             return None
 
+    def before_send(event, hint):
+        environment = os.getenv("STAGE")
+        fingerprint = event.get("fingerprint", ["{{ default }}"])
+        fingerprint.append(environment)
+        event["fingerprint"] = fingerprint
+        return event
+
     sentry_sdk.init(
         dsn="https://8e6bac4bea5b3bf97a544417ca20e275@o4507018035724288.ingest.us.sentry.io/4507018177609728",
         integrations=[AwsLambdaIntegration(timeout_warning=True)],
@@ -66,6 +73,7 @@ def init_sentry():
         # Ignoring healthcheck transactions
         before_send_transaction=filter_transactions,
         environment=os.getenv("STAGE"),
+        before_send=before_send,
         release=get_version(),
     )
     for logger in ["connexion.decorators.validation"]:

@@ -11,6 +11,7 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
 from server.logs import log_shopify_id_middleware
+from server.version import get_version
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
 from server.services.attendee_service import AttendeeService
@@ -44,13 +45,6 @@ def init_sentry():
             return None
 
         return event
-
-    def get_version():
-        try:
-            with open("./VERSION") as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return None
 
     def before_send(event, hint):
         environment = os.getenv("STAGE")

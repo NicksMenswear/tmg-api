@@ -1,5 +1,4 @@
-import json
-from functools import wraps
+import os
 from flask import request
 import logging
 
@@ -7,6 +6,7 @@ from aws_lambda_powertools import Logger
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
+from server.version import get_version
 from server.database.models import User
 
 logger = Logger(name="%(name)s")
@@ -22,6 +22,8 @@ def log_shopify_id_middleware():
 
 def init_logging(service, debug=False):
     logger.append_keys(service=service)
+    logger.append_keys(release=get_version() or "")
+    logger.append_keys(environment=os.getenv("STAGE"))
 
     # Override root handler
     logging.root.handlers = logger.handlers

@@ -1,7 +1,7 @@
 import signal
 import awsgi
 
-from server.logs import logger, correlation_paths, init_logging
+from server.logs import powerlogger, correlation_paths, init_logging
 from server.app import init_app, init_sentry, init_db, lambda_teardown
 
 
@@ -20,7 +20,7 @@ else:
 
 
 # Entry point for the API lambda
-@logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
+@powerlogger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
 def lambda_handler(event, context):
     return awsgi.response(app, event, context)
 

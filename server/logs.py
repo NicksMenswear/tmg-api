@@ -18,13 +18,16 @@ def log_shopify_id_middleware():
 
 
 def init_logging(service, debug=False):
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
     logger.append_keys(service=service)
     logger.append_keys(release=get_version() or "")
     logger.append_keys(environment=os.getenv("STAGE"))
 
     # Override root handler
-    logging.root.handlers = logger.handlers
-    logging.root.setLevel(logging.DEBUG if debug else logging.INFO)
+    for existing_logger in logging.root.manager.loggerDict.values():
+        if isinstance(existing_logger, logging.Logger):
+            existing_logger.handlers = logger.handlers
+            existing_logger.setLevel(logger.log_level)
 
     # Tune libraries log levels
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)

@@ -13,11 +13,8 @@ logger = Logger(name="%(name)s")
 
 
 def log_shopify_id_middleware():
-    shopify_id = request.args.get("logged_in_customer_id")
-    if shopify_id:
-        logger.append_keys(shopify_id=shopify_id)
-    else:
-        logger.append_keys(shopify_id="")
+    shopify_id = request.args.get("logged_in_customer_id", "")
+    logger.append_keys(shopify_id=shopify_id)
 
 
 def init_logging(service, debug=False):

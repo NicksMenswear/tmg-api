@@ -9,6 +9,7 @@ from server.version import get_version
 
 
 powerlogger = Logger(name="%(name)s")
+powerlogger._logger.propagate = False  # noqa
 
 
 def log_shopify_id_middleware():
@@ -25,12 +26,10 @@ def init_logging(service, debug=False):
     # Override root handler
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
-            for handler in existing_logger.handlers:
-                existing_logger.removeHandler(handler)
             existing_logger.handlers = powerlogger.handlers
             existing_logger.setLevel(powerlogger.log_level)
 
-    # Tune libraries log levels
+    # Mute libraries log levels
     for name, logger in logging.root.manager.loggerDict.items():
         for mute in ["connexion.", "flask_cors.", "aws_lambda_powertools.", "sqlalchemy."]:
             if name.startswith(mute) and isinstance(logger, logging.Logger):

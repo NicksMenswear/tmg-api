@@ -35,6 +35,8 @@ TMG_GROUP_MIN_PERCENT_AMOUNT = 300
 
 logger = logging.getLogger(__name__)
 
+DISCOUNTS_FLIP_DATE = datetime(2024, 8, 23, 0, 0, 0)
+
 
 # noinspection PyMethodMayBeStatic
 class DiscountService:
@@ -491,6 +493,7 @@ class DiscountService:
         if not look or not look.product_specs or not look.product_specs.get("bundle", {}).get("variant_id"):
             raise ServiceError("Look has no bundle associated")
 
+        event = self.event_service.get_event_by_id(event_id)
         look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
@@ -503,9 +506,18 @@ class DiscountService:
 
         title = code
 
-        shopify_discount = self.shopify_service.create_order_discount_code(
-            title, code, attendee_user.shopify_id, discount_amount
-        )
+        if event.created_at > DISCOUNTS_FLIP_DATE:
+            shopify_discount = self.shopify_service.create_product_discount_code(
+                title,
+                code,
+                attendee_user.shopify_id,
+                discount_amount,
+                [look.product_specs.get("bundle", {}).get("variant_id")],
+            )
+        else:
+            shopify_discount = self.shopify_service.create_order_discount_code(
+                title, code, attendee_user.shopify_id, discount_amount
+            )
 
         discount = Discount(
             attendee_id=attendee.id,

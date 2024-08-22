@@ -9,7 +9,12 @@ from server.models.order_model import AddressModel, CreateOrderModel, CreateOrde
 from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
-from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, DiscountService, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import (
+    DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
+    DiscountService,
+    GIFT_DISCOUNT_CODE_PREFIX,
+    DISCOUNTS_FLIP_DATE,
+)
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
@@ -107,6 +112,9 @@ class ShopifyWebhookOrderHandler:
 
         discounts_codes = []
 
+        event_id = discounts[0].event_id
+        event = self.event_service.get_event_by_id(event_id)
+
         for discount in discounts:
             attendee_user = self.user_service.get_user_for_attendee(discount.attendee_id)
             attendee = self.attendee_service.get_attendee_by_id(discount.attendee_id)
@@ -129,9 +137,14 @@ class ShopifyWebhookOrderHandler:
             bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
             discounted_variant_ids = [bundle_variant_id]
 
-            discount_response = self.shopify_service.create_product_discount_code(
-                code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids
-            )
+            if event.created_at > DISCOUNTS_FLIP_DATE:
+                discount_response = self.shopify_service.create_order_discount_code(
+                    code, code, attendee_user.shopify_id, discount.amount
+                )
+            else:
+                discount_response = self.shopify_service.create_product_discount_code(
+                    code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids
+                )
 
             self.discount_service.add_code_to_discount(
                 discount.id,

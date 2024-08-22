@@ -112,3 +112,5 @@ class TestSizes(BaseTestCase):
         self.assertStatus(response, 201)
         order = self.order_service.get_order_by_id(order.id)
         self.assertEqual(order.status, ORDER_STATUS_READY)
+        self.assertEqual(order.meta.get("measurements_id"), str(measurement.id))
+        self.assertIsNotNone(order.meta.get("sizes_id"))

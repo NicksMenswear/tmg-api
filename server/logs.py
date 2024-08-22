@@ -25,6 +25,8 @@ def init_logging(service, debug=False):
     # Override root handler
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
+            for handler in logger.handlers:
+                logger.removeHandler(handler)
             existing_logger.handlers = powerlogger.handlers
             existing_logger.setLevel(powerlogger.log_level)
 

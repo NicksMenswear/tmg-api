@@ -27,10 +27,9 @@ def init_logging(service, debug=False):
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
             existing_logger.handlers = powerlogger.handlers
-            existing_logger.setLevel(powerlogger.log_level)
 
     # Mute libraries log levels
-    for name, logger in logging.root.manager.loggerDict.items():
-        for mute in ["connexion.", "flask_cors.", "aws_lambda_powertools.", "sqlalchemy."]:
-            if name.startswith(mute) and isinstance(logger, logging.Logger):
-                logger.setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    for name in logging.root.manager.loggerDict:
+        if name.startswith("connexion."):
+            logging.getLogger(name).setLevel(logging.INFO)

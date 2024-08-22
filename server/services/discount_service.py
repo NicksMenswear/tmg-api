@@ -35,7 +35,7 @@ TMG_GROUP_MIN_PERCENT_AMOUNT = 300
 
 logger = logging.getLogger(__name__)
 
-DISCOUNTS_FLIP_DATE = datetime(2023, 8, 23, 0, 0, 0)
+DISCOUNTS_FLIP_DATE = datetime(2024, 8, 23, 0, 0, 0)
 
 
 # noinspection PyMethodMayBeStatic

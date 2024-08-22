@@ -27,8 +27,9 @@ def init_logging(service, debug=False):
         if isinstance(existing_logger, logging.Logger):
             for handler in logger.handlers:
                 logger.removeHandler(handler)
-            existing_logger.handlers = powerlogger.handlers
-            existing_logger.setLevel(powerlogger.log_level)
+            for handler in powerlogger.handlers:
+                existing_logger.addHandler(handler)
+                existing_logger.setLevel(powerlogger.log_level)
 
     # Tune libraries log levels
     for name, logger in logging.root.manager.loggerDict.items():

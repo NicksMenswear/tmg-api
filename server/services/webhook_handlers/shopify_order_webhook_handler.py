@@ -307,7 +307,7 @@ class ShopifyWebhookOrderHandler:
                     f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
                 )
 
-        order_model = self.order_service.update_order_status(order.id, order_status)
+        order_model = self.order_service.update_order_status(order.id, order_status, size_model, measurement_model)
         order_model.order_items = self.order_service.get_order_items_by_order_id(order.id)
         order_model.products = self.product_service.get_products_for_order(order.id)
 

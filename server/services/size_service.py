@@ -31,6 +31,7 @@ class SizeService:
         return SizeModel.from_orm(size)
 
     def create_size(self, create_size_request: CreateSizeRequestModel) -> SizeModel:
+        logger.info(f"Creating size for user {create_size_request.user_id}")
         try:
             size = Size(
                 user_id=create_size_request.user_id,

@@ -1,8 +1,8 @@
 import signal
-
 import awsgi
 
 from server.app import init_app, init_logging, init_sentry, init_db, lambda_teardown
+
 
 if __name__ == "__main__":
     print("Running a local dev server...")
@@ -18,11 +18,14 @@ else:
     init_db()
 
 
-# This is the entry point for the AWS Lambda function
+# Entry point for the API lambda
+@logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
 def lambda_handler(event, context):
+    logger.append_keys(order_id=order_id)
     return awsgi.response(app, event, context)
 
 
+# Entry point for the sync users cronjob lambda
 def lambda_job_sync_users_from_legacy_db(event, context):
     from server.jobs.sync_users_from_legacy_db import sync_users_from_legacy_db
 
@@ -31,6 +34,7 @@ def lambda_job_sync_users_from_legacy_db(event, context):
     sync_users_from_legacy_db()
 
 
+# Entry point for the expedited shipping cronjob lambda
 def lambda_job_add_expedited_shipping_for_suit_bundles(event, context):
     from server.jobs.add_expedited_shipping_for_suit_bundles import add_expedited_shipping_for_suit_bundles
 

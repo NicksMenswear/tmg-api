@@ -68,6 +68,7 @@ class EventModel(CoreModel):
     looks: Optional[List[LookModel]] = []
     roles: Optional[List[RoleModel]] = []
     meta: Optional[Dict[str, Any]] = {}
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

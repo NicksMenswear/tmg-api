@@ -1,7 +1,7 @@
 import signal
 import awsgi
 
-from server.logging import logger, correlation_paths, init_logging
+from server.logs import logger, correlation_paths, init_logging
 from server.app import init_app, init_sentry, init_db, lambda_teardown
 
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import os
 import sys
 from urllib.parse import urlparse
@@ -11,7 +10,7 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
-from server.logging import log_shopify_id_middleware
+from server.logs import log_shopify_id_middleware
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
 from server.services.attendee_service import AttendeeService

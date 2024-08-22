@@ -208,7 +208,7 @@ class AttendeeService:
 
         try:
             user_size = Size.query.filter(Size.user_id == attendee_user.id).first()
-            owner_invite = event.user_id == attendee_user.id
+            owner_auto_invite = event.user_id == attendee_user.id
             new_attendee = Attendee(
                 id=uuid.uuid4(),
                 user_id=attendee_user.id,
@@ -218,7 +218,7 @@ class AttendeeService:
                 is_active=create_attendee.is_active,
                 size=bool(user_size),
                 style=create_attendee.style,
-                invite=create_attendee.invite or owner_invite,
+                invite=create_attendee.invite or owner_auto_invite,
                 pay=create_attendee.pay,
                 ship=create_attendee.ship,
             )

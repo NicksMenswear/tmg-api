@@ -312,8 +312,9 @@ class TestAttendees(BaseTestCase):
 
     def test_update_attendee_look_and_role(self):
         # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )

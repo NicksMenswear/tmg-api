@@ -257,6 +257,8 @@ class FakeShopifyService(AbstractShopifyService):
 class ShopifyService(AbstractShopifyService):
     def __init__(self):
         self.__shopify_store = os.getenv("shopify_store")
+        self.__stage = os.getenv("STAGE", "dev")
+        self.__bundle_image_path = f"https://data.{self.__stage}.tmgcorp.net/bundle.jpg"
         self.__shopify_store_host = f"{self.__shopify_store}.myshopify.com"
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
         self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
@@ -427,9 +429,9 @@ class ShopifyService(AbstractShopifyService):
                     "title": bundle_identifier_product_name,
                     "vendor": "The Modern Groom",
                     "tags": ["hidden"],
+                    "images": [{"src": self.__bundle_image_path}],
                     "variants": [
                         {
-                            "option1": bundle_identifier_product_name,
                             "price": "0",
                             "sku": bundle_identifier_product_handle,
                             "requires_shipping": True,

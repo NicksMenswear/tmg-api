@@ -17,7 +17,8 @@ def log_shopify_id_middleware():
 
 
 def init_logging(service, debug=False):
-    powerlogger.setLevel(logging.DEBUG if debug else logging.INFO)
+    level = logging.DEBUG if debug else logging.INFO
+    powerlogger.setLevel(level)
     powerlogger.append_keys(service=service)
     powerlogger.append_keys(version=get_version() or "")
     powerlogger.append_keys(environment=os.getenv("STAGE"))
@@ -26,15 +27,15 @@ def init_logging(service, debug=False):
     root_logger = logging.getLogger()
     root_logger.handlers.clear()
 
-    # Subscribe to all library loggers
-    for existing_logger in logging.root.manager.loggerDict.values():
-        if isinstance(existing_logger, logging.Logger):
-            existing_logger.handlers = powerlogger.handlers
-            existing_logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    # Capture all library loggers
+    logging.root.handlers = powerlogger.handlers
+    for logger in logging.root.manager.loggerDict.values():
+        if isinstance(logger, logging.Logger):
+            logger.setLevel(level)
 
-    # Mute noisy library log levels
+    # Mute noisy libraries
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     for name in logging.root.manager.loggerDict:
-        for mute in ["sqlalchemy.orm.", "connexion.", "flask_cors.", "botocore", "boto3"]:
+        for mute in ["sqlalchemy.orm", "connexion", "flask_cors", "aws_lambda_powertools", "botocore", "boto3"]:
             if name.startswith(mute):
                 logging.getLogger(name).setLevel(logging.WARNING)

@@ -19,7 +19,7 @@ def log_shopify_id_middleware():
 def init_logging(service, debug=False):
     powerlogger.setLevel(logging.DEBUG if debug else logging.INFO)
     powerlogger.append_keys(service=service)
-    powerlogger.append_keys(versio=get_version() or "")
+    powerlogger.append_keys(version=get_version() or "")
     powerlogger.append_keys(environment=os.getenv("STAGE"))
 
     # Clean root handler (AWS lambda hack)
@@ -30,9 +30,11 @@ def init_logging(service, debug=False):
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
             existing_logger.handlers = powerlogger.handlers
+            existing_logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     # Mute noisy library log levels
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     for name in logging.root.manager.loggerDict:
-        if name.startswith("connexion."):
-            logging.getLogger(name).setLevel(logging.INFO)
+        for mute in ["sqlalchemy.orm.", "connexion.", "flask_cors.", "botocore", "boto3"]:
+            if name.startswith(mute):
+                logging.getLogger(name).setLevel(logging.WARNING)

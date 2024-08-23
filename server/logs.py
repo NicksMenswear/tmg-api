@@ -8,7 +8,7 @@ from aws_lambda_powertools.logging import correlation_paths
 from server.version import get_version
 
 
-powerlogger = Logger(name="%(name)s")
+powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "message"], timestamp="%(created)f")
 
 
 def log_shopify_id_middleware():

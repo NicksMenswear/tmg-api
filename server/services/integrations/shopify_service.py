@@ -83,7 +83,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
         pass
 
     @abstractmethod
@@ -92,6 +92,10 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def generate_activation_url(self, customer_id: str) -> str:
+        pass
+
+    @abstractmethod
+    def create_bundle_identifier_product(self, bundle_id: str):
         pass
 
 
@@ -177,7 +181,7 @@ class FakeShopifyService(AbstractShopifyService):
     def archive_product(self, shopify_product_id):
         pass
 
-    def create_bundle(self, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
 
@@ -212,6 +216,42 @@ class FakeShopifyService(AbstractShopifyService):
 
     def generate_activation_url(self, customer_id: str) -> str:
         pass
+
+    def create_bundle_identifier_product(self, bundle_id: str):
+        bundle_identifier_virtual_product_id = str(random.randint(1000, 100000))
+        bundle_identifier_product_variant_id = str(random.randint(1000, 100000))
+        bundle_identifier_product_name = f"Bundle #{bundle_id}"
+        bundle_identifier_product_handle = f"bundle-{bundle_id}"
+        product_variant = {
+            "id": bundle_identifier_product_variant_id,
+            "title": bundle_identifier_product_name,
+            "price": "0.0",
+            "sku": bundle_identifier_product_handle,
+        }
+
+        virtual_product = {
+            "id": bundle_identifier_virtual_product_id,
+            "title": bundle_identifier_product_name,
+            "vendor": "tmg",
+            "body_html": "",
+            "images": [{"src": "https://via.placeholder.com/150"}],
+            "variants": [product_variant],
+        }
+
+        self.shopify_variants[bundle_identifier_product_variant_id] = ShopifyVariantModel(
+            **{
+                "product_id": bundle_identifier_virtual_product_id,
+                "product_title": bundle_identifier_product_name,
+                "variant_id": bundle_identifier_product_variant_id,
+                "variant_title": bundle_identifier_product_name,
+                "variant_sku": bundle_identifier_product_handle,
+                "variant_price": "0.0",
+            }
+        )
+        self.shopify_virtual_products[bundle_identifier_virtual_product_id] = virtual_product
+        self.shopify_virtual_product_variants[bundle_identifier_product_variant_id] = product_variant
+
+        return virtual_product.get("variants", {})[0].get("id")
 
 
 class ShopifyService(AbstractShopifyService):
@@ -356,7 +396,6 @@ class ShopifyService(AbstractShopifyService):
                     "vendor": vendor,
                     "product_type": "Virtual Goods",
                     "tags": tags,
-                    # "published_at": None,  # Unpublish from storefront
                     "variants": [
                         {
                             "option1": title,
@@ -375,6 +414,37 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError("Failed to create virtual product in shopify store.")
 
         return body.get("product")
+
+    def create_bundle_identifier_product(self, bundle_id: str):
+        bundle_identifier_product_name = f"Bundle #{bundle_id}"
+        bundle_identifier_product_handle = f"bundle-{bundle_id}"
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
+            {
+                "product": {
+                    "title": bundle_identifier_product_name,
+                    "vendor": "The Modern Groom",
+                    "tags": ["hidden"],
+                    "variants": [
+                        {
+                            "option1": bundle_identifier_product_name,
+                            "price": "0",
+                            "sku": bundle_identifier_product_handle,
+                            "requires_shipping": True,
+                            "taxable": False,
+                            "inventory_management": None,
+                        }
+                    ],
+                }
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to create virtual product in shopify store.")
+
+        return body.get("product").get("variants", {})[0].get("id")
 
     def archive_product(self, shopify_product_id):
         status, body = self.admin_api_request(
@@ -663,10 +733,9 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def create_bundle(self, variant_ids: List[str], image_src: str = None) -> str:
-        bundle_parent_product_suffix = random.randint(1000000, 100000000)
-        bundle_parent_product_name = f"Suit Bundle #{bundle_parent_product_suffix}"
-        bundle_parent_product_handle = f"suit-bundle-{bundle_parent_product_suffix}"
+    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+        bundle_parent_product_name = f"Suit Bundle #{bundle_id}"
+        bundle_parent_product_handle = f"suit-bundle-{bundle_id}"
         bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name)
 
         parent_product_id = bundle_parent_product.get("id")

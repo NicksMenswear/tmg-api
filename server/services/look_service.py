@@ -1,6 +1,7 @@
 import base64
 import logging
 import os
+import random
 import time
 import uuid
 from datetime import datetime
@@ -13,7 +14,7 @@ from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -134,9 +135,9 @@ class LookService:
         return [jacket_variant, pants_variant, vest_variant]
 
     def __enrich_product_specs_variants_with_suit_parts(
-        self, suit_variant_id: str, product_specs: dict, suit_parts_variants: List[ShopifyVariantModel]
+        self, suit_variant_id: str, product_spec_variants: List[str], suit_parts_variants: List[ShopifyVariantModel]
     ) -> List[str]:
-        enriched_product_specs_variants = product_specs.get("variants").copy()
+        enriched_product_specs_variants = product_spec_variants.copy()
         enriched_product_specs_variants.remove(suit_variant_id)
 
         enriched_product_specs_variants = [
@@ -172,19 +173,28 @@ class LookService:
             if not suit_variant_id:
                 raise ServiceError("Suit variant id is missing.")
 
-            look_variants = self.shopify_service.get_variants_by_id(create_look.product_specs.get("variants"))
+            bundle_id = str(random.randint(100000, 1000000000))
+
+            bundle_identifier_variant_id = str(self.shopify_service.create_bundle_identifier_product(bundle_id))
+
+            enriched_look_variants = create_look.product_specs.get("variants") + [bundle_identifier_variant_id]
+
+            look_variants = self.shopify_service.get_variants_by_id(enriched_look_variants)
+
             suit_parts_variants = self.__get_suit_parts(suit_variant_id)
 
             all_variants = look_variants + suit_parts_variants
+
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 
             enriched_product_specs_variants = self.__enrich_product_specs_variants_with_suit_parts(
                 suit_variant_id,
-                create_look.product_specs,
+                enriched_look_variants,
                 suit_parts_variants,
             )
 
             bundle_product_variant_id = self.shopify_service.create_bundle(
+                bundle_id,
                 enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
             )

@@ -1569,6 +1569,24 @@ paths:
         - Webhooks
       x-openapi-router-controller: server.controllers.webhooks
 
+  /shipping:
+    post:
+      operationId: shipping
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+        x-body-name: payload
+      responses:
+        "200":
+          description: Shipping
+      summary: Shipping
+      tags:
+        - Shipping
+      x-openapi-router-controller: server.controllers.shipping
+
   /audit:
     get:
       operationId: list_audit_entries

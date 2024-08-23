@@ -23,6 +23,8 @@ def init_logging(service, debug=False):
     powerlogger.append_keys(environment=os.getenv("STAGE"))
 
     # Override root handler
+    root_logger = logging.getLogger()
+    root_logger.handlers.clear()
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
             existing_logger.handlers = powerlogger.handlers

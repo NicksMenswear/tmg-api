@@ -22,14 +22,16 @@ def init_logging(service, debug=False):
     powerlogger.append_keys(versio=get_version() or "")
     powerlogger.append_keys(environment=os.getenv("STAGE"))
 
-    # Override root handler
+    # Clean root handler (AWS lambda hack)
     root_logger = logging.getLogger()
     root_logger.handlers.clear()
+
+    # Subscribe to all library loggers
     for existing_logger in logging.root.manager.loggerDict.values():
         if isinstance(existing_logger, logging.Logger):
             existing_logger.handlers = powerlogger.handlers
 
-    # Mute libraries log levels
+    # Mute noisy library log levels
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     for name in logging.root.manager.loggerDict:
         if name.startswith("connexion."):

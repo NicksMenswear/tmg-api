@@ -9,7 +9,6 @@ from server.version import get_version
 
 
 powerlogger = Logger(name="%(name)s")
-powerlogger._logger.propagate = False  # noqa
 
 
 def log_shopify_id_middleware():

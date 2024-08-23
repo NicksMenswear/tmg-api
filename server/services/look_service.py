@@ -5,7 +5,9 @@ import random
 import time
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+
+from sqlalchemy import text
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
@@ -14,7 +16,7 @@ from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
-from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -275,3 +277,33 @@ class LookService:
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to save image.", e)
+
+    def find_look_by_product_id(self, product_id: str) -> Optional[LookModel]:
+        query = text(
+            f"""
+            SELECT id, name, user_id, product_specs, image_path, is_active
+            FROM looks 
+            WHERE product_specs->'items' IS NOT NULL 
+              AND json_typeof(product_specs->'items') = 'array' 
+              AND EXISTS (
+                SELECT 1 
+                FROM json_array_elements(product_specs->'items') AS item 
+                WHERE item->>'product_id' = '{product_id}');
+            """
+        )
+
+        rows = db.session.execute(query).fetchall()
+
+        if not rows or len(rows) == 0:
+            return None
+
+        look_row = rows[0]
+
+        return LookModel(
+            id=look_row.id,
+            name=look_row.name,
+            user_id=look_row.user_id,
+            product_specs=look_row.product_specs,
+            image_path=look_row.image_path,
+            is_active=look_row.is_active,
+        )

@@ -315,3 +315,8 @@ class AttendeeService:
                     tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.get('shopify_order_id')}"
                 tracking.append(TrackingModel(tracking_number=tracking_number, tracking_url=tracking_url))
         return tracking
+
+    def find_attendees_by_look_id(self, look_id: uuid.UUID) -> List[AttendeeModel]:
+        attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
+
+        return [AttendeeModel.from_orm(attendee) for attendee in attendees]

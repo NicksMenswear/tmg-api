@@ -1569,9 +1569,9 @@ paths:
         - Webhooks
       x-openapi-router-controller: server.controllers.webhooks
 
-  /shipping:
+  /shipping/price:
     post:
-      operationId: shipping
+      operationId: shipping_price
       requestBody:
         content:
           application/json:

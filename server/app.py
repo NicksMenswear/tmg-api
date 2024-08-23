@@ -33,6 +33,7 @@ from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
+from server.services.shipping_service import ShippingService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.user_service import UserService
@@ -159,6 +160,9 @@ def init_services(app, is_testing=False):
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service, app.activecampaign_service)
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
     app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
+    app.shipping_service = ShippingService(
+        look_service=app.look_service, attendee_service=app.attendee_service, event_service=app.event_service
+    )
 
 
 def init_db():

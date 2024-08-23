@@ -1,24 +1,24 @@
 import logging
 
-from connexion import request
+from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 
 
-def shipping(payload):
-    logger.info(payload)
-    logger.info(request.headers)
-    logger.info(request.get_data())
+def shipping_price(payload):
+    shipping_service = FlaskApp.current().shipping_service
+
+    rate = shipping_service.calculate_shipping_price(payload)
+
+    service_name = "Ground" if rate == "0" else "Expedited"
+
     return {
         "rates": [
             {
-                "service_name": "zinovii-overnight",
-                "service_code": "ON",
-                "total_price": "4500",
-                "description": "This is the fastest option by far",
+                "service_name": service_name,
+                "service_code": "TMG",
+                "total_price": rate,
                 "currency": "USD",
-                "min_delivery_date": "2024-08-28 14:48:45 -0400",
-                "max_delivery_date": "2024-08-30 14:48:45 -0400",
             }
         ]
     }, 200

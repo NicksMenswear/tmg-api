@@ -35,6 +35,8 @@ from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
+BUNDLE_IDENTIFIER_PRODUCT_SKU_PREFIX = "bundle-"
+
 
 # noinspection PyMethodMayBeStatic
 class ShopifyWebhookOrderHandler:
@@ -249,12 +251,18 @@ class ShopifyWebhookOrderHandler:
         )
 
         order = self.order_service.create_order(create_order)
+        num_processable_items = len(items)
 
         line_item_skus = set()
 
         for line_item in items:
             shopify_sku = line_item.get("sku")
             line_item_skus.add(shopify_sku)
+
+            if shopify_sku.startswith(BUNDLE_IDENTIFIER_PRODUCT_SKU_PREFIX):
+                # Skip bundle products which are just markers for the bundle
+                num_processable_items -= 1
+                continue
 
             if not shopify_sku:
                 logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
@@ -328,7 +336,7 @@ class ShopifyWebhookOrderHandler:
 
                 self.order_service.create_order_item(create_suit_order_item)
 
-        if num_valid_products < len(items):
+        if num_valid_products < num_processable_items:
             if has_products_that_requires_measurements and not (size_model or measurement_model):
                 order_status = ORDER_STATUS_PENDING_MEASUREMENTS
             else:

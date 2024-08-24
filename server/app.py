@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import os
 import sys
 from urllib.parse import urlparse
@@ -11,6 +10,8 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
+from server.logs import log_shopify_id_middleware
+from server.version import get_version
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
 from server.services.attendee_service import AttendeeService
@@ -47,13 +48,6 @@ def init_sentry():
 
         return event
 
-    def get_version():
-        try:
-            with open("./VERSION") as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return None
-
     def before_send(event, hint):
         environment = os.getenv("STAGE")
         fingerprint = event.get("fingerprint", ["{{ default }}"])
@@ -82,15 +76,6 @@ def init_sentry():
         ignore_logger(logger)
 
 
-def init_logging(debug=False):
-    level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format="%(levelname)s %(name)s: %(message)s", level=level, force=True)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-    for name in logging.root.manager.loggerDict:
-        if name.startswith("connexion."):
-            logging.getLogger(name).setLevel(logging.INFO)
-
-
 def init_app(is_testing=False):
     options = {"swagger_ui": False}
     api = connexion.FlaskApp(__name__, specification_dir="./openapi/", options=options)
@@ -107,6 +92,8 @@ def init_app(is_testing=False):
     FlaskApp.set(api.app)
 
     init_services(api.app, run_in_test_mode)
+
+    api.app.before_request(log_shopify_id_middleware)
 
     return api
 

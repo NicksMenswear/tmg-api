@@ -116,7 +116,7 @@ class LookService:
             raise ServiceError("Suit variant sku not found.")
 
         if not suit_sku.startswith("00"):
-            raise ServiceError("Invalid suit variant sku.")
+            raise ServiceError(f"Invalid suit variant sku: {suit_variant}")
 
         jacket_sku = "1" + suit_sku[1:]
 

@@ -24,7 +24,8 @@ def append_log_request_context_middleware():
             "method": method,
             "path": endpoint,
             "args": args,
-        }
+        },
+        response={},
     )
 
 

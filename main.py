@@ -25,23 +25,5 @@ def lambda_handler(event, context):
     return awsgi.response(app, event, context)
 
 
-# Entry point for the sync users cronjob lambda
-def lambda_job_sync_users_from_legacy_db(event, context):
-    from server.jobs.sync_users_from_legacy_db import sync_users_from_legacy_db
-
-    init_logging("job_sync_users_from_legacy_db", debug=True)
-    init_sentry()
-    sync_users_from_legacy_db()
-
-
-# Entry point for the expedited shipping cronjob lambda
-def lambda_job_add_expedited_shipping_for_suit_bundles(event, context):
-    from server.jobs.add_expedited_shipping_for_suit_bundles import add_expedited_shipping_for_suit_bundles
-
-    init_logging("job_add_expedited_shipping_for_suit_bundles", debug=True)
-    init_sentry()
-    add_expedited_shipping_for_suit_bundles()
-
-
 # Handle lambda termination gracefully
 signal.signal(signal.SIGTERM, lambda_teardown)

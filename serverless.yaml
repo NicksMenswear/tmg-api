@@ -57,7 +57,7 @@ provider:
     # ShipHero Env Variables
     SHIPHERO_API_URL: "https://public-api.shiphero.com"
     SHIPHERO_API_ACCESS_TOKEN: ${ssm:/${sls:stage}/shiphero/api_access_token}
-  
+
 functions:
   api:
     handler: main.lambda_handler
@@ -71,17 +71,8 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-  job-sync-users-from-legacy-db:
-    handler: main.lambda_job_sync_users_from_legacy_db
-    events:
-      - schedule: rate(1 day)
-    timeout: 600
-    memorySize: 512
-    lambdaInsights: true
-    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
-    
-  job-add-expedited-shipping-for-suit-bundles:
-    handler: main.lambda_job_add_expedited_shipping_for_suit_bundles
+  job-hello-world:
+    handler: job.lambda_handler_hello_world
     events:
       - schedule: rate(1 day)
     timeout: 600

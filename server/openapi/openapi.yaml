@@ -1729,6 +1729,17 @@ paths:
         - Measurements
       x-openapi-router-controller: server.controllers.measurements
 
+  /jobs/hello-world:
+    post:
+      operationId: hello_world
+      responses:
+        "200":
+          description: Hello World
+      summary: Hello World
+      x-openapi-router-controller: server.controllers.jobs
+      tags:
+        - Jobs
+
 components:
   schemas:
     uuid:

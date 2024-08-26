@@ -34,7 +34,7 @@ class ExpeditedShippingRateModel(ShippingRateModel):
 
 
 class ShippingPriceModel(BaseModel):
-    rates = List[ShippingRateModel]
+    rates: List[ShippingRateModel]
 
     def to_response(self):
         return {"rates": [rate.to_response() for rate in self.rates]}

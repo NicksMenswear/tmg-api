@@ -403,3 +403,62 @@ def measurement_model(**data) -> MeasurementModel:
             },
         ),
     )
+
+
+def shipping_rate_request(items=None):
+    return {
+        "rate": {
+            "origin": {
+                "country": "US",
+                "postal_code": "85034",
+                "province": "AZ",
+                "city": "Phoenix",
+                "name": None,
+                "address1": "211 S 28th St",
+                "address2": None,
+                "address3": None,
+                "latitude": 33.4452903,
+                "longitude": -112.0209133,
+                "phone": None,
+                "fax": None,
+                "email": None,
+                "address_type": None,
+                "company_name": "tmg-dev",
+            },
+            "destination": {
+                "country": "US",
+                "postal_code": "85034",
+                "province": "AZ",
+                "city": "Phoenix",
+                "name": None,
+                "address1": "211 S 28th St",
+                "address2": None,
+                "address3": None,
+                "latitude": 33.4452903,
+                "longitude": -112.0209133,
+                "phone": None,
+                "fax": None,
+                "email": None,
+                "address_type": None,
+                "company_name": "tmg-dev",
+            },
+            "items": [] if not items else items,
+        }
+    }
+
+
+def shipping_item(**data):
+    return {
+        "name": data.get("name", "Black Suit Jacket"),
+        "sku": data.get("sku", "101A2BLK"),
+        "quantity": data.get("quantity", 1),
+        "grams": data.get("grams", 0),
+        "price": data.get("price", random.randint(100, 200)),
+        "vendor": data.get("vendor", "themodern-groom"),
+        "requires_shipping": data.get("requires_shipping", True),
+        "taxable": data.get("taxable", True),
+        "fulfillment_service": data.get("fulfillment_service", "manual"),
+        "properties": data.get("properties", {}),
+        "product_id": data.get("product_id", 8397791002755),
+        "variant_id": data.get("variant_id", 44610669805699),
+    }

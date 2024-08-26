@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING: int = 6
 
 
+# noinspection PyMethodMayBeStatic
 class ShippingService:
     def __init__(self, look_service: LookService, attendee_service: AttendeeService, event_service: EventService):
         self.look_service = look_service

@@ -115,9 +115,13 @@ class BaseTestCase(TestCase):
             return None
 
         keys = list(self.shopify_service.shopify_variants.keys())
-        random_key = keys[random.randint(0, len(keys) - 1)]
 
-        return self.shopify_service.shopify_variants[random_key]
+        random_variant = None
+        while random_variant is None or random_variant.variant_sku.startswith("bundle-"):
+            random_key = keys[random.randint(0, len(keys) - 1)]
+            random_variant = self.shopify_service.shopify_variants[random_key]
+
+        return random_variant
 
     def create_look_test_product_specs(self, num_variants=5):
         suit_variant = self.get_random_shopify_variant()

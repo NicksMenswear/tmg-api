@@ -10,7 +10,7 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
-from server.logs import log_shopify_id_middleware
+from server.logs import log_shopify_id_middleware, log_request_middleware, log_response_middleware
 from server.version import get_version
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
@@ -94,6 +94,8 @@ def init_app(is_testing=False):
     init_services(api.app, run_in_test_mode)
 
     api.app.before_request(log_shopify_id_middleware)
+    api.app.before_request(log_request_middleware)
+    api.app.after_request(log_response_middleware)
 
     return api
 

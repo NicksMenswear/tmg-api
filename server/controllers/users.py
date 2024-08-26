@@ -3,7 +3,7 @@ import uuid
 
 from pydantic import validate_email
 
-from server.controllers.util import hmac_verification, error_handler, log_request
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UpdateUserModel
@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-@log_request
 def create_user(create_user):
     user_service = FlaskApp.current().user_service
 
@@ -25,7 +24,6 @@ def create_user(create_user):
 
 @hmac_verification
 @error_handler
-@log_request
 def get_user_by_email(email):
     user_service = FlaskApp.current().user_service
 
@@ -38,7 +36,6 @@ def get_user_by_email(email):
 
 @hmac_verification
 @error_handler
-@log_request
 def get_user_events(user_id, status=None, enriched=False):
     event_service = FlaskApp.current().event_service
 
@@ -56,7 +53,6 @@ def get_user_events(user_id, status=None, enriched=False):
 
 @hmac_verification
 @error_handler
-@log_request
 def get_user_looks(user_id):
     look_service = FlaskApp.current().look_service
 
@@ -67,7 +63,6 @@ def get_user_looks(user_id):
 
 @hmac_verification
 @error_handler
-@log_request
 def update_user(user_id, update_user):
     user_service = FlaskApp.current().user_service
 
@@ -78,7 +73,6 @@ def update_user(user_id, update_user):
 
 @hmac_verification
 @error_handler
-@log_request
 def generate_activation_url(user_id):
     user_service: UserService = FlaskApp.current().user_service
 

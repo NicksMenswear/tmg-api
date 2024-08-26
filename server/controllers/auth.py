@@ -1,6 +1,6 @@
 import logging
 
-from server.controllers.util import hmac_verification, error_handler, log_request
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.services import NotFoundError
 
@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-@log_request
 def login(email):
     user_service = FlaskApp.current().user_service
     shopify_service = FlaskApp.current().shopify_service

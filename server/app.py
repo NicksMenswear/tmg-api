@@ -11,6 +11,8 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
+from server.logs import log_shopify_id_middleware
+from server.version import get_version
 from server.config import Config, TestConfig
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
@@ -31,6 +33,8 @@ from server.services.role_service import RoleService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.user_service import UserService
+from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
+from server.services.webhook_handlers.shopify_checkout_webhook_handler import ShopifyWebhookCheckoutHandler
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
@@ -98,6 +102,7 @@ def init_app(is_testing=False):
         "openapi.yaml", arguments={"title": "The Modern Groom API"}, pythonic_params=True, strict_validation=True
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
+
     run_in_test_mode = is_testing or os.getenv("TMG_APP_TESTING", "false").lower() == "true"
     api.app.config.from_object(TestConfig if run_in_test_mode else Config)
 
@@ -106,6 +111,8 @@ def init_app(is_testing=False):
     FlaskApp.set(api.app)
 
     init_services(api.app, run_in_test_mode)
+
+    api.app.before_request(log_shopify_id_middleware)
 
     return api
 
@@ -160,6 +167,8 @@ def init_services(app, is_testing=False):
         app.activecampaign_service,
     )
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
+    app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
+    app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
 
 
 def init_db():

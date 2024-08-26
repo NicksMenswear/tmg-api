@@ -205,30 +205,31 @@ class AttendeeService:
 
         if attendee:
             raise DuplicateError("Attendee already exists.")
-        else:
-            try:
-                user_size = Size.query.filter(Size.user_id == attendee_user.id).first()
-                new_attendee = Attendee(
-                    id=uuid.uuid4(),
-                    user_id=attendee_user.id,
-                    event_id=create_attendee.event_id,
-                    role_id=create_attendee.role_id,
-                    look_id=create_attendee.look_id,
-                    is_active=create_attendee.is_active,
-                    size=bool(user_size),
-                    style=create_attendee.style,
-                    invite=create_attendee.invite,
-                    pay=create_attendee.pay,
-                    ship=create_attendee.ship,
-                )
 
-                db.session.add(new_attendee)
-                db.session.commit()
-                db.session.refresh(new_attendee)
-            except Exception as e:
-                raise ServiceError("Failed to create attendee.", e)
+        try:
+            user_size = Size.query.filter(Size.user_id == attendee_user.id).first()
+            owner_auto_invite = event.user_id == attendee_user.id
+            new_attendee = Attendee(
+                id=uuid.uuid4(),
+                user_id=attendee_user.id,
+                event_id=create_attendee.event_id,
+                role_id=create_attendee.role_id,
+                look_id=create_attendee.look_id,
+                is_active=create_attendee.is_active,
+                size=bool(user_size),
+                style=create_attendee.style,
+                invite=create_attendee.invite or owner_auto_invite,
+                pay=create_attendee.pay,
+                ship=create_attendee.ship,
+            )
 
-            return AttendeeModel.from_orm(new_attendee)
+            db.session.add(new_attendee)
+            db.session.commit()
+            db.session.refresh(new_attendee)
+        except Exception as e:
+            raise ServiceError("Failed to create attendee.", e)
+
+        return AttendeeModel.from_orm(new_attendee)
 
     def update_attendee(self, attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active).first()

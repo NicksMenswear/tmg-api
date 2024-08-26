@@ -272,6 +272,25 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 409)
 
+    def test_create_attendee_for_owner(self):
+        # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
+
+        # when
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=fixtures.create_attendee_request(event_id=event.id, email=owner.email).json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertTrue(response.json["invite"])
+
     def test_get_attendee_event_non_existing_user(self):
         # when
         query_params = {
@@ -293,8 +312,9 @@ class TestAttendees(BaseTestCase):
 
     def test_update_attendee_look_and_role(self):
         # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
         user = self.user_service.create_user(fixtures.create_user_request())
-        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         look1 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )

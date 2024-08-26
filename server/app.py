@@ -161,7 +161,9 @@ def init_services(app, is_testing=False):
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
     app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
     app.shipping_service = ShippingService(
-        look_service=app.look_service, attendee_service=app.attendee_service, event_service=app.event_service
+        look_service=app.look_service,
+        attendee_service=app.attendee_service,
+        event_service=app.event_service,
     )
 
 

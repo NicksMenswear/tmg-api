@@ -1571,7 +1571,7 @@ paths:
 
   /shipping/price:
     post:
-      operationId: shipping_price
+      operationId: calculate_shipping_price
       requestBody:
         content:
           application/json:

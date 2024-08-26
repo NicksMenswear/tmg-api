@@ -9,11 +9,21 @@ from server.version import get_version
 
 
 powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "message"], use_rfc3339=True, utc=True)
+logger = logging.getLogger(__name__)
 
 
 def log_shopify_id_middleware():
     shopify_id = request.args.get("logged_in_customer_id", "")
     powerlogger.append_keys(shopify_id=shopify_id)
+
+
+def log_request_middleware():
+    logger.debug("API Request: %s %s %s %s", request.method, request.path, request.args.to_dict(), request.data)
+
+
+def log_response_middleware(response):
+    logger.debug("API Response: %s %s", response.status_code, response.data)
+    return response
 
 
 def init_logging(service, debug=False):

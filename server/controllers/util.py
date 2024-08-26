@@ -150,19 +150,6 @@ def error_handler(func):
     return wrapper
 
 
-def log_request(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger.debug(f"Request url: {request.url}")
-
-        if kwargs:
-            logger.debug(f"Parameters: {kwargs}")
-
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 def http(method, *args, **kwargs):
     merge_kwargs = {
         "timeout": kwargs.get("timeout", 2),

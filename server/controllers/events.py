@@ -4,7 +4,7 @@ import uuid
 from flask import request
 
 from server.controllers import FORCE_DELETE_HEADER
-from server.controllers.util import hmac_verification, error_handler, log_request
+from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.event_model import CreateEventModel, UpdateEventModel
 
@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-@log_request
 def get_event_by_id(event_id, enriched=False):
     event_service = FlaskApp.current().event_service
 
@@ -27,7 +26,6 @@ def get_event_by_id(event_id, enriched=False):
 
 @hmac_verification
 @error_handler
-@log_request
 def create_event(create_event):
     event_service = FlaskApp.current().event_service
 
@@ -38,7 +36,6 @@ def create_event(create_event):
 
 @hmac_verification
 @error_handler
-@log_request
 def update_event(event_id, update_event):
     event_service = FlaskApp.current().event_service
 
@@ -49,7 +46,6 @@ def update_event(event_id, update_event):
 
 @hmac_verification
 @error_handler
-@log_request
 def delete_event(event_id):
     event_service = FlaskApp.current().event_service
 
@@ -61,7 +57,6 @@ def delete_event(event_id):
 
 @hmac_verification
 @error_handler
-@log_request
 def get_event_roles(event_id):
     role_service = FlaskApp.current().role_service
 
@@ -72,7 +67,6 @@ def get_event_roles(event_id):
 
 @hmac_verification
 @error_handler
-@log_request
 def get_event_attendees(event_id):
     attendee_service = FlaskApp.current().attendee_service
 

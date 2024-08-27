@@ -12,9 +12,27 @@ powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "m
 logger = logging.getLogger(__name__)
 
 
-def log_shopify_id_middleware():
+def append_log_request_context_middleware():
     shopify_id = request.args.get("logged_in_customer_id", "")
     powerlogger.append_keys(shopify_id=shopify_id)
+
+    endpoint = request.path
+    args = request.args.to_dict()
+    method = request.method
+    powerlogger.append_keys(
+        request={
+            "method": method,
+            "path": endpoint,
+            "args": args,
+        },
+        response={},
+    )
+
+
+def append_log_response_context_middleware(response):
+    code = response.status_code
+    powerlogger.append_keys(response={"code": code})
+    return response
 
 
 def log_request_middleware():

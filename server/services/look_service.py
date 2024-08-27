@@ -50,6 +50,19 @@ class LookService:
 
         return look_models
 
+    def get_user_look_for_event(self, user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
+        attendee = Attendee.query.filter(Attendee.user_id == user_id, Attendee.event_id == event_id).first()
+
+        if not attendee:
+            raise NotFoundError("Attendee not found")
+
+        look = Look.query.filter(Look.id == attendee.look_id).first()
+
+        if not look:
+            raise NotFoundError("Look not found")
+
+        return LookModel.from_orm(look)
+
     def get_look_price(self, look) -> float:
         return look.product_specs.get("bundle", {}).get("variant_price")
 

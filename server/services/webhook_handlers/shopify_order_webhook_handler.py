@@ -234,8 +234,11 @@ class ShopifyWebhookOrderHandler:
 
         order = self.order_service.create_order(create_order)
 
+        line_item_skus = set()
+
         for line_item in items:
             shopify_sku = line_item.get("sku")
+            line_item_skus.add(shopify_sku)
 
             if not shopify_sku:
                 logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
@@ -314,9 +317,20 @@ class ShopifyWebhookOrderHandler:
 
         if event_id and user.id:
             try:
-                self.attendee_service.update_attendee_pay_status(event_id, user.id)
+                look = self.look_service.get_user_look_for_event(user.id, event_id)
+                items = look.product_specs.get("items", {})
+
+                num_items_in_look = len(items)
+                num_matched_items_in_order = 0
+
+                for item in items:
+                    if item.get("variant_sku", "") in line_item_skus:
+                        num_matched_items_in_order += 1
+
+                if num_items_in_look <= num_matched_items_in_order:
+                    self.attendee_service.update_attendee_pay_status(event_id, user.id)
             except NotFoundError:
-                logger.error(
+                logger.warning(
                     f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
                 )
 

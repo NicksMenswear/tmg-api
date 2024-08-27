@@ -30,7 +30,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assert200(response)
         self.assertTrue("Received paid order without items" in response.json["errors"])
 
-    def test_order_with_event_id_in_cart(self):
+    def test_order_with_event_id_in_cart_but_not_look_associated_to_attendee(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
@@ -57,6 +57,96 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(order.event_id, event_id)
 
         attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertFalse(attendee.pay)
+
+    def test_order_with_event_id_in_cart_with_look_but_look_skus_does_not_match_order_items(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id,
+                product_specs=self.create_look_test_product_specs(),
+            )
+        )
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id,
+                event_id=event_id,
+                email=attendee_user.email,
+                look_id=look.id,
+            )
+        )
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        # self.assertIsNotNone(order.ship_by_date)
+        self.assertIsNone(order.ship_by_date)
+        self.assertEqual(order.event_id, event_id)
+
+        attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertFalse(attendee.pay)
+
+    def test_order_with_event_id_in_cart_and_correct_look(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id,
+                product_specs=self.create_look_test_product_specs(),
+            )
+        )
+        look_product_spec_items = look.product_specs.get("items")
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id,
+                event_id=event_id,
+                email=attendee_user.email,
+                look_id=look.id,
+            )
+        )
+
+        # when
+        line_items = [
+            fixtures.webhook_shopify_line_item(
+                sku=f"{item.get('variant_sku')}",
+                product_id=item.get("product_id"),
+                variant_id=item.get("variant_id"),
+            )
+            for item in look_product_spec_items
+        ]
+
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=line_items,
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order_id = response.json["id"]
+        order = self.order_service.get_order_by_id(order_id)
+        # self.assertIsNotNone(order.ship_by_date)
+        self.assertIsNone(order.ship_by_date)
+        self.assertEqual(order.event_id, event_id)
+
+        attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertTrue(attendee.pay)
 
     def test_order_ship_by_date_less_then_six_weeks(self):
@@ -67,14 +157,34 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
             fixtures.create_event_request(user_id=user.id, event_at=three_weeks), True
         ).id
         attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id,
+                product_specs=self.create_look_test_product_specs(),
+            )
+        )
+        look_product_spec_items = look.product_specs.get("items")
         attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id,
+                event_id=event_id,
+                email=attendee_user.email,
+                look_id=look.id,
+            )
         )
 
         # when
+        line_items = [
+            fixtures.webhook_shopify_line_item(
+                sku=f"{item.get('variant_sku')}",
+                product_id=item.get("product_id"),
+                variant_id=item.get("variant_id"),
+            )
+            for item in look_product_spec_items
+        ]
         webhook_request = fixtures.webhook_shopify_paid_order(
             customer_email=attendee_user.email,
-            line_items=[fixtures.webhook_shopify_line_item(sku=f"product-{utils.generate_unique_string()}")],
+            line_items=line_items,
             event_id=str(event_id),
         )
 

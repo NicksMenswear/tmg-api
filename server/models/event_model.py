@@ -69,6 +69,7 @@ class EventModel(CoreModel):
     roles: Optional[List[RoleModel]] = []
     meta: Optional[Dict[str, Any]] = {}
     created_at: Optional[datetime] = None
+    notifications: Optional[List[Dict[str, str]]] = []
 
     class Config:
         from_attributes = True
@@ -82,7 +83,7 @@ class EventModel(CoreModel):
         return response
 
     def to_enriched_response(self):
-        response = self.model_dump(include={"id", "name", "event_at", "status", "type"})
+        response = self.model_dump(include={"id", "name", "event_at", "status", "type", "notifications"})
 
         if self.owner:
             response["owner"] = self.owner.to_response()

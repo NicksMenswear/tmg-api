@@ -143,7 +143,7 @@ class ShopifyWebhookOrderHandler:
                 )
             else:
                 discount_response = self.shopify_service.create_product_discount_code(
-                    code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids
+                    code, code, attendee_user.shopify_id, discount.amount + 0.05, discounted_variant_ids
                 )
 
             self.discount_service.add_code_to_discount(
@@ -251,9 +251,12 @@ class ShopifyWebhookOrderHandler:
                 product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
                 if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
-                    shopify_suit_sku = f"0{shopify_sku[1:]}"
-                    track_suit_parts[shopify_suit_sku] = track_suit_parts.get(shopify_suit_sku, {})
-                    track_suit_parts[shopify_suit_sku][product_type] = shopify_sku
+                    shopify_suit_sku_suffix = f"{shopify_sku[-5:]}"
+                    track_suit_parts[shopify_suit_sku_suffix] = track_suit_parts.get(shopify_suit_sku_suffix, {})
+                    track_suit_parts[shopify_suit_sku_suffix][product_type] = shopify_sku
+
+                    if ProductType.SUIT not in track_suit_parts[shopify_suit_sku_suffix]:
+                        track_suit_parts[shopify_suit_sku_suffix][ProductType.SUIT] = f"0{shopify_sku[1:]}"
 
                 if not shiphero_sku:
                     if product_type is ProductType.UNKNOWN:
@@ -285,11 +288,12 @@ class ShopifyWebhookOrderHandler:
             self.order_service.create_order_item(create_order_item)
 
         if track_suit_parts:
-            for shopify_suit_sku, suit_parts in track_suit_parts.items():
-                if len(suit_parts) != 3:
+            for shopify_suit_sku_suffix, suit_parts in track_suit_parts.items():
+                if len(suit_parts) != 4:
                     # Looks like order is not a full suit split, skipping
                     continue
 
+                shopify_suit_sku = suit_parts[ProductType.SUIT]
                 suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
                 shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
                 suit_product = None

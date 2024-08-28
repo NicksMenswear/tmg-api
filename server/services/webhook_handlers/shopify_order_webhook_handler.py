@@ -143,7 +143,7 @@ class ShopifyWebhookOrderHandler:
                 )
             else:
                 discount_response = self.shopify_service.create_product_discount_code(
-                    code, code, attendee_user.shopify_id, discount.amount, discounted_variant_ids
+                    code, code, attendee_user.shopify_id, discount.amount + 0.05, discounted_variant_ids
                 )
 
             self.discount_service.add_code_to_discount(

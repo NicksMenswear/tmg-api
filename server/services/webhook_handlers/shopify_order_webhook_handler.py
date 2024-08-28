@@ -411,7 +411,7 @@ class ShopifyWebhookOrderHandler:
             self.activecampaign_service.track_event(user.email, "Ordered Swatches")
 
     def __track_giftcode_purchase(self, user_email):
-        self.activecampaign_service.track_event(user_email, "Purchased Gift Code")
+        self.activecampaign_service.track_event(user_email, "Paid for Attendee Gift Codes")
 
     def __track_suit_purchase(self, user_email):
-        self.activecampaign_service.track_event(user_email, "Purchased Suit")
+        self.activecampaign_service.track_event(user_email, "Paid for a Suit")

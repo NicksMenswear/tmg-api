@@ -4,7 +4,7 @@ from typing import List
 
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look, EventType
-from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus
+from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus, AttendeeModel
 from server.models.role_model import CreateRoleModel
 from server.models.user_model import UserModel
 from server.services import ServiceError, NotFoundError, DuplicateError, BadRequestError
@@ -179,6 +179,7 @@ class EventService:
                 event_model.attendees = attendees.get(event_model.id, [])
                 event_model.looks = looks
                 event_model.roles = roles.get(event_model.id, [])
+                event_model.notifications = self.__owner_notifications(event_model, attendees)
 
         return models
 
@@ -208,6 +209,7 @@ class EventService:
 
             for event_model in events:
                 event_model.attendees = attendees.get(event_model.id, [])
+                event_model.notifications = self.__attendee_notifications(event_model, attendees)
 
         return events
 
@@ -258,8 +260,67 @@ class EventService:
     def __is_ahead_n_weeks(self, event_at: datetime, number_of_weeks: int) -> bool:
         return event_at > datetime.now() + timedelta(weeks=number_of_weeks)
 
-    def __owner_countdown(self, event: Event):
-        return event.event_at - timedelta(days=1) - timedelta(hours=1)
+    def __owner_notifications(self, event: EventModel, attendees: List[AttendeeModel]) -> List[dict]:
+        if not any([a.invite for a in attendees]):
+            return []
 
-    def __attendee_countdown(self, event: Event):
-        return event.event_at - timedelta(hours=1)
+        incomplete_orders = len(a for a in attendees if a.invite and not a.pay) > 0
+        weeks_to_event = (event.event_at - datetime.now()).days // 7
+        weeks_to_order = weeks_to_event - 8
+        tooltip = "Grooms receive their suit first, shipping within 1-3 business days after order is placed. This allows you to review fit and quality before extending invitations to your party members. All event party members will receive their shipments 5-6 weeks prior to the event."
+
+        if weeks_to_event <= 12:
+            return [
+                {
+                    "message": f"{weeks_to_order} weeks until all orders in your event need to be completed! Incomplete orders: {incomplete_orders}",
+                    "tooltip": tooltip,
+                }
+            ]
+        if weeks_to_event <= 8:
+            return [
+                {
+                    "message": f"{incomplete_orders} orders are due NOW to avoid complications with your event!",
+                    "tooltip": tooltip,
+                }
+            ]
+        if weeks_to_event <= 3:
+            return [
+                {
+                    "message": "Your deadline has elapsed, please contact support.",
+                    "tooltip": tooltip,
+                }
+            ]
+
+    def __attendee_notifications(self, event: EventModel, attendees: List[AttendeeModel]):
+        if not attendees:
+            return []
+
+        my_attendee = attendees[0]
+        if my_attendee.pay:
+            return []
+
+        weeks_to_event = (event.event_at - datetime.now()).days // 7
+        weeks_to_order = weeks_to_event - 8
+        tooltip = None
+
+        if weeks_to_event <= 12:
+            return [
+                {
+                    "message": f"{weeks_to_order} weeks until your order should be completed!",
+                    "tooltip": tooltip,
+                }
+            ]
+        if weeks_to_event <= 8:
+            return [
+                {
+                    "message": "Your order is due NOW.",
+                    "tooltip": tooltip,
+                }
+            ]
+        if weeks_to_event <= 3:
+            return [
+                {
+                    "message": "Your deadline has elapsed, please contact support.",
+                    "tooltip": tooltip,
+                }
+            ]

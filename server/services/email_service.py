@@ -54,12 +54,7 @@ class EmailService(AbstractEmailService):
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
     def send_activation_email(self, user: UserModel):
-        activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
-        url_params = urlencode(
-            {"id": user.id, "email": user.email, "first_name": user.first_name, "last_name": user.last_name}
-        )
-        activation_url = f"{activation_url}?{url_params}"
-
+        activation_url = self._get_account_activation_url(user)
         template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {
             "From": FROM_EMAIL,
@@ -79,7 +74,7 @@ class EmailService(AbstractEmailService):
 
     def _invites_batch_prepare_one(self, user: UserModel, event: EventModel):
         if not user.account_status:
-            shopify_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+            shopify_url = self._get_account_activation_url(user)
             button_text = "Activate Account & Get Started"
         else:
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
@@ -102,3 +97,10 @@ class EmailService(AbstractEmailService):
             "TemplateModel": template_model,
         }
         return body
+
+    def _get_account_activation_url(self, user: UserModel):
+        activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+        url_params = urlencode(
+            {"id": user.id, "email": user.email, "first_name": user.first_name, "last_name": user.last_name}
+        )
+        return f"{activation_url}?{url_params}"

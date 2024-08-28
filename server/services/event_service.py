@@ -179,7 +179,7 @@ class EventService:
                 event_model.attendees = attendees.get(event_model.id, [])
                 event_model.looks = looks
                 event_model.roles = roles.get(event_model.id, [])
-                event_model.notifications = self.__owner_notifications(event_model, attendees)
+                event_model.notifications = self.__owner_notifications(event_model, attendees.get(event_model.id, []))
 
         return models
 
@@ -209,7 +209,9 @@ class EventService:
 
             for event_model in events:
                 event_model.attendees = attendees.get(event_model.id, [])
-                event_model.notifications = self.__attendee_notifications(event_model, attendees)
+                event_model.notifications = self.__attendee_notifications(
+                    event_model, attendees.get(event_model.id, [])
+                )
 
         return events
 
@@ -264,7 +266,10 @@ class EventService:
         if not any([a.invite for a in attendees]):
             return []
 
-        incomplete_orders = len(a for a in attendees if a.invite and not a.pay) > 0
+        incomplete_orders = len([a for a in attendees if a.invite and not a.pay])
+        if not incomplete_orders:
+            return []
+
         weeks_to_event = (event.event_at - datetime.now()).days // 7
         weeks_to_order = weeks_to_event - 8
         notifications = []

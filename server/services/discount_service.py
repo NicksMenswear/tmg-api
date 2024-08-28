@@ -511,7 +511,7 @@ class DiscountService:
                 title,
                 code,
                 attendee_user.shopify_id,
-                discount_amount,
+                discount_amount + 0.05,
                 [look.product_specs.get("bundle", {}).get("variant_id")],
             )
         else:

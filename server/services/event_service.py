@@ -257,3 +257,9 @@ class EventService:
 
     def __is_ahead_n_weeks(self, event_at: datetime, number_of_weeks: int) -> bool:
         return event_at > datetime.now() + timedelta(weeks=number_of_weeks)
+
+    def __owner_countdown(self, event: Event):
+        return event.event_at - timedelta(days=1) - timedelta(hours=1)
+
+    def __attendee_countdown(self, event: Event):
+        return event.event_at - timedelta(hours=1)

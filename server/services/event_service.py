@@ -267,29 +267,31 @@ class EventService:
         incomplete_orders = len(a for a in attendees if a.invite and not a.pay) > 0
         weeks_to_event = (event.event_at - datetime.now()).days // 7
         weeks_to_order = weeks_to_event - 8
+        notifications = []
         tooltip = "Grooms receive their suit first, shipping within 1-3 business days after order is placed. This allows you to review fit and quality before extending invitations to your party members. All event party members will receive their shipments 5-6 weeks prior to the event."
 
         if weeks_to_event <= 12:
-            return [
+            notifications = [
                 {
                     "message": f"{weeks_to_order} weeks until all orders in your event need to be completed! Incomplete orders: {incomplete_orders}",
                     "tooltip": tooltip,
                 }
             ]
         if weeks_to_event <= 8:
-            return [
+            notifications = [
                 {
                     "message": f"{incomplete_orders} orders are due NOW to avoid complications with your event!",
                     "tooltip": tooltip,
                 }
             ]
         if weeks_to_event <= 3:
-            return [
+            notifications = [
                 {
                     "message": "Your deadline has elapsed, please contact support.",
                     "tooltip": tooltip,
                 }
             ]
+        return notifications
 
     def __attendee_notifications(self, event: EventModel, attendees: List[AttendeeModel]):
         if not attendees:
@@ -302,25 +304,27 @@ class EventService:
         weeks_to_event = (event.event_at - datetime.now()).days // 7
         weeks_to_order = weeks_to_event - 8
         tooltip = None
+        notifications = []
 
         if weeks_to_event <= 12:
-            return [
+            notifications = [
                 {
                     "message": f"{weeks_to_order} weeks until your order should be completed!",
                     "tooltip": tooltip,
                 }
             ]
         if weeks_to_event <= 8:
-            return [
+            notifications = [
                 {
                     "message": "Your order is due NOW.",
                     "tooltip": tooltip,
                 }
             ]
         if weeks_to_event <= 3:
-            return [
+            notifications = [
                 {
                     "message": "Your deadline has elapsed, please contact support.",
                     "tooltip": tooltip,
                 }
             ]
+        return notifications

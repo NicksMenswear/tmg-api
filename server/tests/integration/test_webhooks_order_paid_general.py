@@ -459,10 +459,14 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
     @parameterized.expand(
         [
-            [
+            [  # black suit sku=101A2BLK
                 ["101A2BLK", "201A2BLK", "301A2BLK", "903A4BLK"],
                 ["001A2BLK42R", "101A2BLK42RAF", "201A2BLK40R", "301A2BLK00LRAF", "903A4BLKOSR"],
-            ]
+            ],
+            [  # tuxedo sku=102A2BLK
+                ["102A2BLK", "201A2BLK", "301A2BLK", "903A4BLK"],
+                ["002A2BLK42R", "102A2BLK42RAF", "201A2BLK40R", "301A2BLK00LRAF", "903A4BLKOSR"],
+            ],
         ]
     )
     def test_order_with_suit_items_should_include_suit_as_well(self, shopify_skus, shiphero_skus):

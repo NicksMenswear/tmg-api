@@ -19,7 +19,7 @@ ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 class AbstractActiveCampaignService(ABC):
     @abstractmethod
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
     ):
         pass
 
@@ -30,7 +30,7 @@ class AbstractActiveCampaignService(ABC):
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
     ):
         pass
 
@@ -40,8 +40,13 @@ class FakeActiveCampaignService(AbstractActiveCampaignService):
 
 class ActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields={}, events=[], suppress_exceptions=True
+        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
     ):
+        if fields is None:
+            fields = {}
+        if events is None:
+            events = []
+
         try:
             body = {
                 "contact": {

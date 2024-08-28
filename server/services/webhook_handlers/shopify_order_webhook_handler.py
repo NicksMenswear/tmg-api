@@ -154,6 +154,9 @@ class ShopifyWebhookOrderHandler:
 
             discounts_codes.append(discount_response.get("shopify_discount_code"))
 
+        if discounts_codes:
+            self.__track_giftcode_purchase(customer.get("email"))
+
         return {"discount_codes": discounts_codes}
 
     def __process_used_discount_code(self, payload):
@@ -190,7 +193,7 @@ class ShopifyWebhookOrderHandler:
             )
 
         self.__process_used_discount_code(payload)
-        self.__track_swatch_orders(user, payload)
+        self.__track_swatch_purchase(user, payload)
 
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
@@ -300,6 +303,7 @@ class ShopifyWebhookOrderHandler:
 
                 if shiphero_suit_sku:
                     suit_product = self.__get_product_by_shiphero_sku(shiphero_suit_sku)
+                    self.__track_suit_purchase(user.email)
 
                 create_suit_order_item = CreateOrderItemModel(
                     order_id=order.id,
@@ -401,7 +405,13 @@ class ShopifyWebhookOrderHandler:
 
         return ProductModel.from_orm(product)
 
-    def __track_swatch_orders(self, user, payload):
+    def __track_swatch_purchase(self, user, payload):
         items = payload.get("line_items", [])
         if any(item.get("sku", "").upper().startswith("S") for item in items):
             self.activecampaign_service.track_event(user.email, "Ordered Swatches")
+
+    def __track_giftcode_purchase(self, user_email):
+        self.activecampaign_service.track_event(user_email, "Purchased Gift Code")
+
+    def __track_suit_purchase(self, user_email):
+        self.activecampaign_service.track_event(user_email, "Purchased Suit")

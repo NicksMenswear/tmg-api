@@ -671,6 +671,7 @@ class TestUsers(BaseTestCase):
             ["Hannah & Gabriel", "Geiger"],
             ["De’Aveone", "Smith"],
             ["A", "B"],
+            ["Hannah, Gabriel", "Geiger"],  # comma
         ]
     )
     def test_create_with_special_characters(self, first_name, last_name):

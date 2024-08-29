@@ -21,8 +21,10 @@ class UserRequestModel(CoreModel):
         if len(v) < 1 or len(v) > 63:
             raise ValueError("Name must be between 1 and 63 characters long")
 
-        if not re.match(r"^[\w\s\-'.À-ÖØ-öø-ÿĀ-ſ&’]+$", v, re.UNICODE):
-            raise ValueError("Name must contain only alphabetic characters, spaces, dashes, apostrophes, or periods")
+        if not re.match(r"^[\w\s\-'.,À-ÖØ-öø-ÿĀ-ſ&’]+$", v, re.UNICODE):
+            raise ValueError(
+                "Name must only contain alphabetic characters, spaces, dashes, apostrophes, periods or commas"
+            )
 
         return v
 

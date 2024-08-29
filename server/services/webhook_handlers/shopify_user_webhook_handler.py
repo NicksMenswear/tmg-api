@@ -36,7 +36,7 @@ class ShopifyWebhookUserHandler:
                 user = None
 
         if not user:
-            # User has signed up through social login
+            # User has signed up through social login, let's save them in our database
             updated_user = self.user_service.create_user(
                 CreateUserModel(
                     shopify_id=str(shopify_id),

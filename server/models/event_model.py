@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, List, Any, Dict
 from uuid import UUID
@@ -76,9 +76,11 @@ class EventModel(CoreModel):
 
     @field_validator("event_at")
     @classmethod
-    def ensure_datetime_has_tzinfo(cls, value: datetime) -> datetime:
+    def ensure_datetime_is_utc(cls, value: datetime) -> datetime:
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            raise ValueError("event_at must contain timezone information.")
+            raise ValueError("event_at must contain timezone information")
+        if value.tzinfo != timezone.utc:
+            raise ValueError("event_at must be in UTC")
         return value
 
     def to_response(self):

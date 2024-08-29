@@ -74,6 +74,13 @@ class EventModel(CoreModel):
     class Config:
         from_attributes = True
 
+    @field_validator("event_at")
+    @classmethod
+    def ensure_datetime_has_tzinfo(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            raise ValueError("event_at must contain timezone information.")
+        return value
+
     def to_response(self):
         response = self.model_dump(include={"id", "name", "event_at", "status", "type"})
 

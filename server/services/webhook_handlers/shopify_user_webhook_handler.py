@@ -36,6 +36,7 @@ class ShopifyWebhookUserHandler:
                 user = None
 
         if not user:
+            # User has signed up through social login
             updated_user = self.user_service.create_user(
                 CreateUserModel(
                     shopify_id=str(shopify_id),
@@ -46,13 +47,15 @@ class ShopifyWebhookUserHandler:
                     phone_number=str(phone) if phone else None,
                 )
             )
+
             self.activecampaign_service.sync_contact(
                 email=updated_user.email,
                 first_name=updated_user.first_name,
                 last_name=updated_user.last_name,
                 phone=updated_user.phone_number,
-                events=["Signed Up"],
+                events=["Signed Up", "Activated Account"],
             )
+
             return updated_user.to_response()
         elif (
             str(shopify_id) != user.shopify_id

@@ -44,6 +44,7 @@ class EventRequestModel(CoreModel):
     @field_validator("event_at")
     @classmethod
     def date_in_the_future(cls, v):
+        v = v.replace(tzinfo=None)
         if v <= datetime.now():
             raise ValueError("Event date must be in the future")
         return v

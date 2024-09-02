@@ -278,7 +278,7 @@ class DiscountService:
 
             look_price = owner_discount.look.price
 
-            if look_price < TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
+            if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
                 owner_discount.gift_codes.append(
                     DiscountGiftCodeModel(
                         code=TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
@@ -498,7 +498,7 @@ class DiscountService:
         look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
-        if look_price < TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
+        if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
             code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
             discount_amount = TMG_GROUP_50_USD_AMOUNT
         else:
@@ -508,7 +508,7 @@ class DiscountService:
         title = code
 
         if event.created_at > DISCOUNTS_FLIP_DATE:
-            if look_price < TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
+            if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
                 shopify_discount = self.shopify_service.create_discount_code(
                     title,
                     code,

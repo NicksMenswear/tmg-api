@@ -536,6 +536,7 @@ class DiscountService:
                 DiscountAmountType.FIXED_AMOUNT,
                 discount_amount,
                 TMG_MIN_SUIT_PRICE,
+                [look.product_specs.get("bundle", {}).get("variant_id")],
             )
 
         discount = Discount(

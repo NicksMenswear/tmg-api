@@ -156,7 +156,7 @@ def init_services(app, is_testing=False):
         app.shiphero_service,
         app.activecampaign_service,
     )
-    app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service)
+    app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service, app.activecampaign_service)
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
     app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
 

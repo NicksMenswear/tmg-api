@@ -6,13 +6,15 @@ from typing import Any, Dict
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError
 from server.services.user_service import UserService
+from server.services.integrations.activecampaign_service import ActiveCampaignService
 
 logger = logging.getLogger(__name__)
 
 
 class ShopifyWebhookUserHandler:
-    def __init__(self, user_service: UserService):
+    def __init__(self, user_service: UserService, activecampaign_service: ActiveCampaignService):
         self.user_service = user_service
+        self.activecampaign_service = activecampaign_service
 
     def customer_update(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -34,6 +36,7 @@ class ShopifyWebhookUserHandler:
                 user = None
 
         if not user:
+            # User has signed up through social login, let's save them in our database
             updated_user = self.user_service.create_user(
                 CreateUserModel(
                     shopify_id=str(shopify_id),
@@ -43,6 +46,17 @@ class ShopifyWebhookUserHandler:
                     account_status=True if state == "enabled" else False,
                     phone_number=str(phone) if phone else None,
                 )
+            )
+
+            events = ["Signed Up"]
+            if state == "enabled":
+                events.append("Activated Account")
+            self.activecampaign_service.sync_contact(
+                email=updated_user.email,
+                first_name=updated_user.first_name,
+                last_name=updated_user.last_name,
+                phone=updated_user.phone_number,
+                events=events,
             )
 
             return updated_user.to_response()

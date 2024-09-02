@@ -456,9 +456,9 @@ class ShopifyService(AbstractShopifyService):
             variables["basicCodeDiscount"]["customerGets"]["value"] = {"percentage": amount}
 
         if minimum_order_amount and minimum_order_amount > 0:
-            variables["basicCodeDiscount"]["minimumRequirement"]["subtotal"][
-                "greaterThanOrEqualToSubtotal"
-            ] = minimum_order_amount
+            variables["basicCodeDiscount"]["minimumRequirement"] = {
+                "subtotal": {"greaterThanOrEqualToSubtotal": minimum_order_amount}
+            }
 
         if variant_ids:
             variables["basicCodeDiscount"]["customerGets"]["items"] = {

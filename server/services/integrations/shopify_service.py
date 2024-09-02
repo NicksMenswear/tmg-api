@@ -163,8 +163,8 @@ class FakeShopifyService(AbstractShopifyService):
         shopify_customer_id: str,
         discount_type: DiscountAmountType,
         amount: float,
-        variant_ids: Optional[List[str]] = None,
         minimum_order_amount: Optional[int] = None,
+        variant_ids: Optional[List[str]] = None,
     ):
         return {
             "shopify_discount_code": code,
@@ -408,8 +408,8 @@ class ShopifyService(AbstractShopifyService):
         shopify_customer_id: str,
         discount_type: DiscountAmountType,
         amount: float,
-        variant_ids: Optional[List[str]] = None,
         minimum_order_amount: Optional[int] = None,
+        variant_ids: Optional[List[str]] = None,
     ):
         mutation = """
         mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {

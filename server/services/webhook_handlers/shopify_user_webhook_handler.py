@@ -48,12 +48,15 @@ class ShopifyWebhookUserHandler:
                 )
             )
 
+            events = ["Signed Up"]
+            if state == "enabled":
+                events.append("Activated Account")
             self.activecampaign_service.sync_contact(
                 email=updated_user.email,
                 first_name=updated_user.first_name,
                 last_name=updated_user.last_name,
                 phone=updated_user.phone_number,
-                events=["Signed Up", "Activated Account"],
+                events=events,
             )
 
             return updated_user.to_response()

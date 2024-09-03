@@ -73,7 +73,7 @@ def test_pay_dialog_correctness(page: Page):
 
     actions.open_pay_dialog(page, event_id)
 
-    verify.input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name_1, attendee_last_name_1, 0)
+    verify.verify_input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name_1, attendee_last_name_1, 0)
 
     verify.warning_in_pay_dialog_for_attendee_by_name(
         page, attendee_first_name_2, attendee_last_name_2, "No invite accepted"
@@ -140,7 +140,7 @@ def test_discount_intent_saved(page: Page):
 
 @e2e_error_handling
 @pytest.mark.group_2
-def test_pay_in_full_click(page: Page):
+def test_pay_in_full_click_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = utils.generate_unique_name()
     attendee_last_name = utils.generate_unique_name()

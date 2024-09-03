@@ -444,7 +444,7 @@ class ShopifyService(AbstractShopifyService):
         )
 
         if status >= 400:
-            raise ServiceError("Failed to create virtual product in shopify store.")
+            raise ServiceError("Failed to create bundle identifier product in shopify store.")
 
         return body.get("product").get("variants", {})[0].get("id")
 

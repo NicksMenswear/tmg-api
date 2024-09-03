@@ -300,6 +300,15 @@ class EventService:
                     "tooltip": tooltip,
                 }
             ]
+
+        if weeks_to_event <= 6:
+            notifications.append(
+                {
+                    "message": "You have less than 6 weeks left to the event. You will be charged for expedited shipping.",
+                    "tooltip": None,
+                }
+            )
+
         return notifications
 
     def __attendee_notifications(self, event: EventModel, attendees: List[AttendeeModel]):
@@ -336,4 +345,13 @@ class EventService:
                     "tooltip": tooltip,
                 }
             ]
+
+        if weeks_to_event <= 6:
+            notifications.append(
+                {
+                    "message": "You have less than 6 weeks left to the event. You will be charged for expedited shipping.",
+                    "tooltip": None,
+                }
+            )
+
         return notifications

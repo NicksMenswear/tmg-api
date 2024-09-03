@@ -33,62 +33,18 @@ jobs:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
-  e2e-group-1:
+  e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
+    strategy:
+      matrix:
+        group_number: [1, 2, 3, 4, 5]
     with:
       ref: ${{ github.ref_name }}
       stage: dev
       notify: true
-      test_group: group-1
+      test_group: group-${{ matrix.group_number }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-  e2e-group-2:
-    uses: ./.github/workflows/_e2e_tests.yml
-    needs: cd
-    with:
-      ref: ${{ github.ref_name }}
-      stage: dev
-      notify: true
-      test_group: group-2
-    secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-  e2e-group-3:
-    uses: ./.github/workflows/_e2e_tests.yml
-    needs: cd
-    with:
-      ref: ${{ github.ref_name }}
-      stage: dev
-      notify: true
-      test_group: group-3
-    secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-  e2e-group-4:
-    uses: ./.github/workflows/_e2e_tests.yml
-    needs: cd
-    with:
-      ref: ${{ github.ref_name }}
-      stage: dev
-      notify: true
-      test_group: group-4
-    secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-  e2e-group-5:
-    uses: ./.github/workflows/_e2e_tests.yml
-    needs: cd
-    with:
-      ref: ${{ github.ref_name }}
-      stage: dev
-      notify: true
-      test_group: group-5
-    secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

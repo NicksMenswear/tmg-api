@@ -1,7 +1,7 @@
 import time
 from typing import List
 import random
-import datetime
+from datetime import datetime
 
 from playwright.sync_api import Page, expect, Locator
 

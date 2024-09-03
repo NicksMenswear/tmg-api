@@ -39,7 +39,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
 
-    select_max_available_day_in_calendar(page)
+    select_date_in_calendar(page)
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
@@ -54,17 +54,10 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     return event_id
 
 
-def select_max_available_day_in_calendar(page: Page):
-    day = 31
-
-    while day >= 28:
-        locator = page.locator(f"div.air-datepicker-cell[data-date='{day}']:not(.\\-disabled\\-)").first
-
-        if locator.is_visible():
-            locator.click()
-            return
-        else:
-            day -= 1
+def select_date_in_calendar(page: Page):
+    page.locator("#dropdown-date div .dp-year").select_option("2026")
+    page.locator("#dropdown-date div .dp-month").select_option("March")
+    page.locator("#dropdown-date div .dp-day").select_option("8")
 
 
 def open_event_accordion(page: Page, event_id: str):
@@ -657,5 +650,5 @@ def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedd
     get_started_select_event_role(get_started_dialog_locator, "bride")
     get_started_click_next_button(get_started_dialog_locator)
 
-    select_max_available_day_in_calendar(page)
+    select_date_in_calendar(page)
     get_started_click_next_button(get_started_dialog_locator)

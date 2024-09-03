@@ -44,7 +44,7 @@ class TestLooks(BaseTestCase):
         # all variants except suit and add suit parts like pants, vest, jacket
         self.assertEqual(
             len(db_look.product_specs.get("items", [])),
-            len(look_data.product_specs.get("variants")) - 1 + 3,
+            len(look_data.product_specs.get("variants")) - 1 + 3 + 1,
         )
         self.assertEqual(db_look.user_id, user.id)
 
@@ -112,7 +112,7 @@ class TestLooks(BaseTestCase):
         # all variants except suit and add suit parts like pants, vest, jacket
         self.assertEqual(
             len(db_look.product_specs.get("items", [])),
-            len(look_data.product_specs.get("variants")) - 1 + 3,
+            len(look_data.product_specs.get("variants")) - 1 + 3 + 1,
         )
         self.assertEqual(db_look.user_id, user.id)
 

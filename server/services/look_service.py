@@ -1,10 +1,13 @@
 import base64
 import logging
 import os
+import random
 import time
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+
+from sqlalchemy import text
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
@@ -113,7 +116,7 @@ class LookService:
             raise ServiceError("Suit variant sku not found.")
 
         if not suit_sku.startswith("00"):
-            raise ServiceError("Invalid suit variant sku.")
+            raise ServiceError(f"Invalid suit variant sku: {suit_variant}")
 
         jacket_sku = "1" + suit_sku[1:]
 
@@ -134,9 +137,9 @@ class LookService:
         return [jacket_variant, pants_variant, vest_variant]
 
     def __enrich_product_specs_variants_with_suit_parts(
-        self, suit_variant_id: str, product_specs: dict, suit_parts_variants: List[ShopifyVariantModel]
+        self, suit_variant_id: str, product_spec_variants: List[str], suit_parts_variants: List[ShopifyVariantModel]
     ) -> List[str]:
-        enriched_product_specs_variants = product_specs.get("variants").copy()
+        enriched_product_specs_variants = product_spec_variants.copy()
         enriched_product_specs_variants.remove(suit_variant_id)
 
         enriched_product_specs_variants = [
@@ -172,19 +175,28 @@ class LookService:
             if not suit_variant_id:
                 raise ServiceError("Suit variant id is missing.")
 
-            look_variants = self.shopify_service.get_variants_by_id(create_look.product_specs.get("variants"))
+            bundle_id = str(random.randint(100000, 1000000000))
+
+            bundle_identifier_variant_id = str(self.shopify_service.create_bundle_identifier_product(bundle_id))
+
+            enriched_look_variants = create_look.product_specs.get("variants") + [bundle_identifier_variant_id]
+
+            look_variants = self.shopify_service.get_variants_by_id(enriched_look_variants)
+
             suit_parts_variants = self.__get_suit_parts(suit_variant_id)
 
             all_variants = look_variants + suit_parts_variants
+
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 
             enriched_product_specs_variants = self.__enrich_product_specs_variants_with_suit_parts(
                 suit_variant_id,
-                create_look.product_specs,
+                enriched_look_variants,
                 suit_parts_variants,
             )
 
             bundle_product_variant_id = self.shopify_service.create_bundle(
+                bundle_id,
                 enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
             )
@@ -265,3 +277,33 @@ class LookService:
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to save image.", e)
+
+    def find_look_by_product_id(self, product_id: str) -> Optional[LookModel]:
+        query = text(
+            f"""
+            SELECT id, name, user_id, product_specs, image_path, is_active
+            FROM looks 
+            WHERE product_specs->'items' IS NOT NULL 
+              AND json_typeof(product_specs->'items') = 'array' 
+              AND EXISTS (
+                SELECT 1 
+                FROM json_array_elements(product_specs->'items') AS item 
+                WHERE item->>'product_id' = '{product_id}');
+            """
+        )
+
+        rows = db.session.execute(query).fetchall()
+
+        if not rows or len(rows) == 0:
+            return None
+
+        look_row = rows[0]
+
+        return LookModel(
+            id=look_row.id,
+            name=look_row.name,
+            user_id=look_row.user_id,
+            product_specs=look_row.product_specs,
+            image_path=look_row.image_path,
+            is_active=look_row.is_active,
+        )

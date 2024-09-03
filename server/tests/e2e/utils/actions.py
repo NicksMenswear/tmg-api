@@ -566,7 +566,8 @@ def shopify_checkout_enter_billing_address(
     address1: str = "709 Redwood Drive",
     city: str = "Cedar Falls",
     state: str = "IA",
-    zip: str = "50613",
+    zip_code: str = "50613",
+    phone: str = "319-277-0213",
 ):
     input_firstname = page.locator('input[name="firstName"]').first
     input_firstname.fill(firstname)
@@ -584,7 +585,10 @@ def shopify_checkout_enter_billing_address(
     select_state_element.select_option(state)
 
     input_zip = page.locator('input[name="postalCode"]').first
-    input_zip.fill(zip)
+    input_zip.fill(zip_code)
+
+    input_phone = page.locator('input[name="phone"]').first
+    input_phone.fill(phone)
 
 
 def shopify_checkout_continue_to_shipping(page: Page):

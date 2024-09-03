@@ -130,6 +130,34 @@ def create_look(look_name, user_id, product_specs=None):
     raise Exception(f"Failed to create look - {look_name}/{user_id}")
 
 
+def create_look_just_a_suit(look_name, user_id, product_specs=None):
+    response = requests.post(
+        f"{BASE_API_URL}/looks",
+        params=API_HMAC_QUERY_PARAMS,
+        headers=API_HEADERS,
+        data=json.dumps(
+            {
+                "name": look_name,
+                "user_id": user_id,
+                "spec_type": ProductSpecType.SKU,
+                "product_specs": (
+                    product_specs
+                    if product_specs
+                    else {
+                        "suit_variant": "001A2BLK",  # Black Suit
+                        "variants": [],
+                    }
+                ),
+            }
+        ),
+    )
+
+    if response.status_code == 201:
+        return response.json()
+
+    raise Exception(f"Failed to create look - {look_name}/{user_id}")
+
+
 def get_user_activation_url(user_id, first_name, last_name, email):
     response = requests.get(
         f"{BASE_API_URL}/users/{user_id}/activation-url", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS

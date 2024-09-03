@@ -21,7 +21,7 @@ from server.models.discount_model import (
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType
 from server.services.look_service import LookService
 from server.services.user_service import UserService
 
@@ -31,7 +31,8 @@ TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-50-OFF"
 TMG_GROUP_50_USD_AMOUNT = 50
 TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-25%-OFF"
 TMG_GROUP_25_PERCENT_OFF = 0.25
-TMG_GROUP_MIN_PERCENT_AMOUNT = 300
+TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF = 300
+TMG_MIN_SUIT_PRICE: int = 260
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +278,7 @@ class DiscountService:
 
             look_price = owner_discount.look.price
 
-            if look_price < TMG_GROUP_MIN_PERCENT_AMOUNT:
+            if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
                 owner_discount.gift_codes.append(
                     DiscountGiftCodeModel(
                         code=TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX,
@@ -372,7 +373,7 @@ class DiscountService:
             tmg_group_discount = 0
 
             if num_attendees >= 4:
-                if look_price <= TMG_GROUP_MIN_PERCENT_AMOUNT:
+                if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
                     tmg_group_discount = TMG_GROUP_50_USD_AMOUNT
                 else:
                     tmg_group_discount = look_price * TMG_GROUP_25_PERCENT_OFF
@@ -497,7 +498,7 @@ class DiscountService:
         look_price = self.look_service.get_look_price(look)
         attendee_user = self.user_service.get_user_for_attendee(attendee.id)
 
-        if look_price < TMG_GROUP_MIN_PERCENT_AMOUNT:
+        if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
             code = f"{TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 999999)}"
             discount_amount = TMG_GROUP_50_USD_AMOUNT
         else:
@@ -507,16 +508,35 @@ class DiscountService:
         title = code
 
         if event.created_at > DISCOUNTS_FLIP_DATE:
-            shopify_discount = self.shopify_service.create_product_discount_code(
+            if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
+                shopify_discount = self.shopify_service.create_discount_code(
+                    title,
+                    code,
+                    attendee_user.shopify_id,
+                    DiscountAmountType.FIXED_AMOUNT,
+                    TMG_GROUP_50_USD_AMOUNT,
+                    TMG_MIN_SUIT_PRICE,
+                )
+            else:
+                shopify_discount = self.shopify_service.create_discount_code(
+                    title,
+                    code,
+                    attendee_user.shopify_id,
+                    DiscountAmountType.PERCENTAGE,
+                    TMG_GROUP_25_PERCENT_OFF,
+                    TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF,
+                )
+        else:
+            # for legacy orders, we need to keep the old discount codes
+
+            shopify_discount = self.shopify_service.create_discount_code(
                 title,
                 code,
                 attendee_user.shopify_id,
-                discount_amount + 0.05,
+                DiscountAmountType.FIXED_AMOUNT,
+                discount_amount,
+                TMG_MIN_SUIT_PRICE,
                 [look.product_specs.get("bundle", {}).get("variant_id")],
-            )
-        else:
-            shopify_discount = self.shopify_service.create_order_discount_code(
-                title, code, attendee_user.shopify_id, discount_amount
             )
 
         discount = Discount(

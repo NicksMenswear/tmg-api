@@ -1,5 +1,7 @@
 import time
 from typing import List
+import random
+import datetime
 
 from playwright.sync_api import Page, expect, Locator
 
@@ -55,9 +57,28 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
 
 
 def select_date_in_calendar(page: Page):
-    page.locator("#dropdown-date div .dp-year").select_option("2026")
-    page.locator("#dropdown-date div .dp-month").select_option("March")
-    page.locator("#dropdown-date div .dp-day").select_option("8")
+    next_year = str(datetime.now().year + 1)
+    random_month = random.choice(
+        [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ]
+    )
+    random_day = str(random.randint(1, 28))
+
+    page.locator("#dropdown-date div .dp-year").select_option(next_year)
+    page.locator("#dropdown-date div .dp-month").select_option(random_month)
+    page.locator("#dropdown-date div .dp-day").select_option(random_day)
 
 
 def open_event_accordion(page: Page, event_id: str):

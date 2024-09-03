@@ -44,6 +44,10 @@ class EventService:
 
         return event_model
 
+    def get_events(self, event_ids: List[uuid.UUID]) -> List[EventModel]:
+        events = Event.query.filter(Event.id.in_(event_ids), Event.is_active).all()
+        return [EventModel.from_orm(event) for event in events]
+
     def create_event(
         self, create_event: CreateEventModel, ignore_event_date_creation_condition: bool = False
     ) -> EventModel:

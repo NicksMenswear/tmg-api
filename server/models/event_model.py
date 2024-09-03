@@ -75,6 +75,14 @@ class EventModel(CoreModel):
     class Config:
         from_attributes = True
 
+    def __eq__(self, other):
+        if isinstance(other, EventModel):
+            return self.id == other.id
+        return False
+
+    def __hash__(self):
+        return hash(self.id)
+
     def to_response(self):
         response = self.model_dump(include={"id", "name", "event_at", "status", "type"})
 

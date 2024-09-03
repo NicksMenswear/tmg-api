@@ -41,17 +41,36 @@ class ShippingService:
             if not attendees:
                 return ShippingPriceModel(rates=[GroundShippingRateModel()])
 
-            event_id = attendees[0].event_id
+            event_ids = set()
 
-            event = self.event_service.get_event_by_id(event_id)
+            for attendee in attendees:
+                event_ids.add(attendee.event_id)
 
-            if event.event_at < datetime.now() + timedelta(weeks=NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING):
-                return ShippingPriceModel(rates=[ExpeditedShippingRateModel()])
+            events = self.event_service.get_events(list(event_ids))
+
+            events_that_require_expedited_shipping = set()
+            also_look_belong_to_future_event = False
+
+            now = datetime.now()
+            now_plus_6_weeks = now + timedelta(weeks=NUMBER_OF_WEEKS_FOR_EXPEDITED_SHIPPING)
+
+            for event in events:
+                if now <= event.event_at <= now_plus_6_weeks:
+                    events_that_require_expedited_shipping.add(event)
+
+                if event.event_at > now_plus_6_weeks:
+                    also_look_belong_to_future_event = True
+
+            if not events_that_require_expedited_shipping:
+                return ShippingPriceModel(rates=[GroundShippingRateModel()])
+            else:
+                if also_look_belong_to_future_event:
+                    return ShippingPriceModel(rates=[GroundShippingRateModel()])
+                else:
+                    return ShippingPriceModel(rates=[ExpeditedShippingRateModel()])
         except Exception as e:
             logger.exception("Failed to calculate shipping rate", e)
             return ShippingPriceModel(rates=[GroundShippingRateModel()])
-
-        return ShippingPriceModel(rates=[GroundShippingRateModel()])
 
     def __find_shipping_bundle_identifier(self, shipping_request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         items = shipping_request.get("rate", {}).get("items", [])

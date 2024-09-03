@@ -110,7 +110,7 @@ def input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, value):
     assert float(attendee_input.get_attribute("value")) == float(value)
 
 
-def input_value_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, value):
+def verify_input_value_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, value):
     attendee_1 = page.locator(
         f'li.tmg-pay-attendee-item:has(div.tmg-pay-attendee-item-title:text("{first_name} {last_name}"))'
     )

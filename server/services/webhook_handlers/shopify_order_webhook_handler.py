@@ -14,11 +14,12 @@ from server.services.discount_service import (
     DiscountService,
     GIFT_DISCOUNT_CODE_PREFIX,
     DISCOUNTS_FLIP_DATE,
+    TMG_MIN_SUIT_PRICE,
 )
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -134,16 +135,28 @@ class ShopifyWebhookOrderHandler:
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
-            bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-            discounted_variant_ids = [bundle_variant_id]
-
             if event.created_at > DISCOUNTS_FLIP_DATE:
-                discount_response = self.shopify_service.create_order_discount_code(
-                    code, code, attendee_user.shopify_id, discount.amount
+                discount_response = self.shopify_service.create_discount_code(
+                    code,
+                    code,
+                    attendee_user.shopify_id,
+                    DiscountAmountType.FIXED_AMOUNT,
+                    discount.amount,
+                    TMG_MIN_SUIT_PRICE,
+                    None,
                 )
             else:
-                discount_response = self.shopify_service.create_product_discount_code(
-                    code, code, attendee_user.shopify_id, discount.amount + 0.05, discounted_variant_ids
+                bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
+                discounted_variant_ids = [bundle_variant_id]
+
+                discount_response = self.shopify_service.create_discount_code(
+                    code,
+                    code,
+                    attendee_user.shopify_id,
+                    DiscountAmountType.FIXED_AMOUNT,
+                    discount.amount,
+                    TMG_MIN_SUIT_PRICE,
+                    discounted_variant_ids,
                 )
 
             self.discount_service.add_code_to_discount(

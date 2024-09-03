@@ -145,9 +145,7 @@ def create_look_just_a_suit(look_name, user_id, product_specs=None):
                     if product_specs
                     else {
                         "suit_variant": "001A2BLK",  # Black Suit
-                        "variants": [
-                            "001A2BLK",  # Black Suit
-                        ],
+                        "variants": [],
                     }
                 ),
             }

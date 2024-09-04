@@ -10,4 +10,4 @@ jobs:
     uses: ./.github/workflows/_unit_tests.yml
     with:
       ref: ${{ github.sha }}
-      short: contains(github.event.pull_request.labels.*.name, 'ci-short')
+      short: ${{ contains(github.event.pull_request.labels.*.name, 'ci-short') }}

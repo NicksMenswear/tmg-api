@@ -11,7 +11,7 @@ on:
         required: false
         type: boolean
         default: false
-        description: Run limited set of tests
+        description: Run a limited set of tests
       
 
 jobs:

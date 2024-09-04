@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 config = Config()
 
+init_logging("job_e2e_clean_up", debug=True)
+init_sentry()
+
 
 @powerlogger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
 def lambda_handler_e2e_clean_up(event, context):
-    init_logging("job_e2e_clean_up", debug=True)
-    init_sentry()
-
     api_token = config.API_TOKEN
     endpoint = f"{config.API_ENDPOINT_URL}/jobs/system/e2e-clean-up"
 

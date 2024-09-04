@@ -1,6 +1,7 @@
 import os
 import traceback
 from functools import wraps
+from typing import Callable, Set
 
 from playwright.sync_api import Page
 
@@ -89,3 +90,22 @@ def e2e_error_handling(func):
             raise
 
     return wrapper
+
+
+def e2e_allowed_in(allowed_envs: Set[str]) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            active_env = os.getenv("ACTIVE_ENV", "dev")
+
+            if active_env in allowed_envs:
+                return func(*args, **kwargs)
+            else:
+                print(
+                    f"Function {func.__name__} not executed because ACTIVE_ENV is '{active_env}', which is not in {allowed_envs}."
+                )
+                return None
+
+        return wrapper
+
+    return decorator

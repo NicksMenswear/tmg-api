@@ -13,10 +13,12 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
     STORE_URL,
     e2e_error_handling,
+    e2e_allowed_in,
 )
 from server.tests.e2e.utils import api, actions, verify, email
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_invite_attendee(page: Page):
@@ -81,6 +83,7 @@ def test_invite_attendee(page: Page):
     verify.invite_look_is(page, look_name)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_invite_multiple_attendees(page: Page):

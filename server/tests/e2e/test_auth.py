@@ -11,6 +11,7 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_ACCOUNT_CREATED,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
     e2e_error_handling,
+    e2e_allowed_in,
 )
 from server.tests.e2e.utils import actions, email, verify, api
 
@@ -30,11 +31,12 @@ def test_login(page: Page):
     verify.logged_in(page)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_signup_form(page: Page):
-    first_name = f"{utils.generate_unique_name(8, 12)}"
-    last_name = f"{utils.generate_unique_name(8, 12)}"
+    first_name = f"Test-{utils.generate_unique_name(8, 12)}"
+    last_name = f"Test-{utils.generate_unique_name(8, 12)}"
     user_email = utils.generate_email()
     password = str(uuid.uuid4())
 

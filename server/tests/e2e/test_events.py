@@ -4,7 +4,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from server.tests import utils
-from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling, STORE_URL
+from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling, STORE_URL, e2e_allowed_in
 from server.tests.e2e.utils import api, actions, verify
 
 DEFAULT_WEDDING_ROLES = {
@@ -22,6 +22,7 @@ DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
 DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_basic_create_event(page: Page):
@@ -50,6 +51,7 @@ def test_basic_create_event(page: Page):
     expect(attendee_block).to_be_visible()
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_create_multiple_events(page: Page):
@@ -91,6 +93,7 @@ def test_create_multiple_events(page: Page):
     expect(attendee_block_2).to_be_visible()
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_create_event_and_add_few_attendees(page: Page):
@@ -133,6 +136,7 @@ def test_create_event_and_add_few_attendees(page: Page):
     expect(attendee_block_3).to_be_visible()
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
@@ -180,6 +184,7 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
     expect(attendee_block_3).to_be_visible()
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_create_event_add_and_remove_attendees(page: Page):
@@ -210,6 +215,7 @@ def test_create_event_add_and_remove_attendees(page: Page):
     actions.delete_attendee(page, event_id, attendee_id_1)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_delete_event(page: Page):
@@ -243,6 +249,7 @@ def test_delete_event(page: Page):
     actions.delete_event(page, event_id_1, event_name_1)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_delete_all_events(page: Page):
@@ -267,6 +274,7 @@ def test_delete_all_events(page: Page):
     actions.delete_event(page, event_id, event_name)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_delete_all_attendees(page: Page):
@@ -300,6 +308,7 @@ def test_delete_all_attendees(page: Page):
     verify.no_attendee_added_to_be_visible(page, event_id)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_create_all_types_of_events_and_check_roles(page: Page):
@@ -350,6 +359,7 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     verify.event_has_type(page, event_id3, "Other")
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_roles_persistence(page: Page):
@@ -380,6 +390,7 @@ def test_roles_persistence(page: Page):
     verify.role_is_selected_for_attendee(page, event_id, attendee_id, role_id)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_add_myself_and_then_remove(page: Page):
@@ -425,6 +436,7 @@ def test_add_myself_and_then_remove(page: Page):
     expect(add_myself_button).to_be_enabled()
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_add_myself_and_fill_fit_survey(page: Page):
@@ -472,6 +484,7 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     assert not actions.is_ship_checkbox_selected(page, event_id, attendee_id)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_style_and_invite_checkboxes(page: Page):
@@ -516,6 +529,7 @@ def test_style_and_invite_checkboxes(page: Page):
     assert actions.is_invite_checkbox_selected(page, event_id, attendee_id)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_add_myself_and_pay_for_suit(page: Page):

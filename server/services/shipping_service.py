@@ -65,6 +65,9 @@ class ShippingService:
                 return ShippingPriceModel(rates=[GroundShippingRateModel()])
             else:
                 if also_look_belong_to_future_event:
+                    logger.error(
+                        f"Look belongs to multiple events one of which requires expedited shipping: {look_model.id}"
+                    )
                     return ShippingPriceModel(rates=[GroundShippingRateModel()])
                 else:
                     return ShippingPriceModel(rates=[ExpeditedShippingRateModel()])

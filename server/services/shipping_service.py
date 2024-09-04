@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import timedelta, datetime
 from typing import Dict, Any, Optional
 
@@ -66,7 +67,8 @@ class ShippingService:
             else:
                 if also_look_belong_to_future_event:
                     logger.error(
-                        f"Look belongs to multiple events one of which requires expedited shipping: {look_model.id}"
+                        os.getenv("STAGE"),
+                        f"Look belongs to multiple events one of which requires expedited shipping: {look_model.id}",
                     )
                     return ShippingPriceModel(rates=[GroundShippingRateModel()])
                 else:

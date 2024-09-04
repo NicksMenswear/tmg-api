@@ -304,7 +304,7 @@ class EventService:
         if weeks_to_event <= 6:
             notifications.append(
                 {
-                    "message": "You have less than 6 weeks left to the event. You will be charged for expedited shipping.",
+                    "message": "You have less than 6 weeks left to the event. You and your guests will be charged for expedited shipping.",
                     "tooltip": None,
                 }
             )

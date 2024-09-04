@@ -11,12 +11,14 @@ from server.tests.e2e import (
     TEST_USER_PASSWORD,
     STORE_URL,
     e2e_error_handling,
+    e2e_allowed_in,
 )
 from server.tests.e2e.utils import api, actions, verify
 
 logger = logging.getLogger(__name__)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_pay_dialog_correctness(page: Page):
@@ -84,6 +86,7 @@ def test_pay_dialog_correctness(page: Page):
     )
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_discount_intent_saved(page: Page):
@@ -138,6 +141,7 @@ def test_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_pay_in_full_click_discount_intent_saved(page: Page):
@@ -190,6 +194,7 @@ def test_pay_in_full_click_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, price)
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_grooms_gift(page):
@@ -261,6 +266,7 @@ def test_grooms_gift(page):
     verify.shopify_checkout_has_discount_with_name(page, codes[0])
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_group_discount(page):
@@ -328,6 +334,7 @@ def test_group_discount(page):
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_group_discount_and_groom_gift_as_well(page):
@@ -406,6 +413,7 @@ def test_group_discount_and_groom_gift_as_well(page):
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
 
+@e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):

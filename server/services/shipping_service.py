@@ -67,8 +67,7 @@ class ShippingService:
             else:
                 if also_look_belong_to_future_event:
                     logger.error(
-                        os.getenv("STAGE"),
-                        f"Look belongs to multiple events one of which requires expedited shipping: {look_model.id}",
+                        f"{os.getenv('STAGE')}: Look belongs to multiple events one of which requires expedited shipping: {look_model.id}",
                     )
                     return ShippingPriceModel(rates=[GroundShippingRateModel()])
                 else:

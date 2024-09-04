@@ -27,7 +27,7 @@ STORE_CONFIG = {
         "url": "https://themoderngroom.com",
         "password": "test123",
         "require_store_password": False,
-        "has_additional_initial_screen_on_store_access": True,
+        "has_additional_initial_screen_on_store_access": False,
     },
 }
 

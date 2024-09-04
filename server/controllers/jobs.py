@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 @token_verification
-def hello_world():
-    logger.info("Hello world executed")
+def e2e_clean_up():
+    logger.info("e2e clean up")
 
     return {}, 200

@@ -71,10 +71,10 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-  job-hello-world:
-    handler: job.lambda_handler_hello_world
+  job-e2e-clean-up:
+    handler: jobs.lambda_handler_e2e_clean_up
     events:
-      - schedule: rate(1 day)
+      - schedule: rate(1 minute)
     timeout: 600
     memorySize: 512
     lambdaInsights: true

@@ -1747,13 +1747,13 @@ paths:
         - Measurements
       x-openapi-router-controller: server.controllers.measurements
 
-  /jobs/hello-world:
+  /jobs/system/e2e-clean-up:
     post:
-      operationId: hello_world
+      operationId: e2e_clean_up
       responses:
         "200":
-          description: Hello World
-      summary: Hello World
+          description: OK
+      summary: Clean up E2E test data
       x-openapi-router-controller: server.controllers.jobs
       tags:
         - Jobs
@@ -2136,7 +2136,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EventDiscountCode'
-          default: []
+          default: [ ]
     ApplyDiscounts:
       properties:
         shopify_cart_id:
@@ -2146,8 +2146,8 @@ components:
         - shopify_cart_id
 
     ShopifyWebhook:
-        title: ShopifyWebhook
-        type: object
+      title: ShopifyWebhook
+      type: object
 
     AuditLog:
       example:

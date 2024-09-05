@@ -1,6 +1,7 @@
 import os
 from flask import request
 import logging
+import json
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.logging import correlation_paths
@@ -36,7 +37,11 @@ def append_log_response_context_middleware(response):
 
 
 def log_request_middleware():
-    logger.debug("API Request: %s %s %s %s", request.method, request.path, request.args.to_dict(), request.data)
+    if isinstance(request.data, dict):
+        redacted_payload = {k: v for k, v in request.data.items() if k not in ["image"]}
+    else:
+        redacted_payload = request.data
+    logger.debug("API Request: %s %s %s %s", request.method, request.path, request.args.to_dict(), redacted_payload)
 
 
 def log_response_middleware(response):

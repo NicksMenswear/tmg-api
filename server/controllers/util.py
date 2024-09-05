@@ -166,6 +166,7 @@ def http(method, *args, **kwargs):
                     redirect=0,  # No retries for redirects
                     raise_on_redirect=False,
                     raise_on_status=False,
+                    allowed_methods=["POST"],  # enable retries for POST requests
                 ),
             }
         )

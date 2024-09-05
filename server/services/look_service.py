@@ -78,11 +78,7 @@ class LookService:
             image_path=None,
             is_active=create_look.is_active,
         )
-
         db.session.add(look)
-        db.session.commit()
-        db.session.refresh(look)
-
         return look
 
     def __verify_that_look_does_not_exist(self, create_look: CreateLookModel) -> None:

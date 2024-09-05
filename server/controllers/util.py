@@ -156,7 +156,7 @@ def http(method, *args, **kwargs):
     if method == "POST":
         merge_kwargs.update(
             {
-                "timeout": kwargs.get("timeout", 5),
+                "timeout": 5,
                 "retries": urllib3.util.Retry(
                     total=3,  # Number of retries
                     backoff_factor=1,  # Delay between retries
@@ -173,7 +173,7 @@ def http(method, *args, **kwargs):
     else:
         merge_kwargs.update(
             {
-                "timeout": kwargs.get("timeout", 3),
+                "timeout": 3,
                 "retries": urllib3.util.Retry(total=3, connect=None, read=None, redirect=0, status=None),
             }
         )

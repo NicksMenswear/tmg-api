@@ -183,7 +183,8 @@ def http(method, *args, **kwargs):
     _log_request(method, *args, **merge_kwargs)
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.
-        response = urllib3.PoolManager().request(method, *args, **merge_kwargs)
+        with urllib3.PoolManager() as http_temp:
+            response = http_temp.request(method, *args, **merge_kwargs)
     else:
         response = http_pool.request(method, *args, **merge_kwargs)
     _log_response(response)

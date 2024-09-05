@@ -151,18 +151,44 @@ def error_handler(func):
 
 
 def http(method, *args, **kwargs):
-    merge_kwargs = {
-        "timeout": kwargs.get("timeout", 2),
-        "retries": urllib3.util.Retry(total=5, connect=None, read=None, redirect=0, status=None),
-    }
+    merge_kwargs = {}
+
+    if method == "POST":
+        merge_kwargs.update(
+            {
+                "timeout": 5,
+                "retries": urllib3.util.Retry(
+                    total=3,  # Number of retries
+                    backoff_factor=1,  # Delay between retries
+                    connect=3,  # Retry only on connection failures
+                    read=0,  # Do not retry on read errors (timeout while receiving data)
+                    status=0,  # Do not retry on specific HTTP status codes
+                    redirect=0,  # No retries for redirects
+                    raise_on_redirect=False,
+                    raise_on_status=False,
+                    allowed_methods=["POST"],  # Enable retries for POST requests
+                ),
+            }
+        )
+    else:
+        merge_kwargs.update(
+            {
+                "timeout": 3,
+                "retries": urllib3.util.Retry(total=3, connect=None, read=None, redirect=0, status=None),
+            }
+        )
+
     merge_kwargs.update(kwargs)
+
     _log_request(method, *args, **merge_kwargs)
     if method == "POST":
         # Avoid caching connections for POST, use new pool every time.
-        response = urllib3.PoolManager().request(method, *args, **merge_kwargs)
+        with urllib3.PoolManager() as http_temp:
+            response = http_temp.request(method, *args, **merge_kwargs)
     else:
         response = http_pool.request(method, *args, **merge_kwargs)
     _log_response(response)
+
     return response
 
 

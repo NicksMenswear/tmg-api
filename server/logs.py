@@ -37,9 +37,10 @@ def append_log_response_context_middleware(response):
 
 
 def log_request_middleware():
-    if isinstance(request.data, dict):
-        redacted_payload = {k: v for k, v in request.data.items() if k not in ["image"]}
-    else:
+    try:
+        json_payload = json.loads(request.data)
+        redacted_payload = {k: v for k, v in json_payload.items() if k not in ["image"]}
+    except Exception:
         redacted_payload = request.data
     logger.debug("API Request: %s %s %s %s", request.method, request.path, request.args.to_dict(), redacted_payload)
 

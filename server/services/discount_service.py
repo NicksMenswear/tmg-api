@@ -535,7 +535,7 @@ class DiscountService:
                 attendee_user.shopify_id,
                 DiscountAmountType.FIXED_AMOUNT,
                 discount_amount,
-                TMG_MIN_SUIT_PRICE,
+                None,
                 [look.product_specs.get("bundle", {}).get("variant_id")],
             )
 

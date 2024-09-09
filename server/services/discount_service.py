@@ -530,13 +530,7 @@ class DiscountService:
             # for legacy orders, we need to keep the old discount codes
 
             shopify_discount = self.shopify_service.create_discount_code(
-                title,
-                code,
-                attendee_user.shopify_id,
-                DiscountAmountType.FIXED_AMOUNT,
-                discount_amount,
-                None,
-                [look.product_specs.get("bundle", {}).get("variant_id")],
+                title, code, attendee_user.shopify_id, DiscountAmountType.FIXED_AMOUNT, discount_amount
             )
 
         discount = Discount(

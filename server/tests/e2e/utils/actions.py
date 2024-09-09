@@ -56,8 +56,8 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     return event_id
 
 
-def select_date_in_calendar(page: Page):
-    next_year = str(datetime.now().year + 1)
+def select_date_in_calendar(page: Page, control_id: str = "dropdown-date"):
+    random_day = str(random.randint(1, 28))
     random_month = random.choice(
         [
             "January",
@@ -74,11 +74,11 @@ def select_date_in_calendar(page: Page):
             "December",
         ]
     )
-    random_day = str(random.randint(1, 28))
+    next_year = str(datetime.now().year + 1)
 
-    page.locator("#dropdown-date div .dp-year").select_option(next_year)
-    page.locator("#dropdown-date div .dp-month").select_option(random_month)
-    page.locator("#dropdown-date div .dp-day").select_option(random_day)
+    page.locator(f"#{control_id} div .dp-day").select_option(random_day)
+    page.locator(f"#{control_id} div .dp-month").select_option(random_month)
+    page.locator(f"#{control_id} div .dp-year").select_option(next_year)
 
 
 def open_event_accordion(page: Page, event_id: str):
@@ -675,5 +675,5 @@ def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedd
     get_started_select_event_role(get_started_dialog_locator, "bride")
     get_started_click_next_button(get_started_dialog_locator)
 
-    select_date_in_calendar(page)
+    select_date_in_calendar(get_started_dialog_locator, "get-started-event-datepicker")
     get_started_click_next_button(get_started_dialog_locator)

@@ -36,8 +36,6 @@ TMG_MIN_SUIT_PRICE: int = 260
 
 logger = logging.getLogger(__name__)
 
-DISCOUNTS_FLIP_DATE = datetime(2024, 8, 23, 0, 0, 0)
-
 
 # noinspection PyMethodMayBeStatic
 class DiscountService:

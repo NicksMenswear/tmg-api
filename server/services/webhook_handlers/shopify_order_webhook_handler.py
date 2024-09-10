@@ -13,7 +13,6 @@ from server.services.discount_service import (
     DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
     DiscountService,
     GIFT_DISCOUNT_CODE_PREFIX,
-    DISCOUNTS_FLIP_DATE,
     TMG_MIN_SUIT_PRICE,
 )
 from server.services.event_service import EventService
@@ -137,29 +136,14 @@ class ShopifyWebhookOrderHandler:
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
-            if event.created_at > DISCOUNTS_FLIP_DATE:
-                discount_response = self.shopify_service.create_discount_code(
-                    code,
-                    code,
-                    attendee_user.shopify_id,
-                    DiscountAmountType.FIXED_AMOUNT,
-                    discount.amount,
-                    TMG_MIN_SUIT_PRICE,
-                    None,
-                )
-            else:
-                bundle_variant_id = look.product_specs.get("bundle", {}).get("variant_id")
-                discounted_variant_ids = [bundle_variant_id]
-
-                discount_response = self.shopify_service.create_discount_code(
-                    code,
-                    code,
-                    attendee_user.shopify_id,
-                    DiscountAmountType.FIXED_AMOUNT,
-                    discount.amount,
-                    TMG_MIN_SUIT_PRICE,
-                    discounted_variant_ids,
-                )
+            discount_response = self.shopify_service.create_discount_code(
+                code,
+                code,
+                attendee_user.shopify_id,
+                DiscountAmountType.FIXED_AMOUNT,
+                discount.amount,
+                TMG_MIN_SUIT_PRICE,
+            )
 
             self.discount_service.add_code_to_discount(
                 discount.id,

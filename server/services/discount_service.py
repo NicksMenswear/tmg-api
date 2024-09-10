@@ -36,8 +36,6 @@ TMG_MIN_SUIT_PRICE: int = 260
 
 logger = logging.getLogger(__name__)
 
-DISCOUNTS_FLIP_DATE = datetime(2024, 8, 23, 0, 0, 0)
-
 
 # noinspection PyMethodMayBeStatic
 class DiscountService:
@@ -507,30 +505,23 @@ class DiscountService:
 
         title = code
 
-        if event.created_at > DISCOUNTS_FLIP_DATE:
-            if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
-                shopify_discount = self.shopify_service.create_discount_code(
-                    title,
-                    code,
-                    attendee_user.shopify_id,
-                    DiscountAmountType.FIXED_AMOUNT,
-                    TMG_GROUP_50_USD_AMOUNT,
-                    TMG_MIN_SUIT_PRICE,
-                )
-            else:
-                shopify_discount = self.shopify_service.create_discount_code(
-                    title,
-                    code,
-                    attendee_user.shopify_id,
-                    DiscountAmountType.PERCENTAGE,
-                    TMG_GROUP_25_PERCENT_OFF,
-                    TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF,
-                )
-        else:
-            # for legacy orders, we need to keep the old discount codes
-
+        if look_price <= TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF:
             shopify_discount = self.shopify_service.create_discount_code(
-                title, code, attendee_user.shopify_id, DiscountAmountType.FIXED_AMOUNT, discount_amount
+                title,
+                code,
+                attendee_user.shopify_id,
+                DiscountAmountType.FIXED_AMOUNT,
+                TMG_GROUP_50_USD_AMOUNT,
+                TMG_MIN_SUIT_PRICE,
+            )
+        else:
+            shopify_discount = self.shopify_service.create_discount_code(
+                title,
+                code,
+                attendee_user.shopify_id,
+                DiscountAmountType.PERCENTAGE,
+                TMG_GROUP_25_PERCENT_OFF,
+                TMG_MIN_SUIT_PRICE_FOR_25_PERCENT_OFF,
             )
 
         discount = Discount(

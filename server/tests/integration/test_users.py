@@ -11,6 +11,7 @@ from server.database.models import DiscountType
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
 from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX
+from server.services.user_service import MAX_NAME_LENGTH
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -628,7 +629,7 @@ class TestUsers(BaseTestCase):
         self.assertStatus(response, 201)
         saved_user = self.user_service.get_user_by_email(email)
         self.assertEqual(
-            first_name[:63],
+            first_name[:MAX_NAME_LENGTH],
             saved_user.first_name,
         )
 
@@ -658,7 +659,7 @@ class TestUsers(BaseTestCase):
         self.assertStatus(response, 201)
         saved_user = self.user_service.get_user_by_email(email)
         self.assertEqual(
-            last_name[:63],
+            last_name[:MAX_NAME_LENGTH],
             saved_user.last_name,
         )
 

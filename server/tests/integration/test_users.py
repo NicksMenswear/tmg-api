@@ -11,6 +11,7 @@ from server.database.models import DiscountType
 from server.models.event_model import EventUserStatus
 from server.models.user_model import CreateUserModel, UserModel
 from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX
+from server.services.user_service import MAX_NAME_LENGTH
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -606,14 +607,18 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_look2["name"], str(look2.name))
         self.assertEqual(response_look2["price"], self.look_service.get_look_price(look2))
 
-    def test_create_user_first_name_too_short(self):
+    def test_create_user_first_name_too_long(self):
+        # given
+        email = utils.generate_email()
+        first_name = utils.generate_unique_name(100, 100)
+
         # when
         response = self.client.open(
             "/users",
             query_string=self.hmac_query_params,
             method="POST",
             data=json.dumps(
-                {"first_name": "", "last_name": "abcd", "email": "test@example.com"},
+                {"first_name": first_name, "last_name": "abcd", "email": email},
                 cls=encoder.CustomJSONEncoder,
             ),
             headers=self.request_headers,
@@ -621,9 +626,18 @@ class TestUsers(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 400)
+        self.assertStatus(response, 201)
+        saved_user = self.user_service.get_user_by_email(email)
+        self.assertEqual(
+            first_name[:MAX_NAME_LENGTH],
+            saved_user.first_name,
+        )
 
     def test_create_user_last_name_too_long(self):
+        # given
+        email = utils.generate_email()
+        last_name = utils.generate_unique_name(100, 100)
+
         # when
         response = self.client.open(
             "/users",
@@ -631,9 +645,9 @@ class TestUsers(BaseTestCase):
             method="POST",
             data=json.dumps(
                 {
-                    "first_name": "abcdefghij",
-                    "last_name": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij",
-                    "email": "test@example.com",
+                    "first_name": "abcd",
+                    "last_name": last_name,
+                    "email": email,
                 },
                 cls=encoder.CustomJSONEncoder,
             ),
@@ -642,9 +656,39 @@ class TestUsers(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 400)
+        self.assertStatus(response, 201)
+        saved_user = self.user_service.get_user_by_email(email)
+        self.assertEqual(
+            last_name[:MAX_NAME_LENGTH],
+            saved_user.last_name,
+        )
 
-    def test_create_user_first_name_invalid_characters(self):
+    def test_create_user_first_name_is_none(self):
+        # given
+        email = utils.generate_email()
+
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(
+                {"first_name": None, "last_name": "abcd", "email": email},
+                cls=encoder.CustomJSONEncoder,
+            ),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        saved_user = self.user_service.get_user_by_email(email)
+        self.assertIsNone(saved_user.first_name)
+
+    def test_create_user_last_name_is_none(self):
+        # given
+        email = utils.generate_email()
+
         # when
         response = self.client.open(
             "/users",
@@ -652,9 +696,9 @@ class TestUsers(BaseTestCase):
             method="POST",
             data=json.dumps(
                 {
-                    "first_name": "123@#$%",
-                    "last_name": "abcdefg",
-                    "email": "test@example.com",
+                    "first_name": "abcd",
+                    "last_name": None,
+                    "email": email,
                 },
                 cls=encoder.CustomJSONEncoder,
             ),
@@ -663,7 +707,9 @@ class TestUsers(BaseTestCase):
         )
 
         # then
-        self.assertStatus(response, 400)
+        self.assertStatus(response, 201)
+        saved_user = self.user_service.get_user_by_email(email)
+        self.assertIsNone(saved_user.last_name)
 
     @parameterized.expand(
         [

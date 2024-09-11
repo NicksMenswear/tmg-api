@@ -15,6 +15,8 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
+MAX_NAME_LENGTH = 63
+
 
 # noinspection PyMethodMayBeStatic
 class UserService:
@@ -24,15 +26,17 @@ class UserService:
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
         user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
+        first_name = None if not create_user.first_name else create_user.first_name[:MAX_NAME_LENGTH]
+        last_name = None if not create_user.last_name else create_user.last_name[:MAX_NAME_LENGTH]
 
         if user:
             raise DuplicateError("User already exists with that email address.")
 
         if not create_user.shopify_id:
             try:
-                shopify_customer_id = self.shopify_service.create_customer(
-                    create_user.first_name, create_user.last_name, create_user.email
-                )["id"]
+                shopify_customer_id = self.shopify_service.create_customer(first_name, last_name, create_user.email)[
+                    "id"
+                ]
                 send_activation_email = create_user.account_status
             except DuplicateError as e:
                 # If the user already exists in Shopify, we should still create a user in our database
@@ -57,8 +61,8 @@ class UserService:
                 insert_statement,
                 {
                     "id": str(uuid.uuid4()),
-                    "first_name": create_user.first_name,
-                    "last_name": create_user.last_name,
+                    "first_name": first_name,
+                    "last_name": last_name,
                     "email": create_user.email.lower(),
                     "shopify_id": str(shopify_customer_id),
                     "phone_number": create_user.phone_number,
@@ -124,8 +128,8 @@ class UserService:
             raise NotFoundError("User not found.")
 
         try:
-            user.first_name = update_user.first_name
-            user.last_name = update_user.last_name
+            user.first_name = None if not update_user.first_name else update_user.first_name[:MAX_NAME_LENGTH]
+            user.last_name = None if not update_user.last_name else update_user.last_name[:MAX_NAME_LENGTH]
             user.account_status = update_user.account_status
             user.shopify_id = update_user.shopify_id
             user.phone_number = update_user.phone_number

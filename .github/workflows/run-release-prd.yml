@@ -27,7 +27,7 @@ jobs:
             echo "Invalid semver: ${{ inputs.semver }}"
             exit 1
           fi
-      
+
       - name: Verify GitHub release E2E status
         id: get-release-hash
         uses: actions/github-script@v7
@@ -57,7 +57,7 @@ jobs:
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
-    # needs: validate-release  # TODO uncomment once e2e are fixed
+    needs: validate-release
     with:
       ref: ${{ github.sha }}
       stage: prd

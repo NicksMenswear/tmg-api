@@ -1777,9 +1777,11 @@ components:
         first_name:
           title: first_name
           type: string
+          nullable: true
         last_name:
           title: last_name
           type: string
+          nullable: true
         email:
           title: email
           $ref: '#/components/schemas/email'

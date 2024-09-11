@@ -413,10 +413,22 @@ class ShopifyWebhookOrderHandler:
     def __track_swatch_purchase(self, user, payload):
         items = payload.get("line_items", [])
         if any(item.get("sku", "").upper().startswith("S") for item in items):
-            self.activecampaign_service.track_event(user.email, "Ordered Swatches")
+            self.activecampaign_service.sync_contact(
+                email=user.email,
+                fields={"ORDERED_SWATCHES": "Yes"},
+                events=["Ordered Swatches"],
+            )
 
     def __track_giftcode_purchase(self, user_email):
-        self.activecampaign_service.track_event(user_email, "Paid for Attendees")
+        self.activecampaign_service.sync_contact(
+            email=user_email,
+            fields={"PAID_FOR_ATTENDEES": "Yes"},
+            events=["Paid for Attendees"],
+        )
 
     def __track_suit_purchase(self, user_email):
-        self.activecampaign_service.track_event(user_email, "Paid for a Suit")
+        self.activecampaign_service.sync_contact(
+            email=user_email,
+            fields={"PAID_FOR_A_SUIT": "Yes"},
+            events=["Paid for a Suit"],
+        )

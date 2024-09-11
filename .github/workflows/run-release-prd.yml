@@ -14,50 +14,50 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-#  validate-release:
-#    runs-on: ubuntu-latest
-#    permissions:
-#      id-token: write
-#      contents: write
-#      statuses: read
-#    steps:
-#      - name: Validate semver
-#        run: |
-#          if [[ ! ${{ inputs.semver }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-#            echo "Invalid semver: ${{ inputs.semver }}"
-#            exit 1
-#          fi
-#
-#      - name: Verify GitHub release E2E status
-#        id: get-release-hash
-#        uses: actions/github-script@v7
-#        with:
-#          script: |
-#            const release = await github.rest.repos.getReleaseByTag({
-#              owner: context.repo.owner,
-#              repo: context.repo.repo,
-#              tag: "${{ inputs.semver }}"
-#            });
-#            if (!release) {
-#              core.setFailed(`Release ${{ inputs.semver }} does not exist.`);
-#            }
-#            console.log(`Release SHA: ${release.data.target_commitish}`);
-#
-#            const statuses = await github.rest.repos.listCommitStatusesForRef({
-#              owner: context.repo.owner,
-#              repo: context.repo.repo,
-#              ref: `${release.data.target_commitish}`
-#            });
-#            console.log(`Commit statuses: ${JSON.stringify(statuses.data)}`);
-#
-#            const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
-#            if (e2e.state != 'success') {
-#              core.setFailed(`Release ${{ inputs.semver }} e2e status is ${e2e.state}`);
-#            }
+  validate-release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      statuses: read
+    steps:
+      - name: Validate semver
+        run: |
+          if [[ ! ${{ inputs.semver }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid semver: ${{ inputs.semver }}"
+            exit 1
+          fi
+
+      - name: Verify GitHub release E2E status
+        id: get-release-hash
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: "${{ inputs.semver }}"
+            });
+            if (!release) {
+              core.setFailed(`Release ${{ inputs.semver }} does not exist.`);
+            }
+            console.log(`Release SHA: ${release.data.target_commitish}`);
+
+            const statuses = await github.rest.repos.listCommitStatusesForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `${release.data.target_commitish}`
+            });
+            console.log(`Commit statuses: ${JSON.stringify(statuses.data)}`);
+
+            const e2e = statuses.data.find(status => status.context === 'run-release-stg / e2e');
+            if (e2e.state != 'success') {
+              core.setFailed(`Release ${{ inputs.semver }} e2e status is ${e2e.state}`);
+            }
 
   cd:
     uses: ./.github/workflows/_sls_deploy.yml
-    # needs: validate-release  # TODO uncomment once e2e are fixed
+    needs: validate-release
     with:
       ref: ${{ github.sha }}
       stage: prd

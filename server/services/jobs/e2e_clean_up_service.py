@@ -23,7 +23,7 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
-NUMBER_OF_USERS_TO_PROCESS = 20
+NUMBER_OF_USERS_TO_PROCESS = 100
 
 SYSTEM_E2E_EMAILS_TO_KEEP = {
     "e2e+01@mail.dev.tmgcorp.net",
@@ -33,9 +33,6 @@ SYSTEM_E2E_EMAILS_TO_KEEP = {
     "e2e+05@mail.dev.tmgcorp.net",
 }
 
-# CUSTOMER_EMAIL_MATCHING_PATTERN = "*@example.com"
-# CUSTOMER_EMAIL_MATCHING_PATTERN = "e2etmg*@hotmail.com"
-# CUSTOMER_EMAIL_MATCHING_PATTERN = "automation*@themoderngroom.com"
 CUSTOMER_EMAIL_MATCHING_PATTERN = "e2e+*@mail.dev.tmgcorp.net"
 
 
@@ -47,6 +44,8 @@ class E2ECleanUpService:
         customers = self.shopify_service.get_customers_by_email_pattern(
             CUSTOMER_EMAIL_MATCHING_PATTERN, NUMBER_OF_USERS_TO_PROCESS
         )
+
+        customers.reverse()  # so system users are processed last
 
         for customer in customers:
             email = customer.get("email")

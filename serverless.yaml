@@ -74,7 +74,7 @@ functions:
   job-e2e-clean-up:
     handler: jobs.lambda_handler_e2e_clean_up
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(15 minutes)
     timeout: 600
     memorySize: 512
     lambdaInsights: true

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @token_verification
 @error_handler
 def e2e_clean_up():
-    system_service = FlaskApp.current().system_service
-    system_service.e2e_cleanup()
+    e2e_cleanup_service = FlaskApp.current().e2e_cleanup_service
+    e2e_cleanup_service.cleanup()
 
     return {}, 200

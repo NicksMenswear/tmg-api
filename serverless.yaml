@@ -71,14 +71,14 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-  job-e2e-clean-up:
-    handler: jobs.lambda_handler_e2e_clean_up
-    events:
-      - schedule: rate(15 minutes)
-    timeout: 600
-    memorySize: 512
-    lambdaInsights: true
-    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+#  job-e2e-clean-up:
+#    handler: jobs.lambda_handler_e2e_clean_up
+#    events:
+#      - schedule: rate(15 minutes)
+#    timeout: 600
+#    memorySize: 512
+#    lambdaInsights: true
+#    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
 plugins:
   - serverless-python-requirements

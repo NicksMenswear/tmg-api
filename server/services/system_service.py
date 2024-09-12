@@ -46,8 +46,11 @@ class SystemService:
         #     "e2e+*@mail.dev.tmgcorp.net", NUMBER_OF_USERS_TO_PROCESS
         # )
         # customers = self.shopify_service.get_customers_by_email_pattern("*@example.com", NUMBER_OF_USERS_TO_PROCESS)
+        # customers = self.shopify_service.get_customers_by_email_pattern(
+        #     "e2etmg*@hotmail.com", NUMBER_OF_USERS_TO_PROCESS
+        # )
         customers = self.shopify_service.get_customers_by_email_pattern(
-            "e2etmg*@hotmail.com", NUMBER_OF_USERS_TO_PROCESS
+            "automation*@themoderngroom.com", NUMBER_OF_USERS_TO_PROCESS
         )
 
         for customer in customers:

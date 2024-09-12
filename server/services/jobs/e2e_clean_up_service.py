@@ -34,9 +34,9 @@ SYSTEM_E2E_EMAILS_TO_KEEP = {
 }
 
 # CUSTOMER_EMAIL_MATCHING_PATTERN = "*@example.com"
-# CUSTOMER_EMAIL_MATCHING_PATTERN = "e2etmg*@hotmail.com"
+CUSTOMER_EMAIL_MATCHING_PATTERN = "e2etmg*@hotmail.com"
 # CUSTOMER_EMAIL_MATCHING_PATTERN = "automation*@themoderngroom.com"
-CUSTOMER_EMAIL_MATCHING_PATTERN = "e2e+*@mail.dev.tmgcorp.net"
+# CUSTOMER_EMAIL_MATCHING_PATTERN = "e2e+*@mail.dev.tmgcorp.net"
 
 
 class E2ECleanUpService:

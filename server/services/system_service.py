@@ -23,7 +23,7 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
-NUMBER_OF_USERS_TO_PROCESS = 250
+NUMBER_OF_USERS_TO_PROCESS = 50
 
 SYSTEM_E2E_EMAILS = {
     "e2e+01@mail.dev.tmgcorp.net",
@@ -42,16 +42,16 @@ class SystemService:
         self.shopify_service = shopify_service
 
     def e2e_cleanup(self) -> None:
-        # customers = self.shopify_service.get_customers_by_email_pattern(
-        #     "e2e+*@mail.dev.tmgcorp.net", NUMBER_OF_USERS_TO_PROCESS
-        # )
+        customers = self.shopify_service.get_customers_by_email_pattern(
+            "e2e+*@mail.dev.tmgcorp.net", NUMBER_OF_USERS_TO_PROCESS
+        )
         # customers = self.shopify_service.get_customers_by_email_pattern("*@example.com", NUMBER_OF_USERS_TO_PROCESS)
         # customers = self.shopify_service.get_customers_by_email_pattern(
         #     "e2etmg*@hotmail.com", NUMBER_OF_USERS_TO_PROCESS
         # )
-        customers = self.shopify_service.get_customers_by_email_pattern(
-            "automation*@themoderngroom.com", NUMBER_OF_USERS_TO_PROCESS
-        )
+        # customers = self.shopify_service.get_customers_by_email_pattern(
+        #     "automation*@themoderngroom.com", NUMBER_OF_USERS_TO_PROCESS
+        # )
 
         for customer in customers:
             email = customer.get("email")
@@ -61,6 +61,10 @@ class SystemService:
                 continue
 
             is_system_user = email in SYSTEM_E2E_EMAILS
+
+            if is_system_user:
+                logger.info(f"Skipping system user: {email}")
+                continue
 
             logger.info(f"Processing customer: {email}")
 

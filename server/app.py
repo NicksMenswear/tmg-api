@@ -16,6 +16,7 @@ from server.logs import (
     log_request_middleware,
     log_response_middleware,
 )
+from server.services.system_service import SystemService
 from server.version import get_version
 from server.database.database_manager import db, DATABASE_URL
 from server.flask_app import FlaskApp
@@ -165,6 +166,7 @@ def init_services(app, is_testing=False):
         attendee_service=app.attendee_service,
         event_service=app.event_service,
     )
+    app.system_service = SystemService(shopify_service=app.shopify_service)
 
 
 def init_db():

@@ -23,7 +23,7 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
-NUMBER_OF_USERS_TO_PROCESS = 50
+NUMBER_OF_USERS_TO_PROCESS = 10
 
 SYSTEM_E2E_EMAILS = {
     "e2e+01@mail.dev.tmgcorp.net",

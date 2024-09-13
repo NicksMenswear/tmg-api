@@ -72,24 +72,11 @@ jobs:
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
-    strategy:
-      matrix:
-        group: [1, 2, 3, 4, 5]
     with:
       ref: ${{ inputs.semver }}
       stage: prd
       notify: true
-      test_group: group-${{ matrix.group }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-  e2e-clean-up:
-    uses: ./.github/workflows/_e2e_clean_up.yml
-    needs:
-      - e2e-tests
-    if: ${{ always() }}
-    with:
-      stage: prd
-    secrets:
       X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}

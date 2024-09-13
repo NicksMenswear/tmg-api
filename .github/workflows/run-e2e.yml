@@ -10,6 +10,7 @@ on:
         - all
         - dev
         - stg
+        - prd
       browser:
         type: choice
         description: Browser to run tests on
@@ -27,7 +28,7 @@ jobs:
       - id: set-matrix
         run: |
           if [ "${{ inputs.stage }}" = "all" ]; then
-            echo stages='["dev","stg"]' >> $GITHUB_OUTPUT
+            echo stages='["dev","stg","prd"]' >> $GITHUB_OUTPUT
           else
             echo stages='["${{ inputs.stage }}"]' >> $GITHUB_OUTPUT
           fi
@@ -43,6 +44,7 @@ jobs:
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
     strategy:
       fail-fast: false
       matrix:

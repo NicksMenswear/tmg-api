@@ -93,18 +93,15 @@ jobs:
   e2e-groups:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') && (needs.cd.result == 'skipped' || needs.cd.result == 'success')  }}
     needs: cd
-    strategy:
-      matrix:
-        group: [1, 2, 3, 4, 5]
     name: e2e-group-${{ matrix.group }}
     uses: ./.github/workflows/_e2e_tests.yml
     with:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev
       notify: false
-      test_group: group-${{ matrix.group }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
 
   report-e2e:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') }}

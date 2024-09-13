@@ -26,20 +26,20 @@ on:
         type: boolean
         default: true
         description: Notify Slack
-      test_group:
-        required: false
-        type: string
-        default: all
-        description: Test Group
     secrets:
       DATADOG_API_KEY:
         required: true
       SLACK_BOT_TOKEN:
         required: false  # required when notify is true
+      X_API_ACCESS_TOKEN:
+        required: true
 
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5]
     steps:
       - name: Datadog CI tags
         env:
@@ -68,7 +68,7 @@ jobs:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}
           LOAD: ${{ inputs.load }}
-          TEST_GROUP: ${{ inputs.test_group }}
+          TEST_GROUP: group-${{ matrix.group }}
 
       - name: Clean up
         if: always()
@@ -85,3 +85,33 @@ jobs:
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  e2e-clean-up:
+    needs: e2e-test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.stage }}
+    steps:
+      - name: Clean up e2e test data from Shopify and DB
+        run: |
+          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-clean-up \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
+            -d '{}' \
+            --max-time 300
+
+  e2e-clean-up-ac:
+    needs: e2e-test
+    if: ${{ always() && inputs.stage == 'prd' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.stage }}
+    steps:
+      - name: Clean up e2e test data from Active Campaign
+        run: |
+          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-ac-clean-up \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
+            -d '{}' \
+            --max-time 300

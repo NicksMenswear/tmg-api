@@ -8,7 +8,7 @@ from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, STORE_URL, e2e
 from server.tests.e2e.utils import api, actions, verify
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_create_delete_looks(page: Page):
@@ -35,14 +35,14 @@ def test_create_delete_looks(page: Page):
     verify.looks_page_is_empty(page)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_add_look_to_cart_from_looks_page(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -72,7 +72,7 @@ def test_add_look_to_cart_from_looks_page(page: Page):
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):

@@ -18,19 +18,19 @@ from server.tests.e2e.utils import api, actions, verify
 logger = logging.getLogger(__name__)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
 
     role_name = "Groomsman"
@@ -86,13 +86,13 @@ def test_pay_dialog_correctness(page: Page):
     )
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     role_name = "Groomsman"
@@ -141,13 +141,13 @@ def test_discount_intent_saved(page: Page):
     verify.input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, amount)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_pay_in_full_click_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     role_name = "Groomsman"
@@ -199,8 +199,8 @@ def test_pay_in_full_click_discount_intent_saved(page: Page):
 @pytest.mark.group_5
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     attendee_password = utils.generate_unique_string()
 
@@ -266,23 +266,23 @@ def test_grooms_gift(page):
     verify.shopify_checkout_has_discount_with_name(page, codes[0])
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_group_discount(page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
     attendee_password_2 = utils.generate_unique_string()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
-    attendee_first_name_4 = utils.generate_unique_name()
-    attendee_last_name_4 = utils.generate_unique_name()
+    attendee_first_name_4 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_4 = f"E2E {utils.generate_unique_name()}"
     attendee_email_4 = utils.generate_email()
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -339,18 +339,18 @@ def test_group_discount(page):
 @pytest.mark.group_4
 def test_group_discount_and_groom_gift_as_well(page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
     attendee_password_2 = utils.generate_unique_string()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
-    attendee_first_name_4 = utils.generate_unique_name()
-    attendee_last_name_4 = utils.generate_unique_name()
+    attendee_first_name_4 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_4 = f"E2E {utils.generate_unique_name()}"
     attendee_email_4 = utils.generate_email()
     role_name = "Groomsman"
     look_name = utils.generate_look_name()
@@ -418,18 +418,18 @@ def test_group_discount_and_groom_gift_as_well(page):
 @pytest.mark.group_3
 def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
     attendee_password_2 = utils.generate_unique_string()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
-    attendee_first_name_4 = utils.generate_unique_name()
-    attendee_last_name_4 = utils.generate_unique_name()
+    attendee_first_name_4 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_4 = f"E2E {utils.generate_unique_name()}"
     attendee_email_4 = utils.generate_email()
     role_name = "Groomsman"
     look_name = utils.generate_look_name()

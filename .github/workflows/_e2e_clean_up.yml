@@ -7,6 +7,9 @@ on:
         required: true
         type: string
         description: Stage to run clean up against
+    secrets:
+      X_API_ACCESS_TOKEN:
+        required: true
 
 jobs:
   e2e-clean-up-shopify-and-db:

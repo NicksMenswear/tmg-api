@@ -91,3 +91,6 @@ jobs:
     if: ${{ always() }}
     with:
       stage: prd
+    environment: prd
+    secrets:
+      X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}

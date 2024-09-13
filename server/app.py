@@ -27,7 +27,6 @@ from server.services.integrations.aws_service import AWSService, FakeAWSService
 from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
 from server.services.integrations.superblocks_service import SuperblocksService, FakeSuperblocksService
-from server.services.jobs.e2e_clean_up_service import E2ECleanUpService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
@@ -42,6 +41,7 @@ from server.services.webhook_handlers.shopify_checkout_webhook_handler import Sh
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
+from server.services.workers.e2e_clean_up_worker import E2ECleanUpWorker
 from server.version import get_version
 
 
@@ -166,7 +166,7 @@ def init_services(app, is_testing=False):
         attendee_service=app.attendee_service,
         event_service=app.event_service,
     )
-    app.e2e_cleanup_service = E2ECleanUpService(shopify_service=app.shopify_service)
+    app.e2e_cleanup_worker = E2ECleanUpWorker(shopify_service=app.shopify_service)
 
 
 def init_db():

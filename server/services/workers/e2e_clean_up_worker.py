@@ -36,7 +36,7 @@ SYSTEM_E2E_EMAILS_TO_KEEP = {
 CUSTOMER_EMAIL_MATCHING_PATTERN = "e2e+*@mail.dev.tmgcorp.net"
 
 
-class E2ECleanUpService:
+class E2ECleanUpWorker:
     def __init__(self, shopify_service: AbstractShopifyService):
         self.shopify_service = shopify_service
 
@@ -51,15 +51,8 @@ class E2ECleanUpService:
             email = customer.get("email")
             customer_shopify_id = customer.get("id")
 
-            if not email:
-                continue
-
             is_system_user = email in SYSTEM_E2E_EMAILS_TO_KEEP
 
-            # if is_system_user:
-            #     logger.info(f"Skipping system user: {email}")
-            #     continue
-            #
             logger.info(f"Processing customer: {email}")
 
             try:
@@ -89,7 +82,6 @@ class E2ECleanUpService:
                     self.__delete_attendee(attendee.id)
 
                 events = self.__get_events(user.id)
-                has_hanging_events = False
 
                 for event in events:
                     num_attendees = self.__num_attendees_in_event(event.id)
@@ -97,7 +89,6 @@ class E2ECleanUpService:
                     logger.info(f"Deleting event: {event.id}")
 
                     if num_attendees > 0:
-                        has_hanging_events = True
                         logger.info(f"Event has attendees, skipping deletion: {event.id}")
                         continue
 
@@ -113,11 +104,6 @@ class E2ECleanUpService:
                     self.__delete_event(event.id)
 
                     db.session.commit()
-
-                if has_hanging_events:
-                    db.session.commit()
-
-                    continue
 
                 self.__delete_sizes(user.id)
                 self.__delete_measurements(user.id)

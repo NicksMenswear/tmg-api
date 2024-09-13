@@ -1,4 +1,5 @@
 import enum
+import fnmatch
 import json
 import logging
 import os
@@ -130,7 +131,7 @@ class FakeShopifyService(AbstractShopifyService):
         if email.endswith("@shopify-user-does-not-exists.com"):
             raise NotFoundError("Shopify customer doesn't exist.")
 
-        return self.customers.get(email, {"id": random.randint(1000, 100000)})
+        return self.customers.get(email)
 
     def create_customer(self, first_name, last_name, email):
         if email.endswith("@shopify-user-exists.com"):
@@ -269,10 +270,19 @@ class FakeShopifyService(AbstractShopifyService):
         pass
 
     def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
-        pass
+        customers = []
+
+        for email, customer in self.customers.items():
+            if fnmatch.fnmatch(email, email_pattern):
+                customers.append(customer)
+
+        return customers[:num_customers_to_fetch]
 
     def delete_customer(self, customer_id: str) -> None:
-        pass
+        for email, customer in self.customers.items():
+            if customer["id"] == customer_id:
+                del self.customers[email]
+                break
 
 
 class ShopifyService(AbstractShopifyService):

@@ -36,8 +36,8 @@ def test_login(page: Page):
 @e2e_error_handling
 @pytest.mark.group_4
 def test_signup_form(page: Page):
-    first_name = f"Test-{utils.generate_unique_name(8, 12)}"
-    last_name = f"Test-{utils.generate_unique_name(8, 12)}"
+    first_name = f"E2E {utils.generate_unique_name(8, 12)}"
+    last_name = f"E2E {utils.generate_unique_name(8, 12)}"
     user_email = utils.generate_email()
     password = str(uuid.uuid4())
 

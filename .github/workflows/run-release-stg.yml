@@ -73,7 +73,6 @@ jobs:
     if: ${{ always() }}
     with:
       stage: stg
-    environment: stg
     secrets:
       X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
 

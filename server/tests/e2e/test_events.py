@@ -27,8 +27,8 @@ DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 @pytest.mark.group_2
 def test_basic_create_event(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = f"Test {utils.generate_unique_name()}"
-    attendee_last_name = f"Test {utils.generate_unique_name()}"
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -51,17 +51,17 @@ def test_basic_create_event(page: Page):
     expect(attendee_block).to_be_visible()
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_create_multiple_events(page: Page):
     event_name_1 = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
     event_name_2 = utils.generate_event_name()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -93,19 +93,19 @@ def test_create_multiple_events(page: Page):
     expect(attendee_block_2).to_be_visible()
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_create_event_and_add_few_attendees(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -136,19 +136,19 @@ def test_create_event_and_add_few_attendees(page: Page):
     expect(attendee_block_3).to_be_visible()
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -184,16 +184,16 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
     expect(attendee_block_3).to_be_visible()
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_create_event_add_and_remove_attendees(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -215,17 +215,17 @@ def test_create_event_add_and_remove_attendees(page: Page):
     actions.delete_attendee(page, event_id, attendee_id_1)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_delete_event(page: Page):
     event_name_1 = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
     event_name_2 = utils.generate_event_name()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -249,13 +249,13 @@ def test_delete_event(page: Page):
     actions.delete_event(page, event_id_1, event_name_1)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_delete_all_events(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -274,16 +274,16 @@ def test_delete_all_events(page: Page):
     actions.delete_event(page, event_id, event_name)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_delete_all_attendees(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -308,23 +308,23 @@ def test_delete_all_attendees(page: Page):
     verify.no_attendee_added_to_be_visible(page, event_id)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_create_all_types_of_events_and_check_roles(page: Page):
     event_name1 = utils.generate_event_name()
-    attendee_first_name1 = utils.generate_unique_name()
-    attendee_last_name1 = utils.generate_unique_name()
+    attendee_first_name1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name1 = f"E2E {utils.generate_unique_name()}"
     attendee_email1 = utils.generate_email()
 
     event_name2 = utils.generate_event_name()
-    attendee_first_name2 = utils.generate_unique_name()
-    attendee_last_name2 = utils.generate_unique_name()
+    attendee_first_name2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name2 = f"E2E {utils.generate_unique_name()}"
     attendee_email2 = utils.generate_email()
 
     event_name3 = utils.generate_event_name()
-    attendee_first_name3 = utils.generate_unique_name()
-    attendee_last_name3 = utils.generate_unique_name()
+    attendee_first_name3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name3 = f"E2E {utils.generate_unique_name()}"
     attendee_email3 = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -359,13 +359,13 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     verify.event_has_type(page, event_id3, "Other")
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_roles_persistence(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -390,13 +390,13 @@ def test_roles_persistence(page: Page):
     verify.role_is_selected_for_attendee(page, event_id, attendee_id, role_id)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_add_myself_and_then_remove(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -436,13 +436,13 @@ def test_add_myself_and_then_remove(page: Page):
     expect(add_myself_button).to_be_enabled()
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_add_myself_and_fill_fit_survey(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -484,13 +484,13 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     assert not actions.is_ship_checkbox_selected(page, event_id, attendee_id)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_style_and_invite_checkboxes(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     look_name = "Test Look"
     role_name = "Attendee Parent or Chaperone"
@@ -534,8 +534,8 @@ def test_style_and_invite_checkboxes(page: Page):
 @pytest.mark.group_4
 def test_add_myself_and_pay_for_suit(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     look_name = "Test Look"
     role_name = "Attendee Parent or Chaperone"

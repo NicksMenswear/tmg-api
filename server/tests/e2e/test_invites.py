@@ -18,13 +18,13 @@ from server.tests.e2e import (
 from server.tests.e2e.utils import api, actions, verify, email
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_1
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     attendee_password = str(uuid.uuid4())
     role_name = "Groomsman"
@@ -83,27 +83,27 @@ def test_invite_attendee(page: Page):
     verify.invite_look_is(page, look_name)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_invite_multiple_attendees(page: Page):
     event_name = utils.generate_event_name()
 
     # Attendee 1: Role and Look Selected
-    attendee_first_name_1 = utils.generate_unique_name()
-    attendee_last_name_1 = utils.generate_unique_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
     attendee_email_1 = utils.generate_email()
     # Attendee 2: Only Role Selected
-    attendee_first_name_2 = utils.generate_unique_name()
-    attendee_last_name_2 = utils.generate_unique_name()
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
     attendee_email_2 = utils.generate_email()
     # Attendee 3: Only Look Selected
-    attendee_first_name_3 = utils.generate_unique_name()
-    attendee_last_name_3 = utils.generate_unique_name()
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
     # Attendee 4: Role and Look Selected as well
-    attendee_first_name_4 = utils.generate_unique_name()
-    attendee_last_name_4 = utils.generate_unique_name()
+    attendee_first_name_4 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_4 = f"E2E {utils.generate_unique_name()}"
     attendee_email_4 = utils.generate_email()
 
     role_name = "Groomsman"

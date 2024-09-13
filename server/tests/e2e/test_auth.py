@@ -16,6 +16,7 @@ from server.tests.e2e import (
 from server.tests.e2e.utils import actions, email, verify, api
 
 
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_3
 def test_login(page: Page):
@@ -31,7 +32,7 @@ def test_login(page: Page):
     verify.logged_in(page)
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_signup_form(page: Page):
@@ -60,6 +61,7 @@ def test_signup_form(page: Page):
     verify.no_upcoming_events_visible(page)
 
 
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_logout(page: Page):

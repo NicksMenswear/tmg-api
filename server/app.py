@@ -41,6 +41,7 @@ from server.services.webhook_handlers.shopify_checkout_webhook_handler import Sh
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
+from server.services.workers.e2e_ac_clean_up_worker import E2EActiveCampaignCleanUpWorker
 from server.services.workers.e2e_clean_up_worker import E2ECleanUpWorker
 from server.version import get_version
 
@@ -167,6 +168,7 @@ def init_services(app, is_testing=False):
         event_service=app.event_service,
     )
     app.e2e_cleanup_worker = E2ECleanUpWorker(shopify_service=app.shopify_service)
+    app.e2e_ac_cleanup_worker = E2EActiveCampaignCleanUpWorker(active_campaign_service=app.activecampaign_service)
 
 
 def init_db():

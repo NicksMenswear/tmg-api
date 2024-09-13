@@ -1758,6 +1758,17 @@ paths:
       tags:
         - Jobs
 
+  /jobs/system/e2e-ac-clean-up:
+    post:
+      operationId: e2e_ac_clean_up
+      responses:
+        "200":
+          description: OK
+      summary: Clean up E2E test data from ActiveCampaign
+      x-openapi-router-controller: server.controllers.jobs
+      tags:
+        - Jobs
+
 components:
   schemas:
     uuid:

@@ -22,7 +22,7 @@ DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
 DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_2
 def test_basic_create_event(page: Page):

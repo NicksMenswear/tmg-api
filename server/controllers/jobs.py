@@ -13,3 +13,12 @@ def e2e_clean_up():
     e2e_cleanup_worker.cleanup()
 
     return {}, 200
+
+
+@token_verification
+@error_handler
+def e2e_ac_clean_up():
+    e2e_ac_cleanup_worker = FlaskApp.current().e2e_ac_cleanup_worker
+    e2e_ac_cleanup_worker.cleanup()
+
+    return {}, 200

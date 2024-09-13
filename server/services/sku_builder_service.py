@@ -239,33 +239,31 @@ PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS = {
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyMethodMayBeStatic
 class SkuBuilder:
     def build(self, shopify_sku: str, size_model: SizeModel, measurement_model: MeasurementModel) -> Optional[str]:
         product_type = self.get_product_type_by_sku(shopify_sku)
 
         if size_model:
-            self.__validate_size_model_correctness(size_model)
             self.__handle_special_sizes(size_model)
 
         if product_type == ProductType.SUIT:
-            return self.__build_suit_sku(shopify_sku, size_model)
+            return self.__build_suit_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.JACKET:
-            return self.__build_jacket_sku(shopify_sku, size_model)
+            return self.__build_jacket_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.PANTS:
-            return self.__build_pants_sku(shopify_sku, size_model)
+            return self.__build_pants_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.VEST:
-            return self.__build_vest_sku(shopify_sku, size_model)
+            return self.__build_vest_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.SHIRT:
-            return self.__build_shirt_sku(shopify_sku, size_model)
+            return self.__build_shirt_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.NECK_TIE:
             return self.__build_neck_tie_sku(shopify_sku)
         elif product_type == ProductType.BOW_TIE:
             return self.__build_bow_tie_sku(shopify_sku)
         elif product_type == ProductType.BELT:
-            return self.__build_belt_sku(shopify_sku, size_model)
+            return self.__build_belt_sku(shopify_sku, size_model) if size_model else None
         elif product_type == ProductType.SHOES:
-            return self.__build_shoes_sku(shopify_sku, measurement_model)
+            return self.__build_shoes_sku(shopify_sku, measurement_model) if measurement_model else None
         elif product_type == ProductType.SOCKS:
             return self.__build_socks_sku(shopify_sku)
         elif product_type == ProductType.SOCKS:
@@ -281,7 +279,8 @@ class SkuBuilder:
         product_type = self.get_product_type_by_sku(sku)
         return product_type in PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
 
-    def get_product_type_by_sku(self, sku: str) -> ProductType:
+    @staticmethod
+    def get_product_type_by_sku(sku: str) -> ProductType:
         prefix = sku[0] if sku else ""
 
         for product_type in ProductType:
@@ -290,29 +289,39 @@ class SkuBuilder:
 
         return ProductType.UNKNOWN
 
-    def __validate_size_model_correctness(self, size_model: SizeModel):
+    @staticmethod
+    def __validate_jacket_sizes(size_model: SizeModel):
         if size_model.jacket_size not in JACKET_SIZES:
             raise ServiceError(f"Unsupported jacket size: {size_model.jacket_size}")
 
         if size_model.jacket_length not in JACKET_LENGTHS:
             raise ServiceError(f"Unsupported jacket length: {size_model.jacket_length}")
 
+    @staticmethod
+    def __validate_shirt_sizes(size_model: SizeModel):
         if size_model.shirt_neck_size not in SHIRT_NECK_SIZES:
             raise ServiceError(f"Unsupported shirt neck size: {size_model.shirt_neck_size}")
 
         if size_model.shirt_sleeve_length not in SHIRT_SLEEVE_LENGTHS:
             raise ServiceError(f"Unsupported shirt sleeve length: {size_model.shirt_sleeve_length}")
 
+    @staticmethod
+    def __validate_pant_sizes(size_model: SizeModel):
         if size_model.pant_size not in PANT_SIZES:
             raise ServiceError(f"Unsupported pant size: {size_model.pant_size}")
 
         if size_model.pant_length not in PANT_LENGTHS:
             raise ServiceError(f"Unsupported pant length: {size_model.pant_length}")
 
+    @staticmethod
+    def __validate_vest_sizes(size_model: SizeModel):
         if size_model.vest_size not in VEST_SIZES:
             raise ServiceError(f"Unsupported vest size: {size_model.vest_size}")
 
     def __handle_special_sizes(self, size_model: SizeModel):
+        self.__validate_jacket_sizes(size_model)
+        self.__validate_vest_sizes(size_model)
+
         # special cases for jackets, suit and vest
         if int(size_model.jacket_size) < 36 and size_model.jacket_length == "R":
             size_model.jacket_size = "36"
@@ -329,6 +338,8 @@ class SkuBuilder:
         elif int(size_model.jacket_size) >= 54 and size_model.jacket_length == "S":
             size_model.jacket_length = "R"
 
+        self.__validate_shirt_sizes(size_model)
+
         # special cases for shirts
         if size_model.shirt_neck_size == "14" and size_model.shirt_sleeve_length == "34/35":
             size_model.shirt_neck_size = "14.5"
@@ -336,61 +347,51 @@ class SkuBuilder:
             size_model.shirt_neck_size = "15.5"
 
     def __build_suit_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_jacket_sizes(size_model)
 
         jacket_length_code = JACKET_LENGTHS_MAP.get(size_model.jacket_length)
 
         return f"{shopify_sku}{size_model.jacket_size}{jacket_length_code}"
 
     def __build_jacket_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_jacket_sizes(size_model)
 
         jacket_length_code = JACKET_LENGTHS_MAP.get(size_model.jacket_length)
 
         return f"{shopify_sku}{size_model.jacket_size}{jacket_length_code}AF"
 
     def __build_vest_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_vest_sizes(size_model)
 
         vest_size_code = VEST_SIZE_CODES.get(size_model.vest_size)
 
         return f"{shopify_sku}{vest_size_code}{size_model.vest_length}AF"
 
     def __build_pants_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_pant_sizes(size_model)
 
         autofill_suffix = "AF" if int(size_model.jacket_size) - int(size_model.pant_size) == 6 else ""
 
         return f"{shopify_sku}{size_model.pant_size}{size_model.pant_length}{autofill_suffix}"
 
     def __build_shirt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_shirt_sizes(size_model)
 
         shirt_size_key = f"{size_model.shirt_neck_size}::{size_model.shirt_sleeve_length}"
         shirt_size_code = SHIRT_SIZES_MAP.get(shirt_size_key)
 
         return f"{shopify_sku}{shirt_size_code}"
 
-    def __build_neck_tie_sku(self, shopify_sku: str) -> str:
+    @staticmethod
+    def __build_neck_tie_sku(shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"
 
-    def __build_bow_tie_sku(self, shopify_sku: str) -> str:
+    @staticmethod
+    def __build_bow_tie_sku(shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"
 
     def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
-        if not size_model:
-            logger.debug(f"Sizing not provided for SKU: {shopify_sku}")
-            return None
+        self.__validate_pant_sizes(size_model)
 
         pant_size_num = int(size_model.pant_size)
 
@@ -401,11 +402,8 @@ class SkuBuilder:
 
         return f"{shopify_sku}{pant_size}R"
 
-    def __build_shoes_sku(self, shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
-        if not measurement_model:
-            logger.debug(f"Measurements not provided for SKU: {shopify_sku}")
-            return None
-
+    @staticmethod
+    def __build_shoes_sku(shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)
 
         if not shoe_size:
@@ -413,11 +411,14 @@ class SkuBuilder:
 
         return f"{shopify_sku}{shoe_size}"
 
-    def __build_socks_sku(self, shopify_sku: str) -> str:
+    @staticmethod
+    def __build_socks_sku(shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"
 
-    def __build_swatches_sku(self, shopify_sku: str) -> str:
+    @staticmethod
+    def __build_swatches_sku(shopify_sku: str) -> str:
         return shopify_sku
 
-    def __build_premium_pocket_square_sku(self, shopify_sku: str) -> str:
+    @staticmethod
+    def __build_premium_pocket_square_sku(shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"

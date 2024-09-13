@@ -4,6 +4,7 @@ from typing import Set
 
 from parameterized import parameterized
 
+from server.services import ServiceError
 from server.services.sku_builder_service import (
     SkuBuilder,
     JACKET_LENGTHS,
@@ -266,6 +267,24 @@ class TestSkuBuilder(unittest.TestCase):
         )
 
         self.assertEqual(expected_sku, shiphero_sku)
+
+    def test_one_size_incorrect_does_not_affect_other_skus(self):
+        # given
+        jacket_sku = "101A2BLK"
+        size_model = fixtures.size_model(jacket_size="incorrect size")
+
+        # when
+        try:
+            self.sku_builder.build(
+                jacket_sku,
+                size_model,
+                fixtures.measurement_model(),
+            )
+        except ServiceError as e:
+            self.assertEqual(e.message, "Unsupported jacket size: incorrect size")
+            return
+
+        self.assertTrue(False)  # should not reach here
 
     @parameterized.expand(
         [

@@ -1,11 +1,12 @@
 import json
+import logging
 import os
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
-import logging
 
 from server.controllers.util import http
-from server.services import ServiceError, DuplicateError
+from server.services import ServiceError
 from server.services.integrations.activecampaign_fields import field_resolver
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,14 @@ ACTIVECAMPAIGN_API_KEY = os.getenv("ACTIVECAMPAIGN_API_KEY")
 class AbstractActiveCampaignService(ABC):
     @abstractmethod
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
+        self,
+        email,
+        first_name=None,
+        last_name=None,
+        phone=None,
+        fields=None,
+        events=None,
+        suppress_exceptions=True,
     ):
         pass
 
@@ -27,20 +35,54 @@ class AbstractActiveCampaignService(ABC):
     def track_event(self, email, event, suppress_exceptions=True):
         pass
 
+    @abstractmethod
+    def get_contacts_by_email_suffix(self, email_suffix: str, limit: int = 100) -> List[Any]:
+        pass
+
+    @abstractmethod
+    def delete_contact(self, contact_id: int) -> None:
+        pass
+
 
 class FakeActiveCampaignService(AbstractActiveCampaignService):
+    def __init__(self):
+        self.contacts = []
+
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
+        self,
+        email,
+        first_name=None,
+        last_name=None,
+        phone=None,
+        fields=None,
+        events=None,
+        suppress_exceptions=True,
     ):
         pass
 
     def track_event(self, email, event, suppress_exceptions=True):
         pass
 
+    def get_contacts_by_email_suffix(self, email_suffix: str, limit: int = 100) -> List[Any]:
+        return [contact for contact in self.contacts if contact["email"].endswith(email_suffix)]
+
+    def delete_contact(self, contact_id: int) -> None:
+        for contact in self.contacts:
+            if contact["id"] == contact_id:
+                self.contacts.remove(contact)
+                break
+
 
 class ActiveCampaignService(AbstractActiveCampaignService):
     def sync_contact(
-        self, email, first_name=None, last_name=None, phone=None, fields=None, events=None, suppress_exceptions=True
+        self,
+        email,
+        first_name=None,
+        last_name=None,
+        phone=None,
+        fields=None,
+        events=None,
+        suppress_exceptions=True,
     ):
         if fields is None:
             fields = {}
@@ -62,7 +104,7 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             if fields:
                 body["contact"]["fieldValues"] = field_resolver(fields)
 
-            self._activecampaign_request("POST", "contact/sync", body)
+            self.__activecampaign_request("POST", "contact/sync", body)
 
             for event in events:
                 self.track_event(email, event)
@@ -93,17 +135,31 @@ class ActiveCampaignService(AbstractActiveCampaignService):
             else:
                 raise
 
-    def _activecampaign_request(self, method, path, json):
+    def get_contacts_by_email_suffix(self, email_suffix: str, limit: int = 100) -> List[Any]:
+        response = self.__activecampaign_request("GET", f"contacts?email_like={email_suffix}&limit={limit}")
+
+        return response.get("contacts", [])
+
+    def delete_contact(self, contact_id: int) -> None:
+        self.__activecampaign_request("DELETE", f"contacts/{contact_id}")
+
+    @staticmethod
+    def __activecampaign_request(method: str, path: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         headers = {
             "Accept": "application/json",
             "Content-type": "application/json",
             "Api-Token": ACTIVECAMPAIGN_API_KEY,
         }
+
         response = http(
             method,
             f"{ACTIVECAMPAIGN_API_URL}/api/3/{path}",
             headers=headers,
-            json=json,
+            json=payload,
         )
+
         if response.status >= 400:
-            raise ServiceError(f"Error using ActiveCampaign: {response.data.decode('utf-8')}")
+            raise ServiceError(f"Error using ActiveCampaign: {response.json()}")
+
+        if response.status < 300:
+            return response.json()

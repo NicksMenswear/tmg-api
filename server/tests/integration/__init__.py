@@ -82,7 +82,7 @@ class BaseTestCase(TestCase):
         self.shopify_service = self.app.shopify_service
         self.size_service = self.app.size_service
         self.measurement_service = self.app.measurement_service
-
+        self.activecampaign_service = self.app.activecampaign_service
         self.shopify_skus_cache = {}
 
         num_products_in_db = self.product_service.get_num_products()

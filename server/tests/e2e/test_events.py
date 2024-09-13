@@ -27,8 +27,8 @@ DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 @pytest.mark.group_2
 def test_basic_create_event(page: Page):
     event_name = utils.generate_event_name()
-    attendee_first_name = utils.generate_unique_name()
-    attendee_last_name = utils.generate_unique_name()
+    attendee_first_name = f"Test {utils.generate_unique_name()}"
+    attendee_last_name = f"Test {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
 
     api.delete_all_events(TEST_USER_EMAIL)

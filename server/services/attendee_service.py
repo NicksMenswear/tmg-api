@@ -66,7 +66,7 @@ class AttendeeService:
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
     ) -> Dict[uuid.UUID, List[EnrichedAttendeeModel]]:
 
-        query = query = (
+        query = (
             db.session.query(
                 Attendee,
                 Event,
@@ -262,7 +262,7 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def delete_attendee(self, attendee_id: uuid.UUID, force: bool = False) -> None:
+    def deactivate_attendee(self, attendee_id: uuid.UUID, force: bool = False) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 
         if not attendee:

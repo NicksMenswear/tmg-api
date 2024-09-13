@@ -154,11 +154,11 @@ class TestAttendees(BaseTestCase):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        email = f"{uuid.uuid4()}@shopify-user-exists.com"
+        self.shopify_service.customers[email] = {"id": random.randint(1000, 100000), "email": email}
 
         # when
-        create_attendee = fixtures.create_attendee_request(
-            event_id=event.id, email=f"{uuid.uuid4()}@shopify-user-exists.com"
-        )
+        create_attendee = fixtures.create_attendee_request(event_id=event.id, email=email)
 
         response = self.client.open(
             "/attendees",

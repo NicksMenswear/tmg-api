@@ -10,15 +10,14 @@ from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from server import encoder
+from server.database.database_manager import db, DATABASE_URL
+from server.flask_app import FlaskApp
 from server.logs import (
     append_log_request_context_middleware,
     append_log_response_context_middleware,
     log_request_middleware,
     log_response_middleware,
 )
-from server.version import get_version
-from server.database.database_manager import db, DATABASE_URL
-from server.flask_app import FlaskApp
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
@@ -42,6 +41,8 @@ from server.services.webhook_handlers.shopify_checkout_webhook_handler import Sh
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
+from server.services.workers.e2e_clean_up_worker import E2ECleanUpWorker
+from server.version import get_version
 
 
 def init_sentry():
@@ -165,6 +166,7 @@ def init_services(app, is_testing=False):
         attendee_service=app.attendee_service,
         event_service=app.event_service,
     )
+    app.e2e_cleanup_worker = E2ECleanUpWorker(shopify_service=app.shopify_service)
 
 
 def init_db():

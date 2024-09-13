@@ -47,7 +47,7 @@ def delete_attendee(attendee_id):
     attendee_service = FlaskApp.current().attendee_service
 
     force = request.headers.get(FORCE_DELETE_HEADER, "false").lower() == "true"
-    attendee_service.delete_attendee(uuid.UUID(attendee_id), force)
+    attendee_service.deactivate_attendee(uuid.UUID(attendee_id), force)
 
     return None, 204
 

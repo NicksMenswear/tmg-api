@@ -1,11 +1,12 @@
 import enum
+import fnmatch
 import json
 import logging
 import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -98,6 +99,18 @@ class AbstractShopifyService(ABC):
     def create_bundle_identifier_product(self, bundle_id: str):
         pass
 
+    @abstractmethod
+    def delete_discount(self, discount_code_id: int) -> None:
+        pass
+
+    @abstractmethod
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
+        pass
+
+    @abstractmethod
+    def delete_customer(self, customer_id: str) -> None:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -118,7 +131,7 @@ class FakeShopifyService(AbstractShopifyService):
         if email.endswith("@shopify-user-does-not-exists.com"):
             raise NotFoundError("Shopify customer doesn't exist.")
 
-        return self.customers.get(email, {"id": random.randint(1000, 100000)})
+        return self.customers.get(email)
 
     def create_customer(self, first_name, last_name, email):
         if email.endswith("@shopify-user-exists.com"):
@@ -252,6 +265,24 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants[bundle_identifier_product_variant_id] = product_variant
 
         return virtual_product.get("variants", {})[0].get("id")
+
+    def delete_discount(self, discount_code_id: int) -> None:
+        pass
+
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
+        customers = []
+
+        for email, customer in self.customers.items():
+            if fnmatch.fnmatch(email, email_pattern):
+                customers.append(customer)
+
+        return customers[:num_customers_to_fetch]
+
+    def delete_customer(self, customer_id: str) -> None:
+        for email, customer in self.customers.items():
+            if customer["id"] == customer_id:
+                del self.customers[email]
+                break
 
 
 class ShopifyService(AbstractShopifyService):
@@ -579,6 +610,35 @@ class ShopifyService(AbstractShopifyService):
 
         if "errors" in body:
             raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
+
+        return body
+
+    def delete_discount(self, discount_code_id: int) -> None:
+        query = """
+        mutation discountCodeDelete($id: ID!) {
+          discountCodeDelete(id: $id) {
+            deletedCodeDiscountId
+            userErrors {
+              field
+              code
+              message
+            }
+          }
+        }
+        """
+        variables = {"id": f"gid://shopify/DiscountCodeNode/{discount_code_id}"}
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete discount code in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete discount code in shopify store: {body['errors']}")
 
         return body
 
@@ -921,3 +981,54 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to generate activation url in shopify store. {body['errors']}")
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
+
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {
+                "query": f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email }} }} }} }}'
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get customers by email suffix in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get customers by email suffix in shopify store. {body['errors']}")
+
+        customer_edges = body.get("data", {}).get("customers", {}).get("edges", [])
+
+        customers = []
+
+        for edge in customer_edges:
+            customers.append(edge.get("node"))
+
+        return customers
+
+    def delete_customer(self, customer_id: str) -> None:
+        mutation = """
+        mutation customerDelete($input: CustomerDeleteInput!) {
+          customerDelete(input: $input) {
+            deletedCustomerId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"input": {"id": customer_id}}
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")

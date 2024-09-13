@@ -1,12 +1,15 @@
 import logging
 
-from server.controllers.util import token_verification
+from server.controllers.util import token_verification, error_handler
+from server.flask_app import FlaskApp
 
 logger = logging.getLogger(__name__)
 
 
 @token_verification
-def hello_world():
-    logger.info("Hello world executed")
+@error_handler
+def e2e_clean_up():
+    e2e_cleanup_worker = FlaskApp.current().e2e_cleanup_worker
+    e2e_cleanup_worker.cleanup()
 
     return {}, 200

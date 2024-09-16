@@ -3,6 +3,7 @@
 export ACTIVE_ENV=${ACTIVE_ENV:-dev}
 export BROWSER=${BROWSER:-chromium}
 export TEST_GROUP=${TEST_GROUP:-all}
+export VIEWPORT=${VIEWPORT:-1280x720}
 
 # Usage
 #   # Run all tests:
@@ -17,7 +18,7 @@ export TEST_GROUP=${TEST_GROUP:-all}
 echo "Running e2e against '${ACTIVE_ENV}' environment in '${BROWSER}' browser."
 
 if [ "$TEST_GROUP" == "all" ]; then
-  docker-compose up --build --abort-on-container-exit test-e2e
+  docker-compose up --build --abort-on-container-exit test-e2e ${VIEWPORT}
 else
-  docker-compose up --build --abort-on-container-exit test-e2e-${TEST_GROUP}
+  docker-compose up --build --abort-on-container-exit test-e2e-${TEST_GROUP} ${VIEWPORT}
 fi

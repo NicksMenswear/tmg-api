@@ -82,9 +82,10 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2"
+      pytest --verbose --browser $BROWSER --reruns 2 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -100,9 +101,10 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+01@mail.dev.tmgcorp.net}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_1"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -118,9 +120,10 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+02@mail.dev.tmgcorp.net}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_2"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -136,9 +139,10 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+03@mail.dev.tmgcorp.net}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_3"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -154,9 +158,10 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+04@mail.dev.tmgcorp.net}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_4"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -172,9 +177,10 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+05@mail.dev.tmgcorp.net}
+      VIEWPORT: ${VIEWPORT:-1280x720}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_5"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false

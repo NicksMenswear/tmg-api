@@ -3,7 +3,6 @@
 export ACTIVE_ENV=${ACTIVE_ENV:-dev}
 export BROWSER=${BROWSER:-chromium}
 export TEST_GROUP=${TEST_GROUP:-all}
-export VIEWPORT=${VIEWPORT:-1280x720}
 
 # Usage
 #   # Run all tests:

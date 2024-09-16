@@ -616,8 +616,30 @@ def shopify_checkout_enter_billing_address(
     input_phone.fill(phone)
 
 
-def shopify_checkout_continue_to_shipping(page: Page):
+def shopify_checkout_continue_to_shipping(
+    page: Page,
+    address1: str = "709 Redwood Drive",
+    city: str = "Cedar Falls",
+    state: str = "IA",
+    zip_code: str = "50613",
+    phone: str = "319-277-0213",
+):
     try:
+        input_address1 = page.locator("#shipping-address1").first
+        input_address1.fill(address1)
+
+        input_city = page.locator('input[name="city"]').first
+        input_city.fill(city)
+
+        select_state_element = page.locator('select[name="zone"]').first
+        select_state_element.select_option(state)
+
+        input_zip = page.locator('input[name="postalCode"]').first
+        input_zip.fill(zip_code)
+
+        input_phone = page.locator('input[name="phone"]').first
+        input_phone.fill(phone)
+
         continue_to_shipping_button = page.locator('button:has-text("Continue to shipping")').first
         continue_to_shipping_button.click()
     except:

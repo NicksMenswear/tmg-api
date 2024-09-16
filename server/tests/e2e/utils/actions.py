@@ -302,10 +302,14 @@ def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
 def create_default_look(page: Page, name):
     page.goto(f"{STORE_URL}/products/suit-builder", timeout=120000)
 
+    time.sleep(3)
+
     look_name_input = page.locator(f'input[name="properties[_Name this Look]"]')
+    look_name_input.scroll_into_view_if_needed()
     look_name_input.fill(name)
 
     save_look_button = page.locator(f'input[type="button"][id="save_look_btn"]')
+    save_look_button.scroll_into_view_if_needed()
     save_look_button.click()
 
 

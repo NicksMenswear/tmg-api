@@ -2,6 +2,8 @@ from typing import Set
 
 from playwright.sync_api import Page, expect
 
+from server.tests.e2e.utils import is_mobile_view
+
 
 def no_upcoming_events_visible(page: Page):
     events_locator = page.locator(".tmg-section-events")
@@ -126,13 +128,24 @@ def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warn
 
 
 def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, item_price: str):
-    row_locator = page.locator(f'div[role="row"]:has-text("{item_name}")')
-    row_locator.wait_for(state="visible")
+    if is_mobile_view(page):
+        show_order_summary_button = page.locator("button:has-text('Show order summary')")
+        show_order_summary_button.click()
 
-    price_locator_in_row = row_locator.locator(f"text={item_price}")
-    price_locator_in_row.wait_for(state="visible")
+        order_details_locator = page.locator("#disclosure_details")
+        order_details_locator.wait_for(state="visible")
 
-    assert price_locator_in_row.count() > 0
+        order_item = order_details_locator.locator(f'div[role="cell"]:has-text("{item_name}")')
+        order_item.wait_for(state="visible")
+
+        price_item = order_details_locator.locator(f'div[role="cell"] span:has-text("${item_price}")').first
+        price_item.wait_for(state="visible")
+    else:
+        price_element = page.locator(f'div[role="row"]:has-text("{item_name}")')
+        price_element.wait_for(state="visible")
+
+        price_locator = price_element.locator(f"text={item_price}")
+        price_locator.wait_for(state="visible")
 
 
 def shopify_checkout_has_discount_with_name(page: Page, discount_code_prefix: str):

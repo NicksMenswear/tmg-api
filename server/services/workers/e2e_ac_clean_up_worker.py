@@ -13,6 +13,11 @@ SYSTEM_E2E_EMAILS_TO_KEEP = {
     "e2e+03@mail.dev.tmgcorp.net",
     "e2e+04@mail.dev.tmgcorp.net",
     "e2e+05@mail.dev.tmgcorp.net",
+    "e2e+06@mail.dev.tmgcorp.net",
+    "e2e+07@mail.dev.tmgcorp.net",
+    "e2e+08@mail.dev.tmgcorp.net",
+    "e2e+09@mail.dev.tmgcorp.net",
+    "e2e+10@mail.dev.tmgcorp.net",
 }
 
 

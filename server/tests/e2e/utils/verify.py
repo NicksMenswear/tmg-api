@@ -103,14 +103,24 @@ def logged_in(page: Page):
 
 
 def not_logged_in(page: Page):
-    my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
-    parent_menu_item = my_account_menu_item.locator("..")
-    parent_menu_item.hover()
+    if is_mobile_view(page):
+        mobile_header = page.locator("#mobile-header")
+        mobile_header.scroll_into_view_if_needed()
+        mobile_header.wait_for(state="visible")
+        mobile_header.click()
 
-    page.wait_for_selector(".navbar-dropdown .navbar-item#loginButton", state="visible")
-    login_link = page.query_selector(".navbar-dropdown .navbar-item#loginButton")
+        login_button = mobile_header.locator("#loginButton")
+        login_button.scroll_into_view_if_needed()
+        login_button.wait_for(state="visible")
+    else:
+        my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
+        parent_menu_item = my_account_menu_item.locator("..")
+        parent_menu_item.hover()
 
-    assert login_link.get_attribute("href") == "/account" and login_link.is_visible()
+        page.wait_for_selector(".navbar-dropdown .navbar-item#loginButton", state="visible")
+        login_link = page.query_selector(".navbar-dropdown .navbar-item#loginButton")
+
+        assert login_link.get_attribute("href") == "/account" and login_link.is_visible()
 
 
 def input_value_in_pay_dialog_for_attendee_by_id(page, attendee_id, value):

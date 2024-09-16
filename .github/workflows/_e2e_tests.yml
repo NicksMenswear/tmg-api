@@ -40,6 +40,7 @@ jobs:
     strategy:
       matrix:
         group: [1, 2, 3, 4, 5]
+        viewport: ["1280x720", "390x844"]
     steps:
       - name: Datadog CI tags
         env:
@@ -69,6 +70,7 @@ jobs:
           BROWSER: ${{ inputs.browser }}
           LOAD: ${{ inputs.load }}
           TEST_GROUP: group-${{ matrix.group }}
+          VIEWPORT: ${{ matrix.viewport }}
 
       - name: Clean up
         if: always()

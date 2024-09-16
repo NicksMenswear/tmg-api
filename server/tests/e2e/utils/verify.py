@@ -82,14 +82,24 @@ def invite_look_is(page, expected_look):
 
 
 def logged_in(page: Page):
-    my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
-    parent_menu_item = my_account_menu_item.locator("..")
-    parent_menu_item.hover()
+    if is_mobile_view(page):
+        mobile_header = page.locator("#mobile-header")
+        mobile_header.scroll_into_view_if_needed()
+        mobile_header.wait_for(state="visible")
+        mobile_header.click()
 
-    page.wait_for_selector(".navbar-dropdown .navbar-item#logoutButton", state="visible")
-    logout_link = page.query_selector(".navbar-dropdown .navbar-item#logoutButton")
+        logout_button = mobile_header.locator("#logoutButton")
+        logout_button.scroll_into_view_if_needed()
+        logout_button.wait_for(state="visible")
+    else:
+        my_account_menu_item = page.locator('a.header__link:has-text("MY ACCOUNT")')
+        parent_menu_item = my_account_menu_item.locator("..")
+        parent_menu_item.hover()
 
-    assert logout_link.get_attribute("href") == "/account/logout" and logout_link.is_visible()
+        page.wait_for_selector(".navbar-dropdown .navbar-item#logoutButton", state="visible")
+        logout_link = page.query_selector(".navbar-dropdown .navbar-item#logoutButton")
+
+        assert logout_link.get_attribute("href") == "/account/logout" and logout_link.is_visible()
 
 
 def not_logged_in(page: Page):

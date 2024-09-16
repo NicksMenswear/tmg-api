@@ -18,7 +18,7 @@ export VIEWPORT=${VIEWPORT:-1280x720}
 echo "Running e2e against '${ACTIVE_ENV}' environment in '${BROWSER}' browser."
 
 if [ "$TEST_GROUP" == "all" ]; then
-  docker-compose up --build --abort-on-container-exit test-e2e ${VIEWPORT}
+  docker-compose up --build --abort-on-container-exit test-e2e
 else
-  docker-compose up --build --abort-on-container-exit test-e2e-${TEST_GROUP} ${VIEWPORT}
+  docker-compose up --build --abort-on-container-exit test-e2e-${TEST_GROUP}
 fi

@@ -37,6 +37,7 @@ on:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         group: [1, 2, 3, 4, 5]
@@ -65,6 +66,7 @@ jobs:
 
       - name: Build and run end-to-end tests
         run: ./test-e2e.sh
+        timeout-minutes: 15
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}

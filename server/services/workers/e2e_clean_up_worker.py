@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import func
 
@@ -23,7 +23,7 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
-NUMBER_OF_USERS_TO_PROCESS = 50
+NUMBER_OF_USERS_TO_PROCESS = 30
 
 SYSTEM_E2E_EMAILS_TO_KEEP = {
     "e2e+01@mail.dev.tmgcorp.net",
@@ -45,108 +45,117 @@ class E2ECleanUpWorker:
     def __init__(self, shopify_service: AbstractShopifyService):
         self.shopify_service = shopify_service
 
-    def cleanup(self) -> None:
-        customers = self.shopify_service.get_customers_by_email_pattern(
-            CUSTOMER_EMAIL_MATCHING_PATTERN, NUMBER_OF_USERS_TO_PROCESS
-        )
+    def get_customers(self, num_customers=250):
+        num_customers = min(num_customers, 250)
 
+        customers = self.shopify_service.get_customers_by_email_pattern(CUSTOMER_EMAIL_MATCHING_PATTERN, num_customers)
         customers.reverse()  # so system users are processed last
 
+        result = []
+
         for customer in customers:
-            email = customer.get("email")
-            customer_shopify_id = customer.get("id")
+            result.append({"id": customer.get("id"), "email": customer.get("email")})
 
-            is_system_user = email in SYSTEM_E2E_EMAILS_TO_KEEP
+        return result
 
-            logger.info(f"Processing customer: {email}")
+    def cleanup(self, shopify_id: str, email: str) -> None:
+        is_system_user = email in SYSTEM_E2E_EMAILS_TO_KEEP
 
-            try:
-                user = self.__get_user_by_email(email)
+        logger.info(f"Processing customer: {email}")
 
-                if not user:
-                    logger.error(f"User not found in db by email: {email}")
+        try:
+            user = self.__get_user_by_email(email)
 
-                    self.__delete_shopify_customer(customer_shopify_id)
+            if not user:
+                logger.error(f"User not found in db by email: {email}")
 
+                self.__delete_shopify_customer(shopify_id)
+
+                return
+
+            attendees = self.__get_attendees(user.id)
+
+            for attendee in attendees:
+                discounts = self.__get_discounts(attendee.id)
+
+                for discount in discounts:
+                    discount_code = discount.shopify_discount_code
+
+                    logger.info(f"Deleting discount: {discount_code}")
+
+                    if discount.shopify_discount_code_id and discount_code:
+                        self.__delete_shopify_discount(discount.shopify_discount_code_id)
+
+                    self.__delete_discount(discount.id)
+                self.__delete_attendee(attendee.id)
+
+            events = self.__get_events(user.id)
+
+            for event in events:
+                num_attendees = self.__num_attendees_in_event(event.id)
+
+                logger.info(f"Deleting event: {event.id}")
+
+                if num_attendees > 0:
+                    logger.info(f"Event has attendees, skipping deletion: {event.id}")
                     continue
 
-                attendees = self.__get_attendees(user.id)
+                self.__delete_roles(event.id)
 
-                for attendee in attendees:
-                    discounts = self.__get_discounts(attendee.id)
+                orders = self.__get_orders_for_event(event.id)
 
-                    for discount in discounts:
-                        discount_code = discount.shopify_discount_code
+                for order in orders:
+                    logger.info(f"Deleting order: {order.id}")
+                    self.__delete_order_items_for_order(order.id)
+                    self.__delete_order(order.id)
 
-                        logger.info(f"Deleting discount: {discount_code}")
-
-                        if discount.shopify_discount_code_id and discount_code:
-                            self.__delete_shopify_discount(discount.shopify_discount_code_id)
-
-                        self.__delete_discount(discount.id)
-                    self.__delete_attendee(attendee.id)
-
-                events = self.__get_events(user.id)
-
-                for event in events:
-                    num_attendees = self.__num_attendees_in_event(event.id)
-
-                    logger.info(f"Deleting event: {event.id}")
-
-                    if num_attendees > 0:
-                        logger.info(f"Event has attendees, skipping deletion: {event.id}")
-                        continue
-
-                    self.__delete_roles(event.id)
-
-                    orders = self.__get_orders_for_event(event.id)
-
-                    for order in orders:
-                        logger.info(f"Deleting order: {order.id}")
-                        self.__delete_order_items_for_order(order.id)
-                        self.__delete_order(order.id)
-
-                    self.__delete_event(event.id)
-
-                    db.session.commit()
-
-                self.__delete_sizes(user.id)
-                self.__delete_measurements(user.id)
-                self.__delete_addresses(user.id)
-
-                looks = self.__get_user_looks(user.id)
-
-                for look in looks:
-                    product_specs = look.product_specs
-
-                    if product_specs and product_specs.get("bundle", {}).get("product_id"):
-                        shopify_bundle_product_id = product_specs["bundle"]["product_id"]
-
-                        self.__delete_shopify_product(shopify_bundle_product_id)
-
-                        for item in product_specs.get("items", []):
-                            if not item.get("variant_sku", "").startswith("bundle-"):
-                                continue
-
-                            self.__delete_shopify_product(item.get("product_id"))
-
-                    self.__delete_look(look.id)
-
-                    db.session.commit()
-
-                if is_system_user:
-                    db.session.commit()
-                    continue
-
-                logger.info(f"Deleting customer: {email}")
-
-                self.__delete_shopify_customer(customer_shopify_id)
-                self.__delete_user(user.id)
+                self.__delete_event(event.id)
 
                 db.session.commit()
-            except Exception:
-                db.session.rollback()
-                logger.exception(f"Failed to process customer: {email}")
+
+            self.__delete_sizes(user.id)
+            self.__delete_measurements(user.id)
+            self.__delete_addresses(user.id)
+
+            looks = self.__get_user_looks(user.id)
+
+            for look in looks:
+                product_specs = look.product_specs
+
+                if product_specs and product_specs.get("bundle", {}).get("product_id"):
+                    shopify_bundle_product_id = product_specs["bundle"]["product_id"]
+
+                    self.__delete_shopify_product(shopify_bundle_product_id)
+
+                    for item in product_specs.get("items", []):
+                        if not item.get("variant_sku", "").startswith("bundle-"):
+                            continue
+
+                        self.__delete_shopify_product(item.get("product_id"))
+
+                self.__delete_look(look.id)
+
+                db.session.commit()
+
+            if is_system_user:
+                db.session.commit()
+                return
+
+            logger.info(f"Deleting customer: {email}")
+
+            self.__delete_shopify_customer(shopify_id)
+            self.__delete_user(user.id)
+
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            logger.exception(f"Failed to process customer: {email}")
+
+    def bulk_cleanup(self) -> None:
+        customers = self.get_customers(NUMBER_OF_USERS_TO_PROCESS)
+
+        for customer in customers:
+            self.cleanup(customer.get("id"), customer.get("email"))
 
     def __delete_shopify_customer(self, shopify_customer_id: str) -> None:
         try:

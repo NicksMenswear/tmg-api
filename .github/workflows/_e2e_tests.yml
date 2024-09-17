@@ -26,6 +26,11 @@ on:
         type: boolean
         default: true
         description: Notify Slack
+      groups:
+        required: false
+        type: string
+        default: "[1,2,3,4,5]"
+        description: Execution groups [1-5] are mobile tests, [6-10] are desktop tests
     secrets:
       DATADOG_API_KEY:
         required: true
@@ -37,9 +42,11 @@ on:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
-        group: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        group: ${{ fromJson(inputs.groups) }}
     steps:
       - name: Datadog CI tags
         env:
@@ -92,14 +99,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.stage }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
       - name: Clean up e2e test data from Shopify and DB
         run: |
-          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-clean-up \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
-            -d '{}' \
-            --max-time 300
+          export STAGE=${{ inputs.stage }}
+          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+          ops/run-e2e-clean-up.sh
 
   e2e-clean-up-ac:
     needs: e2e-test
@@ -107,11 +116,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.stage }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
       - name: Clean up e2e test data from Active Campaign
         run: |
-          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-ac-clean-up \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
-            -d '{}' \
-            --max-time 300
+          export STAGE=${{ inputs.stage }}
+          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+          ops/run-e2e-ac-clean-up.sh

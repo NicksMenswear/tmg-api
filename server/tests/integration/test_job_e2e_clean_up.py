@@ -1,3 +1,4 @@
+import json
 import random
 
 from server.database.models import User, Attendee, DiscountType, Discount, Event, Role, Size, Measurement, Look
@@ -11,24 +12,20 @@ class TestJobE2ECleanUp(BaseTestCase):
         super().setUp()
         self.populate_shopify_variants()
 
-    def test_e2e_clean_up_no_customers(self):
+    def test_e2e_clean_up_get_no_customers(self):
         # when
         response = self.client.open(
-            "/jobs/system/e2e-clean-up",
-            method="POST",
-            query_string={},
-            content_type=self.content_type,
-            headers=self.request_headers,
-            data={},
+            "/jobs/system/e2e-clean-up", method="GET", content_type=self.content_type, headers=self.request_headers
         )
 
         # then
         self.assertStatus(response, 200)
 
-    def test_e2e_clean_up_single_user(self):
+    def test_e2e_clean_up_get_single_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
         db_user = User.query.filter(User.email == user.email).first()
@@ -38,30 +35,28 @@ class TestJobE2ECleanUp(BaseTestCase):
 
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
-            method="POST",
-            query_string={},
+            method="GET",
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
         )
 
         # then
-        db_user = User.query.filter(User.email == user.email).first()
-        self.assertIsNone(db_user)
-
-        shopify_customer = self.shopify_service.get_customer_by_email(user.email)
-        self.assertIsNone(shopify_customer)
-
         self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]["id"], shopify_customer_id)
+        self.assertEqual(response.json[0]["email"], user.email)
 
-    def test_e2e_clean_up_multiple_users(self):
+    def test_e2e_clean_up_get_multiple_users(self):
         # given
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
         user3 = self.user_service.create_user(fixtures.create_user_request())
-        self.shopify_service.customers[user1.email] = {"id": random.randint(1000, 100000), "email": user1.email}
-        self.shopify_service.customers[user2.email] = {"id": random.randint(1000, 100000), "email": user2.email}
-        self.shopify_service.customers[user3.email] = {"id": random.randint(1000, 100000), "email": user3.email}
+        shopify_customer_id1 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id2 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id3 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user1.email] = {"id": shopify_customer_id1, "email": user1.email}
+        self.shopify_service.customers[user2.email] = {"id": shopify_customer_id2, "email": user2.email}
+        self.shopify_service.customers[user3.email] = {"id": shopify_customer_id3, "email": user3.email}
 
         # when
         db_user1 = User.query.filter(User.email == user1.email).first()
@@ -79,34 +74,58 @@ class TestJobE2ECleanUp(BaseTestCase):
 
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
-            method="POST",
-            query_string={},
+            method="GET",
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
         )
 
         # then
-        db_user1 = User.query.filter(User.email == user1.email).first()
-        db_user2 = User.query.filter(User.email == user2.email).first()
-        db_user3 = User.query.filter(User.email == user3.email).first()
-        self.assertIsNone(db_user1)
-        self.assertIsNone(db_user2)
-        self.assertIsNone(db_user3)
-
-        shopify_customer1 = self.shopify_service.get_customer_by_email(user1.email)
-        shopify_customer2 = self.shopify_service.get_customer_by_email(user2.email)
-        shopify_customer3 = self.shopify_service.get_customer_by_email(user3.email)
-        self.assertIsNone(shopify_customer1)
-        self.assertIsNone(shopify_customer2)
-        self.assertIsNone(shopify_customer3)
-
         self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 3)
+
+        self.assertEqual(
+            {response.json[0]["id"], response.json[1]["id"], response.json[2]["id"]},
+            {shopify_customer_id1, shopify_customer_id2, shopify_customer_id3},
+        )
+        self.assertEqual(
+            {response.json[0]["email"], response.json[1]["email"], response.json[2]["email"]},
+            {user1.email, user2.email, user3.email},
+        )
+
+    def test_e2e_clean_up_user(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
+
+        # when
+        db_user = User.query.filter(User.email == user.email).first()
+        shopify_customer = self.shopify_service.get_customer_by_email(user.email)
+        self.assertIsNotNone(db_user)
+        self.assertIsNotNone(shopify_customer)
+
+        response = self.client.open(
+            "/jobs/system/e2e-clean-up",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps({"email": user.email, "id": str(shopify_customer_id)}),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+
+        db_user = User.query.filter(User.email == user.email).first()
+        self.assertIsNone(db_user)
+
+        shopify_customer = self.shopify_service.get_customer_by_email(user.email)
+        self.assertIsNone(shopify_customer)
 
     def test_e2e_clean_up_user_in_shopify_but_not_in_db(self):
         # given
         email = utils.generate_email()
-        self.shopify_service.customers[email] = {"id": random.randint(1000, 100000), "email": email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[email] = {"id": shopify_customer_id, "email": email}
 
         # when
         shopify_customer = self.shopify_service.get_customer_by_email(email)
@@ -115,10 +134,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": email, "id": shopify_customer_id}),
         )
 
         # then
@@ -130,8 +148,9 @@ class TestJobE2ECleanUp(BaseTestCase):
     def test_e2e_clean_up_system_user_not_deleted(self):
         # given
         system_email = f"e2e+02@mail.dev.tmgcorp.net"
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
         user = self.user_service.create_user(fixtures.create_user_request(email=system_email))
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
         db_user = User.query.filter(User.email == user.email).first()
@@ -142,10 +161,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": user.email, "id": shopify_customer_id}),
         )
 
         # then
@@ -169,9 +187,11 @@ class TestJobE2ECleanUp(BaseTestCase):
         self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event2.id, email=attendee_user.email)
         )
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
+        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
         self.shopify_service.customers[attendee_user.email] = {
-            "id": random.randint(1000, 100000),
+            "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
         }
 
@@ -187,23 +207,18 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": attendee_user.email, "id": shopify_customer_attendee_id}),
         )
 
         # then
-        db_user = User.query.filter(User.email == user.email).first()
-        self.assertIsNone(db_user)
+        self.assertStatus(response, 200)
 
         db_attendee_users = Attendee.query.filter(Attendee.user_id == attendee_user.id).all()
         self.assertTrue(len(db_attendee_users) == 0)
 
-        self.assertIsNone(self.shopify_service.get_customer_by_email(user.email))
         self.assertIsNone(self.shopify_service.get_customer_by_email(attendee_user.email))
-
-        self.assertStatus(response, 200)
 
     def test_e2e_clean_up_attendees_with_multiple_discounts(self):
         # given
@@ -214,8 +229,9 @@ class TestJobE2ECleanUp(BaseTestCase):
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, email=attendee_user.email)
         )
         self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
         self.shopify_service.customers[attendee_user.email] = {
-            "id": random.randint(1000, 100000),
+            "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
         }
         discount1_gift = self.app.discount_service.create_discount(
@@ -255,10 +271,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": attendee_user.email, "id": shopify_customer_attendee_id}),
         )
 
         # then
@@ -276,9 +291,11 @@ class TestJobE2ECleanUp(BaseTestCase):
         self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, email=attendee_user.email)
         )
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
+        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
         self.shopify_service.customers[attendee_user.email] = {
-            "id": random.randint(1000, 100000),
+            "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
         }
 
@@ -292,14 +309,23 @@ class TestJobE2ECleanUp(BaseTestCase):
             query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": attendee_user.email, "id": shopify_customer_attendee_id}),
+        )
+
+        self.assertStatus(response, 200)
+        response = self.client.open(
+            "/jobs/system/e2e-clean-up",
+            method="POST",
+            query_string={},
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps({"email": user.email, "id": shopify_customer_id}),
         )
 
         # then
+        self.assertStatus(response, 200)
         self.assertIsNone(Event.query.filter(Event.id == event.id).first())
         self.assertTrue(len(Role.query.filter(Role.event_id == event.id).all()) == 0)
-
-        self.assertStatus(response, 200)
 
     def test_e2e_clean_up_sizes_and_measurements(self):
         # given
@@ -308,7 +334,8 @@ class TestJobE2ECleanUp(BaseTestCase):
         size = self.size_service.create_size(
             fixtures.store_size_request(user_id=str(user.id), measurement_id=measurement.id)
         )
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
         self.assertIsNotNone(Measurement.query.filter(Measurement.id == measurement.id).first())
@@ -317,10 +344,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": user.email, "id": shopify_customer_id}),
         )
 
         # then
@@ -338,7 +364,8 @@ class TestJobE2ECleanUp(BaseTestCase):
         look2 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
-        self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
+        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
         self.assertIsNotNone(Look.query.filter(Look.id == look1.id).first())
@@ -347,10 +374,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         response = self.client.open(
             "/jobs/system/e2e-clean-up",
             method="POST",
-            query_string={},
             content_type=self.content_type,
             headers=self.request_headers,
-            data={},
+            data=json.dumps({"email": user.email, "id": shopify_customer_id}),
         )
 
         # then

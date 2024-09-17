@@ -1748,8 +1748,24 @@ paths:
       x-openapi-router-controller: server.controllers.measurements
 
   /jobs/system/e2e-clean-up:
+    get:
+      operationId: get_e2e_customers_to_clean_up
+      responses:
+        "200":
+          description: OK
+      summary: Clean up E2E test data
+      x-openapi-router-controller: server.controllers.jobs
+      tags:
+        - Jobs
     post:
       operationId: e2e_clean_up
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/E2ECustomerCleanupRequest"
+        required: true
+        x-body-name: customer
       responses:
         "200":
           description: OK
@@ -2233,4 +2249,17 @@ components:
       required:
         - email
       title: SyncContact
+      type: object
+    E2ECustomerCleanupRequest:
+      properties:
+        id:
+          title: id
+          type: string
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
+      required:
+        - id
+        - email
+      title: E2ECustomerCleanupRequest
       type: object

@@ -3,24 +3,24 @@ from playwright.sync_api import Page
 
 
 # Viewports:
-# 390 x 844 - iPhone 12
-# 1280 x 720 - Desktop
+# 390 x 844 - mobile (iPhone 12)
+# 1280 x 720 - desktop
 
 
 def pytest_addoption(parser):
-    parser.addoption("--viewport", action="store", default="390x844", help="Viewport size. Default is '390x844'")
+    parser.addoption(
+        "--viewport", action="store", default="mobile", help="Viewport size. Default is either 'mobile' or 'desktop'"
+    )
 
 
 @pytest.fixture
 def viewport_size(pytestconfig):
     viewport = pytestconfig.getoption("--viewport")
 
-    if not viewport:
-        return {"width": 390, "height": 844}
+    if viewport == "desktop":
+        return {"width": 1280, "height": 720}
 
-    sizes = viewport.lower().split("x")
-
-    return {"width": int(sizes[0]), "height": int(sizes[1])}
+    return {"width": 390, "height": 844}
 
 
 @pytest.fixture

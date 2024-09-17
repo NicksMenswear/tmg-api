@@ -96,12 +96,10 @@ jobs:
     steps:
       - name: Clean up e2e test data from Shopify and DB
         run: |
-          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-clean-up \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
-            -d '{}' \
-            --max-time 300
+          apt-get update && apt-get install -y jq
+          export STAGE=${{ inputs.stage }}
+          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+          ops/run-e2e-clean-up.sh
 
   e2e-clean-up-ac:
     needs: e2e-test
@@ -111,9 +109,7 @@ jobs:
     steps:
       - name: Clean up e2e test data from Active Campaign
         run: |
-          curl https://api.${{ inputs.stage }}.tmgcorp.net/jobs/system/e2e-ac-clean-up \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "X-API-ACCESS-TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}" \
-            -d '{}' \
-            --max-time 300
+          apt-get update && apt-get install -y jq
+          export STAGE=${{ inputs.stage }}
+          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+          ops/run-e2e-ac-clean-up.sh

@@ -91,6 +91,18 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to create user.")
 
+        # Tracking # TODO: async
+        events = ["Signed Up"]
+        if user_model.account_status:
+            events.append("Activated Account")
+        self.activecampaign_service.sync_contact(
+            email=user_model.email,
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            phone=user_model.phone_number,
+            events=events,
+        )
+
         return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
@@ -128,7 +140,7 @@ class UserService:
             ).all()
         ]
 
-    def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:
+    def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel, update_shopify=True) -> UserModel:
         user: User = User.query.filter_by(id=user_id).first()
 
         if not user:
@@ -139,6 +151,7 @@ class UserService:
         email = update_user.email or user.email
         phone_number = update_user.phone_number or user.phone_number
         account_status = update_user.account_status if update_user.account_status is not None else user.account_status
+        activated_account = account_status and not user.account_status
 
         user.first_name = first_name[:MAX_NAME_LENGTH]
         user.last_name = last_name[:MAX_NAME_LENGTH]
@@ -148,9 +161,10 @@ class UserService:
         user.updated_at = datetime.now()
 
         try:
-            self.shopify_service.update_customer(
-                user.shopify_id, user.first_name, user.last_name, user.email, user.phone_number
-            )
+            if update_shopify:
+                self.shopify_service.update_customer(
+                    user.shopify_id, user.first_name, user.last_name, user.email, user.phone_number
+                )
 
             db.session.commit()
             db.session.refresh(user)
@@ -158,7 +172,13 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
-        self.active_campaign_service.sync_contact(user.email, user.first_name, user.last_name, phone=user.phone_number)
+        # Tracking # TODO: async
+        events = []
+        if activated_account:
+            events.append("Activated Account")
+        self.active_campaign_service.sync_contact(
+            user.email, user.first_name, user.last_name, phone=user.phone_number, events=events
+        )
         return UserModel.from_orm(user)
 
     def set_size(self, user_id: uuid.UUID) -> None:

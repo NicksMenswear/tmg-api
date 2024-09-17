@@ -39,6 +39,10 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+        pass
+
+    @abstractmethod
     def get_account_login_url(self, customer_id):
         pass
 
@@ -138,6 +142,9 @@ class FakeShopifyService(AbstractShopifyService):
             raise DuplicateError("Shopify customer with this email address already exists.")
 
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
+
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+        pass
 
     def get_account_login_url(self, customer_id):
         pass
@@ -415,6 +422,26 @@ class ShopifyService(AbstractShopifyService):
             raise DuplicateError("Shopify customer with this email address already exists.")
         if status >= 400:
             raise ServiceError("Failed to create shopify customer.")
+
+        return body["customer"]
+
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+        status, body = self.admin_api_request(
+            "PUT",
+            f"{self.__shopify_rest_admin_api_endpoint}/{shopify_customer_id}.json",
+            {
+                "customer": {
+                    "id": shopify_customer_id,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": email,
+                    "phone": phone_number,
+                }
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to update shopify customer.")
 
         return body["customer"]
 

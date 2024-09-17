@@ -127,13 +127,21 @@ class UserService:
         if not user:
             raise NotFoundError("User not found.")
 
+        first_name = update_user.first_name or user.first_name
+        last_name = update_user.last_name or user.last_name
+        email = user.email if update_user.email is None else update_user.email.lower()
+        phone_number = update_user.phone_number or user.phone_number
+        account_status = update_user.account_status or user.account_status
+
         try:
-            user.first_name = None if not update_user.first_name else update_user.first_name[:MAX_NAME_LENGTH]
-            user.last_name = None if not update_user.last_name else update_user.last_name[:MAX_NAME_LENGTH]
-            user.account_status = update_user.account_status
-            user.shopify_id = update_user.shopify_id
-            user.phone_number = update_user.phone_number
-            user.email = update_user.email.lower()
+            self.shopify_service.update_customer(user.shopify_id, first_name, last_name, email, phone_number)
+
+            user.shopify_id = user.shopify_id
+            user.first_name = first_name[:MAX_NAME_LENGTH]
+            user.last_name = last_name[:MAX_NAME_LENGTH]
+            user.email = email
+            user.phone_number = phone_number
+            user.account_status = account_status
             user.updated_at = datetime.now()
 
             db.session.commit()

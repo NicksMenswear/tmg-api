@@ -1,3 +1,4 @@
+import time
 import uuid
 
 import pytest
@@ -71,6 +72,8 @@ def test_logout(page: Page):
     verify.no_upcoming_events_visible(page)
 
     verify.logged_in(page)
+
+    time.sleep(2)
 
     actions.logout(page)
 

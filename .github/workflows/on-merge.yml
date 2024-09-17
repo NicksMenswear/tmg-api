@@ -14,26 +14,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-#  ci:
-#    uses: ./.github/workflows/_unit_tests.yml
-#    with:
-#      ref: ${{ github.sha }}
-#
-#  cd:
-#    uses: ./.github/workflows/_sls_deploy.yml
-#    needs: ci
-#    with:
-#      ref: ${{ github.sha }}
-#      stage: dev
-#      url: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-#      notify: true
-#    secrets:
-#      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-#      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-#
+  ci:
+    uses: ./.github/workflows/_unit_tests.yml
+    with:
+      ref: ${{ github.sha }}
+
+  cd:
+    uses: ./.github/workflows/_sls_deploy.yml
+    needs: ci
+    with:
+      ref: ${{ github.sha }}
+      stage: dev
+      url: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+      notify: true
+    secrets:
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
-#    needs: cd
+    needs: cd
     with:
       ref: ${{ github.ref_name }}
       stage: dev

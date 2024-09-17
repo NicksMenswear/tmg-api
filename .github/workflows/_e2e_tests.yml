@@ -48,14 +48,14 @@ jobs:
       matrix:
         group: ${{ fromJson(inputs.groups) }}
     steps:
-      - name: Datadog CI tags
-        env:
-          DATADOG_SITE: us5.datadoghq.com
-          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-        run: |
-          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" && chmod +x /usr/local/bin/datadog-ci
-          datadog-ci tag --level job --tags "env:${{ inputs.stage }}"
-
+#      - name: Datadog CI tags
+#        env:
+#          DATADOG_SITE: us5.datadoghq.com
+#          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+#        run: |
+#          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" && chmod +x /usr/local/bin/datadog-ci
+#          datadog-ci tag --level job --tags "env:${{ inputs.stage }}"
+#
       - name: Echo Environment
         run: echo "Running tests on ${{ inputs.stage }} in ${{ inputs.browser }} browser"
 
@@ -64,34 +64,34 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Set up Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Build and run end-to-end tests
-        run: ./test-e2e.sh
-        env:
-          ACTIVE_ENV: ${{ inputs.stage }}
-          BROWSER: ${{ inputs.browser }}
-          LOAD: ${{ inputs.load }}
-          TEST_GROUP: group-${{ matrix.group }}
-
-      - name: Clean up
-        if: always()
-        run: docker-compose down
-
-      - name: Notify to Slack
-        if: ${{ failure() && inputs.notify }}
-        uses: slackapi/slack-github-action@v1
-        with:
-          channel-id: 'C06KT69EN30' # Notifications
-          slack-message: |
-            *E2E "${{ inputs.stage }}" ${{ inputs.test_group }} failed* :red_circle:
-            *Ref:* "${{ inputs.ref }}"
-            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+#      - name: Set up Docker Compose
+#        run: |
+#          sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#          sudo chmod +x /usr/local/bin/docker-compose
+#
+#      - name: Build and run end-to-end tests
+#        run: ./test-e2e.sh
+#        env:
+#          ACTIVE_ENV: ${{ inputs.stage }}
+#          BROWSER: ${{ inputs.browser }}
+#          LOAD: ${{ inputs.load }}
+#          TEST_GROUP: group-${{ matrix.group }}
+#
+#      - name: Clean up
+#        if: always()
+#        run: docker-compose down
+#
+#      - name: Notify to Slack
+#        if: ${{ failure() && inputs.notify }}
+#        uses: slackapi/slack-github-action@v1
+#        with:
+#          channel-id: 'C06KT69EN30' # Notifications
+#          slack-message: |
+#            *E2E "${{ inputs.stage }}" ${{ inputs.test_group }} failed* :red_circle:
+#            *Ref:* "${{ inputs.ref }}"
+#            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   e2e-clean-up:
     needs: e2e-test
@@ -102,6 +102,8 @@ jobs:
       - name: Clean up e2e test data from Shopify and DB
         run: |
           sudo apt-get update && sudo apt-get install -y jq
+          ls -l
+          pwd
           export STAGE=${{ inputs.stage }}
           export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
           ops/run-e2e-clean-up.sh

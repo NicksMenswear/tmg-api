@@ -33,7 +33,9 @@ class UserModel(CoreModel):
         from_attributes = True
 
     def to_response(self):
-        return self.model_dump(include={"id", "first_name", "last_name", "email"})
+        return self.model_dump(
+            include={"id", "first_name", "last_name", "email", "phone_number", "account_status", "shopify_id"}
+        )
 
 
 class UpdateUserModel(UserRequestModel):

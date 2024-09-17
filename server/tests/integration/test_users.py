@@ -137,7 +137,7 @@ class TestUsers(BaseTestCase):
         self.assertEqual(updated_user.first_name, response.json["first_name"])
         self.assertEqual(updated_user.last_name, response.json["last_name"])
         self.assertEqual(updated_user.email, response.json["email"])
-        self.assertEqual(updated_user.phone_number, response.json["phone"])
+        self.assertEqual(updated_user.phone_number, response.json["phone_number"])
 
     def test_get_all_events_for_non_existing_user(self):
         # when

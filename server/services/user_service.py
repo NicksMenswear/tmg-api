@@ -25,11 +25,11 @@ class UserService:
         self,
         shopify_service: AbstractShopifyService,
         email_service: AbstractEmailService,
-        active_campaign_service: AbstractActiveCampaignService,
+        activecampaign_service: AbstractActiveCampaignService,
     ):
         self.shopify_service = shopify_service
         self.email_service = email_service
-        self.active_campaign_service = active_campaign_service
+        self.activecampaign_service = activecampaign_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
         user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
@@ -176,7 +176,7 @@ class UserService:
         events = []
         if activated_account:
             events.append("Activated Account")
-        self.active_campaign_service.sync_contact(
+        self.activecampaign_service.sync_contact(
             user.email, user.first_name, user.last_name, phone=user.phone_number, events=events
         )
         return UserModel.from_orm(user)

@@ -138,7 +138,7 @@ class UserService:
         last_name = update_user.last_name or user.last_name
         email = update_user.email or user.email
         phone_number = update_user.phone_number or user.phone_number
-        account_status = update_user.account_status if account_status is not None else user.account_status
+        account_status = update_user.account_status if update_user.account_status is not None else user.account_status
 
         user.first_name = first_name[:MAX_NAME_LENGTH]
         user.last_name = last_name[:MAX_NAME_LENGTH]

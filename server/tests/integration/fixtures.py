@@ -32,6 +32,7 @@ def update_user_request(**user_data) -> UpdateUserModel:
         first_name=user_data.get("first_name", utils.generate_unique_name()),
         last_name=user_data.get("last_name", utils.generate_unique_name()),
         email=user_data.get("email", utils.generate_email()),
+        phone_number=user_data.get("phone_number", utils.generate_phone_number()),
     )
 
 

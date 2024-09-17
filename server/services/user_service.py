@@ -12,6 +12,7 @@ from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,15 @@ MAX_NAME_LENGTH = 63
 
 # noinspection PyMethodMayBeStatic
 class UserService:
-    def __init__(self, shopify_service: AbstractShopifyService, email_service: AbstractEmailService):
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        email_service: AbstractEmailService,
+        active_campaign_service: AbstractActiveCampaignService,
+    ):
         self.shopify_service = shopify_service
         self.email_service = email_service
+        self.active_campaign_service = active_campaign_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
         user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
@@ -133,15 +140,17 @@ class UserService:
         phone_number = update_user.phone_number or user.phone_number
         account_status = update_user.account_status or user.account_status
 
-        try:
-            self.shopify_service.update_customer(user.shopify_id, first_name, last_name, email, phone_number)
+        user.first_name = first_name[:MAX_NAME_LENGTH]
+        user.last_name = last_name[:MAX_NAME_LENGTH]
+        user.email = email.lower()
+        user.phone_number = phone_number
+        user.account_status = account_status
+        user.updated_at = datetime.now()
 
-            user.first_name = first_name[:MAX_NAME_LENGTH]
-            user.last_name = last_name[:MAX_NAME_LENGTH]
-            user.email = email.lower()
-            user.phone_number = phone_number
-            user.account_status = account_status
-            user.updated_at = datetime.now()
+        try:
+            self.shopify_service.update_customer(
+                user.shopify_id, user.first_name, user.last_name, user.email, user.phone_number
+            )
 
             db.session.commit()
             db.session.refresh(user)
@@ -149,6 +158,7 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
+        self.active_campaign_service.sync_contact(user.email, user.first_name, user.last_name, phone=user.phone_number)
         return UserModel.from_orm(user)
 
     def set_size(self, user_id: uuid.UUID) -> None:

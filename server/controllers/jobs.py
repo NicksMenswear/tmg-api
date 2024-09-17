@@ -18,13 +18,10 @@ def get_e2e_customers_to_clean_up():
 
 @token_verification
 @error_handler
-def e2e_clean_up(customer=None):
+def e2e_clean_up(customer):
     e2e_cleanup_worker = FlaskApp.current().e2e_cleanup_worker
 
-    if customer:
-        e2e_cleanup_worker.cleanup(customer.get("id"), customer.get("email"))
-    else:
-        e2e_cleanup_worker.bulk_cleanup()
+    e2e_cleanup_worker.cleanup(customer.get("id"), customer.get("email"))
 
     return {}, 200
 

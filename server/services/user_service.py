@@ -136,7 +136,6 @@ class UserService:
         try:
             self.shopify_service.update_customer(user.shopify_id, first_name, last_name, email, phone_number)
 
-            user.shopify_id = user.shopify_id
             user.first_name = first_name[:MAX_NAME_LENGTH]
             user.last_name = last_name[:MAX_NAME_LENGTH]
             user.email = email.lower()

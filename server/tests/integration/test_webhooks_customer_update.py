@@ -119,11 +119,12 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
 
     def test_customers_update_customer_by_email_with_shopify_id(self):
         # given
-        create_user = fixtures.create_user_request()
+        create_user = fixtures.create_user_request(shopify_id=random.randint(1000000000, 9999999999))
         db_user = User(
             first_name=create_user.first_name,
             last_name=create_user.last_name,
             email=create_user.email,
+            shopify_id=create_user.shopify_id,
             account_status=True,
         )
 
@@ -132,8 +133,7 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
         db.session.refresh(db_user)
 
         # when
-        shopify_id = random.randint(1000000000, 9999999999)
-        webhook_customer = fixtures.webhook_customer_update(shopify_id=shopify_id, email=f"{db_user.email}")
+        webhook_customer = fixtures.webhook_customer_update(shopify_id=create_user.shopify_id, email=f"{db_user.email}")
         response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_customer, CUSTOMERS_UPDATE_REQUEST_HEADERS)
 
         # then
@@ -144,7 +144,7 @@ class TestWebhooksCustomerUpdate(BaseTestCase):
         self.assertEqual(user.email, webhook_customer["email"])
         self.assertEqual(user.first_name, webhook_customer["first_name"])
         self.assertEqual(user.last_name, webhook_customer["last_name"])
-        self.assertEqual(user.shopify_id, str(shopify_id))
+        self.assertEqual(user.shopify_id, str(create_user.shopify_id))
 
     def test_customers_disable_event(self):
         # given

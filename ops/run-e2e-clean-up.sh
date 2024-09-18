@@ -24,5 +24,6 @@ echo "$response" | jq -c '.[]' | while read -r item; do
     -X POST \
     -H "Content-Type: application/json" \
     -H "X-API-ACCESS-TOKEN: ${X_API_ACCESS_TOKEN}" \
-    -d "{\"id\": \"$id\", \"email\": \"$email\"}"
+    -d "{\"id\": \"$id\", \"email\": \"$email\"}" \
+    --max-time 300
 done

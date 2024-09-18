@@ -440,7 +440,7 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.admin_api_request(
             "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/{shopify_customer_id}.json",
+            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
             {"customer": customer},
         )
 

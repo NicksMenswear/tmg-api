@@ -1,7 +1,8 @@
 import random
 
-from server.database.models import DiscountType
+from server.database.models import DiscountType, Discount, Attendee
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.order_service import ORDER_STATUS_READY
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 
 PAID_ORDER_REQUEST_HEADERS = {
@@ -34,7 +35,10 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertTrue("No discounts found for product" in response.json["errors"])
+        self.assertEqual(response.json.get("status"), ORDER_STATUS_READY)
+        self.assertEqual(response.json.get("discount_codes"), [])
+        self.assertEqual(response.json.get("order_items"), [])
+        self.assertEqual(response.json.get("products"), [])
 
     def test_order_no_look(self):
         # given
@@ -73,7 +77,10 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertTrue("No look associated for attendee" in response.json["errors"])
+        self.assertEqual(response.json.get("status"), ORDER_STATUS_READY)
+        self.assertEqual(response.json.get("discount_codes"), [])
+        self.assertEqual(response.json.get("order_items"), [])
+        self.assertEqual(response.json.get("products"), [])
 
     def test_order_with_one_discount_code(self):
         # given
@@ -115,11 +122,11 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json.get("discount_codes")), 1)
-
-        discount_codes = response.json.get("discount_codes")
-
-        self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
+        discounts = Discount.query.filter(Discount.attendee_id == attendee.id).all()
+        self.assertEqual(len(discounts), 1)
+        self.assertIsNotNone(discounts[0].shopify_discount_code)
+        self.assertIsNotNone(discounts[0].shopify_discount_code_id)
+        self.assertTrue(discounts[0].shopify_discount_code.startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
     def test_order_with_1_paid_and_1_unpaid_discounts(self):
         # given
@@ -172,11 +179,14 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json.get("discount_codes")), 1)
-
-        discount_codes = response.json.get("discount_codes")
-
-        self.assertTrue(discount_codes[0].startswith(GIFT_DISCOUNT_CODE_PREFIX))
+        discounts = Discount.query.filter(Discount.attendee_id == attendee.id).all()
+        self.assertEqual(len(discounts), 2)
+        self.assertIsNotNone(discounts[0].shopify_discount_code)
+        self.assertIsNotNone(discounts[0].shopify_discount_code_id)
+        self.assertTrue(discounts[0].shopify_discount_code.startswith(GIFT_DISCOUNT_CODE_PREFIX))
+        self.assertIsNotNone(discounts[1].shopify_discount_code)
+        self.assertIsNotNone(discounts[1].shopify_discount_code_id)
+        self.assertTrue(discounts[1].shopify_discount_code.startswith(GIFT_DISCOUNT_CODE_PREFIX))
 
     def test_order_with_multiple_discount_intents(self):
         # given
@@ -248,10 +258,28 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(len(response.json.get("discount_codes")), 3)
-
-        discount_codes = response.json.get("discount_codes")
-
-        self.assertTrue(discount_codes[0].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent1.amount)}-OFF"))
-        self.assertTrue(discount_codes[1].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent2.amount)}-OFF"))
-        self.assertTrue(discount_codes[2].startswith(f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent3.amount)}-OFF"))
+        discounts1 = Discount.query.filter(Discount.attendee_id == attendee1.id).all()
+        self.assertEqual(len(discounts1), 1)
+        self.assertIsNotNone(discounts1[0].shopify_discount_code)
+        self.assertIsNotNone(discounts1[0].shopify_discount_code_id)
+        self.assertTrue(
+            discounts1[0].shopify_discount_code.startswith(
+                f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent1.amount)}-OFF"
+            )
+        )
+        discounts2 = Discount.query.filter(Discount.attendee_id == attendee2.id).all()
+        self.assertIsNotNone(discounts2[0].shopify_discount_code)
+        self.assertIsNotNone(discounts2[0].shopify_discount_code_id)
+        self.assertTrue(
+            discounts2[0].shopify_discount_code.startswith(
+                f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent2.amount)}-OFF"
+            )
+        )
+        discounts3 = Discount.query.filter(Discount.attendee_id == attendee3.id).all()
+        self.assertIsNotNone(discounts3[0].shopify_discount_code)
+        self.assertIsNotNone(discounts3[0].shopify_discount_code_id)
+        self.assertTrue(
+            discounts3[0].shopify_discount_code.startswith(
+                f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent3.amount)}-OFF"
+            )
+        )

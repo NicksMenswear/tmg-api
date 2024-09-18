@@ -12,6 +12,7 @@ from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,15 @@ MAX_NAME_LENGTH = 63
 
 # noinspection PyMethodMayBeStatic
 class UserService:
-    def __init__(self, shopify_service: AbstractShopifyService, email_service: AbstractEmailService):
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        email_service: AbstractEmailService,
+        activecampaign_service: AbstractActiveCampaignService,
+    ):
         self.shopify_service = shopify_service
         self.email_service = email_service
+        self.activecampaign_service = activecampaign_service
 
     def create_user(self, create_user: CreateUserModel) -> UserModel:
         user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
@@ -84,6 +91,18 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to create user.")
 
+        # Tracking # TODO: async
+        events = ["Signed Up"]
+        if user_model.account_status:
+            events.append("Activated Account")
+        self.activecampaign_service.sync_contact(
+            email=user_model.email,
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            phone=user_model.phone_number,
+            events=events,
+        )
+
         return user_model
 
     def get_user_by_email(self, email: str) -> UserModel:
@@ -121,20 +140,31 @@ class UserService:
             ).all()
         ]
 
-    def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel) -> UserModel:
+    def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel, update_shopify=True) -> UserModel:
         user: User = User.query.filter_by(id=user_id).first()
 
         if not user:
             raise NotFoundError("User not found.")
 
+        first_name = update_user.first_name or user.first_name
+        last_name = update_user.last_name or user.last_name
+        email = update_user.email or user.email
+        phone_number = update_user.phone_number or user.phone_number
+        account_status = update_user.account_status if update_user.account_status is not None else user.account_status
+        activated_account = account_status and not user.account_status
+
+        user.first_name = first_name[:MAX_NAME_LENGTH]
+        user.last_name = last_name[:MAX_NAME_LENGTH]
+        user.email = email.lower()
+        user.phone_number = phone_number
+        user.account_status = account_status
+        user.updated_at = datetime.now()
+
         try:
-            user.first_name = None if not update_user.first_name else update_user.first_name[:MAX_NAME_LENGTH]
-            user.last_name = None if not update_user.last_name else update_user.last_name[:MAX_NAME_LENGTH]
-            user.account_status = update_user.account_status
-            user.shopify_id = update_user.shopify_id
-            user.phone_number = update_user.phone_number
-            user.email = update_user.email.lower()
-            user.updated_at = datetime.now()
+            if update_shopify:
+                self.shopify_service.update_customer(
+                    user.shopify_id, user.first_name, user.last_name, user.email, user.phone_number
+                )
 
             db.session.commit()
             db.session.refresh(user)
@@ -142,6 +172,13 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to update user.", e)
 
+        # Tracking # TODO: async
+        events = []
+        if activated_account:
+            events.append("Activated Account")
+        self.activecampaign_service.sync_contact(
+            user.email, user.first_name, user.last_name, phone=user.phone_number, events=events
+        )
         return UserModel.from_orm(user)
 
     def set_size(self, user_id: uuid.UUID) -> None:

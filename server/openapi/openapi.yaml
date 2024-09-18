@@ -1812,6 +1812,9 @@ components:
         email:
           title: email
           $ref: '#/components/schemas/email'
+        phone_number:
+          title: phone_number
+          type: string
         shopify_id:
           title: shopify_id
           type: string
@@ -1834,6 +1837,9 @@ components:
         email:
           title: email
           $ref: '#/components/schemas/email'
+        phone_number:
+          title: phone_number
+          type: string
         shopify_id:
           title: shopify_id
           type: string

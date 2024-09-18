@@ -48,17 +48,6 @@ class ShopifyWebhookUserHandler:
                 )
             )
 
-            events = ["Signed Up"]
-            if state == "enabled":
-                events.append("Activated Account")
-            self.activecampaign_service.sync_contact(
-                email=updated_user.email,
-                first_name=updated_user.first_name,
-                last_name=updated_user.last_name,
-                phone=updated_user.phone_number,
-                events=events,
-            )
-
             return updated_user.to_response()
         elif (
             str(shopify_id) != user.shopify_id
@@ -78,6 +67,7 @@ class ShopifyWebhookUserHandler:
                     shopify_id=str(shopify_id),
                     phone_number=str(phone) if phone else None,
                 ),
+                update_shopify=False,
             )
 
             return updated_user.to_response()

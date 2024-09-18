@@ -113,9 +113,13 @@ class TestUsers(BaseTestCase):
         updated_first_name = utils.generate_unique_name()
         updated_last_name = utils.generate_unique_name()
         updated_email = utils.generate_email()
+        updated_phone_number = utils.generate_phone_number()
 
         updated_user = fixtures.update_user_request(
-            first_name=updated_first_name, last_name=updated_last_name, email=updated_email
+            first_name=updated_first_name,
+            last_name=updated_last_name,
+            email=updated_email,
+            phone_number=updated_phone_number,
         )
 
         response = self.client.open(
@@ -130,9 +134,10 @@ class TestUsers(BaseTestCase):
         # then
         self.assert200(response)
         self.assertEqual(str(user.id), response.json["id"])
-        self.assertEqual(updated_user.email, response.json["email"])
         self.assertEqual(updated_user.first_name, response.json["first_name"])
         self.assertEqual(updated_user.last_name, response.json["last_name"])
+        self.assertEqual(updated_user.email, response.json["email"])
+        self.assertEqual(updated_user.phone_number, response.json["phone_number"])
 
     def test_get_all_events_for_non_existing_user(self):
         # when

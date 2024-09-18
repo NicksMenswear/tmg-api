@@ -163,7 +163,7 @@ class UserService:
         try:
             if update_shopify:
                 self.shopify_service.update_customer(
-                    user.shopify_id, user.first_name, user.last_name, user.email, user.phone_number
+                    int(user.shopify_id), user.first_name, user.last_name, user.email, user.phone_number
                 )
 
             db.session.commit()

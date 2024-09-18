@@ -187,14 +187,15 @@ class ShopifyWebhookOrderHandler:
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
         shipping_address = payload.get("shipping_address")
-        shipping_address = AddressModel(
-            line1=shipping_address.get("address1"),
-            line2=shipping_address.get("address2"),
-            city=shipping_address.get("city"),
-            state=shipping_address.get("province"),
-            zip_code=shipping_address.get("zip"),
-            country=shipping_address.get("country"),
-        )
+        if shipping_address:
+            shipping_address = AddressModel(
+                line1=shipping_address.get("address1"),
+                line2=shipping_address.get("address2"),
+                city=shipping_address.get("city"),
+                state=shipping_address.get("province"),
+                zip_code=shipping_address.get("zip"),
+                country=shipping_address.get("country"),
+            )
 
         event_id = self.__get_event_id_from_note_attributes(payload)
         size_model = self.size_service.get_latest_size_for_user(user.id)

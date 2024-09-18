@@ -8,7 +8,7 @@ from server.flask_app import FlaskApp
 logger = logging.getLogger(__name__)
 
 
-@hmac_webhook_verification
+# @hmac_webhook_verification
 def shopify_webhook(payload):
     topic = request.headers.get("X-Shopify-Topic")
 

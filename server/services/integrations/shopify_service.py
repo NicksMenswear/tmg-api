@@ -426,18 +426,22 @@ class ShopifyService(AbstractShopifyService):
         return body["customer"]
 
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+        customer = {
+            "id": shopify_customer_id,
+        }
+        if first_name:
+            customer["first_name"] = first_name
+        if last_name:
+            customer["last_name"] = last_name
+        if email:
+            customer["email"] = email
+        if phone_number:
+            customer["phone"] = phone_number
+
         status, body = self.admin_api_request(
             "PUT",
             f"{self.__shopify_rest_admin_api_endpoint}/{shopify_customer_id}.json",
-            {
-                "customer": {
-                    "id": shopify_customer_id,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "email": email,
-                    "phone": phone_number,
-                }
-            },
+            {"customer": customer},
         )
 
         if status >= 400:

@@ -81,26 +81,27 @@ class OrderService:
                 shipping_method=create_order.shipping_method,
                 outbound_tracking=create_order.outbound_tracking,
                 order_type=[OrderType(order_type) for order_type in create_order.order_type],
-                shipping_address_line1=create_order.shipping_address.line1,
-                shipping_address_line2=create_order.shipping_address.line2,
-                shipping_city=create_order.shipping_address.city,
-                shipping_state=create_order.shipping_address.state,
-                shipping_zip_code=create_order.shipping_address.zip_code,
-                shipping_country=create_order.shipping_address.country,
+                shipping_address_line1=create_order.shipping_address.line1 if create_order.shipping_address else None,
+                shipping_address_line2=create_order.shipping_address.line2 if create_order.shipping_address else None,
+                shipping_city=create_order.shipping_address.city if create_order.shipping_address else None,
+                shipping_state=create_order.shipping_address.state if create_order.shipping_address else None,
+                shipping_zip_code=create_order.shipping_address.zip_code if create_order.shipping_address else None,
+                shipping_country=create_order.shipping_address.country if create_order.shipping_address else None,
                 meta=create_order.meta,
             )
             db.session.add(order)
-            address = Address(
-                user_id=create_order.user_id,
-                address_type="shipping",
-                address_line1=create_order.shipping_address.line1,
-                address_line2=create_order.shipping_address.line2,
-                city=create_order.shipping_address.city,
-                state=create_order.shipping_address.state,
-                zip_code=create_order.shipping_address.zip_code,
-                country=create_order.shipping_address.country,
-            )
-            db.session.add(address)
+            if create_order.shipping_address:
+                address = Address(
+                    user_id=create_order.user_id,
+                    address_type="shipping",
+                    address_line1=create_order.shipping_address.line1,
+                    address_line2=create_order.shipping_address.line2,
+                    city=create_order.shipping_address.city,
+                    state=create_order.shipping_address.state,
+                    zip_code=create_order.shipping_address.zip_code,
+                    country=create_order.shipping_address.country,
+                )
+                db.session.add(address)
             db.session.commit()
             db.session.refresh(order)
         except Exception as e:

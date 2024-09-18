@@ -1,8 +1,10 @@
+import random
 from datetime import timedelta, datetime
 
 from parameterized import parameterized
 
-from server.database.models import Product, Address
+from server.database.models import Product, Address, DiscountType, Discount
+from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -690,3 +692,68 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         product = self.product_service.get_product_by_sku(order_product_shiphero_sku)
         self.assertIsNotNone(product)
         self.assertTrue(product.sku.startswith(shopify_sku))
+
+    def test_order_sku_and_status_for_one_measurable_product2(self):
+        for product_type in ProductType:
+            if product_type in {ProductType.SUIT, ProductType.UNKNOWN}:
+                continue
+
+            # given
+            user = self.user_service.create_user(fixtures.create_user_request())
+            event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+            attendee_user = self.user_service.create_user(fixtures.create_user_request())
+            look = self.look_service.create_look(
+                fixtures.create_look_request(
+                    user_id=attendee_user.id, product_specs=self.create_look_test_product_specs()
+                )
+            )
+            attendee = self.attendee_service.create_attendee(
+                fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            )
+            product_id = random.randint(1000, 1000000)
+            variant_id = random.randint(1000, 1000000)
+            discount_intent = self.discount_service.create_discount(
+                event.id,
+                attendee.id,
+                random.randint(50, 500),
+                DiscountType.GIFT,
+                shopify_virtual_product_id=product_id,
+                shopify_virtual_product_variant_id=variant_id,
+            )
+
+            product_sku = self.get_random_shopify_sku_by_product_type(product_type)
+
+            # when
+            webhook_request = fixtures.webhook_shopify_paid_order(
+                customer_email=user.email,
+                line_items=[
+                    fixtures.webhook_shopify_line_item(sku=product_sku),
+                    fixtures.webhook_shopify_line_item(
+                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        product_id=product_id,
+                        variant_id=variant_id,
+                    ),
+                ],
+            )
+
+            response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+            # then
+            self.assert200(response)
+            order = self.order_service.get_order_by_id(response.json["id"])
+            self.assertIsNotNone(order)
+            self.assertTrue(len(order.order_items) == 1)
+            response_order_item = response.json["order_items"][0]
+            request_line_item = webhook_request["line_items"][0]
+            self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
+            self.assertTrue(response_order_item["shopify_sku"].startswith(product_sku))
+
+            discounts = Discount.query.filter(Discount.attendee_id == attendee.id).all()
+            self.assertEqual(len(discounts), 1)
+            self.assertIsNotNone(discounts[0].shopify_discount_code)
+            self.assertIsNotNone(discounts[0].shopify_discount_code_id)
+            self.assertTrue(
+                discounts[0].shopify_discount_code.startswith(
+                    f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent.amount)}-OFF"
+                )
+            )

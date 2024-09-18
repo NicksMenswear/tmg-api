@@ -77,28 +77,17 @@ class ShopifyWebhookOrderHandler:
         if not items or len(items) == 0:
             return self.__error(f"Received paid order without items")
 
-        if len(items) == 1 and items[0].get("sku") and items[0].get("sku").startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
-            sku = items[0].get("sku")
-            logger.debug(f"Found paid discount order with sku '{sku}'")
-            return self.__process_gift_discount(payload)
-
         return self.__process_paid_order(webhook_id, payload)
 
     def __error(self, message):
         logger.error(message)
         return {"errors": message}
 
-    def __process_gift_discount(self, payload):
-        product = payload.get("line_items")[0]
-        customer = payload.get("customer")
+    def __process_gift_discount(self, discount_line_item: Dict[str, Any], customer_email: str) -> None:
+        shopify_product_id = discount_line_item.get("product_id")
+        shopify_variant_id = discount_line_item.get("variant_id")
 
-        shopify_product_id = product.get("product_id")
-        shopify_variant_id = product.get("variant_id")
-        shopify_customer_id = customer.get("id")
-
-        logger.info(
-            f"Handling discount for variant_id '{shopify_product_id}/{shopify_variant_id}' and customer_id '{shopify_customer_id}'"
-        )
+        logger.info(f"Handling discount for variant_id '{shopify_product_id}/{shopify_variant_id}'")
 
         try:
             self.shopify_service.archive_product(shopify_product_id)
@@ -110,7 +99,8 @@ class ShopifyWebhookOrderHandler:
         discounts = self.discount_service.get_gift_discount_intents_for_product_variant(shopify_variant_id)
 
         if not discounts:
-            return self.__error(f"No discounts found for product_id: {shopify_product_id}")
+            logger.error(f"No discounts found for product_id: {shopify_product_id}")
+            return
 
         discounts_codes = []
 
@@ -122,7 +112,8 @@ class ShopifyWebhookOrderHandler:
             attendee = self.attendee_service.get_attendee_by_id(discount.attendee_id)
 
             if not attendee.look_id:
-                return self.__error(f"No look associated for attendee '{attendee.id}' can't create discount code")
+                logger.error(f"No look associated for attendee '{attendee.id}' can't create discount code")
+                return
 
             look = self.look_service.get_look_by_id(attendee.look_id)
 
@@ -132,7 +123,8 @@ class ShopifyWebhookOrderHandler:
                 or not look.product_specs.get("bundle", {}).get("variant_id")
                 or not look.product_specs.get("items")
             ):
-                return self.__error(f"No shopify variants founds for look {look.id}. Can't create discount code")
+                logger.error(f"No shopify variants founds for look {look.id}. Can't create discount code")
+                return
 
             code = f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount.amount)}-OFF-{random.randint(100000, 9999999)}"
 
@@ -154,9 +146,7 @@ class ShopifyWebhookOrderHandler:
             discounts_codes.append(discount_response.get("shopify_discount_code"))
 
         if discounts_codes:
-            self.__track_giftcode_purchase(customer.get("email"))
-
-        return {"discount_codes": discounts_codes}
+            self.__track_giftcode_purchase(customer_email)
 
     def __process_used_discount_code(self, payload):
         discount_codes = payload.get("discount_codes", [])
@@ -197,14 +187,15 @@ class ShopifyWebhookOrderHandler:
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
         shipping_address = payload.get("shipping_address")
-        shipping_address = AddressModel(
-            line1=shipping_address.get("address1"),
-            line2=shipping_address.get("address2"),
-            city=shipping_address.get("city"),
-            state=shipping_address.get("province"),
-            zip_code=shipping_address.get("zip"),
-            country=shipping_address.get("country"),
-        )
+        if shipping_address:
+            shipping_address = AddressModel(
+                line1=shipping_address.get("address1"),
+                line2=shipping_address.get("address2"),
+                city=shipping_address.get("city"),
+                state=shipping_address.get("province"),
+                zip_code=shipping_address.get("zip"),
+                country=shipping_address.get("country"),
+            )
 
         event_id = self.__get_event_id_from_note_attributes(payload)
         size_model = self.size_service.get_latest_size_for_user(user.id)
@@ -243,13 +234,19 @@ class ShopifyWebhookOrderHandler:
             shopify_sku = line_item.get("sku")
             line_item_skus.add(shopify_sku)
 
-            if shopify_sku.startswith(BUNDLE_IDENTIFIER_PRODUCT_SKU_PREFIX):
+            if not shopify_sku:
+                logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
+
+            if shopify_sku and shopify_sku.startswith(BUNDLE_IDENTIFIER_PRODUCT_SKU_PREFIX):
                 # Skip bundle products which are just markers for the bundle
                 num_processable_items -= 1
                 continue
 
-            if not shopify_sku:
-                logger.error(f'No SKU found for line item: {line_item.get("name")} in order {shopify_order_number}')
+            if shopify_sku and shopify_sku.startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
+                self.__process_gift_discount(line_item, shopify_customer_email)
+                # Skip attendees discount products
+                num_processable_items -= 1
+                continue
 
             shiphero_sku = None
             product = None

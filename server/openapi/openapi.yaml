@@ -1785,6 +1785,41 @@ paths:
       tags:
         - Jobs
 
+  /suit-builder/items:
+    get:
+      operationId: get_items
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: OK
+      summary: Get items for suit builder
+      x-openapi-router-controller: server.controllers.suit_builder
+
   /admin/suit-builder/items:
     get:
       operationId: get_items
@@ -1797,7 +1832,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Add an item to the suit builder
+      summary: Get items for suit builder
       x-openapi-router-controller: server.controllers.admin.suit_builder
     post:
       operationId: add_item

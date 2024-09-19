@@ -468,6 +468,6 @@ def shipping_item(**data):
 
 def add_suit_builder_item_request(**item_data) -> CreateSuitBuilderModel:
     return CreateSuitBuilderModel(
-        type=item_data.get("type", "suit"),
-        sku=item_data.get("sku", "503A40NI"),
+        type=item_data.get("type", utils.generate_product_type()),
+        sku=item_data.get("sku", utils.generate_product_sku()),
     )

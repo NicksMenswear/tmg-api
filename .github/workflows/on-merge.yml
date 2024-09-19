@@ -8,6 +8,7 @@ on:
       - 'scripts/**'
       - 'README.md'
       - 'test-*'
+      - '.github/**'
 
 concurrency:
   group: ${{ github.workflow }}-main

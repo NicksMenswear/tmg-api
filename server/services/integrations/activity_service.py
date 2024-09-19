@@ -26,11 +26,7 @@ def suppress_exceptions(func):
 
 class AbstractActivityService(ABC):
     @abstractmethod
-    def page_view(
-        self,
-        email,
-        page_name,
-    ):
+    def page_view(self, email, page_name):
         pass
 
 
@@ -38,22 +34,14 @@ class FakeActivityService(AbstractActivityService):
     def __init__(self):
         self.contacts = []
 
-    def page_view(
-        self,
-        email,
-        page_name,
-    ):
+    def page_view(self, email, page_name):
         pass
 
 
 class ActivityService(AbstractActivityService):
     @log_activity_wrapper
     @suppress_exceptions
-    def page_view(
-        self,
-        email,
-        page_name,
-    ):
+    def page_view(self, email, page_name):
         user_service = FlaskApp.current().user_service
         shopify_service = FlaskApp.current().shopify_service
 

@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from server.controllers.util import http
 from server.flask_app import FlaskApp
 from server.services import ServiceError
-from logs import log_activity_wrapper
+from server.logs import log_activity_wrapper
 
 logger = logging.getLogger(__name__)
 

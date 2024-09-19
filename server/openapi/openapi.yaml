@@ -444,6 +444,60 @@ paths:
       tags:
         - ActiveCampaign
       x-openapi-router-controller: server.controllers.activecampaign
+  /activity/page-view:
+    post:
+      operationId: page_view
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                user_id:
+                  title: user_id
+                  $ref: '#/components/schemas/uuid'
+                page_name:
+                  title: page_name
+                  type: string
+              required:
+                - user_id
+                - page_name
+              title: PageView
+              type: object
+        required: true
+        x-body-name: page_view
+      responses:
+        "201":
+          description: Page view recorded
+      summary: Record page view
+      tags:
+        - Tracking
+      x-openapi-router-controller: server.controllers.activity
   /events:
     post:
       operationId: create_event

@@ -22,20 +22,16 @@ def log_activity_wrapper(func):
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "type": "function_call",
-            "message": {"function": func.__name__, "args": args, "kwargs": kwargs},
+            "body": {"function": func.__name__, "args": args, "kwargs": kwargs},
         }
         result = func(*args, **kwargs)
-        log_entry["message"]["response"] = result
+        log_entry["body"]["result"] = result
 
         activity_logger.info(json.dumps(log_entry))
 
         return result
 
     return wrapper
-
-
-def log_activity(message):
-    log_entry = {"timestamp": datetime.now().isoformat(), "type": "activity", "message": message}
 
 
 def append_log_request_context_middleware():

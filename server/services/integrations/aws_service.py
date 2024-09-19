@@ -31,7 +31,7 @@ class FakeAWSService(AbstractAWSService):
         shutil.copy(local_file, os.path.join(self.__data_folder, s3_file))
 
     def delete_from_s3(self, bucket: str, s3_file: str) -> None:
-        shutil.rmtree(os.path.join(self.__data_folder, s3_file))
+        os.remove(os.path.join(self.__data_folder, s3_file))
 
 
 class AWSService(AbstractAWSService):

@@ -111,7 +111,7 @@ class SuitBuilderService:
             self.aws_service.delete_from_s3(
                 DATA_BUCKET, self.__build_image_icon_path(suit_builder_item.type.value, suit_builder_item.sku)
             )
-        except ServiceError as e:
+        except Exception as e:
             logger.warning(f"Failed to delete from S3: {e}. This is fine.")
 
         try:

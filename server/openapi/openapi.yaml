@@ -1813,10 +1813,14 @@ paths:
           description: OK
       summary: Add an item to the suit builder
       x-openapi-router-controller: server.controllers.admin.suit_builder
+
+  /admin/suit-builder/items/{sku}:
     delete:
       operationId: delete_item
       parameters:
-        - in: query
+        - description: SKU of the item to remove
+          explode: false
+          in: path
           name: sku
           required: true
           schema:

@@ -96,7 +96,6 @@ jobs:
     needs: e2e-test
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.stage }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,7 +112,6 @@ jobs:
     needs: e2e-test
     if: ${{ always() && inputs.stage == 'prd' }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.stage }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

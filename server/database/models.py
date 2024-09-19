@@ -464,3 +464,37 @@ class Measurement(Base):
     data = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+@enum.unique
+class SuitBuilderItemType(enum.Enum):
+    SUIT = "suit"
+    SHIRT = "shirt"
+    NECK_TIE = "neck_tie"
+    BOW_TIE = "bow_tie"
+    PREMIUM_POCKET_SQUARE = "premium_pocket_square"
+    SHOES = "shoes"
+    BELT = "belt"
+    SOCKS = "socks"
+
+
+class SuitBuilderItem(Base):
+    __tablename__ = "suit_builder_items"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    type = Column(Enum(SuitBuilderItemType), nullable=False)
+    sku = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    index = Column(Integer, nullable=False, default=0)
+    variant_id = Column(BigInteger, nullable=False)
+    product_id = Column(BigInteger, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    price = Column(Numeric, nullable=False, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)

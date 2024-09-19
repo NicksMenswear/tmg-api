@@ -11,6 +11,7 @@ from server.models.measurement_model import CreateMeasurementsRequestModel, Meas
 from server.models.order_model import CreateOrderModel, AddressModel, CreateOrderItemModel
 from server.models.role_model import CreateRoleModel, UpdateRoleModel
 from server.models.size_model import CreateSizeRequestModel, SizeModel
+from server.models.suit_builder_model import CreateSuitBuilderModel
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services.order_service import ORDER_STATUS_READY
 from server.tests import utils
@@ -463,3 +464,10 @@ def shipping_item(**data):
         "product_id": data.get("product_id", 8397791002755),
         "variant_id": data.get("variant_id", 44610669805699),
     }
+
+
+def add_suit_builder_item_request(**item_data) -> CreateSuitBuilderModel:
+    return CreateSuitBuilderModel(
+        type=item_data.get("type", "suit"),
+        sku=item_data.get("sku", "503A40NI"),
+    )

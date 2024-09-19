@@ -745,6 +745,13 @@ class ShopifyService(AbstractShopifyService):
                 product {{
                   id
                   title
+                  images(first: 1) {{
+                    edges {{
+                      node {{
+                        url
+                      }}
+                    }}
+                  }}
                 }}
               }}
             }}
@@ -771,6 +778,8 @@ class ShopifyService(AbstractShopifyService):
 
         variant = edges[0].get("node")
         product = variant["product"]
+        image_edges = product.get("images", {}).get("edges", [{}])
+        image_url = image_edges[0].get("node", {}).get("url") if image_edges else None
 
         return ShopifyVariantModel(
             **{
@@ -780,6 +789,7 @@ class ShopifyService(AbstractShopifyService):
                 "variant_title": variant["title"],
                 "variant_price": variant["price"],
                 "variant_sku": variant["sku"],
+                "image_url": image_url,
             }
         )
 

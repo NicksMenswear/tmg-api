@@ -1785,6 +1785,48 @@ paths:
       tags:
         - Jobs
 
+  /admin/suit-builder/items:
+    get:
+      operationId: get_items
+      parameters:
+        - in: query
+          name: enriched
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+      summary: Add an item to the suit builder
+      x-openapi-router-controller: server.controllers.admin.suit_builder
+    post:
+      operationId: add_item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSuitBuilderItemRequest"
+        required: true
+        x-body-name: item
+      responses:
+        "201":
+          description: OK
+      summary: Add an item to the suit builder
+      x-openapi-router-controller: server.controllers.admin.suit_builder
+    delete:
+      operationId: delete_item
+      parameters:
+        - in: query
+          name: sku
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+      summary: Delete an item from the suit builder
+      x-openapi-router-controller: server.controllers.admin.suit_builder
+
 components:
   schemas:
     uuid:
@@ -2262,4 +2304,26 @@ components:
         - id
         - email
       title: E2ECustomerCleanupRequest
+      type: object
+    AddSuitBuilderItemRequest:
+      properties:
+        type:
+          title: type
+          type: string
+          enum:
+            - suit
+            - shirt
+            - neck_tie
+            - bow_tie
+            - premium_pocket_square
+            - shoes
+            - belt
+            - socks
+        sku:
+          title: sku
+          type: string
+      required:
+        - type
+        - sku
+      title: AddSuitBuilderItemRequest
       type: object

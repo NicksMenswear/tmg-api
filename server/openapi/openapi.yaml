@@ -1865,6 +1865,28 @@ paths:
           description: Deleted
       summary: Delete an item from the suit builder
       x-openapi-router-controller: server.controllers.admin.suit_builder
+    patch:
+      operationId: patch_item
+      parameters:
+        - description: SKU of the item to remove
+          explode: false
+          in: path
+          name: sku
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchSuitBuilderItemRequest"
+        required: true
+        x-body-name: item
+      responses:
+        "201":
+          description: OK
+      summary: Patch an item of the suit builder
+      x-openapi-router-controller: server.controllers.admin.suit_builder
 
 components:
   schemas:
@@ -2365,4 +2387,21 @@ components:
         - type
         - sku
       title: AddSuitBuilderItemRequest
+      type: object
+    PatchSuitBuilderItemRequest:
+      properties:
+        field:
+          title: field
+          type: string
+          enum:
+            - is_active
+            - index
+            - image_b64
+            - icon_b64
+        value:
+          title: value
+      required:
+        - field
+        - value
+      title: PatchSuitBuilderItemRequest
       type: object

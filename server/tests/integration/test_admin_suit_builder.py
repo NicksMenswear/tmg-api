@@ -1,4 +1,6 @@
+import base64
 import json
+import random
 import uuid
 
 from server.database.models import SuitBuilderItem
@@ -96,6 +98,83 @@ class TestAdminSuitBuilder(BaseTestCase):
         self.assertIsNotNone(response_item.get("image_url"))
         self.assertIsNotNone(response_item.get("icon_url"))
 
+    def test_patch_item_is_active(self):
+        # given
+        item = fixtures.add_suit_builder_item_request()
+        self.suit_builder_service.add_item(item)
+
+        # when
+        response = self.client.open(
+            f"/admin/suit-builder/items/{item.sku}",
+            method="PATCH",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps({"field": "is_active", "value": False}),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertFalse(response.json.get("is_active"))
+
+    def test_patch_item_index(self):
+        # given
+        item = fixtures.add_suit_builder_item_request()
+        self.suit_builder_service.add_item(item)
+        new_index = random.randint(1, 100)
+
+        # when
+        response = self.client.open(
+            f"/admin/suit-builder/items/{item.sku}",
+            method="PATCH",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps({"field": "index", "value": new_index}),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(response.json.get("index"), new_index)
+
+    def test_patch_item_image(self):
+        # given
+        item = fixtures.add_suit_builder_item_request()
+        self.suit_builder_service.add_item(item)
+
+        # when
+        image_b64 = self.__file_to_b64("assets/look_1.png")
+
+        response = self.client.open(
+            f"/admin/suit-builder/items/{item.sku}",
+            method="PATCH",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps({"field": "image_b64", "value": image_b64}),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertIsNotNone(response.json.get("image_url"))
+
+    def test_patch_item_icon(self):
+        # given
+        item = fixtures.add_suit_builder_item_request()
+        self.suit_builder_service.add_item(item)
+
+        # when
+        icon_b64 = self.__file_to_b64("assets/look_1.png")
+
+        response = self.client.open(
+            f"/admin/suit-builder/items/{item.sku}",
+            method="PATCH",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps({"field": "icon_b64", "value": icon_b64}),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertIsNotNone(response.json.get("image_url"))
+
     def test_delete_item(self):
         # given
         item = fixtures.add_suit_builder_item_request()
@@ -126,3 +205,10 @@ class TestAdminSuitBuilder(BaseTestCase):
 
         # then
         self.assertStatus(response, 404)
+
+    @staticmethod
+    def __file_to_b64(file_path):
+        with open(file_path, "rb") as file:
+            content = file.read()
+
+        return base64.b64encode(content).decode("utf-8")

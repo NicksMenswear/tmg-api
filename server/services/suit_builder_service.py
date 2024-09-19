@@ -1,6 +1,8 @@
+import base64
 import logging
 import os
 import tempfile
+from typing import Any
 
 import requests
 
@@ -31,7 +33,7 @@ class SuitBuilderService:
         return f"suit-builder/v1/{item_type}/{sku}.png"
 
     @staticmethod
-    def __build_image_icon_path(item_type: str, sku: str) -> str:
+    def __build_icon_path(item_type: str, sku: str) -> str:
         return f"suit-builder/v1/{item_type}/{sku}-icon.png"
 
     def add_item(self, item: CreateSuitBuilderModel) -> SuitBuilderItemModel:
@@ -72,7 +74,7 @@ class SuitBuilderService:
                     self.aws_service.upload_to_s3(
                         image_path,
                         DATA_BUCKET,
-                        self.__build_image_icon_path(suit_builder_item.type.value, suit_builder_item.sku),
+                        self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku),
                     )
 
             db.session.add(suit_builder_item)
@@ -98,6 +100,44 @@ class SuitBuilderService:
 
         return grouped_collections
 
+    def patch_item(self, sku: str, field: str, value: Any) -> SuitBuilderItemModel:
+        suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == sku).first()
+
+        if not suit_builder_item:
+            raise NotFoundError(f"Item with sku {sku} not found")
+
+        if field == "is_active":
+            suit_builder_item.is_active = bool(value)
+        elif field == "index":
+            suit_builder_item.index = int(value)
+        elif field == "image_b64":
+            local_file_path = f"{tempfile.gettempdir()}/{suit_builder_item.sku}.png"
+            self.__save_image(value, local_file_path)
+            self.aws_service.upload_to_s3(
+                local_file_path,
+                DATA_BUCKET,
+                self.__build_image_path(suit_builder_item.type.value, suit_builder_item.sku),
+            )
+        elif field == "icon_b64":
+            local_file_path = f"{tempfile.gettempdir()}/{suit_builder_item.sku}-icon.png"
+            self.__save_image(value, local_file_path)
+            self.aws_service.upload_to_s3(
+                local_file_path,
+                DATA_BUCKET,
+                self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku),
+            )
+        else:
+            raise ServiceError(f"Field {field} not supported")
+
+        try:
+            db.session.commit()
+            db.session.refresh(suit_builder_item)
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceError("Failed to patch suit builder item", e)
+
+        return SuitBuilderItemModel.from_orm(suit_builder_item)
+
     def delete_item(self, sku: str) -> None:
         suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == sku).first()
 
@@ -109,7 +149,7 @@ class SuitBuilderService:
                 DATA_BUCKET, self.__build_image_path(suit_builder_item.type.value, suit_builder_item.sku)
             )
             self.aws_service.delete_from_s3(
-                DATA_BUCKET, self.__build_image_icon_path(suit_builder_item.type.value, suit_builder_item.sku)
+                DATA_BUCKET, self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku)
             )
         except Exception as e:
             logger.warning(f"Failed to delete from S3: {e}. This is fine.")
@@ -120,3 +160,14 @@ class SuitBuilderService:
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to delete suit builder item", e)
+
+    @staticmethod
+    def __save_image(image_b64: str, local_file: str) -> None:
+        try:
+            decoded_image = base64.b64decode(image_b64)
+
+            with open(local_file, "wb") as f:
+                f.write(decoded_image)
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to save image.", e)

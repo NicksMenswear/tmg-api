@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from server.controllers.util import token_verification, error_handler
 from server.flask_app import FlaskApp
@@ -26,6 +26,15 @@ def add_item(item: Dict[str, str]):
     item: SuitBuilderItemModel = suit_builder_service.add_item(CreateSuitBuilderModel(**item))
 
     return item.to_response_enriched(), 201
+
+
+@token_verification
+@error_handler
+def patch_item(sku: str, item: Dict[str, Any]):
+    suit_builder_service: SuitBuilderService = FlaskApp.current().suit_builder_service
+    item: SuitBuilderItemModel = suit_builder_service.patch_item(sku, item.get("field"), item.get("value"))
+
+    return item.to_response_enriched(), 200
 
 
 @token_verification

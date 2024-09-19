@@ -485,7 +485,7 @@ paths:
                   title: page_name
                   type: string
               required:
-                - user_id
+                - email
                 - page_name
               title: PageView
               type: object

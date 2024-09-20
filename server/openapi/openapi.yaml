@@ -490,11 +490,11 @@ paths:
               title: PageView
               type: object
         required: true
-        x-body-name: page_view
+        x-body-name: view
       responses:
         "201":
           description: Page view recorded
-      summary: Record page view
+      summary: Record Page View
       tags:
         - Tracking
       x-openapi-router-controller: server.controllers.activity

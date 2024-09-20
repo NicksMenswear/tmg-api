@@ -27,32 +27,34 @@ def audit_log(type, body):
     audit_logger.info(json.dumps(log_entry))
 
 
-def audit(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-            exception = None
-        except Exception as e:
-            result = None
-            exception = str(e)
-            raise
-        finally:
-            audit_log(
-                "function_call",
-                {
-                    "function": func.__name__,
-                    "module": inspect.getmodule(func).__name__,
-                    "args": args,
-                    "kwargs": kwargs,
-                    "result": result,
-                    "exception": exception,
-                },
-            )
+def audit(static=False):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                result = func(*args, **kwargs)
+                exception = None
+            except Exception as e:
+                result = None
+                exception = str(e)
+                raise
+            finally:
+                audit_log(
+                    "function_call",
+                    {
+                        "function": func.__name__,
+                        "module": inspect.getmodule(func).__name__,
+                        "args": args if static else args[1:],  # Drop self
+                        "kwargs": kwargs,
+                        "result": result,
+                        "exception": exception,
+                    },
+                )
+            return result
 
-        return result
+        return wrapper
 
-    return wrapper
+    return decorator
 
 
 def append_log_request_context_middleware():

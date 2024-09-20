@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 @hmac_verification
 @error_handler
-def page_view(page_view):
+def page_view(view):
     activity_service = FlaskApp.current().activity_service
 
-    activity_service.page_view(**page_view)
+    activity_service.page_view(**view)
 
     return None, 201

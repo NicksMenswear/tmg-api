@@ -40,7 +40,7 @@ class FakeActivityService(AbstractActivityService):
 
 class ActivityService(AbstractActivityService):
     @suppress_exceptions
-    @audit
+    @audit()
     def page_view(self, email, page_name):
         user_service = FlaskApp.current().user_service
         shopify_service = FlaskApp.current().shopify_service

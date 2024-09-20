@@ -16,6 +16,7 @@ from sqlalchemy import (
     ARRAY,
     JSON,
     BigInteger,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -468,6 +469,7 @@ class Measurement(Base):
 
 class Activity(Base):
     __tablename__ = "activities"
+
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
@@ -476,10 +478,13 @@ class Activity(Base):
         nullable=False,
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    type = Column(String, unique=True, nullable=False)
+    type = Column(String, nullable=False)
     data = Column(JSON, default=dict, nullable=False)
+    data_md5 = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (Index("ix_user_type", "user_id", "type", "data_md5"),)
 
 
 @enum.unique

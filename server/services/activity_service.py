@@ -46,7 +46,7 @@ class ActivityService(AbstractActivityService):
     def generic(self, email, type, data):
         user_service = FlaskApp.current().user_service
         user = user_service.get_user_by_email(email)
-        data_md5 = hashlib.md5(json.dumps(data)).hexdigest()
+        data_md5 = hashlib.md5(json.dumps(data).encode("utf-8")).hexdigest()
 
         try:
             activity = Activity(

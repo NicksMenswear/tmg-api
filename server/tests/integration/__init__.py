@@ -21,6 +21,7 @@ from server.database.models import (
     Size,
     Measurement,
     Address,
+    SuitBuilderItem,
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
@@ -53,6 +54,7 @@ class BaseTestCase(TestCase):
         Size.query.delete()
         Measurement.query.delete()
         User.query.delete()
+        SuitBuilderItem.query.delete()
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON
@@ -83,6 +85,7 @@ class BaseTestCase(TestCase):
         self.size_service = self.app.size_service
         self.measurement_service = self.app.measurement_service
         self.activecampaign_service = self.app.activecampaign_service
+        self.suit_builder_service = self.app.suit_builder_service
         self.shopify_skus_cache = {}
 
         num_products_in_db = self.product_service.get_num_products()
@@ -107,6 +110,7 @@ class BaseTestCase(TestCase):
                     "variant_title": f"Variant {variant_id}",
                     "variant_sku": f"00{random.randint(10000, 1000000)}",
                     "variant_price": random.randint(100, 1000),
+                    "image_url": "https://data.dev.tmgcorp.net/bundle.jpg",
                 }
             )
 

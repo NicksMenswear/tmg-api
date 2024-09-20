@@ -4,6 +4,7 @@ import os
 from flask import request
 import logging
 import json
+import inspect
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.logging import correlation_paths
@@ -13,21 +14,41 @@ from server.version import get_version
 
 powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "message"], use_rfc3339=True, utc=True)
 logger = logging.getLogger(__name__)
-activity_logger = logging.getLogger("net.tmgcorp.logging.activity")
+audit_logger = logging.getLogger("net.tmgcorp.logging.internal.audit")
 
 
-def log_activity_wrapper(func):
+def audit_log(type, body):
+    assert type in ["function_call"]
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "type": type,
+        "body": body,
+    }
+    audit_logger.info(json.dumps(log_entry))
+
+
+def audit(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "type": "function_call",
-            "body": {"function": func.__name__, "args": args, "kwargs": kwargs},
-        }
-        result = func(*args, **kwargs)
-        log_entry["body"]["result"] = result
-
-        activity_logger.info(json.dumps(log_entry))
+        try:
+            result = func(*args, **kwargs)
+            exception = None
+        except Exception as e:
+            result = None
+            exception = str(e)
+            raise
+        finally:
+            audit_log(
+                "function_call",
+                {
+                    "function": func.__name__,
+                    "module": inspect.getmodule(func).__name__,
+                    "args": args,
+                    "kwargs": kwargs,
+                    "result": result,
+                    "exception": exception,
+                },
+            )
 
         return result
 

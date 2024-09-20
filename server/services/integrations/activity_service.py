@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from server.controllers.util import http
 from server.flask_app import FlaskApp
 from server.services import ServiceError
-from server.logs import log_activity_wrapper
+from server.logs import audit
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def suppress_exceptions(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.exception("Exception suppressed in %s", func.__name__)
+            logger.exception("Exception suppressed in %s: %s", func.__name__, str(e))
 
     return wrapper
 
@@ -39,8 +39,8 @@ class FakeActivityService(AbstractActivityService):
 
 
 class ActivityService(AbstractActivityService):
-    @log_activity_wrapper
     @suppress_exceptions
+    @audit
     def page_view(self, email, page_name):
         user_service = FlaskApp.current().user_service
         shopify_service = FlaskApp.current().shopify_service

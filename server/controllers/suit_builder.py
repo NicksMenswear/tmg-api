@@ -6,7 +6,7 @@ from server.models.suit_builder_model import (
 from server.services.suit_builder_service import SuitBuilderService
 
 
-@hmac_verification
+# @hmac_verification
 @error_handler
 def get_items():
     suit_builder_service: SuitBuilderService = FlaskApp.current().suit_builder_service

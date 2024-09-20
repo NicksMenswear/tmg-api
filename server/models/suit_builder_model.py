@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from uuid import UUID
 
 from pydantic import RootModel
@@ -14,6 +14,8 @@ DATA_URL = f"https://{DATA_ENDPOINT_HOST}/suit-builder/v1"
 class CreateSuitBuilderModel(CoreModel):
     type: str
     sku: str
+    image_url: Optional[str] = None
+    icon_url: Optional[str] = None
 
 
 class SuitBuilderItemModel(CoreModel):

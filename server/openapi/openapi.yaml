@@ -2383,6 +2383,14 @@ components:
         sku:
           title: sku
           type: string
+        image_url:
+          title: image_url
+          type: string
+          nullable: true
+        icon_url:
+          title: icon_url
+          type: string
+          nullable: true
       required:
         - type
         - sku

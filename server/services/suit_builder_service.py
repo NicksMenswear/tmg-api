@@ -29,12 +29,33 @@ class SuitBuilderService:
         self.aws_service: AbstractAWSService = aws_service
 
     @staticmethod
-    def __build_image_path(item_type: str, sku: str) -> str:
-        return f"suit-builder/v1/{item_type}/{sku}.png"
+    def __build_s3_image_path(item_type: str, filename: str) -> str:
+        return f"suit-builder/v1/{item_type}/{filename}"
 
-    @staticmethod
-    def __build_icon_path(item_type: str, sku: str) -> str:
-        return f"suit-builder/v1/{item_type}/{sku}-icon.png"
+    def __save_image_by_url_to_s3(self, url: str, image_type: str, filename: str) -> None:
+        image_path = os.path.join(tempfile.gettempdir(), filename)
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Referer": "https://www.google.com/",
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            with open(image_path, "wb") as f:
+                f.write(response.content)
+        else:
+            raise ServiceError(f"Failed to download image from {url}")
+
+        self.aws_service.upload_to_s3(
+            image_path,
+            DATA_BUCKET,
+            self.__build_s3_image_path(image_type, filename),
+        )
 
     def add_item(self, item: CreateSuitBuilderModel) -> SuitBuilderItemModel:
         suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == item.sku).first()
@@ -57,25 +78,15 @@ class SuitBuilderService:
                 price=shopify_variant.variant_price,
             )
 
-            if shopify_variant.image_url:
-                response = requests.get(shopify_variant.image_url)
+            if item.image_url:
+                self.__save_image_by_url_to_s3(item.image_url, item.type, f"{item.sku}.png")
 
-                if response.status_code == 200:
-                    image_path = os.path.join(tempfile.gettempdir(), f"{suit_builder_item.sku}.png")
+            if item.icon_url:
+                self.__save_image_by_url_to_s3(item.icon_url, item.type, f"{item.sku}-icon.png")
 
-                    with open(image_path, "wb") as f:
-                        f.write(response.content)
-
-                    self.aws_service.upload_to_s3(
-                        image_path,
-                        DATA_BUCKET,
-                        self.__build_image_path(suit_builder_item.type.value, suit_builder_item.sku),
-                    )
-                    self.aws_service.upload_to_s3(
-                        image_path,
-                        DATA_BUCKET,
-                        self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku),
-                    )
+            if not item.image_url and not item.image_url and shopify_variant.image_url:
+                self.__save_image_by_url_to_s3(shopify_variant.image_url, item.type, f"{item.sku}.png")
+                self.__save_image_by_url_to_s3(shopify_variant.image_url, item.type, f"{item.sku}-icon.png")
 
             db.session.add(suit_builder_item)
             db.session.commit()
@@ -85,7 +96,8 @@ class SuitBuilderService:
 
         return SuitBuilderItemModel.from_orm(suit_builder_item)
 
-    def get_items(self, enriched: bool = False) -> SuitBuilderItemsCollection:
+    @staticmethod
+    def get_items(enriched: bool = False) -> SuitBuilderItemsCollection:
         query = SuitBuilderItem.query
 
         if not enriched:
@@ -116,7 +128,7 @@ class SuitBuilderService:
             self.aws_service.upload_to_s3(
                 local_file_path,
                 DATA_BUCKET,
-                self.__build_image_path(suit_builder_item.type.value, suit_builder_item.sku),
+                self.__build_s3_image_path(suit_builder_item.type.value, f"{suit_builder_item.sku}.png"),
             )
         elif field == "icon_b64":
             local_file_path = f"{tempfile.gettempdir()}/{suit_builder_item.sku}-icon.png"
@@ -124,7 +136,7 @@ class SuitBuilderService:
             self.aws_service.upload_to_s3(
                 local_file_path,
                 DATA_BUCKET,
-                self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku),
+                self.__build_s3_image_path(suit_builder_item.type.value, f"{suit_builder_item.sku}-icon.png"),
             )
         else:
             raise ServiceError(f"Field {field} not supported")
@@ -146,10 +158,12 @@ class SuitBuilderService:
 
         try:
             self.aws_service.delete_from_s3(
-                DATA_BUCKET, self.__build_image_path(suit_builder_item.type.value, suit_builder_item.sku)
+                DATA_BUCKET,
+                self.__build_s3_image_path(suit_builder_item.type.value, f"{suit_builder_item.sku}.png"),
             )
             self.aws_service.delete_from_s3(
-                DATA_BUCKET, self.__build_icon_path(suit_builder_item.type.value, suit_builder_item.sku)
+                DATA_BUCKET,
+                self.__build_s3_image_path(suit_builder_item.type.value, f"{suit_builder_item.sku}-icon.png"),
             )
         except Exception as e:
             logger.warning(f"Failed to delete from S3: {e}. This is fine.")

@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 import tempfile
+from datetime import datetime
 from typing import Any
 
 import requests
@@ -142,6 +143,8 @@ class SuitBuilderService:
             raise ServiceError(f"Field {field} not supported")
 
         try:
+            suit_builder_item.updated_at = datetime.now()
+
             db.session.commit()
             db.session.refresh(suit_builder_item)
         except Exception as e:

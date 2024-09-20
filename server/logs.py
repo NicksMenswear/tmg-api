@@ -1,7 +1,10 @@
+from datetime import datetime
+from functools import wraps
 import os
 from flask import request
 import logging
 import json
+import inspect
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.logging import correlation_paths
@@ -11,6 +14,46 @@ from server.version import get_version
 
 powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "message"], use_rfc3339=True, utc=True)
 logger = logging.getLogger(__name__)
+audit_logger = logging.getLogger("net.tmgcorp.logging.internal.audit")
+
+
+def audit_log(type, body):
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "type": type,
+        "data": body,
+    }
+    audit_logger.info(json.dumps(log_entry))
+
+
+def audit(static=False):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                result = func(*args, **kwargs)
+                exception = None
+            except Exception as e:
+                result = None
+                exception = str(e)
+                raise
+            finally:
+                audit_log(
+                    "function_call",
+                    {
+                        "function": func.__name__,
+                        "module": inspect.getmodule(func).__name__,
+                        "args": args if static else args[1:],  # Drop self
+                        "kwargs": kwargs,
+                        "result": result,
+                        "exception": exception,
+                    },
+                )
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 def append_log_request_context_middleware():

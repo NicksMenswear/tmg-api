@@ -444,6 +444,64 @@ paths:
       tags:
         - ActiveCampaign
       x-openapi-router-controller: server.controllers.activecampaign
+  /activity/generic:
+    post:
+      operationId: generic
+      parameters:
+        - in: query
+          name: logged_in_customer_id
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: shop
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: path_prefix
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: signature
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  title: email
+                  $ref: '#/components/schemas/email'
+                type:
+                  title: type
+                  type: string
+                data:
+                  title: data
+                  type: object
+              required:
+                - email
+                - type
+                - data
+              title: PageView
+              type: object
+        required: true
+        x-body-name: data
+      responses:
+        "200":
+          description: Activity recorded
+      summary: Record User Activity
+      tags:
+        - Tracking
+      x-openapi-router-controller: server.controllers.activity
   /events:
     post:
       operationId: create_event

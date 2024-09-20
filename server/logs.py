@@ -18,11 +18,10 @@ audit_logger = logging.getLogger("net.tmgcorp.logging.internal.audit")
 
 
 def audit_log(type, body):
-    assert type in ["function_call"]
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "type": type,
-        "body": body,
+        "data": body,
     }
     audit_logger.info(json.dumps(log_entry))
 

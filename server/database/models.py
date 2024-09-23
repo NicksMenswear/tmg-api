@@ -193,7 +193,7 @@ class Attendee(Base):
     )
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
     role_id = Column(UUID(as_uuid=True), ForeignKey("roles.id"))
     look_id = Column(UUID(as_uuid=True), ForeignKey("looks.id"))

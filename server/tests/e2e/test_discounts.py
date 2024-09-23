@@ -131,7 +131,7 @@ def test_discount_intent_saved(page: Page):
 
     actions.pay_to_attendee_by_id(page, event_id, attendee_id, amount)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(amount))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
 
     page.goto(f"{STORE_URL}/account")
 
@@ -184,7 +184,7 @@ def test_pay_in_full_click_discount_intent_saved(page: Page):
 
     actions.pay_in_full_attendee_by_id(page, event_id, attendee_id, price)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(price)}")
 
     page.goto(f"{STORE_URL}/account")
 
@@ -241,7 +241,7 @@ def test_grooms_gift(page):
 
     actions.pay_to_attendee_by_id(page, event_id, attendee_id, amount)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(amount))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
 
     actions.shopify_checkout_enter_billing_address(page, attendee_first_name, attendee_last_name)
     actions.shopify_checkout_continue_to_payment(page)
@@ -262,7 +262,7 @@ def test_grooms_gift(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, codes[0])
 
 
@@ -330,7 +330,7 @@ def test_group_discount(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
 
@@ -391,7 +391,7 @@ def test_group_discount_and_groom_gift_as_well(page):
 
     actions.pay_to_attendee_by_id(page, event_id, attendee_id_2, amount)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(amount))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
 
     actions.shopify_checkout_enter_billing_address(page, attendee_first_name_1, attendee_last_name_1)
     actions.shopify_checkout_continue_to_payment(page)
@@ -408,7 +408,7 @@ def test_group_discount_and_groom_gift_as_well(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
@@ -470,7 +470,7 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
 
     actions.pay_to_attendee_by_id(page, event_id, attendee_id_2, amount)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", str(amount))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
 
     actions.shopify_checkout_enter_billing_address(page, attendee_first_name_1, attendee_last_name_1)
     actions.shopify_checkout_continue_to_payment(page)
@@ -487,6 +487,59 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", str(price))
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-50-OFF-")
+
+
+@e2e_allowed_in({"dev", "stg"})
+@e2e_error_handling
+@pytest.mark.group_5
+def test_grooms_gift_and_swatches(page):
+    event_name = utils.generate_event_name()
+    attendee_first_name = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name = f"E2E {utils.generate_unique_name()}"
+    attendee_email = utils.generate_email()
+
+    role_name = "Groomsman"
+    look_name = utils.generate_look_name()
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
+    api.delete_all_looks(user_id)
+    api.create_look(look_name, user_id)
+    page.goto(f"{STORE_URL}/pages/looks")
+    _, _, price = actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
+
+    verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
+
+    event_id = actions.create_new_event(page, event_name)
+    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    event_block = actions.get_event_block(page, event_id)
+    expect(event_block).to_be_visible()
+
+    actions.open_event_accordion(page, event_id)
+
+    actions.select_role_for_attendee(page, event_id, attendee_id, role_name)
+    time.sleep(1)
+    actions.select_look_for_attendee(page, event_id, attendee_id, look_name)
+    time.sleep(2)
+
+    actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+
+    amount = round(random.uniform(0.01, 171.99), 2)
+
+    actions.add_swatch_to_cart(page)
+
+    page.goto(f"{STORE_URL}/account")
+
+    actions.pay_to_attendee_by_id(page, event_id, attendee_id, amount)
+
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, f"Black Suit And Tuxedo Swatch", "FREE", False)

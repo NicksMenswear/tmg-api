@@ -133,8 +133,8 @@ class AttendeeService:
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
-                        first_name=user.first_name,
-                        last_name=user.last_name,
+                        first_name=attendee.first_name if attendee.first_name else user.first_name,
+                        last_name=attendee.last_name if attendee.last_name else user.last_name,
                         email=user.email,
                     ),
                 )
@@ -211,6 +211,8 @@ class AttendeeService:
             owner_auto_invite = event.user_id == attendee_user.id
             new_attendee = Attendee(
                 id=uuid.uuid4(),
+                first_name=create_attendee.first_name,
+                last_name=create_attendee.last_name,
                 user_id=attendee_user.id,
                 event_id=create_attendee.event_id,
                 role_id=create_attendee.role_id,
@@ -237,6 +239,26 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
+        # updating first_name or last_name only
+        if (
+            update_attendee.first_name
+            or update_attendee.last_name
+            and (not update_attendee.role_id or update_attendee.role_id == attendee.role_id)
+            and (not update_attendee.look_id or update_attendee.look_id == attendee.look_id)
+        ):
+            attendee.first_name = update_attendee.first_name or attendee.first_name
+            attendee.last_name = update_attendee.last_name or attendee.last_name
+            attendee.updated_at = datetime.now()
+
+            try:
+                db.session.commit()
+                db.session.refresh(attendee)
+            except Exception as e:
+                raise ServiceError("Failed to update attendee.", e)
+
+            return AttendeeModel.from_orm(attendee)
+
+        # checking if style can be updated or discount code were issued
         if (
             attendee.look_id is not None
             and (attendee.look_id != update_attendee.look_id)
@@ -249,6 +271,9 @@ class AttendeeService:
         ):
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
+        # case when attendee style was updated
+        attendee.first_name = update_attendee.first_name or attendee.first_name
+        attendee.last_name = update_attendee.last_name or attendee.last_name
         attendee.role_id = update_attendee.role_id or attendee.role_id
         attendee.look_id = update_attendee.look_id or attendee.look_id
         attendee.style = True if attendee.role_id and attendee.look_id else False

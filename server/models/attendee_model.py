@@ -10,9 +10,11 @@ from server.models.role_model import RoleModel
 from server.models.user_model import UserRequestModel
 
 
-class CreateAttendeeModel(UserRequestModel):
-    email: EmailStr
+class CreateAttendeeModel(CoreModel):
     event_id: UUID
+    first_name: str
+    last_name: str
+    email: EmailStr = None
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     style: bool = False
@@ -25,6 +27,8 @@ class CreateAttendeeModel(UserRequestModel):
 
 class AttendeeModel(CoreModel):
     id: UUID
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     is_owner: bool = False
     user_id: UUID
     event_id: UUID
@@ -87,5 +91,7 @@ class EnrichedAttendeeModel(AttendeeModel):
 
 class UpdateAttendeeModel(CoreModel):
     is_active: bool = True
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

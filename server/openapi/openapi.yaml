@@ -2175,13 +2175,20 @@ components:
           nullable: true
       required:
         - event_id
-        - email
         - first_name
         - last_name
       title: CreateAttendee
       type: object
     UpdateAttendee:
       properties:
+        first_name:
+          title: first_name
+          type: string
+          nullable: true
+        last_name:
+          title: last_name
+          type: string
+          nullable: true
         role_id:
           title: role
           $ref: '#/components/schemas/uuid'

@@ -13,12 +13,12 @@ def test_order_swatches(page: Page):
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     verify.no_upcoming_events_visible(page)
 
-    actions.add_swatch_to_cart(page, 0)
+    swatch1_name = actions.add_swatch_to_cart(page, 0)
     actions.continue_shopping(page)
-    actions.add_swatch_to_cart(page, 1)
+    swatch2_name = actions.add_swatch_to_cart(page, 1)
     actions.verify_cart_message(page, "You have used 2 of 5 free swatches.")
 
     actions.click_on_cart_checkout_button(page)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Black Suit And Tuxedo Swatch", "FREE", True)
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Charcoal Grey Suit Swatch", "FREE", False)
+    verify.shopify_checkout_has_item_with_name_and_price(page, swatch1_name, "FREE", True)
+    verify.shopify_checkout_has_item_with_name_and_price(page, swatch2_name, "FREE", False)

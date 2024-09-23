@@ -1,3 +1,4 @@
+import time
 from typing import Set
 
 from playwright.sync_api import Page, expect
@@ -147,10 +148,15 @@ def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warn
     assert attendee_2.locator("p.tmg-pay-attendee-item-message").inner_text().strip() == warning
 
 
-def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, item_price: str):
+def shopify_checkout_has_item_with_name_and_price(
+    page: Page, item_name: str, item_price: str, open_order_summary: bool = True
+):
     if is_mobile_view(page):
-        show_order_summary_button = page.locator("button:has-text('Show order summary')")
-        show_order_summary_button.click()
+        if open_order_summary:
+            show_order_summary_button = page.locator("button:has-text('Show order summary')")
+            show_order_summary_button.scroll_into_view_if_needed()
+            show_order_summary_button.wait_for(state="visible")
+            show_order_summary_button.click()
 
         order_details_locator = page.locator("#disclosure_details")
         order_details_locator.wait_for(state="visible")
@@ -158,7 +164,7 @@ def shopify_checkout_has_item_with_name_and_price(page: Page, item_name: str, it
         order_item = order_details_locator.locator(f'div[role="cell"]:has-text("{item_name}")')
         order_item.wait_for(state="visible")
 
-        price_item = order_details_locator.locator(f'div[role="cell"] span:has-text("${item_price}")').first
+        price_item = order_details_locator.locator(f'div[role="cell"] span:has-text("{item_price}")').first
         price_item.wait_for(state="visible")
     else:
         price_element = page.locator(f'div[role="row"]:has-text("{item_name}")')

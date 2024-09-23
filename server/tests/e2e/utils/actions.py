@@ -1,7 +1,7 @@
-import time
-from typing import List
 import random
+import time
 from datetime import datetime
+from typing import List
 
 from playwright.sync_api import Page, expect, Locator
 
@@ -12,7 +12,7 @@ from server.tests.e2e import (
     STORE_PASSWORD,
     HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS,
 )
-from server.tests.e2e.utils import api
+from server.tests.e2e.utils import api, verify
 
 
 def access_store(page: Page):
@@ -703,3 +703,47 @@ def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedd
 
     select_date_in_calendar(get_started_dialog_locator, "get-started-event-datepicker")
     get_started_click_next_button(get_started_dialog_locator)
+
+
+def add_swatch_to_cart(page: Page, swatch_index: int = 0):
+    page.goto(f"{STORE_URL}/collections/swatches")
+    add_swatch_to_cart_button = page.locator('button[data-label="Add to cart"]').nth(swatch_index)
+    add_swatch_to_cart_button.scroll_into_view_if_needed()
+    add_swatch_to_cart_button.wait_for(state="visible")
+    add_swatch_to_cart_button.click()
+
+    time.sleep(2)
+
+
+def verify_cart_message(page: Page, message: str):
+    checkout_button_index = 0 if verify.is_mobile_view(page) else 1
+
+    cart_drawer = page.locator("div#theme-ajax-cart.is-drawer").nth(checkout_button_index)
+    cart_drawer.scroll_into_view_if_needed()
+    cart_drawer.wait_for(state="visible")
+
+    cart_message = cart_drawer.locator("span.tmg-cart-notice-text").first
+    cart_message.scroll_into_view_if_needed()
+    cart_message.wait_for(state="visible")
+
+    assert cart_message.inner_text() == message
+
+
+def continue_shopping(page: Page):
+    shopping_for_an_event_dialog = page.locator("div.tmg-modal.showed#event-question").first
+    shopping_for_an_event_dialog.scroll_into_view_if_needed()
+    shopping_for_an_event_dialog.wait_for(state="visible")
+
+    continue_shopping_button = shopping_for_an_event_dialog.locator("button.tmg-btn.eventQuestionSend").first
+    continue_shopping_button.scroll_into_view_if_needed()
+    continue_shopping_button.wait_for(state="visible")
+    continue_shopping_button.click()
+
+
+def click_on_cart_checkout_button(page: Page):
+    checkout_button_index = 1 if verify.is_mobile_view(page) else 0
+
+    cart_checkout_button = page.get_by_role("button", name="Checkout").nth(checkout_button_index)
+    cart_checkout_button.scroll_into_view_if_needed()
+    cart_checkout_button.wait_for(state="visible")
+    cart_checkout_button.click()

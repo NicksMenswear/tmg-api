@@ -492,7 +492,7 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-50-OFF-")
 
 
-@e2e_allowed_in({"dev", "stg"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_5
 def test_grooms_gift_and_swatches(page):
@@ -535,11 +535,11 @@ def test_grooms_gift_and_swatches(page):
 
     amount = round(random.uniform(0.01, 171.99), 2)
 
-    actions.add_swatch_to_cart(page)
+    swatch_name = actions.add_swatch_to_cart(page)
 
     page.goto(f"{STORE_URL}/account")
 
     actions.pay_to_attendee_by_id(page, event_id, attendee_id, amount)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, f"{event_name} attendees discount", f"${str(amount)}")
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Black Suit And Tuxedo Swatch", "FREE", False)
+    verify.shopify_checkout_has_item_with_name_and_price(page, swatch_name, "FREE", False)

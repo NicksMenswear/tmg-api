@@ -707,12 +707,19 @@ def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedd
 
 def add_swatch_to_cart(page: Page, swatch_index: int = 0):
     page.goto(f"{STORE_URL}/collections/swatches")
-    add_swatch_to_cart_button = page.locator('button[data-label="Add to cart"]').nth(swatch_index)
+
+    swatch_card = page.locator("div.tmg-swatch-card").nth(swatch_index)
+
+    swatch_name = swatch_card.locator("a.product-thumbnail__title").first.inner_text()
+
+    add_swatch_to_cart_button = swatch_card.locator('button[data-label="Add to cart"]')
     add_swatch_to_cart_button.scroll_into_view_if_needed()
     add_swatch_to_cart_button.wait_for(state="visible")
     add_swatch_to_cart_button.click()
 
     time.sleep(2)
+
+    return swatch_name
 
 
 def verify_cart_message(page: Page, message: str):

@@ -9,7 +9,7 @@ from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
-from server.services import ServiceError, DuplicateError, NotFoundError
+from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
@@ -168,7 +168,7 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(user)
-        except DuplicateError as e:
+        except BadRequestError as e:
             logger.exception(e)
             raise
         except Exception as e:

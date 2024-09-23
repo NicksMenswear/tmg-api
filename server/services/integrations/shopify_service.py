@@ -6,7 +6,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Any
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -64,6 +64,10 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        pass
+
+    @abstractmethod
+    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         pass
 
     @abstractmethod
@@ -177,6 +181,9 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants[virtual_product_variant_id] = virtual_product_variant
 
         return virtual_product
+
+    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
+        return self.create_virtual_product(title, body_html, amount, sku, tags)
 
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
         return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
@@ -304,6 +311,7 @@ class ShopifyService(AbstractShopifyService):
         self.__shopify_store = os.getenv("shopify_store")
         self.__stage = os.getenv("STAGE", "dev")
         self.__bundle_image_path = f"https://data.{self.__stage}.tmgcorp.net/bundle.jpg"
+        self.__gift_image_path = f"https://data.{self.__stage}.tmgcorp.net/giftcard.jpg"
         self.__shopify_store_host = f"{self.__shopify_store}.myshopify.com"
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
         self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
@@ -512,6 +520,19 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError("Failed to create virtual product in shopify store.")
 
         return body.get("product")
+
+    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
+        attendee_discount_product = self.create_virtual_product(
+            title=title,
+            body_html=body_html,
+            price=amount,
+            sku=sku,
+            tags=tags,
+        )
+
+        self.add_image_to_product(f"gid://shopify/Product/{attendee_discount_product['id']}", self.__gift_image_path)
+
+        return attendee_discount_product
 
     def create_bundle_identifier_product(self, bundle_id: str):
         bundle_identifier_product_name = f"Bundle #{bundle_id}"

@@ -429,10 +429,10 @@ class DiscountService:
 
             product_body += "</ul>"
 
-            shopify_product = self.shopify_service.create_virtual_product(
+            shopify_product = self.shopify_service.create_attendee_discount_product(
                 title=f"{event.name} attendees discount",
                 body_html=product_body,
-                price=total_intent_amount,
+                amount=total_intent_amount,
                 sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
                 tags=",".join(["hidden", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]),
             )

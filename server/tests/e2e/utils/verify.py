@@ -156,6 +156,7 @@ def shopify_checkout_has_item_with_name_and_price(
             show_order_summary_button = page.locator("button:has-text('Show order summary')")
             show_order_summary_button.scroll_into_view_if_needed()
             show_order_summary_button.wait_for(state="visible")
+            time.sleep(2)
             show_order_summary_button.click()
 
         order_details_locator = page.locator("#disclosure_details")

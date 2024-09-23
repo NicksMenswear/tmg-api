@@ -45,6 +45,7 @@ class SuitBuilderItemModel(CoreModel):
         response = self.to_response()
 
         response["id"] = self.id
+        response["index"] = self.index
         response["is_active"] = self.is_active
         response["product_id"] = self.product_id
 

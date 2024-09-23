@@ -16,6 +16,7 @@ class CreateSuitBuilderModel(CoreModel):
     sku: str
     image_url: Optional[str] = None
     icon_url: Optional[str] = None
+    index: int = 0
 
 
 class SuitBuilderItemModel(CoreModel):
@@ -33,7 +34,7 @@ class SuitBuilderItemModel(CoreModel):
         from_attributes = True
 
     def to_response(self) -> Dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "index", "variant_id", "price"})
+        response = self.model_dump(include={"type", "sku", "name", "variant_id", "price"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"
@@ -44,6 +45,7 @@ class SuitBuilderItemModel(CoreModel):
         response = self.to_response()
 
         response["id"] = self.id
+        response["index"] = self.index
         response["is_active"] = self.is_active
         response["product_id"] = self.product_id
 

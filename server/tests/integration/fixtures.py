@@ -470,4 +470,5 @@ def add_suit_builder_item_request(**item_data) -> CreateSuitBuilderModel:
     return CreateSuitBuilderModel(
         type=item_data.get("type", utils.generate_product_type()),
         sku=item_data.get("sku", utils.generate_product_sku()),
+        index=item_data.get("index", random.randint(1, 100)),
     )

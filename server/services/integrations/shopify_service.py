@@ -11,7 +11,7 @@ from typing import List, Optional, Any
 from server.controllers.util import http
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
-from server.services import ServiceError, NotFoundError, DuplicateError
+from server.services import BadRequestError, ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
 
@@ -459,6 +459,9 @@ class ShopifyService(AbstractShopifyService):
             {"customer": customer},
         )
 
+        if status == 422:
+            if body.get("errors", {}).get("phone"):
+                raise BadRequestError(str(body.get("errors", {}).get("phone")))
         if status >= 400:
             raise ServiceError("Failed to update shopify customer.")
 

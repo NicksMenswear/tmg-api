@@ -168,6 +168,9 @@ class UserService:
 
             db.session.commit()
             db.session.refresh(user)
+        except DuplicateError as e:
+            logger.exception(e)
+            raise
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to update user.", e)

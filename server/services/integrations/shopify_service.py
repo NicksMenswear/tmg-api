@@ -459,6 +459,9 @@ class ShopifyService(AbstractShopifyService):
             {"customer": customer},
         )
 
+        if status == 422:
+            if body.get("errors", {}).get("phone"):
+                raise DuplicateError(str(body.get("errors", {}).get("phone")))
         if status >= 400:
             raise ServiceError("Failed to update shopify customer.")
 

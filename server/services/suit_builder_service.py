@@ -77,6 +77,7 @@ class SuitBuilderService:
                 variant_id=shopify_variant.variant_id,
                 product_id=shopify_variant.product_id,
                 price=shopify_variant.variant_price,
+                index=item.index,
             )
 
             if item.image_url:
@@ -104,7 +105,7 @@ class SuitBuilderService:
         if not enriched:
             query = query.filter(SuitBuilderItem.is_active)
 
-        suit_builder_items = query.all()
+        suit_builder_items = query.order_by(SuitBuilderItem.index.desc()).all()
 
         grouped_collections = SuitBuilderItemsCollection()
 

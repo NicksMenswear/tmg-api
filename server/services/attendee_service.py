@@ -116,6 +116,8 @@ class AttendeeService:
                 EnrichedAttendeeModel(
                     id=attendee.id,
                     user_id=attendee.user_id,
+                    first_name=attendee.first_name,
+                    last_name=attendee.last_name,
                     is_owner=(attendee.user_id == event.user_id),
                     event_id=attendee.event_id,
                     style=attendee.style,
@@ -133,8 +135,8 @@ class AttendeeService:
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
-                        first_name=attendee.first_name if attendee.first_name else user.first_name,
-                        last_name=attendee.last_name if attendee.last_name else user.last_name,
+                        first_name=user.first_name,
+                        last_name=user.last_name,
                         email=user.email,
                     ),
                 )

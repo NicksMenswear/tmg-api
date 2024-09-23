@@ -10,6 +10,7 @@ from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
 from server.services.event_service import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
 from server.services.role_service import PREDEFINED_ROLES
+from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -253,6 +254,59 @@ class TestEvents(BaseTestCase):
         self.assertEqual(event_owner.get("email"), user.email)
         self.assertEqual(event_owner.get("first_name"), user.first_name)
         self.assertEqual(event_owner.get("last_name"), user.last_name)
+
+    def test_get_event_one_attendee_with_name_other_without(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=attendee_user1.email,
+                first_name=attendee_user1.first_name,
+                last_name=attendee_user1.last_name,
+            )
+        )
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                email=attendee_user2.email,
+                first_name=utils.generate_unique_name(),
+                last_name=utils.generate_unique_name(),
+            )
+        )
+
+        # when
+        response = self.client.open(
+            f"/events/{event.id}",
+            query_string={**self.hmac_query_params.copy(), "enriched": True},
+            method="GET",
+            content_type=self.content_type,
+            headers=self.request_headers,
+        )
+
+        # then
+        self.assert200(response)
+        self.assertIsNotNone(response.json.get("id"))
+        self.assertEqual(response.json.get("name"), event.name)
+        self.assertEqual(response.json.get("event_at"), str(event.event_at.isoformat()))
+        event_owner = response.json.get("owner")
+        self.assertIsNotNone(event_owner)
+        self.assertEqual(event_owner.get("id"), str(event.user_id))
+        self.assertEqual(event_owner.get("email"), user.email)
+        self.assertEqual(event_owner.get("first_name"), user.first_name)
+        self.assertEqual(event_owner.get("last_name"), user.last_name)
+        self.assertEqual(len(response.json.get("attendees")), 2)
+
+        attendee_1 = response.json.get("attendees")[0]
+        attendee_2 = response.json.get("attendees")[1]
+
+        self.assertEqual(attendee_1.get("user").get("first_name"), attendee_1.get("first_name"))
+        self.assertEqual(attendee_1.get("user").get("last_name"), attendee_1.get("last_name"))
+        self.assertNotEqual(attendee_2.get("user").get("first_name"), attendee_2.get("first_name"))
+        self.assertNotEqual(attendee_2.get("user").get("last_name"), attendee_2.get("last_name"))
 
     def test_get_event_enriched_without_attendees_looks(self):
         # given

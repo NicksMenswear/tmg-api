@@ -530,7 +530,7 @@ class ShopifyService(AbstractShopifyService):
             tags=tags,
         )
 
-        self.add_image_to_product(attendee_discount_product["id"], self.__gift_image_path)
+        self.add_image_to_product(f"gid://shopify/Product/{attendee_discount_product['id']}", self.__gift_image_path)
 
         return attendee_discount_product
 

@@ -207,26 +207,8 @@ class ShopifyWebhookOrderHandler:
         order_number = self.order_service.generate_order_number()
         ship_by_date = None  # self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this - manual process only for now
 
-        create_order = CreateOrderModel(
-            user_id=user.id,
-            order_number=order_number,
-            shopify_order_id=str(shopify_order_id),
-            shopify_order_number=str(shopify_order_number),
-            order_origin=SourceType.TMG.value,
-            order_date=created_at,
-            order_type=[OrderType.NEW_ORDER.value],
-            shipping_address=shipping_address,
-            event_id=event_id,
-            ship_by_date=ship_by_date,
-            meta={
-                "webhook_id": str(webhook_id),
-                "sizes_id": str(size_model.id) if size_model else None,
-                "measurements_id": str(measurement_model.id) if measurement_model else None,
-            },
-        )
-
-        order = self.order_service.create_order(create_order)
         num_processable_items = len(items)
+        order_id = None
 
         line_item_skus = set()
 
@@ -247,6 +229,28 @@ class ShopifyWebhookOrderHandler:
                 # Skip attendees discount products
                 num_processable_items -= 1
                 continue
+
+            if not order_id:
+                create_order = CreateOrderModel(
+                    user_id=user.id,
+                    order_number=order_number,
+                    shopify_order_id=str(shopify_order_id),
+                    shopify_order_number=str(shopify_order_number),
+                    order_origin=SourceType.TMG.value,
+                    order_date=created_at,
+                    order_type=[OrderType.NEW_ORDER.value],
+                    shipping_address=shipping_address,
+                    event_id=event_id,
+                    ship_by_date=ship_by_date,
+                    meta={
+                        "webhook_id": str(webhook_id),
+                        "sizes_id": str(size_model.id) if size_model else None,
+                        "measurements_id": str(measurement_model.id) if measurement_model else None,
+                    },
+                )
+
+                order = self.order_service.create_order(create_order)
+                order_id = order.id
 
             shiphero_sku = None
             product = None
@@ -283,7 +287,7 @@ class ShopifyWebhookOrderHandler:
                     num_valid_products += 1
 
             create_order_item = CreateOrderItemModel(
-                order_id=order.id,
+                order_id=order_id,
                 product_id=product.id if product else None,
                 shopify_sku=shopify_sku,
                 purchased_price=line_item.get("price"),
@@ -308,7 +312,7 @@ class ShopifyWebhookOrderHandler:
                     self.__track_suit_purchase(user.email)
 
                 create_suit_order_item = CreateOrderItemModel(
-                    order_id=order.id,
+                    order_id=order_id,
                     product_id=suit_product.id if suit_product else None,
                     shopify_sku=shopify_suit_sku,
                     purchased_price=suit_variant.variant_price,
@@ -344,9 +348,9 @@ class ShopifyWebhookOrderHandler:
                     f"Error updating attendee pay status for event_id '{event_id}' and user_id '{user.id}'. Attendee not found."
                 )
 
-        order_model = self.order_service.update_order_status(order.id, order_status, size_model, measurement_model)
-        order_model.order_items = self.order_service.get_order_items_by_order_id(order.id)
-        order_model.products = self.product_service.get_products_for_order(order.id)
+        order_model = self.order_service.update_order_status(order_id, order_status, size_model, measurement_model)
+        order_model.order_items = self.order_service.get_order_items_by_order_id(order_id)
+        order_model.products = self.product_service.get_products_for_order(order_id)
 
         return order_model.to_response()
 

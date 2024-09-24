@@ -161,8 +161,10 @@ class OrderService:
                 order.meta = {}
 
             if not order.meta.get("sizes_id") and sizing_model is not None:
-                order.meta["sizes_id"] = str(sizing_model.id)
-                order.meta["measurements_id"] = str(measurement_model.id)
+                meta_clone = order.meta.copy()
+                meta_clone["sizes_id"] = str(sizing_model.id)
+                meta_clone["measurements_id"] = str(measurement_model.id)
+                order.meta = meta_clone
 
             db.session.commit()
             db.session.refresh(order)

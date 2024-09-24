@@ -5,7 +5,7 @@ from server.services.integrations.activecampaign_service import AbstractActiveCa
 logger = logging.getLogger(__name__)
 
 EMAIL_SUFFIX_TO_MATCH = "@mail.dev.tmgcorp.net"
-NUMBER_OF_CONTACTS_TO_PROCESS = 50
+NUMBER_OF_CONTACTS_TO_PROCESS = 150
 
 SYSTEM_E2E_EMAILS_TO_KEEP = {
     "e2e+01@mail.dev.tmgcorp.net",

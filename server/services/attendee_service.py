@@ -184,38 +184,39 @@ class AttendeeService:
 
         attendee_user = None
 
-        try:
-            attendee_user = self.user_service.get_user_by_email(create_attendee.email)
-        except NotFoundError:
-            pass
+        if create_attendee.email:
+            try:
+                attendee_user = self.user_service.get_user_by_email(create_attendee.email)
+            except NotFoundError:
+                pass
 
-        if not attendee_user:
-            attendee_user = self.user_service.create_user(
-                CreateUserModel(
-                    first_name=create_attendee.first_name,
-                    last_name=create_attendee.last_name,
-                    email=create_attendee.email,
-                    account_status=False,
+            if not attendee_user:
+                attendee_user = self.user_service.create_user(
+                    CreateUserModel(
+                        first_name=create_attendee.first_name,
+                        last_name=create_attendee.last_name,
+                        email=create_attendee.email,
+                        account_status=False,
+                    )
                 )
-            )
 
-        attendee = Attendee.query.filter(
-            Attendee.event_id == create_attendee.event_id,
-            Attendee.user_id == attendee_user.id,
-            Attendee.is_active,
-        ).first()
+            attendee = Attendee.query.filter(
+                Attendee.event_id == create_attendee.event_id,
+                Attendee.user_id == attendee_user.id,
+                Attendee.is_active,
+            ).first()
 
-        if attendee:
-            raise DuplicateError("Attendee already exists.")
+            if attendee:
+                raise DuplicateError("Attendee already exists.")
 
         try:
-            user_size = Size.query.filter(Size.user_id == attendee_user.id).first()
-            owner_auto_invite = event.user_id == attendee_user.id
+            user_size = Size.query.filter(Size.user_id == attendee_user.id).first() if attendee_user else None
+            owner_auto_invite = event.user_id == attendee_user.id if attendee_user else False
             new_attendee = Attendee(
                 id=uuid.uuid4(),
                 first_name=create_attendee.first_name,
                 last_name=create_attendee.last_name,
-                user_id=attendee_user.id,
+                user_id=attendee_user.id if attendee_user else None,
                 event_id=create_attendee.event_id,
                 role_id=create_attendee.role_id,
                 look_id=create_attendee.look_id,
@@ -315,6 +316,9 @@ class AttendeeService:
             .filter(Attendee.id.in_(attendee_ids))
             .all()
         )
+
+        # create users in parallel
+
         user_models = [UserModel.from_orm(user) for user, attendee, event in rows]
         event_model = EventModel.from_orm(rows[0][2])
 

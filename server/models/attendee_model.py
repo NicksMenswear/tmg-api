@@ -14,7 +14,7 @@ class CreateAttendeeModel(CoreModel):
     event_id: UUID
     first_name: str
     last_name: str
-    email: EmailStr = None
+    email: Optional[EmailStr] = None
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     style: bool = False
@@ -30,7 +30,7 @@ class AttendeeModel(CoreModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     is_owner: bool = False
-    user_id: UUID
+    user_id: Optional[UUID] = None
     event_id: UUID
     role_id: Optional[UUID]
     look_id: Optional[UUID]

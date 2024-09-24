@@ -2153,9 +2153,6 @@ components:
       type: object
     CreateAttendee:
       properties:
-        email:
-          title: email
-          $ref: '#/components/schemas/email'
         event_id:
           title: event_id
           $ref: '#/components/schemas/uuid'
@@ -2165,6 +2162,10 @@ components:
         last_name:
           title: last_name
           type: string
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
+          nullable: true
         role_id:
           title: role
           type: string

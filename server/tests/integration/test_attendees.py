@@ -160,6 +160,34 @@ class TestAttendees(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertEqual(str(attendee_user.id), response.json["user_id"])
 
+    def test_create_attendee_without_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+
+        # when
+        attendee_firstname = utils.generate_unique_name()
+        attendee_lastname = utils.generate_unique_name()
+        create_attendee = fixtures.create_attendee_request(
+            event_id=event.id, email=None, first_name=attendee_firstname, last_name=attendee_lastname
+        )
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertEqual(create_attendee.first_name, response.json["first_name"])
+        self.assertEqual(create_attendee.last_name, response.json["last_name"])
+        self.assertIsNone(response.json["user_id"])
+        self.assertEqual(str(event.id), response.json["event_id"])
+
     def test_create_attendee_for_the_user_that_exists_in_shopify_but_not_in_our_db(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

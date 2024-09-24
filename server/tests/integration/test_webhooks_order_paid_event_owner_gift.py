@@ -1,8 +1,7 @@
 import random
 
-from server.database.models import DiscountType, Discount, Attendee
+from server.database.models import DiscountType, Discount
 from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
-from server.services.order_service import ORDER_STATUS_READY
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 
 PAID_ORDER_REQUEST_HEADERS = {
@@ -35,12 +34,9 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json.get("status"), ORDER_STATUS_READY)
-        self.assertEqual(response.json.get("discount_codes"), [])
-        self.assertEqual(response.json.get("order_items"), [])
-        self.assertEqual(response.json.get("products"), [])
+        self.assertTrue(len(response.json) == 0)
 
-    def test_order_no_look(self):
+    def test_order_discount_product(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -77,10 +73,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json.get("status"), ORDER_STATUS_READY)
-        self.assertEqual(response.json.get("discount_codes"), [])
-        self.assertEqual(response.json.get("order_items"), [])
-        self.assertEqual(response.json.get("products"), [])
+        self.assertTrue(len(response.json) == 0)
 
     def test_order_with_one_discount_code(self):
         # given

@@ -123,6 +123,7 @@ def create_order_request(**order_data):
         shopify_order_number=order_data.get("shopify_order_number", str(random.randint(100000, 1000000))),
         status=order_data.get("status", ORDER_STATUS_READY),
         shopify_order_id=order_data.get("shopify_order_id", str(random.randint(100000, 1000000))),
+        meta=order_data.get("meta", {}),
     )
 
 

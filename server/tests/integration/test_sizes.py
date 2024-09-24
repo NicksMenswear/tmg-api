@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from server import encoder
 from server.services.order_service import ORDER_STATUS_PENDING_MEASUREMENTS, ORDER_STATUS_READY
@@ -88,7 +89,11 @@ class TestSizes(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
         order = self.order_service.create_order(
-            fixtures.create_order_request(user_id=user.id, status=ORDER_STATUS_PENDING_MEASUREMENTS)
+            fixtures.create_order_request(
+                user_id=user.id,
+                status=ORDER_STATUS_PENDING_MEASUREMENTS,
+                meta={"webhook_id": str(uuid.uuid4())},
+            )
         )
         self.order_service.create_order_item(
             fixtures.create_order_item_request(

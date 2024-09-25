@@ -32,8 +32,7 @@ class AbstractEmailService(ABC):
 
 
 class FakeEmailService(AbstractEmailService):
-    def __init__(self, shopify_service: AbstractShopifyService) -> None:
-        self.shopify_service = shopify_service
+    def __init__(self) -> None:
         self.__sent_invites = {}
 
     def send_activation_email(self, user: UserModel) -> None:

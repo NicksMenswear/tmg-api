@@ -708,7 +708,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
                 )
             )
             attendee = self.attendee_service.create_attendee(
-                fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+                fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
             )
             product_id = random.randint(1000, 1000000)
             variant_id = random.randint(1000, 1000000)

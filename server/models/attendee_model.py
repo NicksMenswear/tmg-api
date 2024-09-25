@@ -7,12 +7,13 @@ from server.models import CoreModel
 from server.models.discount_model import DiscountGiftCodeModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
-from server.models.user_model import UserRequestModel
 
 
-class CreateAttendeeModel(UserRequestModel):
-    email: EmailStr
+class CreateAttendeeModel(CoreModel):
+    first_name: str
+    last_name: str
     event_id: UUID
+    email: Optional[EmailStr] = None
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None
     style: bool = False
@@ -25,8 +26,11 @@ class CreateAttendeeModel(UserRequestModel):
 
 class AttendeeModel(CoreModel):
     id: UUID
+    first_name: str
+    last_name: str
+    email: Optional[EmailStr] = None
+    user_id: Optional[UUID] = None
     is_owner: bool = False
-    user_id: UUID
     event_id: UUID
     role_id: Optional[UUID]
     look_id: Optional[UUID]
@@ -47,7 +51,7 @@ class AttendeeModel(CoreModel):
 class AttendeeUserModel(CoreModel):
     first_name: str
     last_name: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
 
     def to_response(self):
         return self.model_dump()
@@ -86,6 +90,9 @@ class EnrichedAttendeeModel(AttendeeModel):
 
 
 class UpdateAttendeeModel(CoreModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
     is_active: bool = True
     role_id: Optional[UUID] = None
     look_id: Optional[UUID] = None

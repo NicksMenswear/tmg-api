@@ -105,6 +105,9 @@ def create_attendee_request(**attendee_data):
 
 def update_attendee_request(**attendee_data):
     return UpdateAttendeeModel(
+        first_name=attendee_data.get("first_name"),
+        last_name=attendee_data.get("last_name"),
+        email=attendee_data.get("email"),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),

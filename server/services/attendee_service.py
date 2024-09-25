@@ -80,7 +80,7 @@ class AttendeeService:
                 ).label("order_tracking"),
             )
             .join(Event, Event.id == Attendee.event_id)
-            .join(User, User.id == Attendee.user_id)
+            .outerjoin(User, User.id == Attendee.user_id)
             .outerjoin(Role, Attendee.role_id == Role.id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .outerjoin(Order, and_(Order.event_id == Attendee.event_id, Order.user_id == Attendee.user_id))
@@ -115,6 +115,9 @@ class AttendeeService:
             attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
                     id=attendee.id,
+                    first_name=attendee.first_name,
+                    last_name=attendee.last_name,
+                    email=attendee.email,
                     user_id=attendee.user_id,
                     is_owner=(attendee.user_id == event.user_id),
                     event_id=attendee.event_id,
@@ -133,9 +136,7 @@ class AttendeeService:
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
-                        first_name=user.first_name,
-                        last_name=user.last_name,
-                        email=user.email,
+                        first_name=attendee.first_name, last_name=attendee.last_name, email=user.email
                     ),
                 )
             )
@@ -182,36 +183,31 @@ class AttendeeService:
 
         attendee_user = None
 
-        try:
-            attendee_user = self.user_service.get_user_by_email(create_attendee.email)
-        except NotFoundError:
-            pass
+        if create_attendee.email:
+            try:
+                attendee_user = self.user_service.get_user_by_email(create_attendee.email)
+            except NotFoundError:
+                pass
 
-        if not attendee_user:
-            attendee_user = self.user_service.create_user(
-                CreateUserModel(
-                    first_name=create_attendee.first_name,
-                    last_name=create_attendee.last_name,
-                    email=create_attendee.email,
-                    account_status=False,
-                )
-            )
+        if attendee_user:
+            attendee = Attendee.query.filter(
+                Attendee.event_id == create_attendee.event_id,
+                Attendee.user_id == attendee_user.id,
+                Attendee.is_active,
+            ).first()
 
-        attendee = Attendee.query.filter(
-            Attendee.event_id == create_attendee.event_id,
-            Attendee.user_id == attendee_user.id,
-            Attendee.is_active,
-        ).first()
-
-        if attendee:
-            raise DuplicateError("Attendee already exists.")
+            if attendee:
+                raise DuplicateError("Attendee already exists.")
 
         try:
-            user_size = Size.query.filter(Size.user_id == attendee_user.id).first()
-            owner_auto_invite = event.user_id == attendee_user.id
+            user_size = Size.query.filter(Size.user_id == attendee_user.id).first() if attendee_user else None
+            owner_auto_invite = event.user_id == attendee_user.id if attendee_user else False
             new_attendee = Attendee(
                 id=uuid.uuid4(),
-                user_id=attendee_user.id,
+                first_name=create_attendee.first_name,
+                last_name=create_attendee.last_name,
+                email=create_attendee.email,
+                user_id=attendee_user.id if attendee_user else None,
                 event_id=create_attendee.event_id,
                 role_id=create_attendee.role_id,
                 look_id=create_attendee.look_id,
@@ -249,6 +245,9 @@ class AttendeeService:
         ):
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
+        attendee.first_name = update_attendee.first_name or attendee.first_name
+        attendee.last_name = update_attendee.last_name or attendee.last_name
+        attendee.email = update_attendee.email or attendee.email
         attendee.role_id = update_attendee.role_id or attendee.role_id
         attendee.look_id = update_attendee.look_id or attendee.look_id
         attendee.style = True if attendee.role_id and attendee.look_id else False

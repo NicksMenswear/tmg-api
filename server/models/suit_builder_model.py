@@ -29,17 +29,16 @@ class SuitBuilderItemModel(CoreModel):
     product_id: int
     is_active: bool
     price: float
-    selected: bool
+    selected: bool = False
 
     class Config:
         from_attributes = True
 
     def to_response(self) -> Dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "variant_id", "price"})
+        response = self.model_dump(include={"type", "sku", "name", "variant_id", "price", "selected"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"
-        response["selected"] = False
 
         return response
 
@@ -50,7 +49,6 @@ class SuitBuilderItemModel(CoreModel):
         response["index"] = self.index
         response["is_active"] = self.is_active
         response["product_id"] = self.product_id
-        response["selected"] = False
 
         return response
 

@@ -29,6 +29,7 @@ class SuitBuilderItemModel(CoreModel):
     product_id: int
     is_active: bool
     price: float
+    selected: bool
 
     class Config:
         from_attributes = True
@@ -38,6 +39,7 @@ class SuitBuilderItemModel(CoreModel):
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"
+        response["selected"] = False
 
         return response
 
@@ -48,22 +50,31 @@ class SuitBuilderItemModel(CoreModel):
         response["index"] = self.index
         response["is_active"] = self.is_active
         response["product_id"] = self.product_id
+        response["selected"] = False
 
         return response
 
 
-class SuitBuilderItemsCollection(RootModel[Dict[str, List[SuitBuilderItemModel]]]):
+class SuitBuilderItemsCollection(RootModel[Dict[str, Dict[str, Any]]]):
     def __init__(self, **data):
         super().__init__(root=data.get("root", {}))
 
     def add_item(self, item: SuitBuilderItemModel) -> None:
         if item.type not in self.root:
             self.root[item.type] = []
+            # Select first by default
+            # TODO change for edit look or build look from existing
+            item.selected = True
 
         self.root[item.type].append(item)
 
     def to_response(self, enriched: bool = False) -> Dict[str, List[Dict[str, Any]]]:
         return {
-            key: [item.to_response_enriched() if enriched else item.to_response() for item in items]
+            key: {
+                # Select section by default
+                # TODO change for edit look or build look from existing
+                "selected": True,
+                "items": [item.to_response_enriched() if enriched else item.to_response() for item in items],
+            }
             for key, items in self.root.items()
         }

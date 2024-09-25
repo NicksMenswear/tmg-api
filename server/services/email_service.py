@@ -32,7 +32,8 @@ class AbstractEmailService(ABC):
 
 
 class FakeEmailService(AbstractEmailService):
-    def __init__(self):
+    def __init__(self, shopify_service: AbstractShopifyService) -> None:
+        self.shopify_service = shopify_service
         self.__sent_invites = {}
 
     def send_activation_email(self, user: UserModel) -> None:
@@ -64,7 +65,7 @@ class EmailService(AbstractEmailService):
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
     def send_activation_email(self, user: UserModel) -> None:
-        activation_url = self._get_account_activation_url(user)
+        activation_url = self.__get_account_activation_url(user)
 
         template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {
@@ -80,15 +81,15 @@ class EmailService(AbstractEmailService):
         batch = []
 
         with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = (executor.submit(self._invites_batch_prepare_one, user, event) for user in users)
+            futures = (executor.submit(self.__invites_batch_prepare_one, user, event) for user in users)
             for future in as_completed(futures):
                 batch.append(future.result())
 
         self.__postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
 
-    def _invites_batch_prepare_one(self, user: UserModel, event: EventModel) -> Dict[str, Any]:
+    def __invites_batch_prepare_one(self, user: UserModel, event: EventModel) -> Dict[str, Any]:
         if not user.account_status:
-            shopify_url = self._get_account_activation_url(user)
+            shopify_url = self.__get_account_activation_url(user)
             button_text = "Activate Account & Get Started"
         else:
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
@@ -114,7 +115,7 @@ class EmailService(AbstractEmailService):
 
         return body
 
-    def _get_account_activation_url(self, user: UserModel) -> str:
+    def __get_account_activation_url(self, user: UserModel) -> str:
         activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
 
         url_params = urlencode(

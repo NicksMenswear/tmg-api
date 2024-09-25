@@ -5,7 +5,8 @@ import random
 import uuid
 
 from server.controllers import FORCE_DELETE_HEADER
-from server.database.models import DiscountType
+from server.database.database_manager import db
+from server.database.models import DiscountType, Attendee, User
 from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
@@ -44,6 +45,10 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(create_attendee.last_name, response.json["last_name"])
         self.assertEqual(create_attendee.email, response.json["email"])
         self.assertIsNone(response.json["user_id"])
+
+        # checking db
+        db_user = db.session.query(User).filter(User.email == create_attendee.email).first()
+        self.assertIsNone(db_user)
 
     def test_create_attendee_without_email(self):
         # given
@@ -873,6 +878,11 @@ class TestAttendees(BaseTestCase):
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertTrue(db_attendee.invite)
 
+        self.assertTrue(attendee_user.id in self.email_service.sent_invites[event.id])
+
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
+        self.assertTrue(attendee_user.id in self.email_service.sent_invites.get(event.id, set()))
+
     def test_invites_attendee_inactive(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -900,6 +910,9 @@ class TestAttendees(BaseTestCase):
 
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
         self.assertFalse(db_attendee.invite)
+
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
+        self.assertTrue(attendee_user.id not in self.email_service.sent_invites.get(event.id, set()))
 
     def test_invites_multiple_attendees(self):
         # given
@@ -937,6 +950,12 @@ class TestAttendees(BaseTestCase):
         db_attendee2 = self.attendee_service.get_attendee_by_id(attendee2.id)
         self.assertTrue(db_attendee2.invite)
 
+        self.assertTrue(attendee_user1.id not in self.email_service.sent_activations)
+        self.assertTrue(attendee_user1.id not in self.email_service.sent_activations)
+
+        self.assertTrue(attendee_user1.id in self.email_service.sent_invites.get(event.id, set()))
+        self.assertTrue(attendee_user2.id in self.email_service.sent_invites.get(event.id, set()))
+
     def test_invites_attendee_without_email(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -963,3 +982,91 @@ class TestAttendees(BaseTestCase):
 
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertFalse(db_attendee.invite)
+
+    def test_invites_invalid_attendee_id(self):
+        # when
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(uuid.uuid4())]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+    def test_invites_user_exist_but_not_associated_to_attendee(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=None)
+        )
+
+        # when
+        db_attendee = Attendee.query.filter(Attendee.id == attendee.id).first()
+        db_attendee.email = attendee_user.email
+        db.session.commit()
+
+        self.assertFalse(db_attendee.invite)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(db_attendee.invite)
+
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
+        self.assertTrue(attendee_user.id in self.email_service.sent_invites.get(event.id, set()))
+
+    def test_invites_user_by_attendee_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_email = utils.generate_email()
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_email)
+        )
+
+        # when
+        db_user = User.query.filter(User.email == attendee_email).first()
+        self.assertIsNone(db_user)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(db_attendee.invite)
+
+        db_user = User.query.filter(User.email == attendee_email).first()
+        self.assertIsNotNone(db_user)
+
+        self.assertTrue(db_attendee.user_id == db_user.id)
+        self.assertEqual(db_user.first_name, db_attendee.first_name)
+        self.assertEqual(db_user.last_name, db_attendee.last_name)
+        self.assertIsNotNone(db_user.shopify_id)
+        self.assertFalse(db_user.account_status)
+
+        self.assertTrue(db_user.id in self.email_service.sent_activations)
+        self.assertTrue(db_user.id in self.email_service.sent_invites[event.id])

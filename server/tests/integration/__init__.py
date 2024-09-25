@@ -82,6 +82,7 @@ class BaseTestCase(TestCase):
         self.shopify_webhook_user_handler = self.app.shopify_webhook_user_handler
         self.shopify_webhook_order_handler = self.app.shopify_webhook_order_handler
         self.shopify_service = self.app.shopify_service
+        self.email_service = self.app.email_service
         self.size_service = self.app.size_service
         self.measurement_service = self.app.measurement_service
         self.activecampaign_service = self.app.activecampaign_service

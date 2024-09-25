@@ -33,16 +33,17 @@ class AbstractEmailService(ABC):
 
 class FakeEmailService(AbstractEmailService):
     def __init__(self) -> None:
-        self.__sent_invites = {}
+        self.sent_invites = {}
+        self.sent_activations = set()
 
     def send_activation_email(self, user: UserModel) -> None:
-        pass
+        self.sent_activations.add(user.id)
 
     def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
-        self.__sent_invites[event.id] = self.__sent_invites.get(event.id, set())
+        self.sent_invites[event.id] = self.sent_invites.get(event.id, set())
 
         for user in users:
-            self.__sent_invites[event.id].add(user.id)
+            self.sent_invites[event.id].add(user.id)
 
 
 class EmailService(AbstractEmailService):

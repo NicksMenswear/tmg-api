@@ -19,16 +19,15 @@ from server.models.attendee_model import (
 from server.models.event_model import EventModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
-from server.models.user_model import UserModel
+from server.models.user_model import UserModel, CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, logger
 from server.services.user_service import UserService
 
 STAGE = os.getenv("STAGE")
 
 
-# noinspection PyMethodMayBeStatic
 class AttendeeService:
     def __init__(
         self, shopify_service: AbstractShopifyService, user_service: UserService, email_service: AbstractEmailService
@@ -37,7 +36,8 @@ class AttendeeService:
         self.user_service = user_service
         self.email_service = email_service
 
-    def get_attendee_by_id(self, attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
+    @staticmethod
+    def get_attendee_by_id(attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
 
         if not attendee:
@@ -45,7 +45,8 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def get_num_attendees_for_event(self, event_id: uuid.UUID) -> int:
+    @staticmethod
+    def get_num_attendees_for_event(event_id: uuid.UUID) -> int:
         db_event = Event.query.filter_by(id=event_id, is_active=True).first()
 
         if not db_event:
@@ -53,7 +54,8 @@ class AttendeeService:
 
         return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
 
-    def get_num_discountable_attendees_for_event(self, event_id: uuid.UUID) -> int:
+    @staticmethod
+    def get_num_discountable_attendees_for_event(event_id: uuid.UUID) -> int:
         return Attendee.query.filter(
             Attendee.event_id == event_id,
             Attendee.is_active == True,
@@ -110,7 +112,7 @@ class AttendeeService:
 
             attendee_gift_codes = attendees_gift_codes.get(attendee.id, set())
             has_gift_codes = len(attendee_gift_codes) > 0
-            attendee_tracking = self._get_tracking_for_attendee(orders)
+            attendee_tracking = self.__get_tracking_for_attendee(orders)
 
             attendees[attendee.event_id].append(
                 EnrichedAttendeeModel(
@@ -147,7 +149,8 @@ class AttendeeService:
 
         return attendees
 
-    def update_attendee_pay_status(self, event_id: uuid.UUID, user_id: uuid.UUID):
+    @staticmethod
+    def update_attendee_pay_status(event_id: uuid.UUID, user_id: uuid.UUID):
         attendee = Attendee.query.filter(
             Attendee.event_id == event_id, Attendee.user_id == user_id, Attendee.is_active
         ).first()
@@ -227,7 +230,8 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(new_attendee)
 
-    def update_attendee(self, attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
+    @staticmethod
+    def update_attendee(attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active).first()
 
         if not attendee:
@@ -261,7 +265,8 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(attendee)
 
-    def deactivate_attendee(self, attendee_id: uuid.UUID, force: bool = False) -> None:
+    @staticmethod
+    def deactivate_attendee(attendee_id: uuid.UUID, force: bool = False) -> None:
         attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
 
         if not attendee:
@@ -282,39 +287,76 @@ class AttendeeService:
             return
 
         rows = (
-            db.session.query(User, Attendee, Event)
-            .outerjoin(Attendee, Attendee.user_id == User.id)
+            db.session.query(Attendee, Event)
             .join(Event, Event.id == Attendee.event_id)
             .filter(Attendee.id.in_(attendee_ids), Attendee.is_active)
             .all()
         )
 
-        invited_users = []
+        if not rows:
+            return
 
-        for user, attendee, event in rows:
-            if user is None:
+        attendees = [attendee for attendee, _ in rows]
+
+        invited_users: list[UserModel] = []
+        invited_attendees: list[Attendee] = []
+
+        for attendee in attendees:
+            if attendee.user_id is not None:
+                # user already associated with attendee
+                invited_users.append(self.user_service.get_user_by_id(attendee.user_id))
+                invited_attendees.append(attendee)
+
                 continue
 
-            invited_users.append(UserModel.from_orm(user))
+            if attendee.email is None:
+                logger.error(f"Attendee {attendee.id} has no email.")
+                continue
+
+            try:
+                user = self.user_service.get_user_by_email(attendee.email)
+                attendee.user_id = user.id
+
+                db.session.commit()
+
+                invited_attendees.append(attendee)
+                invited_users.append(user)
+            except NotFoundError:
+                try:
+                    user = self.user_service.create_user(
+                        CreateUserModel(
+                            first_name=attendee.first_name, last_name=attendee.last_name, email=attendee.email
+                        )
+                    )
+                    attendee.user_id = user.id
+
+                    db.session.commit()
+
+                    invited_users.append(user)
+                    invited_attendees.append(attendee)
+                except Exception:
+                    logger.exception(f"Failed to create user for attendee {attendee.id}.")
 
         if not invited_users:
             return
 
-        event_model = EventModel.from_orm(rows[0][2])
+        event = EventModel.from_orm(rows[0][1])
 
-        self.email_service.send_invites_batch(event_model, invited_users)
-
-        for user, attendee, event in rows:
-            attendee.invite = True
+        self.email_service.send_invites_batch(event, invited_users)
 
         try:
+            for attendee in attendees:
+                attendee.invite = True
+
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-    def _get_tracking_for_attendee(self, orders) -> List[TrackingModel]:
+    @staticmethod
+    def __get_tracking_for_attendee(orders) -> List[TrackingModel]:
         shop_id = FlaskApp.current().online_store_shop_id
         tracking = []
+
         for order in orders:
             if not order:
                 continue
@@ -325,9 +367,11 @@ class AttendeeService:
                 else:
                     tracking_url = f"https://shopify.com/{shop_id}/account/orders/{order.get('shopify_order_id')}"
                 tracking.append(TrackingModel(tracking_number=tracking_number, tracking_url=tracking_url))
+
         return tracking
 
-    def find_attendees_by_look_id(self, look_id: uuid.UUID) -> List[AttendeeModel]:
+    @staticmethod
+    def find_attendees_by_look_id(look_id: uuid.UUID) -> List[AttendeeModel]:
         attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
 
         return [AttendeeModel.from_orm(attendee) for attendee in attendees]

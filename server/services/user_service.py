@@ -39,49 +39,37 @@ class UserService:
         if user:
             raise DuplicateError("User already exists with that email address.")
 
-        if not create_user.shopify_id:
+        if create_user.shopify_id:
+            shopify_customer_id = create_user.shopify_id
+            send_activation_email = False
+        else:
             try:
                 shopify_customer_id = self.shopify_service.create_customer(first_name, last_name, create_user.email)[
                     "id"
                 ]
-                send_activation_email = create_user.account_status
+                send_activation_email = True
             except DuplicateError as e:
                 # If the user already exists in Shopify, we should still create a user in our database
                 logger.debug(e)
 
                 shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
                 send_activation_email = False
-        else:
-            shopify_customer_id = create_user.shopify_id
-            send_activation_email = False
 
         try:
-            insert_statement = text(
-                """
-                INSERT INTO users (id, first_name, last_name, email, shopify_id, phone_number, account_status, created_at, updated_at)
-                VALUES (:id, :first_name, :last_name, :email, :shopify_id, :phone_number, :account_status, :created_at, :updated_at)
-                ON CONFLICT (shopify_id) DO NOTHING
-            """
+            db_user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=create_user.email.lower(),
+                shopify_id=str(shopify_customer_id),
+                phone_number=create_user.phone_number,
+                account_status=create_user.account_status,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             )
-
-            db.session.execute(
-                insert_statement,
-                {
-                    "id": str(uuid.uuid4()),
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "email": create_user.email.lower(),
-                    "shopify_id": str(shopify_customer_id),
-                    "phone_number": create_user.phone_number,
-                    "account_status": create_user.account_status,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now(),
-                },
-            )
-
+            db.session.add(db_user)
             db.session.commit()
+            db.session.refresh(db_user)
 
-            db_user = User.query.filter_by(email=create_user.email.lower(), shopify_id=str(shopify_customer_id)).first()
             user_model = UserModel.from_orm(db_user)
 
             if send_activation_email:
@@ -93,8 +81,10 @@ class UserService:
 
         # Tracking # TODO: async
         events = ["Signed Up"]
+
         if user_model.account_status:
             events.append("Activated Account")
+
         self.activecampaign_service.sync_contact(
             email=user_model.email,
             first_name=user_model.first_name,
@@ -104,6 +94,14 @@ class UserService:
         )
 
         return user_model
+
+    def get_user_by_id(self, user_id: uuid.UUID) -> UserModel:
+        db_user = User.query.filter(User.id == user_id).first()
+
+        if not db_user:
+            raise NotFoundError("User not found.")
+
+        return UserModel.from_orm(db_user)
 
     def get_user_by_email(self, email: str) -> UserModel:
         db_user = User.query.filter(func.lower(User.email) == email.lower()).first()

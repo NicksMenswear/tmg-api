@@ -19,7 +19,7 @@ from server.models.attendee_model import (
 from server.models.event_model import EventModel
 from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
-from server.models.user_model import CreateUserModel, UserModel
+from server.models.user_model import UserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService
@@ -280,17 +280,29 @@ class AttendeeService:
     def send_invites(self, attendee_ids: List[uuid.UUID]) -> None:
         if not attendee_ids:
             return
+
         rows = (
             db.session.query(User, Attendee, Event)
-            .join(Attendee, Attendee.user_id == User.id)
+            .outerjoin(Attendee, Attendee.user_id == User.id)
             .join(Event, Event.id == Attendee.event_id)
-            .filter(Attendee.id.in_(attendee_ids))
+            .filter(Attendee.id.in_(attendee_ids), Attendee.is_active)
             .all()
         )
-        user_models = [UserModel.from_orm(user) for user, attendee, event in rows]
+
+        invited_users = []
+
+        for user, attendee, event in rows:
+            if user is None:
+                continue
+
+            invited_users.append(UserModel.from_orm(user))
+
+        if not invited_users:
+            return
+
         event_model = EventModel.from_orm(rows[0][2])
 
-        self.email_service.send_invites_batch(event_model, user_models)
+        self.email_service.send_invites_batch(event_model, invited_users)
 
         for user, attendee, event in rows:
             attendee.invite = True

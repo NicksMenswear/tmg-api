@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import json
 import random
 import uuid
 
@@ -825,3 +826,140 @@ class TestAttendees(BaseTestCase):
 
         # then
         self.assertStatus(response, 204)
+
+    def test_invites_no_attendees_passed(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+    def test_invites_attendee(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email)
+        )
+
+        # when
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertFalse(db_attendee.invite)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(db_attendee.invite)
+
+    def test_invites_attendee_inactive(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, is_active=False)
+        )
+
+        # when
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
+        self.assertFalse(db_attendee.invite)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
+        self.assertFalse(db_attendee.invite)
+
+    def test_invites_multiple_attendees(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user1 = self.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user1.email)
+        )
+        attendee_user2 = self.user_service.create_user(fixtures.create_user_request())
+        attendee2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user2.email)
+        )
+
+        # when
+        db_attendee1 = self.attendee_service.get_attendee_by_id(attendee1.id)
+        self.assertFalse(db_attendee1.invite)
+        db_attendee2 = self.attendee_service.get_attendee_by_id(attendee2.id)
+        self.assertFalse(db_attendee2.invite)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee1.id), str(attendee2.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee1 = self.attendee_service.get_attendee_by_id(attendee1.id)
+        self.assertTrue(db_attendee1.invite)
+        db_attendee2 = self.attendee_service.get_attendee_by_id(attendee2.id)
+        self.assertTrue(db_attendee2.invite)
+
+    def test_invites_attendee_without_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=None)
+        )
+
+        # when
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertFalse(db_attendee.invite)
+
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertFalse(db_attendee.invite)

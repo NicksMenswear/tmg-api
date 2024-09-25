@@ -53,7 +53,7 @@ class SuitBuilderItemModel(CoreModel):
         return response
 
 
-class SuitBuilderItemsCollection(RootModel[Dict[str, Dict[str, Any]]]):
+class SuitBuilderItemsCollection(CoreModel):
     selected: bool = True
 
     def __init__(self, **data):

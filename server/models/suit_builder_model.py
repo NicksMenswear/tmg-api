@@ -53,28 +53,29 @@ class SuitBuilderItemModel(CoreModel):
         return response
 
 
-class SuitBuilderItemsCollection(CoreModel):
-    selected: bool = True
-
+class SuitBuilderItemsCollection(RootModel[Dict[str, Dict[str, Any]]]):
     def __init__(self, **data):
         super().__init__(root=data.get("root", {}))
 
     def add_item(self, item: SuitBuilderItemModel) -> None:
         if item.type not in self.root:
-            self.root[item.type] = []
-            # Select first item by default
+            self.root[item.type] = {
+                # Select section by default
+                # TODO change for edit look or build look from existing
+                "selected": True,
+                "items": [item],
+            }
+            # Select first itemby default
             # TODO change for edit look or build look from existing
             item.selected = True
 
-        self.root[item.type].append(item)
+        self.root[item.type]["items"].append(item)
 
     def to_response(self, enriched: bool = False) -> Dict[str, List[Dict[str, Any]]]:
         return {
             key: {
-                # Select section by default
-                # TODO change for edit look or build look from existing
-                "selected": self.selected,
-                "items": [item.to_response_enriched() if enriched else item.to_response() for item in items],
+                "selected": section.selected,
+                "items": [item.to_response_enriched() if enriched else item.to_response() for item in section["items"]],
             }
-            for key, items in self.root.items()
+            for key, section in self.root.items()
         }

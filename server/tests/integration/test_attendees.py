@@ -44,6 +44,32 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(create_attendee.email, response.json["email"])
         self.assertIsNone(response.json["user_id"])
 
+    def test_create_attendee_without_email(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+
+        # when
+        create_attendee_request = fixtures.create_attendee_request(event_id=event.id, email=None)
+
+        response = self.client.open(
+            "/attendees",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=create_attendee_request.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertIsNotNone(response.json["id"])
+        self.assertEqual(str(event.id), response.json["event_id"])
+        self.assertEqual(create_attendee_request.first_name, response.json["first_name"])
+        self.assertEqual(create_attendee_request.last_name, response.json["last_name"])
+        self.assertIsNone(create_attendee_request.email, response.json["email"])
+        self.assertIsNone(response.json["user_id"])
+
     def test_create_attendee_without_role_and_look(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

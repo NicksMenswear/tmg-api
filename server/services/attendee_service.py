@@ -136,7 +136,7 @@ class AttendeeService:
                     tracking=attendee_tracking,
                     can_be_deleted=(attendee.pay is False and len(attendee_gift_codes) == 0),
                     user=AttendeeUserModel(
-                        first_name=attendee.first_name, last_name=attendee.last_name, email=user.email
+                        first_name=attendee.first_name, last_name=attendee.last_name, email=user.email if user else None
                     ),
                 )
             )

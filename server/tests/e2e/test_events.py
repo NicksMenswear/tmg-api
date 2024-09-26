@@ -569,11 +569,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     actions.populate_fit_survey(page, 50)
 
-    time.sleep(3)  # wait for the survey to be saved
-
-    page.reload()
-
-    actions.open_event_accordion(page, event_id)
+    time.sleep(5)
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
     time.sleep(2)

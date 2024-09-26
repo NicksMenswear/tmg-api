@@ -1028,6 +1028,33 @@ class TestAttendees(BaseTestCase):
         self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
         self.assertTrue(attendee_user.id in self.email_service.sent_invites.get(event.id, set()))
 
+    def test_invite_attendee_for_the_user_that_exists_in_shopify_but_not_in_our_db(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        email = f"{uuid.uuid4()}@shopify-user-exists.com"
+        self.shopify_service.customers[email] = {"id": random.randint(1000, 100000), "email": email}
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=email)
+        )
+
+        # when
+        response = self.client.open(
+            f"/invites",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps([str(attendee.id)]),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        new_user = self.user_service.get_user_by_email(email)
+        self.assertEqual(attendee.first_name, new_user.first_name)
+        self.assertEqual(attendee.last_name, new_user.last_name)
+        self.assertEqual(attendee.email, new_user.email)
+
     def test_invites_user_by_attendee_email(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

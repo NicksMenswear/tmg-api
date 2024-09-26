@@ -31,7 +31,7 @@ class UserService:
         self.email_service = email_service
         self.activecampaign_service = activecampaign_service
 
-    def create_user(self, create_user: CreateUserModel) -> UserModel:
+    def create_user(self, create_user: CreateUserModel, send_activation_email: bool = False) -> UserModel:
         user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
         first_name = None if not create_user.first_name else create_user.first_name[:MAX_NAME_LENGTH]
         last_name = None if not create_user.last_name else create_user.last_name[:MAX_NAME_LENGTH]
@@ -68,6 +68,9 @@ class UserService:
             db.session.refresh(db_user)
 
             user_model = UserModel.from_orm(db_user)
+
+            if send_activation_email:
+                self.email_service.send_activation_email(user_model)
         except Exception as e:
             db.session.rollback()
             logger.exception(e)

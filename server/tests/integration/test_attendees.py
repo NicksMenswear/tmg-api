@@ -878,8 +878,7 @@ class TestAttendees(BaseTestCase):
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertTrue(db_attendee.invite)
 
-        self.assertTrue(attendee_user.id in self.email_service.sent_invites[event.id])
-
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
         self.assertTrue(attendee_user.id in self.email_service.sent_invites.get(event.id, set()))
 
     def test_invites_attendee_inactive(self):
@@ -910,6 +909,7 @@ class TestAttendees(BaseTestCase):
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id, False)
         self.assertFalse(db_attendee.invite)
 
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
         self.assertTrue(attendee_user.id not in self.email_service.sent_invites.get(event.id, set()))
 
     def test_invites_multiple_attendees(self):
@@ -948,6 +948,8 @@ class TestAttendees(BaseTestCase):
         db_attendee2 = self.attendee_service.get_attendee_by_id(attendee2.id)
         self.assertTrue(db_attendee2.invite)
 
+        self.assertTrue(attendee_user1.id not in self.email_service.sent_activations)
+        self.assertTrue(attendee_user2.id not in self.email_service.sent_activations)
         self.assertTrue(attendee_user1.id in self.email_service.sent_invites.get(event.id, set()))
         self.assertTrue(attendee_user2.id in self.email_service.sent_invites.get(event.id, set()))
 
@@ -1023,6 +1025,7 @@ class TestAttendees(BaseTestCase):
         db_attendee = self.attendee_service.get_attendee_by_id(attendee.id)
         self.assertTrue(db_attendee.invite)
 
+        self.assertTrue(attendee_user.id not in self.email_service.sent_activations)
         self.assertTrue(attendee_user.id in self.email_service.sent_invites.get(event.id, set()))
 
     def test_invites_user_by_attendee_email(self):
@@ -1062,4 +1065,5 @@ class TestAttendees(BaseTestCase):
         self.assertIsNotNone(db_user.shopify_id)
         self.assertFalse(db_user.account_status)
 
+        self.assertTrue(db_user.id not in self.email_service.sent_activations)
         self.assertTrue(db_user.id in self.email_service.sent_invites[event.id])

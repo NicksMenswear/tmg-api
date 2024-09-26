@@ -357,6 +357,34 @@ class TestAttendees(BaseTestCase):
         self.assertEqual(attendee_response["last_name"], update_attendee.last_name)
         self.assertEqual(attendee_response["email"], attendee.email)
 
+    def test_update_attendee_with_email_by_setting_same_email(self):
+        # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
+        attendee_email = utils.generate_email()
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_email)
+        )
+
+        # when
+        update_attendee = fixtures.update_attendee_request(email=attendee_email)
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        attendee_response = response.json
+        self.assertEqual(attendee_response["first_name"], attendee.first_name)
+        self.assertEqual(attendee_response["last_name"], attendee.last_name)
+        self.assertEqual(attendee_response["email"], update_attendee.email)
+
     def test_update_attendee_without_email_by_setting_email(self):
         # given
         owner = self.user_service.create_user(fixtures.create_user_request())
@@ -413,9 +441,15 @@ class TestAttendees(BaseTestCase):
         # given
         owner = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
-        attendee = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, invite=True)
+        )
 
         # when
+        self.assertTrue(attendee.invite)
+        self.assertIsNotNone(attendee.user_id)
+
         update_attendee = fixtures.update_attendee_request(email=utils.generate_email())
 
         response = self.client.open(
@@ -430,9 +464,43 @@ class TestAttendees(BaseTestCase):
         # then
         self.assertStatus(response, 200)
         attendee_response = response.json
+        self.assertFalse(attendee_response.get("invite"))
+        self.assertIsNone(attendee_response.get("user_id"))
         self.assertEqual(attendee_response["first_name"], attendee.first_name)
         self.assertEqual(attendee_response["last_name"], attendee.last_name)
         self.assertEqual(attendee_response["email"], update_attendee.email)
+
+    def test_update_attendee_email_once_paid(self):
+        # given
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=owner.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, email=attendee_user.email, invite=True, pay=True)
+        )
+
+        # when
+        self.assertTrue(attendee.invite)
+        self.assertTrue(attendee.pay)
+        self.assertIsNotNone(attendee.user_id)
+
+        update_attendee = fixtures.update_attendee_request(email=utils.generate_email())
+
+        response = self.client.open(
+            f"/attendees/{attendee.id}",
+            query_string=self.hmac_query_params,
+            method="PUT",
+            data=update_attendee.json(),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 400)
+        self.assertEqual(
+            response.json["errors"],
+            "Cannot update email for attendee that has already paid or has an issued gift code.",
+        )
 
     def test_update_attendee_look_and_role(self):
         # given

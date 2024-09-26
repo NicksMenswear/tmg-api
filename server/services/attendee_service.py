@@ -232,30 +232,18 @@ class AttendeeService:
 
         return AttendeeModel.from_orm(new_attendee)
 
-    @staticmethod
-    def update_attendee(attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
+    def update_attendee(self, attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active).first()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        if (
-            attendee.look_id is not None
-            and (attendee.look_id != update_attendee.look_id)
-            and (
-                attendee.pay
-                or FlaskApp.current()
-                .discount_service.get_discount_codes_for_attendees([attendee_id], type=DiscountType.GIFT)
-                .get(attendee_id)
-            )
-        ):
-            raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
+        self.__update_look(attendee, update_attendee)
+        self.__update_email(attendee, update_attendee)
 
         attendee.first_name = update_attendee.first_name or attendee.first_name
         attendee.last_name = update_attendee.last_name or attendee.last_name
-        attendee.email = update_attendee.email or attendee.email
         attendee.role_id = update_attendee.role_id or attendee.role_id
-        attendee.look_id = update_attendee.look_id or attendee.look_id
         attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()
 
@@ -266,6 +254,58 @@ class AttendeeService:
             raise ServiceError("Failed to update attendee.", e)
 
         return AttendeeModel.from_orm(attendee)
+
+    @staticmethod
+    def __is_attendee_paid_or_has_discount(attendee: Attendee) -> bool:
+        return attendee.pay or FlaskApp.current().discount_service.get_discount_codes_for_attendees(
+            [attendee.id], type=DiscountType.GIFT
+        ).get(attendee.id)
+
+    def __update_look(self, attendee: Attendee, update_attendee: UpdateAttendeeModel) -> None:
+        if update_attendee.look_id is None:
+            # pass, no new look - nothing to do
+            return
+
+        if attendee.look_id is None:
+            # pass, no look set before - setting now
+            attendee.look_id = update_attendee.look_id
+            return
+
+        if attendee.look_id == update_attendee.look_id:
+            # pass, same look - nothing to do
+            return
+
+        if self.__is_attendee_paid_or_has_discount(attendee):
+            raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
+
+        attendee.look_id = update_attendee.look_id
+
+    def __update_email(self, attendee: Attendee, update_attendee: UpdateAttendeeModel) -> None:
+        if update_attendee.email is None:
+            # pass, no email - nothing to do
+            return
+
+        if attendee.email is None:
+            # email wasn't set before, setting now
+            attendee.email = update_attendee.email
+            return
+
+        if attendee.email == update_attendee.email:
+            # pass, same email - nothing to do
+            return
+
+        if attendee.user_id is None:
+            # pass, user not invited yet - just updating email
+            attendee.email = update_attendee.email
+            return
+
+        if self.__is_attendee_paid_or_has_discount(attendee):
+            raise BadRequestError("Cannot update email for attendee that has already paid or has an issued gift code.")
+        else:
+            attendee.user_id = None
+            attendee.email = update_attendee.email
+            attendee.invite = False
+            attendee.size = False
 
     @staticmethod
     def deactivate_attendee(attendee_id: uuid.UUID, force: bool = False) -> None:

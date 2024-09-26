@@ -525,7 +525,6 @@ def test_style_and_invite_checkboxes(page: Page):
     assert actions.is_assign_look_checkbox_selected(page, event_id, attendee_id)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
-    time.sleep(2)
     assert actions.is_invite_checkbox_selected(page, event_id, attendee_id)
 
 

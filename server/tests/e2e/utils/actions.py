@@ -275,6 +275,9 @@ def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
     send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
     send_invites_button.click()
 
+    # it takes time to send invites and create user
+    time.sleep(4)
+
 
 def open_pay_dialog(page: Page, event_id):
     pay_button = page.locator(f'button[data-event-id="{event_id}"].payModal')
@@ -528,6 +531,8 @@ def attendee_checkbox_selected(page, event_id: str, attendee_id: str, type: str)
     attendee_item = get_attendee_block(page, event_id, attendee_id)
 
     check_element = attendee_item.locator(f'//li[.//span[text()="{type}"]]')
+    check_element.scroll_into_view_if_needed()
+    check_element.wait_for(state="visible")
 
     return check_element.evaluate("element => element.classList.contains('active')")
 

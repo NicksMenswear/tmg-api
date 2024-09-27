@@ -275,6 +275,9 @@ def send_invites_to_attendees_by_id(page: Page, event_id, attendee_ids):
     send_invites_button = send_invites_dialog.locator("button.tmg-btn.sendInvite")
     send_invites_button.click()
 
+    # it takes time to send invites and create user
+    time.sleep(4)
+
 
 def open_pay_dialog(page: Page, event_id):
     pay_button = page.locator(f'button[data-event-id="{event_id}"].payModal')
@@ -528,6 +531,8 @@ def attendee_checkbox_selected(page, event_id: str, attendee_id: str, type: str)
     attendee_item = get_attendee_block(page, event_id, attendee_id)
 
     check_element = attendee_item.locator(f'//li[.//span[text()="{type}"]]')
+    check_element.scroll_into_view_if_needed()
+    check_element.wait_for(state="visible")
 
     return check_element.evaluate("element => element.classList.contains('active')")
 
@@ -626,21 +631,33 @@ def shopify_checkout_continue_to_shipping(
 ):
     try:
         input_address1 = page.locator("#shipping-address1").first
+        input_address1.scroll_into_view_if_needed()
+        input_address1.wait_for(state="visible")
         input_address1.fill(address1)
 
         input_city = page.locator('input[name="city"]').first
+        input_city.scroll_into_view_if_needed()
+        input_city.wait_for(state="visible")
         input_city.fill(city)
 
         select_state_element = page.locator('select[name="zone"]').first
+        select_state_element.scroll_into_view_if_needed()
+        select_state_element.wait_for(state="visible")
         select_state_element.select_option(state)
 
         input_zip = page.locator('input[name="postalCode"]').first
+        input_zip.scroll_into_view_if_needed()
+        input_zip.wait_for(state="visible")
         input_zip.fill(zip_code)
 
         input_phone = page.locator('input[name="phone"]').first
+        input_phone.scroll_into_view_if_needed()
+        input_phone.wait_for(state="visible")
         input_phone.fill(phone)
 
         continue_to_shipping_button = page.locator('button:has-text("Continue to shipping")').first
+        continue_to_shipping_button.scroll_into_view_if_needed()
+        continue_to_shipping_button.wait_for(state="visible")
         continue_to_shipping_button.click()
     except:
         pass
@@ -648,6 +665,8 @@ def shopify_checkout_continue_to_shipping(
 
 def shopify_checkout_continue_to_payment(page: Page):
     continue_to_payment_button = page.locator('button:has-text("Continue to payment")').first
+    continue_to_payment_button.scroll_into_view_if_needed()
+    continue_to_payment_button.wait_for(state="visible")
     continue_to_payment_button.click()
 
 

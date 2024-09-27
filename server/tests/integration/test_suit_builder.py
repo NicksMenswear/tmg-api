@@ -1,5 +1,3 @@
-from operator import index
-
 from server.tests.integration import BaseTestCase, fixtures
 
 

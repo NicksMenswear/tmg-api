@@ -500,7 +500,30 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(response_attendee1["user"])
         self.assertIsNotNone(response_attendee2["user"])
 
-    def test_get_all_attendees_for_non_existing_event(self):
+    def test_get_attendees_for_event_without_users(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_request = fixtures.create_attendee_request(event_id=event.id, email=None)
+        attendee = self.attendee_service.create_attendee(attendee_request)
+
+        # when
+        response = self.client.open(
+            f"/events/{str(event.id)}/attendees",
+            query_string=self.hmac_query_params,
+            method="GET",
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 1)
+        response_attendee = response.json[0]
+        self.assertEqual(str(attendee.id), response_attendee["id"])
+        self.assertIsNotNone(response_attendee["user"])
+
+    def test_attendees_for_non_existing_event(self):
         # when
         response = self.client.open(
             f"/events/{str(uuid.uuid4())}/attendees",

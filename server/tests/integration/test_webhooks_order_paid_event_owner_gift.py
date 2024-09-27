@@ -84,7 +84,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
         )
         product_id = random.randint(1000, 1000000)
         variant_id = random.randint(1000, 1000000)
@@ -130,7 +130,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user.id, product_specs=self.create_look_test_product_specs())
         )
         attendee = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, look_id=look.id)
+            fixtures.create_attendee_request(email=attendee_user.email, event_id=event.id, look_id=look.id)
         )
         self.discount_service.create_discount(
             event.id,
@@ -198,13 +198,13 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
             fixtures.create_look_request(user_id=attendee_user3.id, product_specs=self.create_look_test_product_specs())
         )
         attendee1 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user1.id, event_id=event.id, look_id=look1.id)
+            fixtures.create_attendee_request(email=attendee_user1.email, event_id=event.id, look_id=look1.id)
         )
         attendee2 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user2.id, event_id=event.id, look_id=look2.id)
+            fixtures.create_attendee_request(email=attendee_user2.email, event_id=event.id, look_id=look2.id)
         )
         attendee3 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(user_id=attendee_user3.id, event_id=event.id, look_id=look3.id)
+            fixtures.create_attendee_request(email=attendee_user3.email, event_id=event.id, look_id=look3.id)
         )
         product_id = random.randint(1000, 1000000)
         variant_id = random.randint(1000, 1000000)

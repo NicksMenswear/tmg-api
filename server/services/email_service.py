@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Dict
 from urllib.parse import urlencode
 
 from server.controllers.util import http
@@ -22,39 +23,50 @@ class PostmarkTemplates:
 
 class AbstractEmailService(ABC):
     @abstractmethod
-    def send_activation_email(self, user: UserModel):
+    def send_activation_email(self, user: UserModel) -> None:
         pass
 
     @abstractmethod
-    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
         pass
 
 
 class FakeEmailService(AbstractEmailService):
-    def send_activation_email(self, user: UserModel):
-        pass
+    def __init__(self) -> None:
+        self.sent_invites = {}
+        self.sent_activations = set()
 
-    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
-        pass
+    def send_activation_email(self, user: UserModel) -> None:
+        self.sent_activations.add(user.id)
+
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
+        self.sent_invites[event.id] = self.sent_invites.get(event.id, set())
+
+        for user in users:
+            self.sent_invites[event.id].add(user.id)
 
 
 class EmailService(AbstractEmailService):
-    def __init__(self, shopify_service: AbstractShopifyService):
+    def __init__(self, shopify_service: AbstractShopifyService) -> None:
         self.shopify_service = shopify_service
 
-    def _postmark_request(self, method, path, json):
+    @staticmethod
+    def __postmark_request(method, path, json) -> None:
         headers = {"X-Postmark-Server-Token": POSTMARK_API_KEY}
+
         response = http(
             method,
             f"{POSTMARK_API_URL}/{path}",
             headers=headers,
             json=json,
         )
+
         if response.status >= 400:
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
-    def send_activation_email(self, user: UserModel):
-        activation_url = self._get_account_activation_url(user)
+    def send_activation_email(self, user: UserModel) -> None:
+        activation_url = self.__get_account_activation_url(user)
+
         template_model = {"first_name": user.first_name, "shopify_url": activation_url}
         body = {
             "From": FROM_EMAIL,
@@ -62,25 +74,29 @@ class EmailService(AbstractEmailService):
             "TemplateId": PostmarkTemplates.ACTIVATION,
             "TemplateModel": template_model,
         }
-        self._postmark_request("POST", "email/withTemplate", body)
 
-    def send_invites_batch(self, event: EventModel, users: list[UserModel]):
+        self.__postmark_request("POST", "email/withTemplate", body)
+
+    def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
         batch = []
+
         with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = (executor.submit(self._invites_batch_prepare_one, user, event) for user in users)
+            futures = (executor.submit(self.__invites_batch_prepare_one, user, event) for user in users)
             for future in as_completed(futures):
                 batch.append(future.result())
-        self._postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
 
-    def _invites_batch_prepare_one(self, user: UserModel, event: EventModel):
+        self.__postmark_request("POST", "email/batchWithTemplates", {"Messages": batch})
+
+    def __invites_batch_prepare_one(self, user: UserModel, event: EventModel) -> Dict[str, Any]:
         if not user.account_status:
-            shopify_url = self._get_account_activation_url(user)
+            shopify_url = self.__get_account_activation_url(user)
             button_text = "Activate Account & Get Started"
         else:
             shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
             button_text = "Get Started"
 
         template = PostmarkTemplates.INVITE_DEFAULT
+
         if event.type == EventTypeModel.WEDDING:
             template = PostmarkTemplates.INVITE_WEDDING
 
@@ -96,11 +112,14 @@ class EmailService(AbstractEmailService):
             "TemplateId": template,
             "TemplateModel": template_model,
         }
+
         return body
 
-    def _get_account_activation_url(self, user: UserModel):
+    def __get_account_activation_url(self, user: UserModel) -> str:
         activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+
         url_params = urlencode(
             {"id": user.id, "email": user.email, "first_name": user.first_name, "last_name": user.last_name}
         )
+
         return f"{activation_url}?{url_params}"

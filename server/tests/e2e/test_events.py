@@ -525,7 +525,6 @@ def test_style_and_invite_checkboxes(page: Page):
     assert actions.is_assign_look_checkbox_selected(page, event_id, attendee_id)
 
     actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
-    time.sleep(2)
     assert actions.is_invite_checkbox_selected(page, event_id, attendee_id)
 
 
@@ -570,11 +569,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     actions.populate_fit_survey(page, 50)
 
-    time.sleep(3)  # wait for the survey to be saved
-
-    page.reload()
-
-    actions.open_event_accordion(page, event_id)
+    time.sleep(5)
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
     time.sleep(2)

@@ -24,7 +24,7 @@ def create_user_request(**user_data) -> CreateUserModel:
         email=user_data.get("email", utils.generate_email()),
         account_status=user_data.get("account_status", True),
         phone_number=user_data.get("phone_number", utils.generate_phone_number()),
-        shopify_id=user_data.get("shopify_id", None),
+        shopify_id=user_data.get("shopify_id", str(random.randint(1000, 1000000))),
     )
 
 
@@ -105,6 +105,9 @@ def create_attendee_request(**attendee_data):
 
 def update_attendee_request(**attendee_data):
     return UpdateAttendeeModel(
+        first_name=attendee_data.get("first_name"),
+        last_name=attendee_data.get("last_name"),
+        email=attendee_data.get("email"),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
         role_id=attendee_data.get("role_id"),
         look_id=attendee_data.get("look_id"),

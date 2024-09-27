@@ -119,8 +119,8 @@ class DiscountService:
             raise NotFoundError("Event not found.")
 
         users_attendees_looks = (
-            db.session.query(User, Attendee, Look, Event)
-            .join(Attendee, User.id == Attendee.user_id)
+            db.session.query(Attendee, User, Look, Event)
+            .outerjoin(User, User.id == Attendee.user_id)
             .outerjoin(Look, Attendee.look_id == Look.id)
             .join(Event, event_id == Event.id)
             .filter(Attendee.event_id == event_id, Attendee.is_active)
@@ -136,7 +136,7 @@ class DiscountService:
 
         num_attendees = 0
 
-        for user, attendee, look, event in users_attendees_looks:
+        for attendee, user, look, event in users_attendees_looks:
             look_model = None
 
             if look and look.product_specs:
@@ -153,10 +153,10 @@ class DiscountService:
                 amount=0.0,
                 type=DiscountType.GIFT,
                 attendee_id=attendee.id,
-                user_id=user.id,
-                is_owner=(user.id == event.user_id),
-                first_name=user.first_name,
-                last_name=user.last_name,
+                user_id=user.id if user else None,
+                is_owner=(user.id == event.user_id) if user else False,
+                first_name=attendee.first_name or user.first_name,
+                last_name=attendee.last_name or user.last_name,
                 look=look_model,
                 status=DiscountStatusModel(style=attendee.style, invite=attendee.invite, pay=attendee.pay),
             )

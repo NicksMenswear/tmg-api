@@ -72,6 +72,8 @@ class TestUsers(BaseTestCase):
         self.assertEqual(create_user.email, response.json["email"])
         self.assertIsNotNone(response.json["id"])
 
+        self.assertTrue(uuid.UUID(response.json["id"]) in self.email_service.sent_activations)
+
     def test_create_user_with_existing_but_capitalized_email(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

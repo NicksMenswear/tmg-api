@@ -77,7 +77,7 @@ class EventDiscountModel(CoreModel):
     remaining_amount: float = 0.0
     type: DiscountType
     attendee_id: UUID
-    user_id: UUID
+    user_id: Optional[UUID] = None
     is_owner: bool
     first_name: str
     last_name: str

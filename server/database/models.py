@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     Column,
@@ -17,8 +18,9 @@ from sqlalchemy import (
     JSON,
     BigInteger,
     Index,
+    inspect,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 
 try:
@@ -121,7 +123,32 @@ class EventType(enum.Enum):
     OTHER = "other"
 
 
-class Event(Base):
+class SerializableMixin:
+    def serialize(self):
+        columns = inspect(self.__class__).columns.keys()
+        return {column: self.__serialize_field(getattr(self, column)) for column in columns}
+
+    @staticmethod
+    def __serialize_field(value):
+        if value is None:
+            return None
+        elif isinstance(value, list):
+            return [SerializableMixin.__serialize_field(v) for v in value]
+        elif isinstance(value, uuid.UUID):
+            return str(value)
+        elif isinstance(value, datetime):
+            return value.isoformat()
+        elif isinstance(value, Decimal):
+            return float(value)
+        elif isinstance(value, enum.Enum):
+            return value.name
+        elif isinstance(value, dict):
+            return {k: SerializableMixin.__serialize_field(v) for k, v in value.items()}
+
+        return value
+
+
+class Event(Base, SerializableMixin):
     __tablename__ = "events"
 
     id = Column(
@@ -142,7 +169,7 @@ class Event(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Look(Base):
+class Look(Base, SerializableMixin):
     __tablename__ = "looks"
 
     id = Column(
@@ -162,7 +189,7 @@ class Look(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Role(Base):
+class Role(Base, SerializableMixin):
     __tablename__ = "roles"
 
     id = Column(
@@ -180,7 +207,7 @@ class Role(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Attendee(Base):
+class Attendee(Base, SerializableMixin):
     __tablename__ = "attendees"
 
     id = Column(
@@ -208,7 +235,7 @@ class Attendee(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Address(Base):
+class Address(Base, SerializableMixin):
     __tablename__ = "addresses"
     id = Column(
         UUID(as_uuid=True),
@@ -230,7 +257,7 @@ class Address(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class User(Base):
+class User(Base, SerializableMixin):
     __tablename__ = "users"
     id = Column(
         UUID(as_uuid=True),
@@ -253,7 +280,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Order(Base):
+class Order(Base, SerializableMixin):
     __tablename__ = "orders"
 
     id = Column(
@@ -290,7 +317,7 @@ class Order(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class OrderItem(Base):
+class OrderItem(Base, SerializableMixin):
     __tablename__ = "order_items"
 
     id = Column(
@@ -321,7 +348,7 @@ class OrderItem(Base):
         }
 
 
-class Product(Base):
+class Product(Base, SerializableMixin):
     __tablename__ = "products"
     id = Column(
         UUID(as_uuid=True),
@@ -417,7 +444,7 @@ class DiscountType(enum.Enum):
         return self.value
 
 
-class Discount(Base):
+class Discount(Base, SerializableMixin):
     __tablename__ = "discounts"
     id = Column(
         UUID(as_uuid=True),
@@ -439,7 +466,7 @@ class Discount(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Size(Base):
+class Size(Base, SerializableMixin):
     __tablename__ = "sizes"
     id = Column(
         UUID(as_uuid=True),
@@ -455,7 +482,7 @@ class Size(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
-class Measurement(Base):
+class Measurement(Base, SerializableMixin):
     __tablename__ = "measurements"
     id = Column(
         UUID(as_uuid=True),
@@ -522,3 +549,18 @@ class SuitBuilderItem(Base):
     price = Column(Numeric, nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    type = Column(String, nullable=False)  # e.g. USER_CREATED, USER_UPDATED, USER_DELETED, ATTENDEE_CREATED, ...
+    request = Column(JSONB, default=dict)
+    payload = Column(JSONB, default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

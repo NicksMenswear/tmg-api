@@ -22,6 +22,7 @@ from server.database.models import (
     Measurement,
     Address,
     SuitBuilderItem,
+    AuditLog,
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
@@ -55,6 +56,8 @@ class BaseTestCase(TestCase):
         Measurement.query.delete()
         User.query.delete()
         SuitBuilderItem.query.delete()
+        AuditLog.query.delete()
+
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON

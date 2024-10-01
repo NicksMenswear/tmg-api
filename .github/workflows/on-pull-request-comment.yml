@@ -93,7 +93,7 @@ jobs:
   e2e-groups:
     if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') && (needs.cd.result == 'skipped' || needs.cd.result == 'success')  }}
     needs: cd
-    name: e2e-group-${{ matrix.group }}
+    name: e2e-groups
     uses: ./.github/workflows/_e2e_tests.yml
     with:
       ref: refs/pull/${{ github.event.issue.number }}/head

@@ -18,12 +18,13 @@ from server.logs import (
     log_request_middleware,
     log_response_middleware,
 )
+from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
+from server.services.audit import init_audit_logging
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
-from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.integrations.aws_service import AWSService, FakeAWSService
 from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
@@ -100,6 +101,9 @@ def init_app(is_testing=False):
     api.app.config["TMG_APP_TESTING"] = run_in_test_mode
 
     FlaskApp.set(api.app)
+
+    if not run_in_test_mode:
+        init_audit_logging()
 
     init_services(api.app, run_in_test_mode)
 

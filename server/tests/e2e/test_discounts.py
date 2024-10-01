@@ -52,7 +52,9 @@ def test_pay_dialog_correctness(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -114,7 +116,7 @@ def test_discount_intent_saved(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -169,7 +171,7 @@ def test_pay_in_full_click_discount_intent_saved(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -223,7 +225,7 @@ def test_grooms_gift(page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -303,7 +305,9 @@ def test_group_discount(page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     actions.open_event_accordion(page, event_id)
     attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
     attendee_id_3 = actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
@@ -371,7 +375,9 @@ def test_group_discount_and_groom_gift_as_well(page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     actions.open_event_accordion(page, event_id)
     attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
     attendee_id_3 = actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
@@ -450,7 +456,9 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     actions.open_event_accordion(page, event_id)
     attendee_id_2 = actions.add_attendee(page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
     attendee_id_3 = actions.add_attendee(page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3)
@@ -520,7 +528,7 @@ def test_grooms_gift_and_swatches(page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 

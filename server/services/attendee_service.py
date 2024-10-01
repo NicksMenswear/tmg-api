@@ -119,7 +119,7 @@ class AttendeeService:
                     id=attendee.id,
                     first_name=attendee.first_name or user.first_name,
                     last_name=attendee.last_name or user.last_name,
-                    email=attendee.email or user.email if user else None,
+                    email=attendee.email or (user.email if user else None),
                     user_id=attendee.user_id,
                     is_owner=(attendee.user_id == event.user_id),
                     event_id=attendee.event_id,
@@ -189,6 +189,13 @@ class AttendeeService:
         attendee_user = None
 
         if create_attendee.email:
+            existing_attendee_by_email = Attendee.query.filter(
+                Attendee.event_id == event.id, Attendee.email == create_attendee.email, Attendee.is_active
+            ).first()
+
+            if existing_attendee_by_email:
+                raise DuplicateError("Attendee with this email already exists.")
+
             try:
                 attendee_user = self.user_service.get_user_by_email(create_attendee.email)
             except NotFoundError:
@@ -287,6 +294,7 @@ class AttendeeService:
 
         if attendee.email is None:
             # email wasn't set before, setting now
+            self.__verify_that_attendee_does_not_exist_with_same_email(attendee, update_attendee)
             attendee.email = update_attendee.email
             return
 
@@ -296,16 +304,32 @@ class AttendeeService:
 
         if attendee.user_id is None:
             # pass, user not invited yet - just updating email
+            self.__verify_that_attendee_does_not_exist_with_same_email(attendee, update_attendee)
             attendee.email = update_attendee.email
             return
 
         if self.__is_attendee_paid_or_has_discount(attendee):
             raise BadRequestError("Cannot update email for attendee that has already paid or has an issued gift code.")
         else:
+            self.__verify_that_attendee_does_not_exist_with_same_email(attendee, update_attendee)
             attendee.user_id = None
             attendee.email = update_attendee.email
             attendee.invite = False
             attendee.size = False
+
+    @staticmethod
+    def __verify_that_attendee_does_not_exist_with_same_email(attendee: Attendee, update_attendee: UpdateAttendeeModel):
+        existing_attendee_with_email = Attendee.query.filter(
+            Attendee.id != attendee.id,
+            Attendee.event_id == attendee.event_id,
+            Attendee.email == update_attendee.email,
+            Attendee.is_active,
+        ).first()
+
+        if not existing_attendee_with_email:
+            return
+
+        raise DuplicateError("Attendee with this email already exists.")
 
     @staticmethod
     def deactivate_attendee(attendee_id: uuid.UUID, force: bool = False) -> None:

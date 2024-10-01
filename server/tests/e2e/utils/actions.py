@@ -45,6 +45,9 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
+
+    time.sleep(1)
+
     event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
     event_item.scroll_into_view_if_needed()
     event_item.wait_for(state="visible")
@@ -89,34 +92,39 @@ def open_event_accordion(page: Page, event_id: str):
 
 
 def add_first_attendee(
-    page: Page, attendee_first_name: str, attendee_last_name: str, attendee_email: str, button_text: str = "Save"
+    page: Page,
+    event_id: str,
+    attendee_first_name: str,
+    attendee_last_name: str,
+    attendee_email: str,
+    button_text: str = "Save",
 ):
-    attendees_first_name_element = page.locator(".attendeesFirstName").first
+    add_attendees_modal_locator = page.locator("div#add-attendees-modal")
+    add_attendees_modal_locator.scroll_into_view_if_needed()
+    add_attendees_modal_locator.wait_for(state="visible")
+
+    attendees_first_name_element = add_attendees_modal_locator.locator(".attendeesFirstName").first
     attendees_first_name_element.scroll_into_view_if_needed()
     attendees_first_name_element.fill(attendee_first_name)
 
-    attendees_last_name_element = page.locator(".attendeesLastName").last
+    attendees_last_name_element = add_attendees_modal_locator.locator(".attendeesLastName").last
     attendees_last_name_element.scroll_into_view_if_needed()
     attendees_last_name_element.fill(attendee_last_name)
 
-    attendees_email_element = page.locator(".attendeesEmail").first
+    attendees_email_element = add_attendees_modal_locator.locator(".attendeesEmail").first
     attendees_email_element.scroll_into_view_if_needed()
     attendees_email_element.fill(attendee_email)
 
-    add_attendee_button = page.locator(f'//button[@class="tmg-btn" and contains(text(), "{button_text}")]').first
+    add_attendee_button = add_attendees_modal_locator.locator(
+        f'//button[@class="tmg-btn" and contains(text(), "{button_text}")]'
+    ).first
     add_attendee_button.scroll_into_view_if_needed()
     add_attendee_button.wait_for(state="visible")
     add_attendee_button.click()
 
-    attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
-    ).first
+    time.sleep(2)
 
-    attendee_id = attendee_item.get_attribute("data-attendee-id")
-
-    assert attendee_id is not None
-
-    return attendee_id
+    return get_attendee_id_by_name(page, event_id, attendee_first_name, attendee_last_name)
 
 
 def add_attendee(
@@ -132,34 +140,32 @@ def add_attendee(
     add_participant_button.wait_for(state="visible")
     add_participant_button.click()
 
-    attendees_first_name_element = page.locator(".attendeesFirstName").first
+    add_attendees_modal_locator = page.locator("div#add-attendees-modal")
+    add_attendees_modal_locator.scroll_into_view_if_needed()
+    add_attendees_modal_locator.wait_for(state="visible")
+
+    attendees_first_name_element = add_attendees_modal_locator.locator(".attendeesFirstName").first
     attendees_first_name_element.scroll_into_view_if_needed()
     attendees_first_name_element.fill(attendee_first_name)
 
-    attendees_last_name_element = page.locator(".attendeesLastName").last
+    attendees_last_name_element = add_attendees_modal_locator.locator(".attendeesLastName").last
     attendees_last_name_element.scroll_into_view_if_needed()
     attendees_last_name_element.fill(attendee_last_name)
 
-    attendees_email_element = page.locator(".attendeesEmail").first
+    attendees_email_element = add_attendees_modal_locator.locator(".attendeesEmail").first
     attendees_email_element.scroll_into_view_if_needed()
     attendees_email_element.fill(attendee_email)
 
-    add_attendee_button = page.locator(f'//button[@class="tmg-btn" and contains(text(), "{button_text}")]').first
+    add_attendee_button = add_attendees_modal_locator.locator(
+        f'//button[@class="tmg-btn" and contains(text(), "{button_text}")]'
+    ).first
     add_attendee_button.scroll_into_view_if_needed()
     add_attendee_button.wait_for(state="visible")
     add_attendee_button.click()
 
-    attendee_item = page.locator(
-        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_first_name} {attendee_last_name}")]]'
-    ).first
-    attendee_item.scroll_into_view_if_needed()
-    attendee_item.wait_for(state="visible")
+    time.sleep(2)
 
-    attendee_id = attendee_item.get_attribute("data-attendee-id")
-
-    assert attendee_id is not None
-
-    return attendee_id
+    return get_attendee_id_by_name(page, event_id, attendee_first_name, attendee_last_name)
 
 
 def delete_event(page: Page, event_id: str, event_name: str):
@@ -386,13 +392,11 @@ def get_attendee_id_by_name(page: Page, event_id: str, attendee_firstname: str, 
     event_locator = get_event_block(page, event_id)
 
     attendee_item = event_locator.locator(
-        f'//div[contains(@class, "tmg-attendees-item") and .//div[@class="tmg-attendees-name" and contains(text(), "{attendee_firstname} {attendee_lastname}")]]'
-    ).first
+        f"div.tmg-attendees-item div.tmg-attendees-header div.tmg-attendees-name:has-text('{attendee_firstname}')"
+    )
     attendee_item.scroll_into_view_if_needed()
     attendee_item.wait_for(state="visible")
-
-    attendee_id = attendee_item.get_attribute("data-attendee-id")
-
+    attendee_id = attendee_item.locator("../..").get_attribute("data-attendee-id")
     assert attendee_id is not None
 
     return attendee_id

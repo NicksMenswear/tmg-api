@@ -45,6 +45,9 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
+
+    time.sleep(1)
+
     event_item = page.locator(f'.tmg-item[data-event-name="{event_name}"]')
     event_item.scroll_into_view_if_needed()
     event_item.wait_for(state="visible")

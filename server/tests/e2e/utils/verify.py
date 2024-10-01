@@ -148,16 +148,20 @@ def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warn
     assert attendee_2.locator("p.tmg-pay-attendee-item-message").inner_text().strip() == warning
 
 
+def shopify_open_order_summary_if_needed(page: Page, open_order_summary: bool = True):
+    if is_mobile_view(page) and open_order_summary:
+        show_order_summary_button = page.locator("button:has-text('Show order summary')")
+        show_order_summary_button.scroll_into_view_if_needed()
+        show_order_summary_button.wait_for(state="visible")
+        time.sleep(2)
+        show_order_summary_button.click()
+
+
 def shopify_checkout_has_item_with_name_and_price(
     page: Page, item_name: str, item_price: str, open_order_summary: bool = True
 ):
     if is_mobile_view(page):
-        if open_order_summary:
-            show_order_summary_button = page.locator("button:has-text('Show order summary')")
-            show_order_summary_button.scroll_into_view_if_needed()
-            show_order_summary_button.wait_for(state="visible")
-            time.sleep(2)
-            show_order_summary_button.click()
+        shopify_open_order_summary_if_needed(page, open_order_summary)
 
         order_details_locator = page.locator("#disclosure_details")
         order_details_locator.wait_for(state="visible")

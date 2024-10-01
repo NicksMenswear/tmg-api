@@ -166,13 +166,13 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
 
     event_id = actions.create_new_event(page, event_name)
     attendee_id_1 = actions.add_first_attendee(
-        page, attendee_first_name_1, attendee_last_name_1, attendee_email_1, "Save & Add Next"
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1, "Save & Add Next"
     )
     attendee_id_2 = actions.add_first_attendee(
-        page, attendee_first_name_2, attendee_last_name_2, attendee_email_2, "Save & Add Next"
+        page, event_id, attendee_first_name_2, attendee_last_name_2, attendee_email_2, "Save & Add Next"
     )
     attendee_id_3 = actions.add_first_attendee(
-        page, attendee_first_name_3, attendee_last_name_3, attendee_email_3, "Save"
+        page, event_id, attendee_first_name_3, attendee_last_name_3, attendee_email_3, "Save"
     )
 
     event_block = actions.get_event_block(page, event_id)
@@ -595,6 +595,8 @@ def test_add_myself_and_pay_for_suit(page: Page):
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
+
+    verify.shopify_open_order_summary_if_needed(page)
 
     actions.shopify_checkout_continue_to_shipping(page)
     actions.shopify_checkout_continue_to_payment(page)

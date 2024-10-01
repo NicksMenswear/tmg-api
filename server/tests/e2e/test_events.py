@@ -596,6 +596,8 @@ def test_add_myself_and_pay_for_suit(page: Page):
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
 
+    time.sleep(3)
+
     verify.shopify_open_order_summary_if_needed(page)
 
     actions.shopify_checkout_continue_to_shipping(page)

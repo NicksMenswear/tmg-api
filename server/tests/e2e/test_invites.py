@@ -46,7 +46,7 @@ def test_invite_attendee(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -125,7 +125,9 @@ def test_invite_multiple_attendees(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 

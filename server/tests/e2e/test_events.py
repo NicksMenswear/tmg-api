@@ -40,7 +40,7 @@ def test_basic_create_event(page: Page):
 
     event_id = actions.create_new_event(page, event_name)
 
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
 
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
@@ -73,12 +73,16 @@ def test_create_multiple_events(page: Page):
     time.sleep(1)
 
     event_id_1 = actions.create_new_event(page, event_name_1)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id_1, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     event_block = actions.get_event_block(page, event_id_1)
     expect(event_block).to_be_visible()
 
     event_id_2 = actions.create_new_event(page, event_name_2)
-    attendee_id_2 = actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    attendee_id_2 = actions.add_first_attendee(
+        page, event_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2
+    )
     event_block = actions.get_event_block(page, event_id_2)
     expect(event_block).to_be_visible()
 
@@ -116,7 +120,9 @@ def test_create_event_and_add_few_attendees(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
 
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
@@ -204,7 +210,9 @@ def test_create_event_add_and_remove_attendees(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -237,12 +245,12 @@ def test_delete_event(page: Page):
     time.sleep(1)
 
     event_id_1 = actions.create_new_event(page, event_name_1)
-    actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    actions.add_first_attendee(page, event_id_1, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
     event_block = actions.get_event_block(page, event_id_1)
     expect(event_block).to_be_visible()
 
     event_id_2 = actions.create_new_event(page, event_name_2)
-    actions.add_first_attendee(page, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
+    actions.add_first_attendee(page, event_id_2, attendee_first_name_2, attendee_last_name_2, attendee_email_2)
     event_block = actions.get_event_block(page, event_id_2)
     expect(event_block).to_be_visible()
 
@@ -267,7 +275,7 @@ def test_delete_all_events(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -294,7 +302,9 @@ def test_delete_all_attendees(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name)
-    attendee_id_1 = actions.add_first_attendee(page, attendee_first_name_1, attendee_last_name_1, attendee_email_1)
+    attendee_id_1 = actions.add_first_attendee(
+        page, event_id, attendee_first_name_1, attendee_last_name_1, attendee_email_1
+    )
     event_block = actions.get_event_block(page, event_id)
     expect(event_block).to_be_visible()
 
@@ -336,7 +346,9 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     time.sleep(1)
 
     event_id1 = actions.create_new_event(page, event_name1, event_type="wedding")
-    attendee_id1 = actions.add_first_attendee(page, attendee_first_name1, attendee_last_name1, attendee_email1)
+    attendee_id1 = actions.add_first_attendee(
+        page, event_id1, attendee_first_name1, attendee_last_name1, attendee_email1
+    )
 
     actions.open_event_accordion(page, event_id1)
 
@@ -345,14 +357,18 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
     verify.event_has_type(page, event_id1, "Wedding")
 
     event_id2 = actions.create_new_event(page, event_name2, event_type="prom")
-    attendee_id2 = actions.add_first_attendee(page, attendee_first_name2, attendee_last_name2, attendee_email2)
+    attendee_id2 = actions.add_first_attendee(
+        page, event_id2, attendee_first_name2, attendee_last_name2, attendee_email2
+    )
     actions.open_event_accordion(page, event_id2)
 
     verify.roles_are_available_for_attendee(page, attendee_id2, DEFAULT_PROM_ROLES)
     verify.event_has_type(page, event_id2, "Prom")
 
     event_id3 = actions.create_new_event(page, event_name3, event_type="other")
-    attendee_id3 = actions.add_first_attendee(page, attendee_first_name3, attendee_last_name3, attendee_email3)
+    attendee_id3 = actions.add_first_attendee(
+        page, event_id3, attendee_first_name3, attendee_last_name3, attendee_email3
+    )
     actions.open_event_accordion(page, event_id3)
 
     verify.roles_are_available_for_attendee(page, attendee_id3, DEFAULT_OTHER_ROLES)
@@ -377,7 +393,7 @@ def test_roles_persistence(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
     role_name = "Attendee Parent or Chaperone"
@@ -408,7 +424,7 @@ def test_add_myself_and_then_remove(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
     add_myself_button = actions.get_add_myself_button(page, event_id)
@@ -454,7 +470,7 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
     add_myself_button = actions.get_add_myself_button(page, event_id)
@@ -508,7 +524,7 @@ def test_style_and_invite_checkboxes(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
-    attendee_id = actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
     assert not actions.is_assign_look_checkbox_selected(page, event_id, attendee_id)
@@ -552,7 +568,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(1)
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
-    actions.add_first_attendee(page, attendee_first_name, attendee_last_name, attendee_email)
+    actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
     add_myself_button = actions.get_add_myself_button(page, event_id)

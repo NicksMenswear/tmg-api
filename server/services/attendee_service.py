@@ -119,7 +119,7 @@ class AttendeeService:
                     id=attendee.id,
                     first_name=attendee.first_name or user.first_name,
                     last_name=attendee.last_name or user.last_name,
-                    email=attendee.email or user.email if user else None,
+                    email=attendee.email or (user.email if user else None),
                     user_id=attendee.user_id,
                     is_owner=(attendee.user_id == event.user_id),
                     event_id=attendee.event_id,

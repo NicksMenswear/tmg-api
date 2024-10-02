@@ -43,7 +43,14 @@ class AttendeeService:
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        return AttendeeModel.from_orm(attendee)
+        attendee_model = AttendeeModel.from_orm(attendee)
+
+        if not attendee.first_name and attendee.user_id:
+            user = User.query.filter(User.id == attendee.user_id).first()
+            attendee_model.first_name = user.first_name
+            attendee_model.last_name = user.last_name
+
+        return attendee_model
 
     @staticmethod
     def get_num_attendees_for_event(event_id: uuid.UUID) -> int:
@@ -248,8 +255,14 @@ class AttendeeService:
         self.__update_look(attendee, update_attendee)
         self.__update_email(attendee, update_attendee)
 
-        attendee.first_name = update_attendee.first_name or attendee.first_name
-        attendee.last_name = update_attendee.last_name or attendee.last_name
+        if attendee.first_name or update_attendee.first_name:
+            attendee.first_name = update_attendee.first_name or attendee.first_name
+            attendee.last_name = update_attendee.last_name or attendee.last_name
+        else:
+            user = User.query.filter(User.id == attendee.user_id).first()
+            attendee.first_name = user.first_name
+            attendee.last_name = user.last_name
+
         attendee.role_id = update_attendee.role_id or attendee.role_id
         attendee.style = True if attendee.role_id and attendee.look_id else False
         attendee.updated_at = datetime.now()

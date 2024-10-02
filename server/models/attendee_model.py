@@ -26,8 +26,8 @@ class CreateAttendeeModel(CoreModel):
 
 class AttendeeModel(CoreModel):
     id: UUID
-    first_name: str
-    last_name: str
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: Optional[EmailStr] = None
     user_id: Optional[UUID] = None
     is_owner: bool = False

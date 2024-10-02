@@ -659,7 +659,7 @@ def test_update_event_owner_name(page: Page):
 
     first_name_input = edit_customer_dialog.locator("input#newCustomerFirstName")
     first_name_input.fill("Test")
-    new_last_name = f"Group4 {datetime.now().strftime('%H%M%S')}"
+    new_last_name = f"Group2 {datetime.now().strftime('%H%M%S')}"
     last_name_input = edit_customer_dialog.locator("input#newCustomerLastName")
     last_name_input.fill(new_last_name)
 

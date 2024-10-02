@@ -636,7 +636,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_2
 def test_update_event_owner_name(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)

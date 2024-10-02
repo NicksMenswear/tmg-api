@@ -668,6 +668,8 @@ def test_update_event_owner_name(page: Page):
     update_button.wait_for(state="visible")
     update_button.click()
 
+    time.sleep(2)
+
     new_customer_name = customer_section.locator("div.tmg-customer-name").inner_text()
 
     assert current_customer_name != new_customer_name

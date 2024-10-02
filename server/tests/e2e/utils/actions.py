@@ -1,7 +1,7 @@
 import random
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from playwright.sync_api import Page, expect, Locator
 
@@ -96,7 +96,7 @@ def add_first_attendee(
     event_id: str,
     attendee_first_name: str,
     attendee_last_name: str,
-    attendee_email: str,
+    attendee_email: Optional[str] = None,
     button_text: str = "Save",
 ):
     add_attendees_modal_locator = page.locator("div#add-attendees-modal")
@@ -111,9 +111,10 @@ def add_first_attendee(
     attendees_last_name_element.scroll_into_view_if_needed()
     attendees_last_name_element.fill(attendee_last_name)
 
-    attendees_email_element = add_attendees_modal_locator.locator(".attendeesEmail").first
-    attendees_email_element.scroll_into_view_if_needed()
-    attendees_email_element.fill(attendee_email)
+    if attendee_email:
+        attendees_email_element = add_attendees_modal_locator.locator(".attendeesEmail").first
+        attendees_email_element.scroll_into_view_if_needed()
+        attendees_email_element.fill(attendee_email)
 
     add_attendee_button = add_attendees_modal_locator.locator(
         f'//button[@class="tmg-btn" and contains(text(), "{button_text}")]'

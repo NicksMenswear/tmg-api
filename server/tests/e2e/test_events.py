@@ -1,11 +1,23 @@
 import time
+import uuid
+from datetime import datetime
 
 import pytest
 from playwright.sync_api import Page, expect
 
 from server.tests import utils
-from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, e2e_error_handling, STORE_URL, e2e_allowed_in
-from server.tests.e2e.utils import api, actions, verify
+from server.tests.e2e import (
+    TEST_USER_EMAIL,
+    TEST_USER_PASSWORD,
+    e2e_error_handling,
+    STORE_URL,
+    e2e_allowed_in,
+    EMAIL_SUBJECT_EVENT_INVITATION,
+    EMAIL_FROM,
+    EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
+)
+from server.tests.e2e.utils import api, actions, verify, email
+from server.tests.e2e.utils.actions import get_event_block
 
 DEFAULT_WEDDING_ROLES = {
     "Best Man",
@@ -620,3 +632,177 @@ def test_add_myself_and_pay_for_suit(page: Page):
     fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
     expect(fit_survey_button).to_be_visible()
     expect(fit_survey_button).to_be_disabled()
+
+
+@e2e_allowed_in({"dev", "stg", "prd"})
+@e2e_error_handling
+@pytest.mark.group_2
+def test_update_event_owner_name(page: Page):
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    top_section = page.locator("div.tmg-top-section")
+    customer_section = top_section.locator("div.tmg-customer")
+
+    current_customer_name = customer_section.locator("div.tmg-customer-name").inner_text()
+
+    edit_customer_button = customer_section.locator("button.editCustomer")
+    edit_customer_button.scroll_into_view_if_needed()
+    edit_customer_button.wait_for(state="visible")
+    edit_customer_button.click()
+
+    edit_customer_dialog = page.locator("div#edit-customer")
+    edit_customer_dialog.scroll_into_view_if_needed()
+    edit_customer_dialog.wait_for(state="visible")
+
+    time.sleep(2)
+
+    first_name_input = edit_customer_dialog.locator("input#newCustomerFirstName")
+    first_name_input.fill("Test")
+    new_last_name = f"Group2 {datetime.now().strftime('%H%M%S')}"
+    last_name_input = edit_customer_dialog.locator("input#newCustomerLastName")
+    last_name_input.fill(new_last_name)
+
+    update_button = edit_customer_dialog.locator("button.tmg-btn")
+    update_button.scroll_into_view_if_needed()
+    update_button.wait_for(state="visible")
+    update_button.click()
+
+    time.sleep(5)
+
+    new_customer_name = customer_section.locator("div.tmg-customer-name").inner_text()
+
+    assert current_customer_name != new_customer_name
+    assert new_customer_name == f"Test {new_last_name}"
+
+
+@e2e_allowed_in({"dev", "stg", "prd"})
+@e2e_error_handling
+@pytest.mark.group_1
+def test_update_attendee_uber_test(page: Page):
+    event_name = utils.generate_event_name()
+    attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_1 = f"E2E {utils.generate_unique_name()}"
+    attendee_first_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_2 = f"E2E {utils.generate_unique_name()}"
+    attendee_email_2 = utils.generate_email()
+    attendee_password_2 = str(uuid.uuid4())
+    attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
+    attendee_email_3 = utils.generate_email()
+    attendee_password_3 = str(uuid.uuid4())
+    look_name = "Test Look"
+    role_name = "Groomsman"
+
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    api.delete_all_looks(user_id)
+    api.create_look(look_name, user_id)
+    actions.access_store(page)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    verify.no_upcoming_events_visible(page)
+
+    time.sleep(1)
+
+    event_id = actions.create_new_event(page, event_name)
+    attendee_id = actions.add_first_attendee(page, event_id, attendee_first_name_1, attendee_last_name_1, None)
+    actions.open_event_accordion(page, event_id)
+
+    attendee_block = actions.get_attendee_block(page, event_id, attendee_id)
+    first_name = attendee_block.locator("div.tmg-attendees-name span.afn").inner_text()
+    last_name = attendee_block.locator("div.tmg-attendees-name span.aln").inner_text()
+
+    assert first_name == attendee_first_name_1
+    assert last_name == attendee_last_name_1
+
+    actions.select_role_for_attendee(page, event_id, attendee_id, role_name)
+    time.sleep(2)
+    actions.select_look_for_attendee(page, event_id, attendee_id, look_name)
+    time.sleep(2)
+
+    edit_attendee_button = attendee_block.locator("button.editAttendee")
+    edit_attendee_button.click()
+
+    edit_attendee_dialog = page.locator("div#edit-attendee-modal")
+    edit_attendee_dialog.scroll_into_view_if_needed()
+    edit_attendee_dialog.wait_for(state="visible")
+
+    input_first_name = edit_attendee_dialog.locator("input.attendeesFirstName")
+    input_first_name.fill(attendee_first_name_2)
+    input_last_name = edit_attendee_dialog.locator("input.attendeesLastName")
+    input_last_name.fill(attendee_last_name_2)
+    input_email = edit_attendee_dialog.locator("input.attendeesEmail")
+    input_email.fill(attendee_email_2)
+    update_button = edit_attendee_dialog.locator("button#editAttendeeBtn")
+    update_button.click()
+
+    time.sleep(2)
+
+    actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+
+    actions.logout(page)
+
+    email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email_2)
+    assert email_content is not None
+
+    activation_link = email.get_activate_account_link_from_email(email_content)
+    assert activation_link is not None
+
+    page.goto(activation_link)
+
+    actions.fill_activation_form(page, attendee_password_2, attendee_first_name_2, attendee_last_name_2)
+
+    confirmation_email_body = email.look_for_email(
+        EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION, None, attendee_email_2, 300
+    )
+    assert "You've activated your customer account." in confirmation_email_body
+
+    verify.no_upcoming_events_visible(page)
+    verify.invite_is_of_type(page, "Wedding")
+    verify.invite_has_name(page, event_name)
+    verify.invite_role_is(page, role_name)
+    verify.invite_look_is(page, look_name)
+
+    top_section = page.locator("div.tmg-top-section")
+    customer_section = top_section.locator("div.tmg-customer")
+
+    current_customer_name = customer_section.locator("div.tmg-customer-name").inner_text()
+    assert current_customer_name == f"{attendee_first_name_2} {attendee_last_name_2}"
+
+    actions.logout(page)
+
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+    attendee_block = actions.get_attendee_block(page, event_id, attendee_id)
+
+    edit_attendee_button = attendee_block.locator("button.editAttendee")
+    edit_attendee_button.click()
+
+    edit_attendee_dialog = page.locator("div#edit-attendee-modal")
+    edit_attendee_dialog.scroll_into_view_if_needed()
+    edit_attendee_dialog.wait_for(state="visible")
+
+    input_first_name = edit_attendee_dialog.locator("input.attendeesFirstName")
+    input_first_name.fill(attendee_first_name_3)
+    input_last_name = edit_attendee_dialog.locator("input.attendeesLastName")
+    input_last_name.fill(attendee_last_name_3)
+    input_email = edit_attendee_dialog.locator("input.attendeesEmail")
+    input_email.fill(attendee_email_3)
+    update_button = edit_attendee_dialog.locator("button#editAttendeeBtn")
+    update_button.click()
+
+    time.sleep(2)
+
+    actions.send_invites_to_attendees_by_id(page, event_id, [attendee_id])
+
+    actions.logout(page)
+
+    email_content = email.look_for_email(EMAIL_SUBJECT_EVENT_INVITATION, EMAIL_FROM, attendee_email_2)
+    assert email_content is not None
+
+    actions.login(page, attendee_email_2, attendee_password_2)
+
+    time.sleep(2)
+
+    verify.no_upcoming_events_visible(page)

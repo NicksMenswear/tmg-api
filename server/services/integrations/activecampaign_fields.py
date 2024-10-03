@@ -131,4 +131,5 @@ AC_FIELDS_MAP = {
     "PAID_FOR_A_SUIT": "129",
     "ADDED_ATTENDEE": "130",
     "ADDED_MYSELF": "131",
+    "LOOK_IMAGE": "132",
 }

@@ -47,7 +47,7 @@ def fetch_users_from_legacy_db():
                 SELECT *
                 FROM users_user
                 ORDER BY date_joined DESC
-                LIMIT 200
+                LIMIT 2000
                 """
             )
         ).fetchall()

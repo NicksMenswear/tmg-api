@@ -15,6 +15,7 @@ from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
 )
+from server.services.email_service import AbstractEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
@@ -54,6 +55,7 @@ class ShopifyWebhookOrderHandler:
         event_service: EventService,
         shiphero_service: AbstractShipHeroService,
         activecampaign_service: AbstractActiveCampaignService,
+        email_service: AbstractEmailService,
     ):
         self.shopify_service = shopify_service
         self.discount_service = discount_service
@@ -68,6 +70,7 @@ class ShopifyWebhookOrderHandler:
         self.event_service = event_service
         self.shiphero_service = shiphero_service
         self.activecampaign_service = activecampaign_service
+        self.email_service = email_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -106,6 +109,7 @@ class ShopifyWebhookOrderHandler:
 
         event_id = discounts[0].event_id
         event = self.event_service.get_event_by_id(event_id)
+        owner_user = self.user_service.get_user_by_id(event.user_id)
 
         for discount in discounts:
             attendee_user = self.user_service.get_user_for_attendee(discount.attendee_id)
@@ -144,6 +148,10 @@ class ShopifyWebhookOrderHandler:
             )
 
             discounts_codes.append(discount_response.get("shopify_discount_code"))
+
+            self.email_service.send_gift_discount_code_email(
+                event, owner_user, attendee_user, discount_response.get("shopify_discount_code")
+            )
 
         if discounts_codes:
             self.__track_giftcode_purchase(customer_email)

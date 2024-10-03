@@ -19,6 +19,7 @@ class PostmarkTemplates:
     ACTIVATION = 36199819
     INVITE_DEFAULT = 36555557
     INVITE_WEDDING = 36201238
+    GIFT_DISCOUNT_CODE = 37519867
 
 
 class AbstractEmailService(ABC):
@@ -63,6 +64,24 @@ class EmailService(AbstractEmailService):
 
         if response.status >= 400:
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
+
+    def send_gift_discount_code_email(
+        self, event: EventModel, owner_user: UserModel, attendee_user: UserModel, gift_discount_code: str
+    ) -> None:
+        template_model = {
+            "first_name": attendee_user.first_name,
+            "event_owner_name": owner_user.first_name,
+            "event_name": event.name,
+            "discount_code": gift_discount_code,
+        }
+        body = {
+            "From": FROM_EMAIL,
+            "To": attendee_user.email,
+            "TemplateId": PostmarkTemplates.GIFT_DISCOUNT_CODE,
+            "TemplateModel": template_model,
+        }
+
+        self.__postmark_request("POST", "email/withTemplate", body)
 
     def send_activation_email(self, user: UserModel) -> None:
         activation_url = self.__get_account_activation_url(user)

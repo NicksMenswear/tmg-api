@@ -149,9 +149,12 @@ class ShopifyWebhookOrderHandler:
 
             discounts_codes.append(discount_response.get("shopify_discount_code"))
 
-            self.email_service.send_gift_discount_code_email(
-                event, owner_user, attendee_user, discount_response.get("shopify_discount_code")
-            )
+            try:
+                self.email_service.send_gift_discount_code_email(
+                    event, owner_user, attendee_user, discount_response.get("shopify_discount_code")
+                )
+            except Exception as e:
+                logger.exception(e)
 
         if discounts_codes:
             self.__track_giftcode_purchase(customer_email)

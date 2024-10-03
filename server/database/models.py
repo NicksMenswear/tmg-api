@@ -439,6 +439,7 @@ class RMAItem(Base):
 class DiscountType(enum.Enum):
     GIFT = "gift"
     PARTY_OF_FOUR = "party_of_four"
+    CUSTOM = "custom"
 
     def __str__(self):
         return self.value

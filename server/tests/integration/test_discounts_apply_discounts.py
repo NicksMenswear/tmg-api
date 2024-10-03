@@ -13,6 +13,8 @@ from server.services.discount_service import (
 )
 from server.tests.integration import BaseTestCase, fixtures
 
+CUSTOM_DISCOUNT_CODE_PREFIX = "CUSTOM"
+
 
 class TestDiscountsApplyDiscounts(BaseTestCase):
     def setUp(self):
@@ -77,19 +79,19 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             )
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee2 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee4 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True
             )
@@ -129,19 +131,19 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             )
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee2 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee4 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
@@ -198,7 +200,7 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             random.randint(10000, 100000),
             random.randint(10000, 100000),
         )
-        already_used_discount = self.app.discount_service.create_discount(
+        self.app.discount_service.create_discount(
             event.id,
             attendee.id,
             random.randint(100, 400),
@@ -244,19 +246,19 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             )
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee2 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user2.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
         )
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user3.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
         )
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee4 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user4.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
@@ -312,19 +314,19 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             )
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee2 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user2.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
         )
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user3.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
         )
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee4 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user4.email, event_id=event.id, look_id=look1.id, invite=True, style=True
             )
@@ -380,19 +382,19 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
             )
         )
         attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee2 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee3 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
         )
         attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
-        attendee4 = self.app.attendee_service.create_attendee(
+        self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(
                 email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True, style=True
             )
@@ -437,3 +439,272 @@ class TestDiscountsApplyDiscounts(BaseTestCase):
         self.assertStatus(response, 200)
         self.assertEqual(len(response.json), 2)
         self.assertEqual(set(response.json), {discount1.shopify_discount_code, discount2.shopify_discount_code})
+
+    def test_apply_custom_discount_not_applied_for_event_less_then_4(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        # hack to reduce price of the look so smaller discount is applied
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.CUSTOM,
+            False,
+            f"{CUSTOM_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee1.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 0)
+
+    def test_apply_both_group_and_custom_discounts_for_event_with_4_members(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        # hack to reduce price of the look so smaller discount is applied
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.CUSTOM,
+            False,
+            f"{CUSTOM_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee1.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 2)
+        response_list = sorted(response.json.copy())
+        self.assertTrue(response_list[0].startswith(CUSTOM_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response_list[1].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX))
+
+    def test_apply_multiple_custom_discounts(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        # hack to reduce price of the look so smaller discount is applied
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.CUSTOM,
+            False,
+            f"{CUSTOM_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.CUSTOM,
+            False,
+            f"{CUSTOM_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee1.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 3)
+        response_list = sorted(response.json.copy())
+        self.assertTrue(response_list[0].startswith(CUSTOM_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response_list[1].startswith(CUSTOM_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response_list[2].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX))
+
+    def test_apply_gift_group_and_custom_discounts(self):
+        user = self.app.user_service.create_user(fixtures.create_user_request())
+        event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        look = self.look_service.create_look(
+            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+        )
+        # hack to reduce price of the look so smaller discount is applied
+        look.product_specs["bundle"]["variant_price"] = random.randint(200, 299)
+        update_look_model = fixtures.update_look_request(name=look.name, product_specs=look.product_specs)
+        self.app.look_service.update_look(look.id, update_look_model)
+        attendee_user1 = self.app.user_service.create_user(fixtures.create_user_request())
+        attendee1 = self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user1.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user2 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user2.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user3 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user3.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        attendee_user4 = self.app.user_service.create_user(fixtures.create_user_request())
+        self.app.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                email=attendee_user4.email, event_id=event.id, look_id=look.id, invite=True, style=True
+            )
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.GIFT,
+            False,
+            f"{GIFT_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+        self.app.discount_service.create_discount(
+            event.id,
+            attendee1.id,
+            random.randint(50, 200),
+            DiscountType.CUSTOM,
+            False,
+            f"{CUSTOM_DISCOUNT_CODE_PREFIX}-{random.randint(100000, 1000000)}",
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+            random.randint(10000, 100000),
+        )
+
+        # when
+        response = self.client.open(
+            f"/attendees/{str(attendee1.id)}/apply-discounts",
+            query_string=self.hmac_query_params,
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.apply_discounts_request(event_id=event.id).model_dump(), cls=encoder.CustomJSONEncoder
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        self.assertEqual(len(response.json), 3)
+        response_list = sorted(response.json.copy())
+        self.assertTrue(response_list[0].startswith(CUSTOM_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response_list[1].startswith(GIFT_DISCOUNT_CODE_PREFIX))
+        self.assertTrue(response_list[2].startswith(TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX))

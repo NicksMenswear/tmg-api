@@ -483,6 +483,17 @@ class DiscountService:
 
         return DiscountModel.from_orm(discount)
 
+    def get_custom_discount_for_attendee(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
+        discounts = Discount.query.filter(
+            Discount.attendee_id == attendee_id,
+            Discount.type == DiscountType.CUSTOM,
+        ).all()
+
+        if not discounts:
+            return []
+
+        return [DiscountModel.from_orm(discount) for discount in discounts]
+
     def create_tmg_group_discount_for_attendee(self, attendee: AttendeeModel, event_id: uuid.UUID) -> DiscountModel:
         if not attendee.look_id:
             raise NotFoundError("Attendee has no look associated.")
@@ -555,7 +566,10 @@ class DiscountService:
             else:
                 discounts.append(existing_discount)
 
-        discounts = [discount for discount in discounts]
+            custom_discounts = self.get_custom_discount_for_attendee(attendee_id)
+
+            for discount in custom_discounts:
+                discounts.append(discount)
 
         if not discounts:
             return []

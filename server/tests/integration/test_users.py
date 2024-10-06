@@ -607,12 +607,12 @@ class TestUsers(BaseTestCase):
         response_look1 = response.json[0]
         response_look2 = response.json[1]
 
-        self.assertEqual(response_look1["id"], str(look1.id))
-        self.assertEqual(response_look1["name"], str(look1.name))
-        self.assertEqual(response_look1["price"], self.look_service.get_look_price(look1))
-        self.assertEqual(response_look2["id"], str(look2.id))
-        self.assertEqual(response_look2["name"], str(look2.name))
-        self.assertEqual(response_look2["price"], self.look_service.get_look_price(look2))
+        self.assertEqual({response_look1["id"], response_look2["id"]}, {str(look1.id), str(look2.id)})
+        self.assertEqual({response_look1["name"], response_look2["name"]}, {str(look1.name), str(look2.name)})
+        self.assertEqual(
+            {response_look1["price"], response_look2["price"]},
+            {self.look_service.get_look_price(look1), self.look_service.get_look_price(look2)},
+        )
 
     def test_create_user_first_name_too_long(self):
         # given

@@ -1,7 +1,5 @@
 import os
 
-from flask_sqlalchemy import SQLAlchemy
-
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
 db_host = os.getenv("DB_HOST")
@@ -22,4 +20,19 @@ engine_options = dict(
     echo_pool=True,
 )
 
-db = SQLAlchemy(engine_options=engine_options)
+if os.getenv("USE_FLASK") == "false":
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    engine = create_engine(DATABASE_URL)
+    Session = sessionmaker(bind=engine)
+
+    class DBManager:
+        def __init__(self):
+            self.session = Session()
+
+    db = DBManager()
+else:
+    from flask_sqlalchemy import SQLAlchemy
+
+    db = SQLAlchemy(engine_options=engine_options)

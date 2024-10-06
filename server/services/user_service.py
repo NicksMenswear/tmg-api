@@ -97,7 +97,7 @@ class UserService:
 
     @staticmethod
     def get_user_by_id(user_id: uuid.UUID) -> UserModel:
-        db_user = db.session.execute(select(User).where(User.id == user_id)).scalars().first()
+        db_user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not db_user:
             raise NotFoundError("User not found.")
@@ -115,7 +115,7 @@ class UserService:
 
     @staticmethod
     def get_user_by_shopify_id(shopify_id: str) -> UserModel:
-        db_user = db.session.execute(select(User).where(User.shopify_id == shopify_id)).scalars().first()
+        db_user = db.session.execute(select(User).where(User.shopify_id == shopify_id)).scalar_one_or_none()
 
         if not db_user:
             raise NotFoundError("User not found.")
@@ -124,7 +124,7 @@ class UserService:
 
     @staticmethod
     def get_user_for_attendee(attendee_id: uuid.UUID) -> UserModel:
-        user = db.session.execute(select(User).join(Attendee).where(Attendee.id == attendee_id)).scalars().first()
+        user = db.session.execute(select(User).join(Attendee).where(Attendee.id == attendee_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -151,7 +151,7 @@ class UserService:
         return [DiscountModel.from_orm(discount) for discount in discounts]
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel, update_shopify=True) -> UserModel:
-        user: User = db.session.execute(select(User).where(User.id == user_id)).scalars().first()
+        user: User = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -208,7 +208,7 @@ class UserService:
             raise ServiceError("Failed to update attendee size.", e)
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
-        user = db.session.execute(select(User).where(User.id == user_id)).scalars().first()
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user or not user.shopify_id:
             raise ServiceError("User does not have a Shopify ID.")

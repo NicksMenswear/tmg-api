@@ -8,15 +8,15 @@ provider:
     role:
       name: tmg-api-${sls:stage}-role
       statements:
-        - Effect: Allow
-          Action:
-            - s3:PutObject
-            - s3:AbortMultipartUpload
-            - s3:ListMultipartUploadParts
-            - s3:CreateMultipartUpload
-            - s3:CompleteMultipartUpload
-          Resource:
-            - arn:aws:s3:::tmg-api-*/*
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:AbortMultipartUpload
+          - s3:ListMultipartUploadParts
+          - s3:CreateMultipartUpload
+          - s3:CompleteMultipartUpload
+        Resource:
+          - arn:aws:s3:::tmg-api-*/*
   stackTags:
     env: ${sls:stage}
   logRetentionInDays: 30

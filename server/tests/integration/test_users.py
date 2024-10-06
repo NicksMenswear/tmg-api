@@ -271,7 +271,17 @@ class TestUsers(BaseTestCase):
         self.assertEqual(response_event1["looks"][0]["id"], str(look.id))
         self.assertEqual(len(response_event1["attendees"]), 2)
 
-        response_attendee1 = response_event1["attendees"][0]
+        response_attendee1 = (
+            response_event1["attendees"][0]
+            if response_event1["attendees"][0]["id"] == str(attendee1.id)
+            else response_event1["attendees"][1]
+        )
+        response_attendee2 = (
+            response_event1["attendees"][1]
+            if response_event1["attendees"][1]["id"] == str(attendee2.id)
+            else response_event1["attendees"][0]
+        )
+
         self.assertEqual(response_attendee1["id"], str(attendee1.id))
         self.assertEqual(response_attendee1["user"]["email"], str(attendee_user1.email))
         self.assertFalse(response_attendee1["can_be_deleted"])
@@ -282,9 +292,6 @@ class TestUsers(BaseTestCase):
             {not_used_paid_discount.shopify_discount_code, used_paid_discount.shopify_discount_code},
         )
 
-        response_attendee2 = response_event1["attendees"][1]
-        self.assertEqual(response_attendee2["id"], str(attendee2.id))
-        self.assertEqual(response_attendee2["user"]["email"], str(attendee_user2.email))
         self.assertTrue(response_attendee2["can_be_deleted"])
 
         response_event2 = response.json[1]

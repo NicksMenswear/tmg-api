@@ -634,6 +634,8 @@ def shopify_checkout_enter_billing_address(
 
 def shopify_checkout_continue_to_shipping(
     page: Page,
+    firstname: str,
+    lastname: str,
     address1: str = "709 Redwood Drive",
     city: str = "Cedar Falls",
     state: str = "IA",
@@ -641,6 +643,12 @@ def shopify_checkout_continue_to_shipping(
     phone: str = "319-277-0213",
 ):
     try:
+        input_firstname = page.locator('input[name="firstName"]').first
+        input_firstname.fill(firstname)
+
+        input_lastname = page.locator('input[name="lastName"]').first
+        input_lastname.fill(lastname)
+
         input_address1 = page.locator("#shipping-address1").first
         input_address1.scroll_into_view_if_needed()
         input_address1.wait_for(state="visible")

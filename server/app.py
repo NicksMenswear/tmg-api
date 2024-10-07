@@ -131,7 +131,9 @@ def init_services(app, is_testing=False):
     app.user_service = UserService(app.shopify_service, app.email_service, app.activecampaign_service)
     app.role_service = RoleService()
     app.look_service = LookService(app.user_service, app.aws_service, app.shopify_service)
-    app.attendee_service = AttendeeService(app.shopify_service, app.user_service, app.email_service)
+    app.attendee_service = AttendeeService(
+        app.shopify_service, app.user_service, app.look_service, app.email_service, app.activecampaign_service
+    )
     app.sku_builder = SkuBuilder()
     app.event_service = EventService(
         attendee_service=app.attendee_service, role_service=app.role_service, look_service=app.look_service

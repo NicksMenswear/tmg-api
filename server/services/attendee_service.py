@@ -22,19 +22,29 @@ from server.models.role_model import RoleModel
 from server.models.user_model import UserModel, CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
 from server.services.email_service import AbstractEmailService
+from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shopify_service import AbstractShopifyService, logger
+from server.services.look_service import LookService
 from server.services.user_service import UserService
 
 STAGE = os.getenv("STAGE")
+DATA_CDN = os.getenv("DATA_CDN")
 
 
 class AttendeeService:
     def __init__(
-        self, shopify_service: AbstractShopifyService, user_service: UserService, email_service: AbstractEmailService
+        self,
+        shopify_service: AbstractShopifyService,
+        user_service: UserService,
+        look_service: LookService,
+        email_service: AbstractEmailService,
+        activecampaign_service: AbstractActiveCampaignService,
     ):
         self.shopify_service = shopify_service
         self.user_service = user_service
+        self.look_service = look_service
         self.email_service = email_service
+        self.active_campaign_service = activecampaign_service
 
     @staticmethod
     def get_attendee_by_id(attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
@@ -299,6 +309,11 @@ class AttendeeService:
             raise BadRequestError("Cannot update look for attendee that has already paid or has an issued gift code.")
 
         attendee.look_id = update_attendee.look_id
+
+        # TODO Tracking async
+        look = self.look_service.get_look_by_id(attendee.look_id)
+        user = self.user_service.get_user_by_id(attendee.user_id)
+        self.active_campaign_service.sync_contact(user.email, fields={"LOOK_IMAGE": f"{DATA_CDN}{look.image_path}"})
 
     def __update_email(self, attendee: Attendee, update_attendee: UpdateAttendeeModel) -> None:
         if update_attendee.email is None:

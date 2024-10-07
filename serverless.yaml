@@ -86,8 +86,7 @@ functions:
     handler: server.handlers.audit_log_handler.process_messages
     events:
       - sqs:
-          arn:
-            Fn::GetAtt: [ MyQueue, Arn ]
+          arn: arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
           batchSize: 10
           enabled: true
     memorySize: 512

@@ -4,6 +4,7 @@ import random
 from typing import Set, Any, Dict
 
 from flask_testing import TestCase
+from sqlalchemy import delete
 
 from server import encoder
 from server.app import init_app, init_db
@@ -44,20 +45,19 @@ class BaseTestCase(TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
-        Address.query.delete()
-        Discount.query.delete()
-        Attendee.query.delete()
-        Role.query.delete()
-        Look.query.delete()
-        OrderItem.query.delete()
-        Order.query.delete()
-        Event.query.delete()
-        Size.query.delete()
-        Measurement.query.delete()
-        User.query.delete()
-        SuitBuilderItem.query.delete()
-        AuditLog.query.delete()
-
+        db.session.execute(delete(Address))
+        db.session.execute(delete(Discount))
+        db.session.execute(delete(Attendee))
+        db.session.execute(delete(Role))
+        db.session.execute(delete(Look))
+        db.session.execute(delete(OrderItem))
+        db.session.execute(delete(Order))
+        db.session.execute(delete(Event))
+        db.session.execute(delete(Size))
+        db.session.execute(delete(Measurement))
+        db.session.execute(delete(User))
+        db.session.execute(delete(SuitBuilderItem))
+        db.session.execute(delete(AuditLog))
         db.session.commit()
 
         self.content_type = CONTENT_TYPE_JSON
@@ -96,7 +96,7 @@ class BaseTestCase(TestCase):
 
         # We should have few hundreds products and if few are left in db that means they are leftovers from previous test cases
         if num_products_in_db < 100:
-            Product.query.delete()
+            db.session.execute(delete(Product))
             self.__load_products()
 
     def populate_shopify_variants(self, num_variants=100):

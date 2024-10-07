@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import func, text
+from sqlalchemy import func, select, and_
 
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
@@ -11,15 +11,14 @@ from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
-from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
+from server.services.integrations.shopify_service import AbstractShopifyService
 
 logger = logging.getLogger(__name__)
 
 MAX_NAME_LENGTH = 63
 
 
-# noinspection PyMethodMayBeStatic
 class UserService:
     def __init__(
         self,
@@ -32,7 +31,11 @@ class UserService:
         self.activecampaign_service = activecampaign_service
 
     def create_user(self, create_user: CreateUserModel, send_activation_email: bool = False) -> UserModel:
-        user = User.query.filter(func.lower(User.email) == create_user.email.lower()).first()
+        user = (
+            db.session.execute(select(User).where(func.lower(User.email) == create_user.email.lower()))
+            .scalars()
+            .first()
+        )
         first_name = None if not create_user.first_name else create_user.first_name[:MAX_NAME_LENGTH]
         last_name = None if not create_user.last_name else create_user.last_name[:MAX_NAME_LENGTH]
 
@@ -92,51 +95,63 @@ class UserService:
 
         return user_model
 
-    def get_user_by_id(self, user_id: uuid.UUID) -> UserModel:
-        db_user = User.query.filter(User.id == user_id).first()
+    @staticmethod
+    def get_user_by_id(user_id: uuid.UUID) -> UserModel:
+        db_user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not db_user:
             raise NotFoundError("User not found.")
 
         return UserModel.from_orm(db_user)
 
-    def get_user_by_email(self, email: str) -> UserModel:
-        db_user = User.query.filter(func.lower(User.email) == email.lower()).first()
+    @staticmethod
+    def get_user_by_email(email: str) -> UserModel:
+        db_user = db.session.execute(select(User).where(func.lower(User.email) == email.lower())).scalars().first()
 
         if not db_user:
             raise NotFoundError("User not found.")
 
         return UserModel.from_orm(db_user)
 
-    def get_user_by_shopify_id(self, shopify_id: str) -> UserModel:
-        db_user = User.query.filter(User.shopify_id == shopify_id).first()
+    @staticmethod
+    def get_user_by_shopify_id(shopify_id: str) -> UserModel:
+        db_user = db.session.execute(select(User).where(User.shopify_id == shopify_id)).scalar_one_or_none()
 
         if not db_user:
             raise NotFoundError("User not found.")
 
         return UserModel.from_orm(db_user)
 
-    def get_user_for_attendee(self, attendee_id: uuid.UUID) -> UserModel:
-        user = User.query.join(Attendee).filter(Attendee.id == attendee_id).first()
+    @staticmethod
+    def get_user_for_attendee(attendee_id: uuid.UUID) -> UserModel:
+        user = db.session.execute(select(User).join(Attendee).where(Attendee.id == attendee_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
 
         return UserModel.from_orm(user)
 
-    def get_gift_paid_but_not_used_discounts(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
-        return [
-            DiscountModel.from_orm(discount)
-            for discount in Discount.query.filter(
-                Discount.attendee_id == attendee_id,
-                Discount.shopify_discount_code != None,
-                Discount.used == False,
-                Discount.type == DiscountType.GIFT,
-            ).all()
-        ]
+    @staticmethod
+    def get_gift_paid_but_not_used_discounts(attendee_id: uuid.UUID) -> List[DiscountModel]:
+        discounts = (
+            db.session.execute(
+                select(Discount).where(
+                    and_(
+                        Discount.attendee_id == attendee_id,
+                        Discount.shopify_discount_code != None,
+                        Discount.used == False,
+                        Discount.type == DiscountType.GIFT,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        return [DiscountModel.from_orm(discount) for discount in discounts]
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel, update_shopify=True) -> UserModel:
-        user: User = User.query.filter_by(id=user_id).first()
+        user: User = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -179,8 +194,9 @@ class UserService:
         )
         return UserModel.from_orm(user)
 
-    def set_size(self, user_id: uuid.UUID) -> None:
-        attendees = Attendee.query.filter(Attendee.user_id == user_id).all()
+    @staticmethod
+    def set_size(user_id: uuid.UUID) -> None:
+        attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
 
         for attendee in attendees:
             attendee.size = True
@@ -192,7 +208,7 @@ class UserService:
             raise ServiceError("Failed to update attendee size.", e)
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
-        user = User.query.filter_by(id=user_id).first()
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user or not user.shopify_id:
             raise ServiceError("User does not have a Shopify ID.")

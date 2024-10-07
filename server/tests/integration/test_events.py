@@ -4,8 +4,11 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
+from sqlalchemy import select
+
 from server import encoder
 from server.controllers import FORCE_DELETE_HEADER
+from server.database.database_manager import db
 from server.database.models import Attendee
 from server.models.event_model import EventTypeModel
 from server.services.event_service import NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
@@ -636,9 +639,9 @@ class TestEvents(BaseTestCase):
         looked_up_event = self.event_service.get_event_by_id(event.id)
         self.assertEqual(looked_up_event.is_active, False)
 
-        db_attendee1 = Attendee.query.filter(Attendee.id == attendee1.id).first()
+        db_attendee1 = db.session.execute(select(Attendee).filter(Attendee.id == attendee1.id)).scalars().first()
         self.assertEqual(db_attendee1.is_active, False)
-        db_attendee2 = Attendee.query.filter(Attendee.id == attendee2.id).first()
+        db_attendee2 = db.session.execute(select(Attendee).filter(Attendee.id == attendee2.id)).scalars().first()
         self.assertEqual(db_attendee2.is_active, False)
 
     def test_delete_event_attendee_is_not_active(self):
@@ -665,7 +668,7 @@ class TestEvents(BaseTestCase):
         looked_up_event = self.event_service.get_event_by_id(event.id)
         self.assertEqual(looked_up_event.is_active, False)
 
-        db_attendee = Attendee.query.filter(Attendee.id == attendee.id).first()
+        db_attendee = db.session.execute(select(Attendee).filter(Attendee.id == attendee.id)).scalars().first()
         self.assertEqual(db_attendee.is_active, False)
 
     def test_delete_event_attendee_is_not_active_but_invited(self):
@@ -692,7 +695,7 @@ class TestEvents(BaseTestCase):
         looked_up_event = self.event_service.get_event_by_id(event.id)
         self.assertEqual(looked_up_event.is_active, False)
 
-        db_attendee = Attendee.query.filter(Attendee.id == attendee.id).first()
+        db_attendee = db.session.execute(select(Attendee).filter(Attendee.id == attendee.id)).scalars().first()
         self.assertEqual(db_attendee.is_active, False)
 
     def test_delete_event_attendee_is_invited(self):

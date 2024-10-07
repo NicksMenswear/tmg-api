@@ -22,7 +22,7 @@ from server.database.models import (
 
 
 def init_audit_logging():
-    entities = [User, Event, Attendee, Look, Role, Order, OrderItem, Product, Discount, Size, Measurement, Address]
+    entities = [User, Event, Attendee, Look, Order, OrderItem, Product, Discount, Size, Measurement, Address]
 
     for entity in entities:
         log_prefix = f"{entity.__name__.upper()}"

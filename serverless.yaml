@@ -18,7 +18,7 @@ provider:
         Resource:
           - arn:aws:s3:::tmg-api-*/*
   stackTags:
-      env: ${sls:stage}
+    env: ${sls:stage}
   logRetentionInDays: 30
   logs:
     restApi:
@@ -71,14 +71,16 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-#  job-e2e-clean-up:
-#    handler: jobs.lambda_handler_e2e_clean_up
+#  job-no-flask-experiment:
+#    handler: jobs.lambda_handler_no_flask_experiment
 #    events:
-#      - schedule: rate(15 minutes)
+#      - schedule: rate(1 minute)
 #    timeout: 600
 #    memorySize: 512
 #    lambdaInsights: true
 #    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+#    environment:
+#      USE_FLASK: false
 
 plugins:
   - serverless-python-requirements

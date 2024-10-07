@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List
 
+from sqlalchemy import select
+
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look, EventType
 from server.models.event_model import CreateEventModel, EventModel, UpdateEventModel, EventUserStatus, AttendeeModel
@@ -15,7 +17,6 @@ from server.services.role_service import RoleService, PREDEFINED_ROLES
 NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 4
 
 
-# noinspection PyMethodMayBeStatic
 class EventService:
     def __init__(self, attendee_service: AttendeeService, role_service: RoleService, look_service: LookService):
         self.role_service = role_service
@@ -23,9 +24,7 @@ class EventService:
         self.attendee_service = attendee_service
 
     def get_event_by_id(self, event_id: uuid.UUID, enriched=False) -> EventModel:
-        event_with_owner = (
-            db.session.query(Event, User).join(User, User.id == Event.user_id).filter(Event.id == event_id).first()
-        )
+        event_with_owner = db.session.execute(select(Event, User).join(User).where(Event.id == event_id)).first()
 
         if not event_with_owner:
             raise NotFoundError("Event not found.")
@@ -44,24 +43,31 @@ class EventService:
 
         return event_model
 
-    def get_events(self, event_ids: List[uuid.UUID]) -> List[EventModel]:
-        events = Event.query.filter(Event.id.in_(event_ids), Event.is_active).all()
+    @staticmethod
+    def get_events(event_ids: List[uuid.UUID]) -> List[EventModel]:
+        events = db.session.execute(select(Event).where(Event.id.in_(event_ids), Event.is_active)).scalars().all()
         return [EventModel.from_orm(event) for event in events]
 
     def create_event(
         self, create_event: CreateEventModel, ignore_event_date_creation_condition: bool = False
     ) -> EventModel:
-        user = User.query.filter_by(id=create_event.user_id).first()
+        user = db.session.execute(select(User).where(User.id == create_event.user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
 
-        db_event = Event.query.filter(
-            Event.name == create_event.name,
-            Event.event_at == create_event.event_at,
-            Event.is_active,
-            Event.user_id == user.id,
-        ).first()
+        db_event = (
+            db.session.execute(
+                select(Event).where(
+                    Event.name == create_event.name,
+                    Event.event_at == create_event.event_at,
+                    Event.is_active,
+                    Event.user_id == user.id,
+                )
+            )
+            .scalars()
+            .first()
+        )
 
         if db_event:
             raise DuplicateError("Event with the same name and date already exists.")
@@ -98,19 +104,26 @@ class EventService:
 
         return event
 
-    def update_event(self, event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
-        db_event = Event.query.filter(Event.id == event_id, Event.is_active).first()
+    @staticmethod
+    def update_event(event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
+        db_event = db.session.execute(select(Event).where(Event.id == event_id, Event.is_active)).scalar_one_or_none()
 
         if not db_event:
             raise NotFoundError("Event not found.")
 
-        existing_event = Event.query.filter(
-            Event.name == update_event.name,
-            Event.is_active,
-            Event.user_id == db_event.user_id,
-            Event.event_at == update_event.event_at,
-            Event.id != event_id,
-        ).first()
+        existing_event = (
+            db.session.execute(
+                select(Event).where(
+                    Event.name == update_event.name,
+                    Event.is_active,
+                    Event.user_id == db_event.user_id,
+                    Event.event_at == update_event.event_at,
+                    Event.id != event_id,
+                )
+            )
+            .scalars()
+            .first()
+        )
 
         if existing_event:
             raise DuplicateError("Event with the same details already exists.")
@@ -126,12 +139,14 @@ class EventService:
             raise ServiceError("Failed to update event.", e)
 
         event = EventModel.from_orm(db_event)
-        event.owner = UserModel.from_orm(User.query.filter(User.id == db_event.user_id).first())
+        event.owner = UserModel.from_orm(
+            db.session.execute(select(User).where(User.id == db_event.user_id)).scalar_one_or_none()
+        )
 
         return event
 
     def delete_event(self, event_id: uuid.UUID, force: bool = False) -> None:
-        db_event = Event.query.filter(Event.id == event_id).first()
+        db_event = db.session.execute(select(Event).where(Event.id == event_id)).scalar_one_or_none()
 
         if not db_event:
             raise NotFoundError("Event not found.")
@@ -157,12 +172,9 @@ class EventService:
             raise ServiceError("Failed to deactivate event.", e)
 
     def get_user_owned_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
-        events = (
-            db.session.query(Event, User)
-            .join(User, User.id == Event.user_id)
-            .filter(Event.user_id == user_id, Event.is_active)
-            .all()
-        )
+        events = db.session.execute(
+            select(Event, User).join(User, User.id == Event.user_id).where(Event.user_id == user_id, Event.is_active)
+        ).all()
 
         if not events:
             return []
@@ -188,14 +200,18 @@ class EventService:
         return models
 
     def get_user_invited_events(self, user_id: uuid.UUID, enriched: bool = False) -> List[EventModel]:
-        events_with_owners = (
-            db.session.query(Event, User)
+        events_with_owners = db.session.execute(
+            select(Event, User)
             .join(User, User.id == Event.user_id)
             .join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.user_id == user_id, Event.is_active, Attendee.is_active, Attendee.invite)
-            .filter(Attendee.user_id != Event.user_id)  # hide own events from invites
-            .all()
-        )
+            .where(
+                Attendee.user_id == user_id,
+                Event.is_active,
+                Attendee.is_active,
+                Attendee.invite,
+                Attendee.user_id != Event.user_id,
+            )
+        ).all()
 
         events = []
 
@@ -222,7 +238,7 @@ class EventService:
     def get_user_events(
         self, user_id: uuid.UUID, status: EventUserStatus = None, enriched: bool = False
     ) -> List[EventModel]:
-        user = User.query.filter_by(id=user_id).first()
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
@@ -250,14 +266,18 @@ class EventService:
         return sorted(list(events.values()), key=lambda x: x.event_at)
 
     def get_events_for_look(self, look_id: uuid.UUID) -> List[EventModel]:
-        db_look = Look.query.filter(Look.id == look_id).first()
+        db_look = db.session.execute(select(Look).where(Look.id == look_id)).scalar_one_or_none()
 
         if not db_look:
             raise NotFoundError("Look not found")
 
         events = (
-            Event.query.join(Attendee, Event.id == Attendee.event_id)
-            .filter(Attendee.look_id == look_id, Event.is_active)
+            db.session.execute(
+                select(Event)
+                .join(Attendee, Event.id == Attendee.event_id)
+                .where(Attendee.look_id == look_id, Event.is_active)
+            )
+            .scalars()
             .all()
         )
 

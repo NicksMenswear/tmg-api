@@ -82,16 +82,19 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-#  job-no-flask-experiment:
-#    handler: jobs.lambda_handler_no_flask_experiment
-#    events:
-#      - schedule: rate(1 minute)
-#    timeout: 600
-#    memorySize: 512
-#    lambdaInsights: true
-#    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
-#    environment:
-#      USE_FLASK: false
+  auditLogQueueProcessor:
+    handler: server.handlers.audit_log_handler.process_messages
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [ MyQueue, Arn ]
+          batchSize: 10
+          enabled: true
+    memorySize: 512
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+    environment:
+      USE_FLASK: false
 
 plugins:
   - serverless-python-requirements

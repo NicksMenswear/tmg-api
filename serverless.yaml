@@ -29,6 +29,7 @@ provider:
     STAGE: ${sls:stage}
     API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
     DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
+    DATA_CDN: ${self:custom.stageVars.${sls:stage}.data_cdn}
     POWERTOOLS_SERVICE_NAME: api
     POWERTOOLS_LOG_LEVEL: INFO
     # SQLAlchemy Env Variables
@@ -95,6 +96,7 @@ custom:
     dev:
       region: us-west-2
       data_bucket: "tmg-api-data-dev-fe58ee1e1337"
+      data_cdn: "https://data.dev.tmgcorp.net/"
       provisionedConcurrency: 5
       vpc:
         securityGroupIds:
@@ -107,6 +109,7 @@ custom:
     prd:
       region: us-east-1
       data_bucket: "tmg-api-data-prd-e08bbe743c81"
+      data_cdn: "https://data.prd.tmgcorp.net/"
       provisionedConcurrency: 40
       vpc:
         securityGroupIds:

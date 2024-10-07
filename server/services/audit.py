@@ -19,6 +19,7 @@ from server.database.models import (
     Measurement,
     Address,
 )
+from server.flask_app import FlaskApp
 
 
 def init_audit_logging():
@@ -45,11 +46,26 @@ def init_audit_logging():
 
 
 def __log_operation(target, operation):
+    serialized_request = __request_to_dict()
+    serialized_payload = target.serialize()
+
     audit_log = AuditLog()
-    audit_log.request = __request_to_dict()
+    audit_log.request = serialized_request
     audit_log.type = operation
-    audit_log.payload = target.serialize()
+    audit_log.payload = serialized_payload
     db.session.add(audit_log)
+
+    if FlaskApp.current():
+        FlaskApp.current().aws_service.enqueue_message(
+            FlaskApp.current().audit_log_sqs_queue_url,
+            json.dumps(
+                {
+                    "type": operation,
+                    "payload": serialized_payload,
+                    "request": serialized_request,
+                }
+            ),
+        )
 
 
 def __request_to_dict() -> dict:

@@ -122,6 +122,7 @@ def init_services(app, is_testing=False):
         "online_store_sales_channel_id", "gid://shopify/Publication/94480072835"
     )
     app.online_store_shop_id = os.getenv("online_store_shop_id", "56965365891")
+    app.audit_log_sqs_queue_url = os.getenv("AUDIT_QUEUE_URL", "https://sqs.us-west-2.amazonaws.com/123456789012/audit")
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()

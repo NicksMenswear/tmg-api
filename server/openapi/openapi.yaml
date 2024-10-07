@@ -24,10 +24,6 @@ tags:
       Handles product items, encompassing product listings, item details,
       and product management operations.
     name: Product
-  - description:
-      Provides access to audit logs, tracking changes made within the system
-      for compliance and monitoring.
-    name: Audit
 paths:
   /health:
     get:
@@ -1645,48 +1641,6 @@ paths:
         - Shipping
       x-openapi-router-controller: server.controllers.shipping
 
-  /audit:
-    get:
-      operationId: list_audit_entries
-      parameters:
-        - in: query
-          name: logged_in_customer_id
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: shop
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: path_prefix
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: timestamp
-          schema:
-            type: string
-          required: false
-        - in: query
-          name: signature
-          schema:
-            type: string
-          required: false
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/AuditLog"
-                type: array
-          description: An array of audit log entries
-      summary: Lists all audit entries
-      tags:
-        - Audit
-      x-openapi-router-controller: server.controllers.audit
   /login:
     get:
       operationId: login
@@ -2355,16 +2309,6 @@ components:
       title: ShopifyWebhook
       type: object
 
-    AuditLog:
-      example:
-        id: 1
-      properties:
-        id:
-          title: id
-          type: integer
-      title: AuditLog
-      type: object
-    
     CreateSize:
       properties:
         user_id:

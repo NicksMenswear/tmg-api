@@ -90,6 +90,9 @@ def __request_to_dict() -> dict:
     if data:
         json_data = json.loads(data)
 
+        if "image" in json_data:
+            json_data["image"] = "<skipped>"
+
     return {
         "method": request.method,
         "path": request.path,

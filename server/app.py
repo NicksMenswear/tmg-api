@@ -102,9 +102,7 @@ def init_app(is_testing=False):
 
     FlaskApp.set(api.app)
 
-    if not run_in_test_mode:
-        init_audit_logging()
-
+    init_audit_logging()
     init_services(api.app, run_in_test_mode)
 
     # Do not reorder, this is ensuring requests are logged with the attributes

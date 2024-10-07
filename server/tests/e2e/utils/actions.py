@@ -174,7 +174,11 @@ def delete_event(page: Page, event_id: str, event_name: str):
     remove_event_btn.scroll_into_view_if_needed()
     remove_event_btn.click()
 
-    confirm_btn = page.locator("#confirm-btn").first
+    popup_dialog = page.locator("div.tmg-popup-overlay")
+    popup_dialog.scroll_into_view_if_needed()
+    popup_dialog.wait_for(state="visible")
+
+    confirm_btn = popup_dialog.locator("button.confirmBtn")
     confirm_btn.scroll_into_view_if_needed()
     confirm_btn.wait_for(state="visible")
     confirm_btn.click()
@@ -191,7 +195,11 @@ def delete_attendee(page: Page, event_id: str, attendee_id: str):
     delete_attendee_btn.scroll_into_view_if_needed()
     delete_attendee_btn.click()
 
-    confirm_btn = page.locator("#confirm-btn").first
+    popup_dialog = page.locator("div.tmg-popup-overlay")
+    popup_dialog.scroll_into_view_if_needed()
+    popup_dialog.wait_for(state="visible")
+
+    confirm_btn = popup_dialog.locator("button.confirmBtn")
     confirm_btn.scroll_into_view_if_needed()
     confirm_btn.wait_for(state="visible")
     confirm_btn.click()
@@ -342,14 +350,12 @@ def delete_look_by_look_id(page: Page, look_id):
     remove_button = look_card_locator.locator("button.removeLook")
     remove_button.click()
 
-    modal_locator = page.locator("div.confirm-modal-container")
-    modal_locator.wait_for()
+    popup_dialog = page.locator("div.tmg-popup-overlay")
+    popup_dialog.scroll_into_view_if_needed()
+    popup_dialog.wait_for(state="visible")
 
-    modal_header = modal_locator.locator("div.confirm-modal-header")
-    assert modal_header.inner_text().strip() == "Remove Look"
-
-    confirm_button_locator = modal_locator.locator("button#confirm-btn")
-    confirm_button_locator.click()
+    confirm_btn = popup_dialog.locator("button.confirmBtn")
+    confirm_btn.click()
 
 
 def pay_in_full_attendee_by_id(page: Page, event_id, attendee_id, expected_amount):

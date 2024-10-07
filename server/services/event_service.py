@@ -24,9 +24,7 @@ class EventService:
         self.attendee_service = attendee_service
 
     def get_event_by_id(self, event_id: uuid.UUID, enriched=False) -> EventModel:
-        event_with_owner = db.session.execute(
-            select(Event, User).join(User).where(Event.id == event_id)
-        ).scalar_one_or_none()
+        event_with_owner = db.session.execute(select(Event, User).join(User).where(Event.id == event_id)).first()
 
         if not event_with_owner:
             raise NotFoundError("Event not found.")

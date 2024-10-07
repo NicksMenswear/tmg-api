@@ -47,19 +47,19 @@ def init_audit_logging():
 
 
 def __log_operation(target, operation):
-    serializable_request = __request_to_dict()
-    serializable_payload = target.serialize()
-
     if not FlaskApp.current():
         return
 
-        try:
-            FlaskApp.current().aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
-            )
-        except Exception as e:
-            logger.exception(f"Failed to enqueue audit log message: {e}")
+    try:
+        serializable_request = __request_to_dict()
+        serializable_payload = target.serialize()
+
+        FlaskApp.current().aws_service.enqueue_message(
+            FlaskApp.current().audit_log_sqs_queue_url,
+            AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
+        )
+    except Exception as e:
+        logger.exception(f"Failed to enqueue audit log message: {e}")
 
 
 def __request_to_dict() -> dict:

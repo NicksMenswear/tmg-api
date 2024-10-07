@@ -612,7 +612,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     verify.shopify_open_order_summary_if_needed(page)
 
-    actions.shopify_checkout_continue_to_shipping(page)
+    actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)
     actions.shopify_checkout_pay_with_credit_card_for_order(
         page, owner_user.get("first_name"), owner_user.get("last_name")

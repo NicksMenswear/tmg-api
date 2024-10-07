@@ -82,7 +82,7 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-  auditLogQueueProcessor:
+  audit-log-queue-processor:
     handler: server.handlers.audit_log_handler.process_messages
     events:
       - sqs:

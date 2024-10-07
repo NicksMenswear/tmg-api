@@ -4,9 +4,7 @@ import logging
 from flask import request
 from sqlalchemy import event
 
-from server.database.database_manager import db
 from server.database.models import (
-    AuditLog,
     User,
     Event,
     Attendee,
@@ -52,13 +50,9 @@ def __log_operation(target, operation):
     serializable_request = __request_to_dict()
     serializable_payload = target.serialize()
 
-    audit_log = AuditLog()
-    audit_log.request = serializable_request
-    audit_log.type = operation
-    audit_log.payload = serializable_payload
-    db.session.add(audit_log)
+    if not FlaskApp.current():
+        return
 
-    if FlaskApp.current():
         try:
             FlaskApp.current().aws_service.enqueue_message(
                 FlaskApp.current().audit_log_sqs_queue_url,

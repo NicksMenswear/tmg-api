@@ -20,7 +20,7 @@ from server.logs import (
 )
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
-from server.services.audit import init_audit_logging
+from server.services.audit import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
@@ -102,7 +102,8 @@ def init_app(is_testing=False):
 
     FlaskApp.set(api.app)
 
-    init_audit_logging()
+    AuditLogService.init_audit_logging()
+
     init_services(api.app, run_in_test_mode)
 
     # Do not reorder, this is ensuring requests are logged with the attributes

@@ -39,7 +39,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
         pass
 
     @abstractmethod
@@ -151,7 +151,7 @@ class FakeShopifyService(AbstractShopifyService):
 
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
         pass
 
     def append_customer_tags(self, shopify_customer_id, tags):
@@ -440,7 +440,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body["customer"]
 
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number):
+    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
         customer = {
             "id": shopify_customer_id,
         }

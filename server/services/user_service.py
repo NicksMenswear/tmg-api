@@ -159,21 +159,23 @@ class UserService:
         first_name = update_user.first_name or user.first_name
         last_name = update_user.last_name or user.last_name
         email = update_user.email or user.email
-        phone_number = update_user.phone_number or user.phone_number
         account_status = update_user.account_status if update_user.account_status is not None else user.account_status
         activated_account = account_status and not user.account_status
 
         user.first_name = first_name[:MAX_NAME_LENGTH]
         user.last_name = last_name[:MAX_NAME_LENGTH]
         user.email = email.lower()
-        user.phone_number = phone_number
+        if update_user.phone_number and update_user.phone_number != user.phone_number:
+            new_phone_number = update_user.phone_number
+        else:
+            new_phone_number = None
         user.account_status = account_status
         user.updated_at = datetime.now()
 
         try:
             if update_shopify:
                 self.shopify_service.update_customer(
-                    int(user.shopify_id), user.first_name, user.last_name, user.email, user.phone_number
+                    int(user.shopify_id), user.first_name, user.last_name, user.email, new_phone_number
                 )
 
             db.session.commit()

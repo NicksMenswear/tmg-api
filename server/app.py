@@ -20,7 +20,7 @@ from server.logs import (
 )
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
-from server.services.audit import AuditLogService
+from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService

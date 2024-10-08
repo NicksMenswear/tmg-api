@@ -167,6 +167,7 @@ class UserService:
         user.email = email.lower()
         if update_user.phone_number and update_user.phone_number != user.phone_number:
             new_phone_number = update_user.phone_number
+            user.phone_number = new_phone_number
         else:
             new_phone_number = None
         user.account_status = account_status

@@ -17,7 +17,6 @@ from server.tests.e2e import (
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
 )
 from server.tests.e2e.utils import api, actions, verify, email
-from server.tests.e2e.utils.actions import get_event_block
 
 DEFAULT_WEDDING_ROLES = {
     "Best Man",

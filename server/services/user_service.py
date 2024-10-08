@@ -1,7 +1,7 @@
 import logging
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import func, select, and_
 
@@ -23,8 +23,8 @@ class UserService:
     def __init__(
         self,
         shopify_service: AbstractShopifyService,
-        email_service: AbstractEmailService,
-        activecampaign_service: AbstractActiveCampaignService,
+        email_service: Optional[AbstractEmailService] = None,
+        activecampaign_service: Optional[AbstractActiveCampaignService] = None,
     ):
         self.shopify_service = shopify_service
         self.email_service = email_service

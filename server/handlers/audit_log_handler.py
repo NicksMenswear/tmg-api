@@ -3,11 +3,16 @@ import logging
 
 from server.database.database_manager import db
 from server.database.models import AuditLog
+from server.logs import init_logging, powerlogger
 from server.models.audit_model import AuditLogMessage
+
+init_logging("tmg-audit-logs-processing", debug=True)
+
 
 logger = logging.getLogger(__name__)
 
 
+@powerlogger.inject_lambda_context()
 def process_messages(event, context):
     for record in event["Records"]:
         message_body = record["body"]

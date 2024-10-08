@@ -1,16 +1,14 @@
+import inspect
+import json
+import logging
+import os
 from datetime import datetime
 from functools import wraps
-import os
-from flask import request
-import logging
-import json
-import inspect
 
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.logging import correlation_paths
+from flask import request
 
 from server.version import get_version
-
 
 powerlogger = Logger(name="%(name)s", log_record_order=["timestamp", "level", "message"], use_rfc3339=True, utc=True)
 logger = logging.getLogger(__name__)

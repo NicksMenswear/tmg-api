@@ -52,6 +52,7 @@ jobs:
 
   smoke-test:
     runs-on: ubuntu-latest
+    if: ${{ !inputs.short }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

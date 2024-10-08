@@ -1,9 +1,10 @@
 import signal
+
 import awsgi
+from aws_lambda_powertools.logging import correlation_paths
 
-from server.logs import powerlogger, correlation_paths, init_logging
 from server.app import init_app, init_sentry, init_db, lambda_teardown
-
+from server.logs import powerlogger, init_logging
 
 if __name__ == "__main__":
     print("Running a local dev server...")

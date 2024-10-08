@@ -17,6 +17,15 @@ provider:
           - s3:CompleteMultipartUpload
         Resource:
           - arn:aws:s3:::tmg-api-*/*
+      - Effect: Allow
+        Action:
+          - sqs:SendMessage
+          - sqs:ReceiveMessage
+          - sqs:DeleteMessage
+          - sqs:GetQueueAttributes
+          - sqs:ListQueueTags
+        Resource:
+          - arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
   stackTags:
     env: ${sls:stage}
   logRetentionInDays: 30
@@ -30,6 +39,7 @@ provider:
     API_TOKEN: ${ssm:/${sls:stage}/tmg-api/API_TOKEN}
     DATA_BUCKET: ${self:custom.stageVars.${sls:stage}.data_bucket}
     DATA_CDN: ${self:custom.stageVars.${sls:stage}.data_cdn}
+    AUDIT_QUEUE_URL: "https://sqs.${self:provider.region}.amazonaws.com/${aws:accountId}/tmg-api-${sls:stage}-audit-log"
     POWERTOOLS_SERVICE_NAME: api
     POWERTOOLS_LOG_LEVEL: INFO
     # SQLAlchemy Env Variables
@@ -72,16 +82,18 @@ functions:
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
-#  job-no-flask-experiment:
-#    handler: jobs.lambda_handler_no_flask_experiment
-#    events:
-#      - schedule: rate(1 minute)
-#    timeout: 600
-#    memorySize: 512
-#    lambdaInsights: true
-#    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
-#    environment:
-#      USE_FLASK: false
+  audit-log-queue-processor:
+    handler: server.handlers.audit_log_handler.process_messages
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
+          enabled: true
+          batchSize: 10
+          maximumConcurrency: 50
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+    environment:
+      USE_FLASK: false
 
 plugins:
   - serverless-python-requirements

@@ -9,7 +9,7 @@ from server.services.event_service import EventService
 from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
 from server.services.user_service import UserService
 
-init_logging("tmg-audit-logs-processing", debug=True)
+init_logging("tmg-audit-logs-processing", debug=False)
 
 logger = logging.getLogger(__name__)
 

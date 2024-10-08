@@ -25,6 +25,8 @@ def process_messages(event, context):
             # process audit log by calling shopify api
             if audit_log_message.type == "EVENT_UPDATED":
                 logger.info(f"Processing event updated message: {audit_log_message}")
+
+            logger.info(f"Event: {audit_log_message.type}")
         except Exception as e:
             logger.exception(f"Error processing message: {message_body}", e)
 

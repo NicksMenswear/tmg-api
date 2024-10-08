@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime, timezone
 
 from flask import request
 from sqlalchemy import event
@@ -20,6 +21,7 @@ from server.database.models import (
     AuditLog,
 )
 from server.flask_app import FlaskApp
+from server.logs import audit
 from server.models.audit_model import AuditLogMessage
 from server.services import ServiceError
 
@@ -106,12 +108,14 @@ class AuditLogService:
             "data": json_data,
         }
 
-    def save_audit_log(self, audit_log_message: AuditLogMessage):
+    @staticmethod
+    def save_audit_log(audit_log_message: AuditLogMessage):
         try:
             audit_log = AuditLog()
             audit_log.request = audit_log_message.request
             audit_log.type = audit_log_message.type
             audit_log.payload = audit_log_message.payload
+            audit_log.created_at = datetime.now(timezone.utc)
 
             db.session.add(audit_log)
             db.session.commit()

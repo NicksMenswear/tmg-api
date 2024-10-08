@@ -6,7 +6,7 @@ from server.logs import init_logging
 from server.models.audit_model import AuditLogMessage
 from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
-from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
+from server.services.integrations.shopify_service import ShopifyService
 from server.services.user_service import UserService
 
 init_logging("tmg-audit-logs-processing", debug=True)
@@ -17,10 +17,7 @@ TAG_EVENT_OWNER_4_PLUS = "event_owner_4_plus"
 
 
 def process_messages(event, context):
-    if context.get("testing", False):
-        shopify_service = FlaskApp().current().shopify_service
-    else:
-        shopify_service = ShopifyService()
+    shopify_service = FlaskApp().current().shopify_service if __in_test_context(context) else ShopifyService()
 
     audit_log_service = AuditLogService()
     user_service = UserService(shopify_service)
@@ -40,6 +37,10 @@ def process_messages(event, context):
             logger.exception(f"Error processing message: {message}", e)
 
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}
+
+
+def __in_test_context(context: dict) -> bool:
+    return isinstance(context, dict) and context.get("testing", False)
 
 
 def __persist_audit_log(audit_log_service: AuditLogService, message: str) -> None:

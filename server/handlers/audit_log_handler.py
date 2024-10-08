@@ -6,7 +6,7 @@ from server.logs import init_logging
 from server.models.audit_model import AuditLogMessage
 from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
-from server.services.integrations.shopify_service import ShopifyService
+from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
 from server.services.user_service import UserService
 
 init_logging("tmg-audit-logs-processing", debug=True)

@@ -689,6 +689,26 @@ def shopify_checkout_continue_to_payment(page: Page):
     continue_to_payment_button.click()
 
 
+def shopify_checkout_apply_discount_code(page: Page, discount_code: str):
+    discount_code_input = page.locator('input[placeholder="Discount code or gift card"]').first
+    discount_code_input.scroll_into_view_if_needed()
+    discount_code_input.wait_for(state="visible")
+    discount_code_input.fill(discount_code)
+
+    apply_discount_code_button = page.locator('button:has-text("Apply")').first
+    apply_discount_code_button.scroll_into_view_if_needed()
+    apply_discount_code_button.wait_for(state="visible")
+    apply_discount_code_button.click()
+
+    time.sleep(2)
+
+
+def shopify_checkout_verify_discount_code_is_not_applicable(page: Page, discount_code: str):
+    span = page.locator("span", has_text=f"{discount_code} discount code isn’t available to you right now").first
+    span.scroll_into_view_if_needed()
+    span.wait_for(state="visible")
+
+
 def get_processed_discount_codes_for_event(event_id: str) -> List[str]:
     iteration = 0
 
@@ -758,6 +778,22 @@ def add_swatch_to_cart(page: Page, swatch_index: int = 0):
     time.sleep(2)
 
     return swatch_name
+
+
+def open_cart_drawer(page: Page):
+    if verify.is_mobile_view(page):
+        header = page.locator("div.mobile-icons").first
+        header.scroll_into_view_if_needed()
+        header.wait_for(state="visible")
+    else:
+        header = page.locator("div.header__icons").first
+        header.scroll_into_view_if_needed()
+        header.wait_for(state="visible")
+
+    cart_drawer = header.locator('a[href="/cart"]').first
+    cart_drawer.scroll_into_view_if_needed()
+    cart_drawer.wait_for(state="visible")
+    cart_drawer.click()
 
 
 def verify_cart_message(page: Page, message: str):

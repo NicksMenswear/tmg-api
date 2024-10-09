@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select
 
 from server.database.database_manager import db
@@ -100,10 +102,10 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
@@ -140,10 +142,12 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        attendee1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, invite=True)
+        )
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
 
         self.attendee_service.deactivate_attendee(attendee_id=attendee1.id)
 
@@ -182,12 +186,12 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
 
-        self.event_service.delete_event(event_id=event.id)
+        self.event_service.delete_event(event_id=event.id, force=True)
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
@@ -224,7 +228,9 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        attendee_model = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, invite=True)
+        )
         attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee_model.id)).scalar_one()
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
@@ -262,10 +268,12 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        attendee_model = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        attendee_model = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, invite=True)
+        )
         attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee_model.id)).scalar_one()
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
@@ -303,11 +311,15 @@ class TestAuditLogHandler(BaseTestCase):
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
-        attendee_model1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        attendee_model1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, invite=True)
+        )
         attendee1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
-        attendee_model2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model2 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, invite=True)
+        )
         attendee2 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model2.id)).scalar_one()
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
@@ -350,3 +362,86 @@ class TestAuditLogHandler(BaseTestCase):
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
         )
+
+    def test_event_updated_user_is_owner_of_event_of_4_but_one_attendee_is_not_invited(self):
+        # given
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
+        event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
+        event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=False))
+
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
+            "id": user_model.shopify_id,
+            "tags": tags,
+        }
+
+        # when
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+        )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
+        self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+    def test_event_updated_user_is_owner_of_event_of_4_but_event_is_in_the_past(self):
+        # given
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
+        event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
+        event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
+
+        event.event_at = datetime.now().replace(year=2020)
+        db.session.commit()
+
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
+            "id": user_model.shopify_id,
+            "tags": tags,
+        }
+
+        # when
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+        )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
+        self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
+        self.assertEqual(response["statusCode"], 200)

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from sqlalchemy import select, func
@@ -394,7 +394,9 @@ class EventService:
                 .where(
                     Event.is_active,
                     Attendee.is_active,
+                    Attendee.invite,
                     Event.user_id == user_id,
+                    Event.event_at > datetime.now(timezone.utc),
                 )
                 .group_by(Event.id)
                 .having(func.count(Attendee.id) >= n)

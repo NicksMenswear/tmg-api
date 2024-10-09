@@ -14,4 +14,4 @@ class AuditLogMessage(BaseModel):
 
     @classmethod
     def from_string(cls, string: str) -> "AuditLogMessage":
-        return cls.parse_raw(string)
+        return cls.model_validate_json(string)

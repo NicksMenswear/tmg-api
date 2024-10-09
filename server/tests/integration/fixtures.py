@@ -27,6 +27,7 @@ def create_user_request(**user_data) -> CreateUserModel:
         account_status=user_data.get("account_status", True),
         phone_number=user_data.get("phone_number", utils.generate_phone_number()),
         shopify_id=user_data.get("shopify_id", str(random.randint(1000, 1000000))),
+        meta=user_data.get("meta", {}),
     )
 
 

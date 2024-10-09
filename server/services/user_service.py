@@ -63,6 +63,7 @@ class UserService:
                 shopify_id=str(shopify_customer_id),
                 phone_number=create_user.phone_number,
                 account_status=create_user.account_status,
+                meta=create_user.meta,
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
             )
@@ -217,3 +218,37 @@ class UserService:
             raise ServiceError("User does not have a Shopify ID.")
 
         return self.shopify_service.generate_activation_url(user.shopify_id)
+
+    @staticmethod
+    def add_meta_tag(user_id: uuid.UUID, tag: str) -> None:
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+
+        if not user:
+            raise NotFoundError("User not found.")
+
+        new_meta = user.meta.copy()
+        new_meta["tags"] = user.meta.get("tags", []) + [tag]
+        user.meta = new_meta
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to add tag to user.", e)
+
+    @staticmethod
+    def remove_meta_tag(user_id: uuid.UUID, tag: str) -> None:
+        user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+
+        if not user:
+            raise NotFoundError("User not found.")
+
+        new_meta = user.meta.copy()
+        new_meta["tags"] = [t for t in user.meta.get("tags", []) if t != tag]
+        user.meta = new_meta
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to remove tag from user.", e)

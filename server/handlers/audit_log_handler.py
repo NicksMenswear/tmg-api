@@ -6,6 +6,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from server.flask_app import FlaskApp
 from server.handlers import init_sentry
 from server.models.audit_model import AuditLogMessage
+from server.models.user_model import UserModel
 from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
 from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
@@ -29,7 +30,6 @@ class FakeLambdaContext(LambdaContext):
 @logger.inject_lambda_context
 def lambda_handler(event: dict, context: LambdaContext):
     shopify_service = FlaskApp().current().shopify_service if __in_test_context(context) else ShopifyService()
-
     audit_log_service = AuditLogService()
     user_service = UserService(shopify_service)
     event_service = EventService()
@@ -44,8 +44,7 @@ def lambda_handler(event: dict, context: LambdaContext):
 
             __tag_customers_event_owner_4_plus(shopify_service, user_service, event_service, audit_log_message)
         except Exception as e:
-            print(f"Error processing message: {message}: {str(e)}")  # remove this print once logging will work
-            logger.exception(f"Error processing message: {message}", e)
+            logger.exception(f"Error processing audit message: {message}")
 
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}
 
@@ -69,17 +68,17 @@ def __tag_customers_event_owner_4_plus(
         user_id = audit_log_message.payload.get("user_id")
         user = user_service.get_user_by_id(user_id)
 
-        events = event_service.get_user_owned_events_with_n_attendees(user_id, 4)
-
         if not user.shopify_id:
             return
 
-        logger.info(f"Processing 'EVENT_UPDATED' message for user {user_id} with {len(events)} events")
+        events = event_service.get_user_owned_events_with_n_attendees(user_id, 4)
+
+        logger.info(f"Processing 'EVENT_UPDATED' message for user {user_id}/{user.shopify_id}")
 
         if events:
-            shopify_service.add_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+            __add_4_plus_attendee_tags(shopify_service, user_service, user)
         else:
-            shopify_service.remove_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+            __remove_4_plus_attendee_tags(shopify_service, user_service, user)
     elif audit_log_message.type == "ATTENDEE_CREATED" or audit_log_message.type == "ATTENDEE_UPDATED":
         event_id = audit_log_message.payload.get("event_id")
         user_id = event_service.get_event_by_id(event_id).user_id
@@ -94,11 +93,33 @@ def __tag_customers_event_owner_4_plus(
 
         events = event_service.get_user_owned_events_with_n_attendees(user_id, 4)
 
-        logger.info(
-            f"Processing 'ATTENDEE_CREATED/ATTENDEE_UPDATED' message for user {user_id} with {len(events)} events"
-        )
+        logger.info(f"Processing 'ATTENDEE_CREATED/ATTENDEE_UPDATED' message for user {user_id}/{user.shopify_id}")
 
         if events:
-            shopify_service.add_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+            __add_4_plus_attendee_tags(shopify_service, user_service, user)
         else:
-            shopify_service.remove_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+            __remove_4_plus_attendee_tags(shopify_service, user_service, user)
+
+
+def __add_4_plus_attendee_tags(shopify_service: AbstractShopifyService, user_service: UserService, user: UserModel):
+    user_tags = set(user.meta.get("tags", []))
+
+    if TAG_EVENT_OWNER_4_PLUS in user_tags:
+        logger.info(f"User {user.id}/{user.shopify_id} already has tag {TAG_EVENT_OWNER_4_PLUS}. Skipping ...")
+    else:
+        logger.info(
+            f"User {user.id}/{user.shopify_id} has events with 4+ attendees. Adding tag {TAG_EVENT_OWNER_4_PLUS}"
+        )
+        shopify_service.add_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+        user_service.add_meta_tag(user.id, TAG_EVENT_OWNER_4_PLUS)
+
+
+def __remove_4_plus_attendee_tags(shopify_service: AbstractShopifyService, user_service: UserService, user: UserModel):
+    user_tags = set(user.meta.get("tags", []))
+
+    if TAG_EVENT_OWNER_4_PLUS in user_tags:
+        logger.info(f"User {user.id}/{user.shopify_id} has tag {TAG_EVENT_OWNER_4_PLUS}. Removing ...")
+        shopify_service.remove_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
+        user_service.remove_meta_tag(user.id, TAG_EVENT_OWNER_4_PLUS)
+    else:
+        logger.info(f"User {user.id}/{user.shopify_id} does not have tag {TAG_EVENT_OWNER_4_PLUS}. Skipping ...")

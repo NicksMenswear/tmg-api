@@ -60,13 +60,14 @@ class TestAuditLogHandler(BaseTestCase):
 
     def test_event_updated_user_is_not_owner_of_event_of_4(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"],
+            "tags": tags,
         }
 
         # when
@@ -87,12 +88,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             not in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertTrue(
+            TAG_EVENT_OWNER_4_PLUS not in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_updated_user_is_owner_of_event_of_4(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -102,7 +107,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"],
+            "tags": tags,
         }
 
         # when
@@ -123,12 +128,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertTrue(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_updated_user_is_owner_of_event_of_4_but_one_is_not_active(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         attendee1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -140,7 +149,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"],
+            "tags": tags,
         }
 
         # when
@@ -161,12 +170,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_updated_but_event_is_not_active(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -199,12 +212,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_attendee_created_but_there_are_no_4_attendees_in_event(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         attendee_model = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -212,7 +229,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", "test2"],
+            "tags": tags,
         }
 
         # when
@@ -233,12 +250,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "ATTENDEE_CREATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_attendee_created_and_now_event_has_4_attendee(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -249,7 +270,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", "test2"],
+            "tags": tags,
         }
 
         # when
@@ -270,12 +291,16 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+        self.assertTrue(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+        )
         self.assertEqual(audit_log_event.type, "ATTENDEE_CREATED")
         self.assertEqual(response["statusCode"], 200)
 
     def test_event_attendee_created_and_then_other_attendee_removed(self):
         # given
-        user_model = self.user_service.create_user(fixtures.create_user_request())
+        tags = ["test1", "test2"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -286,7 +311,7 @@ class TestAuditLogHandler(BaseTestCase):
         attendee2 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model2.id)).scalar_one()
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
-            "tags": ["test1", "test2"],
+            "tags": tags,
         }
 
         # when
@@ -321,4 +346,7 @@ class TestAuditLogHandler(BaseTestCase):
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+        )
+        self.assertFalse(
+            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
         )

@@ -89,7 +89,7 @@ functions:
           arn: arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
           enabled: true
           batchSize: 10
-          maximumConcurrency: 50
+          maximumConcurrency: 10
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
     environment:

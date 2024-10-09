@@ -2,6 +2,7 @@ import json
 import logging
 
 from server.flask_app import FlaskApp
+from server.handlers import init_sentry
 from server.logs import init_logging
 from server.models.audit_model import AuditLogMessage
 from server.services.audit_service import AuditLogService
@@ -14,6 +15,8 @@ init_logging("tmg-audit-logs-processing", debug=False)
 logger = logging.getLogger(__name__)
 
 TAG_EVENT_OWNER_4_PLUS = "event_owner_4_plus"
+
+init_sentry()
 
 
 def process_messages(event, context):
@@ -63,6 +66,8 @@ def __tag_customers_event_owner_4_plus(
         if not user.shopify_id:
             return
 
+        logger.info(f"Processing 'EVENT_UPDATED' message for user {user_id} with {len(events)} events")
+
         if events:
             shopify_service.add_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])
         else:
@@ -80,6 +85,10 @@ def __tag_customers_event_owner_4_plus(
             return
 
         events = event_service.get_user_owned_events_with_n_attendees(user_id, 4)
+
+        logger.info(
+            f"Processing 'ATTENDEE_CREATED/ATTENDEE_UPDATED' message for user {user_id} with {len(events)} events"
+        )
 
         if events:
             shopify_service.add_tags(ShopifyService.customer_gid(user.shopify_id), [TAG_EVENT_OWNER_4_PLUS])

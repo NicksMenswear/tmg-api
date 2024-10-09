@@ -11,6 +11,13 @@ on:
         - dev
         - stg
         - prd
+      viewport:
+        type: choice
+        description: Device to run tests on
+        options:
+        - mobile
+        - desktop
+        - all
       browser:
         type: choice
         description: Browser to run tests on
@@ -41,7 +48,7 @@ jobs:
       stage: ${{ matrix.stage }}
       browser: ${{ inputs.browser }}
       notify: true
-      groups: "[1,2,3,4,5,6,7,8,9,10]"
+      viewport: ${{ inputs.viewport }}
     secrets:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

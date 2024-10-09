@@ -18,6 +18,14 @@ init_sentry()
 logger = Logger(service="audit-log-processor")
 
 
+class FakeLambdaContext(LambdaContext):
+    def __init__(self):
+        self._function_name = "test_function"
+        self._memory_limit_in_mb = 128
+        self._invoked_function_arn = "arn:aws:lambda:us-east-1:123456789012:function:test_function"
+        self._aws_request_id = "test-request-id"
+
+
 @logger.inject_lambda_context
 def lambda_handler(event: dict, context: LambdaContext):
     shopify_service = FlaskApp().current().shopify_service if __in_test_context(context) else ShopifyService()
@@ -43,7 +51,7 @@ def lambda_handler(event: dict, context: LambdaContext):
 
 
 def __in_test_context(context) -> bool:
-    return isinstance(context, dict) and context.get("testing", False)
+    return isinstance(context, FakeLambdaContext)
 
 
 def __persist_audit_log(audit_log_service: AuditLogService, message: str) -> None:

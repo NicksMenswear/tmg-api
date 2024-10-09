@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import User, AuditLog, Event, Attendee
-from server.handlers.audit_log_handler import process_messages, TAG_EVENT_OWNER_4_PLUS
+from server.handlers.audit_log_handler import lambda_handler, TAG_EVENT_OWNER_4_PLUS, FakeLambdaContext
 from server.services.integrations.shopify_service import ShopifyService
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -12,7 +12,7 @@ class TestAuditLogHandler(BaseTestCase):
         super().setUp()
 
     def test_no_records(self):
-        response = process_messages({}, {"testing": True})
+        response = lambda_handler({}, FakeLambdaContext())
         self.assertEqual(response["statusCode"], 200)
 
     def test_single_item(self):
@@ -21,8 +21,8 @@ class TestAuditLogHandler(BaseTestCase):
         user = db.session.execute(select(User).where(User.id == user_model.id)).scalar_one()
 
         # when
-        response = process_messages(
-            {"Records": [{"body": fixtures.audit_log_queue_message("USER_CREATED", user)}]}, {"testing": True}
+        response = lambda_handler(
+            {"Records": [{"body": fixtures.audit_log_queue_message("USER_CREATED", user)}]}, FakeLambdaContext()
         )
 
         # then
@@ -39,14 +39,14 @@ class TestAuditLogHandler(BaseTestCase):
         user2 = db.session.execute(select(User).where(User.id == user_model2.id)).scalar_one()
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("USER_CREATED", user1)},
                     {"body": fixtures.audit_log_queue_message("USER_UPDATED", user2)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -70,13 +70,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -106,13 +106,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -144,13 +144,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -182,13 +182,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -216,13 +216,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("ATTENDEE_CREATED", attendee)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -253,13 +253,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        response = process_messages(
+        response = lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("ATTENDEE_CREATED", attendee)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -290,13 +290,13 @@ class TestAuditLogHandler(BaseTestCase):
         }
 
         # when
-        process_messages(
+        lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("ATTENDEE_CREATED", attendee1)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then
@@ -308,13 +308,13 @@ class TestAuditLogHandler(BaseTestCase):
         # when
         self.attendee_service.deactivate_attendee(attendee_id=attendee2.id)
 
-        process_messages(
+        lambda_handler(
             {
                 "Records": [
                     {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee2)},
                 ]
             },
-            {"testing": True},
+            FakeLambdaContext(),
         )
 
         # then

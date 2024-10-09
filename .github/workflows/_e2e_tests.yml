@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         description: Stage to run tests against
+      device:
+        type: string
+        description: Device to run tests on
+        default: mobile
       browser:
         required: false
         type: string
@@ -26,11 +30,6 @@ on:
         type: boolean
         default: true
         description: Notify Slack
-      groups:
-        required: false
-        type: string
-        default: "[1,2,3,4,5]"
-        description: Execution groups [1-5] are mobile tests, [6-10] are desktop tests
     secrets:
       DATADOG_API_KEY:
         required: true
@@ -40,12 +39,28 @@ on:
         required: true
 
 jobs:
+  setup: 
+    runs-on: ubuntu-latest
+    outputs:
+      groups: ${{ steps.set-matrix.outputs.groups }}
+    steps:
+      - id: set-matrix
+        run: |
+          if [ "${{ inputs.device }}" = "mobile" ]; then
+            echo groups='[1,2,3,4,5]' >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.device }}" = "desktop" ]; then
+            echo groups='[6,7,8,9,10]' >> $GITHUB_OUTPUT
+          else 
+            echo groups='[1,2,3,4,5,6,7,8,9,10]' >> $GITHUB_OUTPUT
+          fi
+
   e2e-test:
     runs-on: ubuntu-latest
+    needs: setup
     strategy:
       fail-fast: false
       matrix:
-        group: ${{ fromJson(inputs.groups) }}
+        group: ${{ fromJson(needs.setup.outputs.groups) }}
     steps:
       - name: Datadog CI tags
         env:
@@ -86,7 +101,7 @@ jobs:
         with:
           channel-id: 'C06KT69EN30' # Notifications
           slack-message: |
-            *E2E "${{ inputs.stage }}" ${{ inputs.test_group }} failed* :red_circle:
+            *E2E "${{ inputs.stage }}" group-${{ matrix.group }} failed* :red_circle:
             *Ref:* "${{ inputs.ref }}"
             *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:

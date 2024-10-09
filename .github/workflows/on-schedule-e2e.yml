@@ -11,7 +11,7 @@ jobs:
       ref: main
       notify: true
       stage: ${{ matrix.stage }}
-      groups: "[1,2,3,4,5,6,7,8,9,10]"
+      device: all
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

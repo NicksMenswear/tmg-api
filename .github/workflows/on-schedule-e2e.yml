@@ -11,7 +11,7 @@ jobs:
       ref: main
       notify: true
       stage: ${{ matrix.stage }}
-      device: all
+      viewport: all
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}

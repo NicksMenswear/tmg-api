@@ -11,7 +11,7 @@ on:
         required: true
         type: string
         description: Stage to run tests against
-      device:
+      viewport:
         type: string
         description: Device to run tests on
         default: mobile
@@ -46,9 +46,9 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          if [ "${{ inputs.device }}" = "mobile" ]; then
+          if [ "${{ inputs.viewport }}" = "mobile" ]; then
             echo groups='[1,2,3,4,5]' >> $GITHUB_OUTPUT
-          elif [ "${{ inputs.device }}" = "desktop" ]; then
+          elif [ "${{ inputs.viewport }}" = "desktop" ]; then
             echo groups='[6,7,8,9,10]' >> $GITHUB_OUTPUT
           else 
             echo groups='[1,2,3,4,5,6,7,8,9,10]' >> $GITHUB_OUTPUT

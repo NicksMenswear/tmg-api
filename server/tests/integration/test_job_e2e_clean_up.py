@@ -3,6 +3,7 @@ import random
 
 from server.database.models import User, Attendee, DiscountType, Discount, Event, Role, Size, Measurement, Look
 from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_25_PERCENT_OFF_DISCOUNT_CODE_PREFIX
+from server.services.integrations.shopify_service import ShopifyService
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -24,7 +25,7 @@ class TestJobE2ECleanUp(BaseTestCase):
     def test_e2e_clean_up_get_single_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
@@ -51,9 +52,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         user1 = self.user_service.create_user(fixtures.create_user_request())
         user2 = self.user_service.create_user(fixtures.create_user_request())
         user3 = self.user_service.create_user(fixtures.create_user_request())
-        shopify_customer_id1 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
-        shopify_customer_id2 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
-        shopify_customer_id3 = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id1 = ShopifyService.customer_gid(random.randint(1000, 100000))
+        shopify_customer_id2 = ShopifyService.customer_gid(random.randint(1000, 100000))
+        shopify_customer_id3 = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user1.email] = {"id": shopify_customer_id1, "email": user1.email}
         self.shopify_service.customers[user2.email] = {"id": shopify_customer_id2, "email": user2.email}
         self.shopify_service.customers[user3.email] = {"id": shopify_customer_id3, "email": user3.email}
@@ -95,7 +96,7 @@ class TestJobE2ECleanUp(BaseTestCase):
     def test_e2e_clean_up_user(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
@@ -124,7 +125,7 @@ class TestJobE2ECleanUp(BaseTestCase):
     def test_e2e_clean_up_user_in_shopify_but_not_in_db(self):
         # given
         email = utils.generate_email()
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[email] = {"id": shopify_customer_id, "email": email}
 
         # when
@@ -148,7 +149,7 @@ class TestJobE2ECleanUp(BaseTestCase):
     def test_e2e_clean_up_system_user_not_deleted(self):
         # given
         system_email = f"e2e+02@mail.dev.tmgcorp.net"
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         user = self.user_service.create_user(fixtures.create_user_request(email=system_email))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
@@ -187,9 +188,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event2.id, email=attendee_user.email)
         )
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
-        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_attendee_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[attendee_user.email] = {
             "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
@@ -229,7 +230,7 @@ class TestJobE2ECleanUp(BaseTestCase):
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, email=attendee_user.email)
         )
         self.shopify_service.customers[user.email] = {"id": random.randint(1000, 100000), "email": user.email}
-        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_attendee_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[attendee_user.email] = {
             "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
@@ -291,9 +292,9 @@ class TestJobE2ECleanUp(BaseTestCase):
         self.app.attendee_service.create_attendee(
             fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event.id, email=attendee_user.email)
         )
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
-        shopify_customer_attendee_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_attendee_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[attendee_user.email] = {
             "id": shopify_customer_attendee_id,
             "email": attendee_user.email,
@@ -334,7 +335,7 @@ class TestJobE2ECleanUp(BaseTestCase):
         size = self.size_service.create_size(
             fixtures.store_size_request(user_id=str(user.id), measurement_id=measurement.id)
         )
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when
@@ -364,7 +365,7 @@ class TestJobE2ECleanUp(BaseTestCase):
         look2 = self.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
-        shopify_customer_id = f"gid://shopify/Customer/{random.randint(1000, 100000)}"
+        shopify_customer_id = ShopifyService.customer_gid(random.randint(1000, 100000))
         self.shopify_service.customers[user.email] = {"id": shopify_customer_id, "email": user.email}
 
         # when

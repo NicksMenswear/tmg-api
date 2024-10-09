@@ -123,6 +123,14 @@ class AbstractShopifyService(ABC):
     def delete_customer(self, customer_id: str) -> None:
         pass
 
+    @abstractmethod
+    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        pass
+
+    @abstractmethod
+    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -305,6 +313,22 @@ class FakeShopifyService(AbstractShopifyService):
                 del self.customers[email]
                 break
 
+    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        customer = self.customers.get(shopify_gid)
+
+        if not customer:
+            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+        customer["tags"] = list(set(customer["tags"] + tags))
+
+    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        customer = self.customers.get(shopify_gid)
+
+        if not customer:
+            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+        customer["tags"] = list(set(customer["tags"]) - set(tags))
+
 
 class ShopifyService(AbstractShopifyService):
     def __init__(self):
@@ -318,6 +342,18 @@ class ShopifyService(AbstractShopifyService):
         self.__shopify_rest_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
         self.__shopify_graphql_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
         self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store_host}/api/2024-01"
+
+    @classmethod
+    def customer_gid(cls, shopify_id):
+        return f"gid://shopify/Customer/{shopify_id}"
+
+    @classmethod
+    def product_gid(cls, shopify_id):
+        return f"gid://shopify/Product/{shopify_id}"
+
+    @classmethod
+    def product_variant_gid(cls, shopify_id):
+        return f"gid://shopify/ProductVariant/{shopify_id}"
 
     def admin_api_request(self, method, endpoint, body=None):
         response = http(
@@ -533,7 +569,7 @@ class ShopifyService(AbstractShopifyService):
             tags=tags,
         )
 
-        self.add_image_to_product(f"gid://shopify/Product/{attendee_discount_product['id']}", self.__gift_image_path)
+        self.add_image_to_product(ShopifyService.product_gid(attendee_discount_product["id"]), self.__gift_image_path)
 
         return attendee_discount_product
 
@@ -632,7 +668,7 @@ class ShopifyService(AbstractShopifyService):
                 "title": title,
                 "code": code,
                 "usageLimit": 1,
-                "customerSelection": {"customers": {"add": [f"gid://shopify/Customer/{shopify_customer_id}"]}},
+                "customerSelection": {"customers": {"add": [ShopifyService.customer_gid(shopify_customer_id)]}},
                 "startsAt": datetime.now(timezone.utc).isoformat(),
                 "appliesOncePerCustomer": True,
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True},
@@ -655,7 +691,9 @@ class ShopifyService(AbstractShopifyService):
         if variant_ids:
             variables["basicCodeDiscount"]["customerGets"]["items"] = {
                 "products": {
-                    "productVariantsToAdd": [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids]
+                    "productVariantsToAdd": [
+                        ShopifyService.product_variant_gid(variant_id) for variant_id in variant_ids
+                    ]
                 }
             }
         else:
@@ -902,7 +940,9 @@ class ShopifyService(AbstractShopifyService):
         parent_product_id = bundle_parent_product.get("id")
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
 
-        shopify_variant_ids = [f"gid://shopify/ProductVariant/{variant_id}" for variant_id in variant_ids if variant_id]
+        shopify_variant_ids = [
+            ShopifyService.product_variant_gid(variant_id) for variant_id in variant_ids if variant_id
+        ]
 
         self.__add_variants_to_product_bundle(parent_product_variant_id, shopify_variant_ids)
 
@@ -1064,7 +1104,7 @@ class ShopifyService(AbstractShopifyService):
             """
 
         variables = {
-            "customerId": f"gid://shopify/Customer/{customer_id}",
+            "customerId": ShopifyService.customer_gid(customer_id),
         }
 
         status, body = self.admin_api_request(
@@ -1131,3 +1171,65 @@ class ShopifyService(AbstractShopifyService):
 
         if "errors" in body:
             raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
+
+    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        mutation = """
+            mutation addTags($id: ID!, $tags: [String!]!) {
+                tagsAdd(id: $id, tags: $tags) {
+                    node {
+                        id
+                    }
+                    userErrors {
+                        message
+                    }
+                }
+            }
+        """
+
+        variables = {
+            "id": shopify_gid,
+            "tags": ",".join(tags),
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to add tags in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to add tags in shopify store. {body['errors']}")
+
+    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+        mutation = """
+            mutation removeTags($id: ID!, $tags: [String!]!) {
+                tagsRemove(id: $id, tags: $tags) {
+                    node {
+                        id
+                    }
+                    userErrors {
+                        message
+                    }
+                }
+            }
+        """
+
+        variables = {
+            "id": shopify_gid,
+            "tags": ",".join(tags),
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to remove tags in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")

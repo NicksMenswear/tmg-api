@@ -83,13 +83,13 @@ functions:
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
   audit-log-queue-processor:
-    handler: server.handlers.audit_log_handler.process_messages
+    handler: server.handlers.audit_log_handler.lambda_handler
     events:
       - sqs:
           arn: arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
           enabled: true
           batchSize: 10
-          maximumConcurrency: 50
+          maximumConcurrency: 10
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
     environment:

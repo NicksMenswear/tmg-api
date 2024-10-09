@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime, timedelta
-from typing import List
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from server.database.database_manager import db
 from server.database.models import Event, User, Attendee, Look, EventType
@@ -18,7 +18,12 @@ NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION = 4
 
 
 class EventService:
-    def __init__(self, attendee_service: AttendeeService, role_service: RoleService, look_service: LookService):
+    def __init__(
+        self,
+        attendee_service: Optional[AttendeeService] = None,
+        role_service: Optional[RoleService] = None,
+        look_service: Optional[LookService] = None,
+    ):
         self.role_service = role_service
         self.look_service = look_service
         self.attendee_service = attendee_service
@@ -265,7 +270,8 @@ class EventService:
 
         return sorted(list(events.values()), key=lambda x: x.event_at)
 
-    def get_events_for_look(self, look_id: uuid.UUID) -> List[EventModel]:
+    @staticmethod
+    def get_events_for_look(look_id: uuid.UUID) -> List[EventModel]:
         db_look = db.session.execute(select(Look).where(Look.id == look_id)).scalar_one_or_none()
 
         if not db_look:
@@ -283,10 +289,12 @@ class EventService:
 
         return [EventModel.from_orm(event) for event in events]
 
-    def __is_ahead_n_weeks(self, event_at: datetime, number_of_weeks: int) -> bool:
+    @staticmethod
+    def __is_ahead_n_weeks(event_at: datetime, number_of_weeks: int) -> bool:
         return event_at > datetime.now() + timedelta(weeks=number_of_weeks)
 
-    def __owner_notifications(self, event: EventModel, attendees: List[AttendeeModel]) -> List[dict]:
+    @staticmethod
+    def __owner_notifications(event: EventModel, attendees: List[AttendeeModel]) -> List[dict]:
         if not any([a.invite for a in attendees]):
             return []
 
@@ -331,7 +339,8 @@ class EventService:
 
         return notifications
 
-    def __attendee_notifications(self, event: EventModel, attendees: List[AttendeeModel]):
+    @staticmethod
+    def __attendee_notifications(event: EventModel, attendees: List[AttendeeModel]):
         if not attendees:
             return []
 
@@ -375,3 +384,23 @@ class EventService:
             )
 
         return notifications
+
+    @staticmethod
+    def get_user_owned_events_with_n_attendees(user_id: uuid.UUID, n: int) -> List[uuid.UUID]:
+        return (
+            db.session.execute(
+                select(Event.id)
+                .join(Attendee, Attendee.event_id == Event.id)
+                .where(
+                    Event.is_active,
+                    Attendee.is_active,
+                    Attendee.invite,
+                    Event.user_id == user_id,
+                    Event.event_at > datetime.now(timezone.utc),
+                )
+                .group_by(Event.id)
+                .having(func.count(Attendee.id) >= n)
+            )
+            .scalars()
+            .all()
+        )

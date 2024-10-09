@@ -1,8 +1,10 @@
 import base64
+import json
 import random
 import uuid
 from datetime import datetime, timedelta
 
+from server.database.models import SerializableMixin
 from server.models.attendee_model import CreateAttendeeModel, UpdateAttendeeModel
 from server.models.discount_model import ApplyDiscountModel, CreateDiscountIntent
 from server.models.event_model import CreateEventModel, UpdateEventModel, EventTypeModel
@@ -25,6 +27,7 @@ def create_user_request(**user_data) -> CreateUserModel:
         account_status=user_data.get("account_status", True),
         phone_number=user_data.get("phone_number", utils.generate_phone_number()),
         shopify_id=user_data.get("shopify_id", str(random.randint(1000, 1000000))),
+        meta=user_data.get("meta", {}),
     )
 
 
@@ -475,4 +478,14 @@ def add_suit_builder_item_request(**item_data) -> CreateSuitBuilderModel:
         type=item_data.get("type", utils.generate_product_type()),
         sku=item_data.get("sku", utils.generate_product_sku()),
         index=item_data.get("index", random.randint(1, 100)),
+    )
+
+
+def audit_log_queue_message(audit_type: str, payload: SerializableMixin, request: dict = None) -> str:
+    return json.dumps(
+        {
+            "type": audit_type,
+            "payload": payload.serialize(),
+            "request": request if request else {},
+        }
     )

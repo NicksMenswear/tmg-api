@@ -13,6 +13,7 @@ class UserRequestModel(CoreModel):
     account_status: Optional[bool] = False
     shopify_id: Optional[str] = None
     phone_number: Optional[str] = None
+    meta: Optional[dict] = {}
 
 
 class CreateUserModel(UserRequestModel):
@@ -28,13 +29,14 @@ class UserModel(CoreModel):
     account_status: bool = False
     legacy_id: Optional[str] = None
     phone_number: Optional[str] = None
+    meta: Optional[dict] = {}
 
     class Config:
         from_attributes = True
 
     def to_response(self):
         return self.model_dump(
-            include={"id", "first_name", "last_name", "email", "phone_number", "account_status", "shopify_id"}
+            include={"id", "first_name", "last_name", "email", "phone_number", "account_status", "shopify_id", "meta"}
         )
 
 

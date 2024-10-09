@@ -108,7 +108,7 @@ def test_create_coupon(page: Page):
     time.sleep(2)
 
     actions.delete_attendee(page, event_id, attendee_id_2)
-    time.sleep(3)
+    time.sleep(5)
     actions.open_cart_drawer(page)
     actions.click_on_cart_checkout_button(page)
     verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")

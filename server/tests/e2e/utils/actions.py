@@ -690,9 +690,15 @@ def shopify_checkout_continue_to_payment(page: Page):
 
 
 def shopify_checkout_apply_discount_code(page: Page, discount_code: str):
-    discount_code_input = page.locator('input[placeholder="Discount code or gift card"]').first
-    discount_code_input.scroll_into_view_if_needed()
-    discount_code_input.wait_for(state="visible")
+    try:
+        discount_code_input = page.locator('input[placeholder="Discount code"]').first
+        discount_code_input.scroll_into_view_if_needed()
+        discount_code_input.wait_for(state="visible")
+    except:
+        discount_code_input = page.locator('input[placeholder="Discount code or gift card"]').first
+        discount_code_input.scroll_into_view_if_needed()
+        discount_code_input.wait_for(state="visible")
+
     discount_code_input.fill(discount_code)
 
     apply_discount_code_button = page.locator('button:has-text("Apply")').first

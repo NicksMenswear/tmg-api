@@ -83,7 +83,7 @@ functions:
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
   audit-log-queue-processor:
-    handler: server.handlers.audit_log_handler.process_messages
+    handler: server.handlers.audit_log_handler.lambda_handler
     events:
       - sqs:
           arn: arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log

@@ -1,25 +1,25 @@
 import json
-import logging
+
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from server.flask_app import FlaskApp
 from server.handlers import init_sentry
-from server.logs import init_logging
 from server.models.audit_model import AuditLogMessage
 from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
 from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
 from server.services.user_service import UserService
 
-init_logging("tmg-audit-logs-processing", debug=False)
-
-logger = logging.getLogger(__name__)
-
 TAG_EVENT_OWNER_4_PLUS = "event_owner_4_plus"
 
 init_sentry()
 
+logger = Logger(service="audit-log-processor")
 
-def process_messages(event, context):
+
+@logger.inject_lambda_context
+def lambda_handler(event: dict, context: LambdaContext):
     shopify_service = FlaskApp().current().shopify_service if __in_test_context(context) else ShopifyService()
 
     audit_log_service = AuditLogService()
@@ -42,7 +42,7 @@ def process_messages(event, context):
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}
 
 
-def __in_test_context(context: dict) -> bool:
+def __in_test_context(context) -> bool:
     return isinstance(context, dict) and context.get("testing", False)
 
 

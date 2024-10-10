@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, select
 
 from server.database.database_manager import db
 from server.database.models import Attendee, DiscountType, Event, User, Role, Look, Size, Order
@@ -34,11 +34,11 @@ DATA_CDN = os.getenv("DATA_CDN")
 class AttendeeService:
     def __init__(
         self,
-        shopify_service: AbstractShopifyService,
-        user_service: UserService,
-        look_service: LookService,
-        email_service: AbstractEmailService,
-        activecampaign_service: AbstractActiveCampaignService,
+        shopify_service: Optional[AbstractShopifyService],
+        user_service: Optional[UserService],
+        look_service: Optional[LookService],
+        email_service: Optional[AbstractEmailService],
+        activecampaign_service: Optional[AbstractActiveCampaignService],
     ):
         self.shopify_service = shopify_service
         self.user_service = user_service
@@ -469,3 +469,26 @@ class AttendeeService:
         attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
 
         return [AttendeeModel.from_orm(attendee) for attendee in attendees]
+
+    @staticmethod
+    def get_invited_attendees_for_the_event(event_id: uuid.UUID) -> List[AttendeeModel]:
+        attendees = (
+            db.session.execute(
+                select(Attendee)
+                .join(Event, Event.id == Attendee.event_id)
+                .where(
+                    Attendee.event_id == event_id,
+                    Attendee.invite,
+                    Attendee.is_active,
+                    Event.is_active,
+                    Attendee.user_id.isnot(None),
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        if not attendees:
+            return []
+
+        return [AttendeeModel.model_validate(attendee) for attendee in attendees]

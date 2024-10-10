@@ -4,7 +4,12 @@ from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import User, AuditLog, Event, Attendee
-from server.handlers.audit_log_handler import lambda_handler, TAG_EVENT_OWNER_4_PLUS, FakeLambdaContext
+from server.handlers.audit_log_handler import (
+    lambda_handler,
+    TAG_EVENT_OWNER_4_PLUS,
+    FakeLambdaContext,
+    TAG_MEMBER_OF_4_PLUS_EVENT,
+)
 from server.services.integrations.shopify_service import ShopifyService
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -307,30 +312,40 @@ class TestAuditLogHandler(BaseTestCase):
 
     def test_event_attendee_created_and_then_other_attendee_removed(self):
         # given
-        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
+        tags = ["test1", "test2"]
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
-        self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
-        attendee_model1 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, invite=True)
-        )
-        attendee1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
-        attendee_model2 = self.attendee_service.create_attendee(
-            fixtures.create_attendee_request(event_id=event.id, invite=True)
-        )
-        attendee2 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model2.id)).scalar_one()
+
         self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
             "id": user_model.shopify_id,
             "tags": tags,
         }
 
+        attendee_model1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model3 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model4 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+
+        attendee3 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model3.id)).scalar_one()
+        attendee4 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model4.id)).scalar_one()
+
+        self.attendee_service.send_invites(
+            attendee_ids=[attendee_model1.id, attendee_model2.id, attendee_model3.id, attendee_model4.id]
+        )
+
+        for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event.id):
+            attendee_user = self.user_service.get_user_by_id(attendee.user_id)
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
+                "id": attendee_user.shopify_id,
+                "tags": {"test3"},
+            }
+
         # when
         lambda_handler(
             {
                 "Records": [
-                    {"body": fixtures.audit_log_queue_message("ATTENDEE_CREATED", attendee1)},
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee3)},
                 ]
             },
             FakeLambdaContext(),
@@ -343,12 +358,12 @@ class TestAuditLogHandler(BaseTestCase):
         )
 
         # when
-        self.attendee_service.deactivate_attendee(attendee_id=attendee2.id)
+        self.attendee_service.deactivate_attendee(attendee_id=attendee4.id)
 
         lambda_handler(
             {
                 "Records": [
-                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee2)},
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee4)},
                 ]
             },
             FakeLambdaContext(),

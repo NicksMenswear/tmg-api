@@ -1,7 +1,7 @@
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from sqlalchemy import func, select, and_
 
@@ -220,14 +220,14 @@ class UserService:
         return self.shopify_service.generate_activation_url(user.shopify_id)
 
     @staticmethod
-    def add_meta_tag(user_id: uuid.UUID, tag: str) -> None:
+    def add_meta_tag(user_id: uuid.UUID, tags: Set[str]) -> None:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
 
         new_meta = user.meta.copy()
-        new_meta["tags"] = user.meta.get("tags", []) + [tag]
+        new_meta["tags"] = list(set(user.meta.get("tags", [])) | tags)
         user.meta = new_meta
 
         try:
@@ -237,14 +237,14 @@ class UserService:
             raise ServiceError("Failed to add tag to user.", e)
 
     @staticmethod
-    def remove_meta_tag(user_id: uuid.UUID, tag: str) -> None:
+    def remove_meta_tag(user_id: uuid.UUID, tags: Set[str]) -> None:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
 
         if not user:
             raise NotFoundError("User not found.")
 
         new_meta = user.meta.copy()
-        new_meta["tags"] = [t for t in user.meta.get("tags", []) if t != tag]
+        new_meta["tags"] = list(set(user.meta.get("tags", [])) - tags)
         user.meta = new_meta
 
         try:

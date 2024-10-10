@@ -386,10 +386,10 @@ class EventService:
         return notifications
 
     @staticmethod
-    def get_user_owned_events_with_n_attendees(user_id: uuid.UUID, n: int) -> List[uuid.UUID]:
-        return (
+    def get_user_owned_events_with_n_attendees(user_id: uuid.UUID, n: int) -> List[EventModel]:
+        events = (
             db.session.execute(
-                select(Event.id)
+                select(Event)
                 .join(Attendee, Attendee.event_id == Event.id)
                 .where(
                     Event.is_active,
@@ -404,3 +404,43 @@ class EventService:
             .scalars()
             .all()
         )
+
+        if not events:
+            return []
+
+        return [EventModel.model_validate(event) for event in events]
+
+    @staticmethod
+    def get_user_member_events_with_n_attendees(user_id: uuid.UUID, n: int) -> List[EventModel]:
+        user_event_ids = (
+            db.session.execute(
+                select(Event.id)
+                .join(Attendee, Attendee.event_id == Event.id)
+                .where(Attendee.user_id == user_id, Attendee.is_active, Event.is_active, Attendee.invite)
+            )
+            .scalars()
+            .all()
+        )
+
+        events = (
+            db.session.execute(
+                select(Event)
+                .join(Attendee, Attendee.event_id == Event.id)
+                .filter(
+                    Attendee.is_active,
+                    Event.is_active,
+                    Attendee.invite,
+                    Event.event_at > datetime.now(timezone.utc),
+                    Event.id.in_(user_event_ids),
+                )
+                .group_by(Event.id)
+                .having(func.count(Attendee.id) >= n)
+            )
+            .scalars()
+            .all()
+        )
+
+        if not events:
+            return []
+
+        return [EventModel.model_validate(event) for event in events]

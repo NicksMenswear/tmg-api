@@ -42,7 +42,7 @@ def lambda_handler(event: dict, context: LambdaContext):
 
             __persist_audit_log(audit_log_service, message)
 
-            __tag_customers_event_owner_4_plus(shopify_service, user_service, event_service, audit_log_message)
+            __tag_customers(shopify_service, user_service, event_service, audit_log_message)
         except Exception as e:
             logger.exception(f"Error processing audit message: {message}")
 
@@ -58,7 +58,7 @@ def __persist_audit_log(audit_log_service: AuditLogService, message: str) -> Non
     audit_log_service.save_audit_log(audit_log_message)
 
 
-def __tag_customers_event_owner_4_plus(
+def __tag_customers(
     shopify_service: AbstractShopifyService,
     user_service: UserService,
     event_service: EventService,
@@ -79,7 +79,7 @@ def __tag_customers_event_owner_4_plus(
             __add_4_plus_attendee_tags(shopify_service, user_service, user)
         else:
             __remove_4_plus_attendee_tags(shopify_service, user_service, user)
-    elif audit_log_message.type == "ATTENDEE_CREATED" or audit_log_message.type == "ATTENDEE_UPDATED":
+    elif audit_log_message.type == "ATTENDEE_UPDATED":
         event_id = audit_log_message.payload.get("event_id")
         user_id = event_service.get_event_by_id(event_id).user_id
 

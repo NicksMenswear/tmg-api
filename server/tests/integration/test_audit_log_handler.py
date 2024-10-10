@@ -264,7 +264,7 @@ class TestAuditLogHandler(BaseTestCase):
 
     def test_event_attendee_created_and_now_event_has_4_attendee(self):
         # given
-        tags = ["test1", "test2"]
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
@@ -307,7 +307,7 @@ class TestAuditLogHandler(BaseTestCase):
 
     def test_event_attendee_created_and_then_other_attendee_removed(self):
         # given
-        tags = ["test1", "test2"]
+        tags = ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"]
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()

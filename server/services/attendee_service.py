@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List, Dict, Optional
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, select
 
 from server.database.database_manager import db
 from server.database.models import Attendee, DiscountType, Event, User, Role, Look, Size, Order
@@ -34,11 +34,11 @@ DATA_CDN = os.getenv("DATA_CDN")
 class AttendeeService:
     def __init__(
         self,
-        shopify_service: AbstractShopifyService,
-        user_service: UserService,
-        look_service: LookService,
-        email_service: AbstractEmailService,
-        activecampaign_service: AbstractActiveCampaignService,
+        shopify_service: Optional[AbstractShopifyService],
+        user_service: Optional[UserService],
+        look_service: Optional[LookService],
+        email_service: Optional[AbstractEmailService],
+        activecampaign_service: Optional[AbstractActiveCampaignService],
     ):
         self.shopify_service = shopify_service
         self.user_service = user_service
@@ -48,15 +48,17 @@ class AttendeeService:
 
     @staticmethod
     def get_attendee_by_id(attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
-        attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
+        attendee = db.session.execute(
+            select(Attendee).where(Attendee.id == attendee_id, Attendee.is_active == is_active)
+        ).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        attendee_model = AttendeeModel.from_orm(attendee)
+        attendee_model = AttendeeModel.model_validate(attendee)
 
         if not attendee.first_name and attendee.user_id:
-            user = User.query.filter(User.id == attendee.user_id).first()
+            user = db.session.execute(select(User).where(User.id == attendee.user_id)).scalar_one_or_none()
             attendee_model.first_name = user.first_name
             attendee_model.last_name = user.last_name
 
@@ -469,3 +471,26 @@ class AttendeeService:
         attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
 
         return [AttendeeModel.from_orm(attendee) for attendee in attendees]
+
+    @staticmethod
+    def get_invited_attendees_for_the_event(event_id: uuid.UUID) -> List[AttendeeModel]:
+        attendees = (
+            db.session.execute(
+                select(Attendee)
+                .join(Event, Event.id == Attendee.event_id)
+                .where(
+                    Attendee.event_id == event_id,
+                    Attendee.invite,
+                    Attendee.is_active,
+                    Event.is_active,
+                    Attendee.user_id.isnot(None),
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        if not attendees:
+            return []
+
+        return [AttendeeModel.model_validate(attendee) for attendee in attendees]

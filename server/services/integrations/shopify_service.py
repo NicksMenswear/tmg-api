@@ -6,7 +6,7 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Set
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
@@ -124,11 +124,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
     @abstractmethod
-    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
 
@@ -313,15 +313,15 @@ class FakeShopifyService(AbstractShopifyService):
                 del self.customers[email]
                 break
 
-    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         customer = self.customers.get(shopify_gid)
 
         if not customer:
             raise NotFoundError(f"Customer with id {shopify_gid} not found.")
 
-        customer["tags"] = list(set(customer["tags"] + tags))
+        customer["tags"] = list(set(customer["tags"]) | tags)
 
-    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         customer = self.customers.get(shopify_gid)
 
         if not customer:
@@ -1172,7 +1172,7 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
 
-    def add_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         mutation = """
             mutation addTags($id: ID!, $tags: [String!]!) {
                 tagsAdd(id: $id, tags: $tags) {
@@ -1188,7 +1188,7 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {
             "id": shopify_gid,
-            "tags": ",".join(tags),
+            "tags": ",".join(list(tags)),
         }
 
         status, body = self.admin_api_request(
@@ -1203,7 +1203,7 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to add tags in shopify store. {body['errors']}")
 
-    def remove_tags(self, shopify_gid: str, tags: List[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         mutation = """
             mutation removeTags($id: ID!, $tags: [String!]!) {
                 tagsRemove(id: $id, tags: $tags) {
@@ -1219,7 +1219,7 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {
             "id": shopify_gid,
-            "tags": ",".join(tags),
+            "tags": ",".join(list(tags)),
         }
 
         status, body = self.admin_api_request(

@@ -272,8 +272,10 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS
             in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
         )
+
         self.assertTrue(
-            TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
+            TAG_EVENT_OWNER_4_PLUS
+            in db.session.execute(select(User).where(User.id == user_model.id)).scalars().first().meta.get("tags", [])
         )
         self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
         self.assertEqual(response["statusCode"], 200)

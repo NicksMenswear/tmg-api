@@ -11,6 +11,7 @@ from server.handlers.audit_log_handler import (
     TAG_MEMBER_OF_4_PLUS_EVENT,
 )
 from server.services.integrations.shopify_service import ShopifyService
+from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -227,7 +228,7 @@ class TestAuditLogHandler(BaseTestCase):
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
-    def test_event_attendee_created_and_now_event_has_4_attendee(self):
+    def test_attendee_created_and_now_event_has_4_attendee(self):
         # given
         tags = ["test1", "test2"]
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
@@ -277,7 +278,7 @@ class TestAuditLogHandler(BaseTestCase):
         self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
-    def test_event_attendee_created_and_then_other_attendee_removed(self):
+    def test_attendee_created_and_then_other_attendee_removed(self):
         # given
         tags = ["test1", "test2"]
         user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
@@ -426,4 +427,121 @@ class TestAuditLogHandler(BaseTestCase):
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
         )
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+    def test_one_attendee_belongs_to_2_events(self):
+        # given
+        tags1 = ["test1"]
+        tags2 = ["test2"]
+
+        user_model1 = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags1}))
+        user_model2 = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags2}))
+
+        event_model1 = self.event_service.create_event(fixtures.create_event_request(user_id=user_model1.id))
+        event_model2 = self.event_service.create_event(fixtures.create_event_request(user_id=user_model2.id))
+
+        event1 = db.session.execute(select(Event).where(Event.id == event_model1.id)).scalar_one()
+        event2 = db.session.execute(select(Event).where(Event.id == event_model2.id)).scalar_one()
+
+        attendee_email = utils.generate_email()
+
+        attendee_model1 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event1.id, email=attendee_email)
+        )
+        attendee_model2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event1.id))
+        attendee_model3 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event1.id))
+        attendee_model4 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event1.id))
+        attendee_model5 = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event2.id, email=attendee_email)
+        )
+        attendee_model6 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
+        attendee_model7 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
+        attendee_model8 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
+
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model1.shopify_id)] = {
+            "id": user_model1.shopify_id,
+            "tags": tags1,
+        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model2.shopify_id)] = {
+            "id": user_model2.shopify_id,
+            "tags": tags2,
+        }
+
+        self.attendee_service.send_invites(
+            attendee_ids=[
+                attendee_model1.id,
+                attendee_model2.id,
+                attendee_model3.id,
+                attendee_model4.id,
+                attendee_model5.id,
+                attendee_model6.id,
+                attendee_model7.id,
+                attendee_model8.id,
+            ]
+        )
+
+        for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event1.id):
+            attendee_user = self.user_service.get_user_by_id(attendee.user_id)
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
+                "id": attendee_user.shopify_id,
+                "tags": {"test3"},
+            }
+
+        for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event2.id):
+            attendee_user = self.user_service.get_user_by_id(attendee.user_id)
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
+                "id": attendee_user.shopify_id,
+                "tags": {"test4"},
+            }
+
+        # when
+        lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event1)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        users = db.session.execute(select(User)).scalars().all()
+
+        for user in users:
+            if user.email in [
+                attendee_model1.email,
+                attendee_model2.email,
+                attendee_model3.email,
+                attendee_model4.email,
+            ]:
+                self.assertTrue(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+            else:
+                self.assertFalse(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+
+            if user.email == user_model1.email:
+                self.assertTrue(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+            else:
+                self.assertFalse(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+
+        # when
+        self.attendee_service.deactivate_attendee(attendee_id=attendee_model1.id)
+
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event1)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        users = db.session.execute(select(User)).scalars().all()
+
+        for user in users:
+            if user.email == attendee_email:
+                self.assertTrue(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+                self.assertFalse(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+            else:
+                self.assertFalse(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+                self.assertFalse(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+
         self.assertEqual(response["statusCode"], 200)

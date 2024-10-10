@@ -48,15 +48,17 @@ class AttendeeService:
 
     @staticmethod
     def get_attendee_by_id(attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
-        attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active == is_active).first()
+        attendee = db.session.execute(
+            select(Attendee).where(Attendee.id == attendee_id, Attendee.is_active == is_active)
+        ).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
 
-        attendee_model = AttendeeModel.from_orm(attendee)
+        attendee_model = AttendeeModel.model_validate(attendee)
 
         if not attendee.first_name and attendee.user_id:
-            user = User.query.filter(User.id == attendee.user_id).first()
+            user = db.session.execute(select(User).where(User.id == attendee.user_id)).scalar_one_or_none()
             attendee_model.first_name = user.first_name
             attendee_model.last_name = user.last_name
 

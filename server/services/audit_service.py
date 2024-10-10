@@ -21,7 +21,6 @@ from server.database.models import (
     AuditLog,
 )
 from server.flask_app import FlaskApp
-from server.logs import audit
 from server.models.audit_model import AuditLogMessage
 from server.services import ServiceError
 
@@ -48,7 +47,7 @@ class AuditLogService:
             )
             event.listen(
                 entity,
-                "before_delete",
+                "after_delete",
                 lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_DELETED"),
             )
 

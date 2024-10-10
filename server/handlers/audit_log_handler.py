@@ -86,8 +86,10 @@ def __handle_event_updated(
 
     events = event_service.get_user_owned_events_with_n_attendees(user_id, 4)
 
-    user_tags_that_should_be_present[user_id] = {TAG_EVENT_OWNER_4_PLUS} if events else set()
-    user_tags_that_should_not_be_present[user_id] = set() if events else {TAG_EVENT_OWNER_4_PLUS}
+    if events:
+        user_tags_that_should_be_present[user_id] = {TAG_EVENT_OWNER_4_PLUS}
+    else:
+        user_tags_that_should_not_be_present[user_id] = {TAG_EVENT_OWNER_4_PLUS}
 
     attendees = attendee_service.get_invited_attendees_for_the_event(uuid.UUID(event_id))
 
@@ -98,8 +100,14 @@ def __handle_event_updated(
         user_tags_that_should_not_be_present.setdefault(attendee.user_id, set())
 
         if events:
+            if not user_tags_that_should_be_present.get(attendee.user_id):
+                user_tags_that_should_be_present[attendee.user_id] = set()
+
             user_tags_that_should_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
         else:
+            if not user_tags_that_should_not_be_present.get(attendee.user_id):
+                user_tags_that_should_not_be_present[attendee.user_id] = set()
+
             user_tags_that_should_not_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
 
     if user_tags_that_should_be_present:
@@ -133,20 +141,25 @@ def __handle_attendee_updated(
 
     events = event_service.get_user_owned_events_with_n_attendees(event_owner_user_id, 4)
 
-    user_tags_that_should_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS} if events else set()
-    user_tags_that_should_not_be_present[event_owner_user_id] = set() if events else {TAG_EVENT_OWNER_4_PLUS}
+    if events:
+        user_tags_that_should_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS}
+    else:
+        user_tags_that_should_not_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS}
 
     attendees = attendee_service.get_invited_attendees_for_the_event(uuid.UUID(event_id))
 
     for attendee in attendees:
         events = event_service.get_user_member_events_with_n_attendees(attendee.user_id, 4)
 
-        user_tags_that_should_be_present.setdefault(attendee.user_id, set())
-        user_tags_that_should_not_be_present.setdefault(attendee.user_id, set())
-
         if events:
+            if not user_tags_that_should_be_present.get(attendee.user_id):
+                user_tags_that_should_be_present[attendee.user_id] = set()
+
             user_tags_that_should_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
         else:
+            if not user_tags_that_should_not_be_present.get(attendee.user_id):
+                user_tags_that_should_not_be_present[attendee.user_id] = set()
+
             user_tags_that_should_not_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
 
     if user_tags_that_should_be_present:

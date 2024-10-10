@@ -429,6 +429,77 @@ class TestAuditLogHandler(BaseTestCase):
         self.assertEqual(audit_log_event.type, "EVENT_UPDATED")
         self.assertEqual(response["statusCode"], 200)
 
+    def test_attendee_removed(self):
+        # given
+        tags = ["test1"]
+        user_model = self.user_service.create_user(fixtures.create_user_request(meta={"tags": tags}))
+        event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
+        event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
+        attendee_model1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model3 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee_model4 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
+        attendee1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
+
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
+            "id": user_model.shopify_id,
+            "tags": tags,
+        }
+
+        self.attendee_service.send_invites(
+            attendee_ids=[
+                attendee_model1.id,
+                attendee_model2.id,
+                attendee_model3.id,
+                attendee_model4.id,
+            ]
+        )
+
+        for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event.id):
+            attendee_user = self.user_service.get_user_by_id(attendee.user_id)
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
+                "id": attendee_user.shopify_id,
+                "tags": {"test3"},
+            }
+
+        # when
+        lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        users = db.session.execute(select(User)).scalars().all()
+
+        for user in users:
+            if user.email == user_model.email:  # event owner
+                self.assertTrue(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+            else:
+                self.assertTrue(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+
+        # when
+        self.attendee_service.deactivate_attendee(attendee_id=attendee_model1.id)
+
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee1)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        users = db.session.execute(select(User)).scalars().all()
+
+        for user in users:
+            self.assertFalse(TAG_MEMBER_OF_4_PLUS_EVENT in user.meta.get("tags", []))
+            self.assertFalse(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
+
+        self.assertEqual(response["statusCode"], 200)
+
     def test_one_attendee_belongs_to_2_events(self):
         # given
         tags1 = ["test1"]
@@ -457,6 +528,7 @@ class TestAuditLogHandler(BaseTestCase):
         attendee_model6 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
         attendee_model7 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
         attendee_model8 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
+        attendee_1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
 
         self.shopify_service.customers[ShopifyService.customer_gid(user_model1.shopify_id)] = {
             "id": user_model1.shopify_id,
@@ -528,7 +600,7 @@ class TestAuditLogHandler(BaseTestCase):
         response = lambda_handler(
             {
                 "Records": [
-                    {"body": fixtures.audit_log_queue_message("EVENT_UPDATED", event1)},
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee_1)},
                 ]
             },
             FakeLambdaContext(),

@@ -126,6 +126,8 @@ def __handle_attendee_updated(
 ):
     event_id = audit_log_message.payload.get("event_id")
     user_id = audit_log_message.payload.get("user_id")
+    attendee_id = audit_log_message.payload.get("id")
+    attendee_is_active = audit_log_message.payload.get("is_active")
 
     if not user_id:
         # nothing to do, we don't care about attendees without user_id (not invited)
@@ -147,6 +149,9 @@ def __handle_attendee_updated(
         user_tags_that_should_not_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS}
 
     attendees = attendee_service.get_invited_attendees_for_the_event(uuid.UUID(event_id))
+
+    if not attendee_is_active:
+        attendees.append(attendee_service.get_attendee_by_id(uuid.UUID(attendee_id), False))
 
     for attendee in attendees:
         events = event_service.get_user_member_events_with_n_attendees(attendee.user_id, 4)

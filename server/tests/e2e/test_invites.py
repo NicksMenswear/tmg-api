@@ -28,7 +28,7 @@ def test_invite_attendee(page: Page):
     attendee_email = utils.generate_email()
     attendee_password = str(uuid.uuid4())
     role_name = "Groomsman"
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
 
     api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
@@ -107,7 +107,7 @@ def test_invite_multiple_attendees(page: Page):
     attendee_email_4 = utils.generate_email()
 
     role_name = "Groomsman"
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
 
     api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)

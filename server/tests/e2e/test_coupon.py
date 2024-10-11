@@ -40,7 +40,7 @@ def test_create_coupon(page: Page):
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
 
     role_name = "Groomsman"
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
 
     api.delete_all_looks(user_id)
     api.create_look(look_name, user_id)
@@ -87,7 +87,7 @@ def test_create_coupon(page: Page):
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
     actions.add_look_to_cart(page, data_look_id)
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
 
     actions.shopify_checkout_apply_discount_code(page, TEST_COUPON_DISCOUNT_CODE)
     actions.shopify_checkout_verify_discount_code_is_not_applicable(page, TEST_COUPON_DISCOUNT_CODE)
@@ -100,7 +100,7 @@ def test_create_coupon(page: Page):
 
     actions.open_cart_drawer(page)
     actions.click_on_cart_checkout_button(page)
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     actions.shopify_checkout_apply_discount_code(page, TEST_COUPON_DISCOUNT_CODE)
     verify.shopify_checkout_has_discount_with_name(page, TEST_COUPON_DISCOUNT_CODE)
 
@@ -111,6 +111,6 @@ def test_create_coupon(page: Page):
     time.sleep(5)
     actions.open_cart_drawer(page)
     actions.click_on_cart_checkout_button(page)
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     actions.shopify_checkout_apply_discount_code(page, TEST_COUPON_DISCOUNT_CODE)
     actions.shopify_checkout_verify_discount_code_is_not_applicable(page, TEST_COUPON_DISCOUNT_CODE)

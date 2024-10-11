@@ -96,7 +96,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
         pass
 
     @abstractmethod
@@ -223,7 +223,7 @@ class FakeShopifyService(AbstractShopifyService):
     def archive_product(self, shopify_product_id):
         pass
 
-    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
 
@@ -932,8 +932,8 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def create_bundle(self, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
-        bundle_parent_product_name = f"Suit Bundle #{bundle_id}"
+    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+        bundle_parent_product_name = bundle_name
         bundle_parent_product_handle = f"suit-bundle-{bundle_id}"
         bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name)
 

@@ -32,7 +32,7 @@ class SizeModel(CoreModel):
         from_attributes = True
 
     @classmethod
-    def from_orm(cls, size: Size) -> "SizeModel":
+    def model_validate(cls, size: Size) -> "SizeModel":
         attribute_map = {
             "SLEEVE LENGTH (SHIRT)": "shirt_sleeve_length",
             "JACKET LENGTH": "jacket_length",

@@ -519,7 +519,7 @@ def test_style_and_invite_checkboxes(page: Page):
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
     attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
     role_name = "Attendee Parent or Chaperone"
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
@@ -563,7 +563,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
     attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
     role_name = "Attendee Parent or Chaperone"
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
@@ -689,8 +689,7 @@ def test_update_attendee_uber_test(page: Page):
     attendee_first_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_last_name_3 = f"E2E {utils.generate_unique_name()}"
     attendee_email_3 = utils.generate_email()
-    attendee_password_3 = str(uuid.uuid4())
-    look_name = "Test Look"
+    look_name = utils.generate_look_name()
     role_name = "Groomsman"
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")

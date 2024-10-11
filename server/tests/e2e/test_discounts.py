@@ -264,7 +264,7 @@ def test_grooms_gift(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, codes[0])
 
 
@@ -334,7 +334,7 @@ def test_group_discount(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
 
@@ -414,7 +414,7 @@ def test_group_discount_and_groom_gift_as_well(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-25%-OFF-")
 
@@ -495,7 +495,7 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
 
     actions.attendee_add_suit_to_cart(page, event_id)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, f"Suit Bundle", f"${str(price)}")
+    verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
     verify.shopify_checkout_has_discount_with_name(page, f"GIFT-{int(amount)}-OFF-")
     verify.shopify_checkout_has_discount_with_name(page, "TMG-GROUP-50-OFF-")
 

@@ -38,7 +38,7 @@ class RoleService:
         return role
 
     def get_role_by_id(self, role_id: uuid.UUID) -> RoleModel:
-        return RoleModel.from_orm(self.__role_by_id(role_id))
+        return RoleModel.model_validate(self.__role_by_id(role_id))
 
     @staticmethod
     def create_roles(create_roles: List[CreateRoleModel]) -> List[RoleModel]:
@@ -49,7 +49,7 @@ class RoleService:
 
         db.session.flush()
 
-        return [RoleModel.from_orm(role) for role in roles]
+        return [RoleModel.model_validate(role) for role in roles]
 
     def create_role(self, create_role: CreateRoleModel) -> RoleModel:
         db_event = db.session.execute(select(Event).where(Event.id == create_role.event_id)).scalar_one_or_none()
@@ -90,7 +90,7 @@ class RoleService:
         except Exception as e:
             raise ServiceError("Failed to update role.", e)
 
-        return RoleModel.from_orm(db_role)
+        return RoleModel.model_validate(db_role)
 
     def delete_role(self, role_id: uuid.UUID) -> None:
         role = self.__role_by_id(role_id)
@@ -127,7 +127,7 @@ class RoleService:
             if role.event_id not in roles:
                 roles[role.event_id] = list()
 
-            roles[role.event_id].append(RoleModel.from_orm(role))
+            roles[role.event_id].append(RoleModel.model_validate(role))
 
         return roles
 

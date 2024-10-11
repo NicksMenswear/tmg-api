@@ -22,7 +22,7 @@ class WebhookService:
             db.session.commit()
             db.session.refresh(webhook)
 
-            return WebhookModel.from_orm(webhook)
+            return WebhookModel.model_validate(webhook)
         except Exception as e:
             raise ServiceError("Failed to store webhook", e)
 
@@ -32,4 +32,4 @@ class WebhookService:
         if not webhook:
             raise NotFoundError("Webhook not found")
 
-        return WebhookModel.from_orm(webhook)
+        return WebhookModel.model_validate(webhook)

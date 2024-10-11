@@ -26,7 +26,7 @@ class ProductService:
         if not product:
             raise NotFoundError("Product not found")
 
-        return ProductModel.from_orm(product)
+        return ProductModel.model_validate(product)
 
     def get_product_by_sku(self, sku: str) -> ProductModel:
         product = Product.query.filter(
@@ -37,11 +37,11 @@ class ProductService:
         if not product:
             raise NotFoundError("Product not found")
 
-        return ProductModel.from_orm(product)
+        return ProductModel.model_validate(product)
 
     def get_products_for_order(self, order_id: uuid.UUID) -> List[ProductModel]:
         return [
-            ProductModel.from_orm(product)
+            ProductModel.model_validate(product)
             for product in Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
         ]
 
@@ -55,4 +55,4 @@ class ProductService:
         except Exception as e:
             raise ServiceError("Failed to save new product.", e)
 
-        return ProductModel.from_orm(new_product)
+        return ProductModel.model_validate(new_product)

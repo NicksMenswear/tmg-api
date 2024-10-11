@@ -57,9 +57,9 @@ class OrderService:
         if not order:
             raise NotFoundError("Order not found")
 
-        order_model = OrderModel.from_orm(order)
+        order_model = OrderModel.model_validate(order)
         products = Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
-        order_model.products = [ProductModel.from_orm(product) for product in products]
+        order_model.products = [ProductModel.model_validate(product) for product in products]
 
         return order_model
 
@@ -108,7 +108,7 @@ class OrderService:
             db.session.rollback()
             raise ServiceError("Failed to create order.", e)
 
-        return OrderModel.from_orm(order)
+        return OrderModel.model_validate(order)
 
     def create_order_item(self, create_order_item: CreateOrderItemModel) -> OrderItemModel:
         try:
@@ -126,12 +126,12 @@ class OrderService:
             db.session.rollback()
             raise ServiceError("Failed to create order.", e)
 
-        return OrderItemModel.from_orm(order_item)
+        return OrderItemModel.model_validate(order_item)
 
     def get_order_items_by_order_id(self, order_id: uuid.UUID) -> List[OrderItemModel]:
         order_items = OrderItem.query.filter(OrderItem.order_id == order_id).all()
 
-        return [OrderItemModel.from_orm(order_item) for order_item in order_items]
+        return [OrderItemModel.model_validate(order_item) for order_item in order_items]
 
     def get_orders_by_status_and_not_older_then_days(
         self, status: str, days: int, user_id: uuid.UUID = None
@@ -144,7 +144,7 @@ class OrderService:
 
         orders = query.all()
 
-        return [OrderModel.from_orm(order) for order in orders]
+        return [OrderModel.model_validate(order) for order in orders]
 
     def update_order_status(
         self,
@@ -171,7 +171,7 @@ class OrderService:
         except Exception as e:
             raise ServiceError("Failed to update order status.", e)
 
-        return OrderModel.from_orm(order)
+        return OrderModel.model_validate(order)
 
     def update_user_pending_orders_with_latest_measurements(self, size_model: SizeModel):
         measurement_model = self.measurement_service.get_latest_measurement_for_user(size_model.user_id)

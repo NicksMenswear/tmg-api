@@ -20,7 +20,7 @@ class MeasurementService:
         if not measurement:
             return None
 
-        return MeasurementModel.from_orm(measurement)
+        return MeasurementModel.model_validate(measurement)
 
     def create_measurement(self, create_measurement_request: CreateMeasurementsRequestModel) -> MeasurementModel:
         try:
@@ -30,7 +30,7 @@ class MeasurementService:
             db.session.commit()
             db.session.refresh(measurement)
 
-            measurement_model = MeasurementModel.from_orm(measurement)
+            measurement_model = MeasurementModel.model_validate(measurement)
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to save measurement data", e)

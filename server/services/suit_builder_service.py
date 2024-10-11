@@ -96,7 +96,7 @@ class SuitBuilderService:
             db.session.rollback()
             raise ServiceError("Failed to add suit builder item", e)
 
-        return SuitBuilderItemModel.from_orm(suit_builder_item)
+        return SuitBuilderItemModel.model_validate(suit_builder_item)
 
     @staticmethod
     def get_items(enriched: bool = False) -> SuitBuilderItemsCollection:
@@ -110,7 +110,7 @@ class SuitBuilderService:
         grouped_collections = SuitBuilderItemsCollection()
 
         for item in suit_builder_items:
-            grouped_collections.add_item(SuitBuilderItemModel.from_orm(item))
+            grouped_collections.add_item(SuitBuilderItemModel.model_validate(item))
 
         return grouped_collections
 
@@ -152,7 +152,7 @@ class SuitBuilderService:
             db.session.rollback()
             raise ServiceError("Failed to patch suit builder item", e)
 
-        return SuitBuilderItemModel.from_orm(suit_builder_item)
+        return SuitBuilderItemModel.model_validate(suit_builder_item)
 
     def delete_item(self, sku: str) -> None:
         suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == sku).first()

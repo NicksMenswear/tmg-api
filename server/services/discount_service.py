@@ -63,7 +63,7 @@ class DiscountService:
 
     def get_discounts_by_attendee_id(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
         return [
-            DiscountModel.from_orm(discount)
+            DiscountModel.model_validate(discount)
             for discount in Discount.query.filter(Discount.attendee_id == attendee_id).all()
         ]
 
@@ -73,7 +73,7 @@ class DiscountService:
         if not discount:
             return None
 
-        return DiscountModel.from_orm(discount)
+        return DiscountModel.model_validate(discount)
 
     def create_discount(
         self,
@@ -302,7 +302,7 @@ class DiscountService:
             Discount.type == DiscountType.GIFT,
         ).all()
 
-        return [DiscountModel.from_orm(discount) for discount in discounts]
+        return [DiscountModel.model_validate(discount) for discount in discounts]
 
     def mark_discount_by_shopify_code_as_paid(self, shopify_code: str) -> Optional[DiscountModel]:
         discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
@@ -315,7 +315,7 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return DiscountModel.from_orm(discount)
+        return DiscountModel.model_validate(discount)
 
     def create_discount_intents(
         self, event_id: uuid.UUID, discount_intents: List[CreateDiscountIntent]
@@ -470,7 +470,7 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return DiscountModel.from_orm(discount)
+        return DiscountModel.model_validate(discount)
 
     def get_group_discount_for_attendee(self, attendee_id: uuid.UUID) -> Optional[DiscountModel]:
         discount = Discount.query.filter(
@@ -481,7 +481,7 @@ class DiscountService:
         if not discount:
             return None
 
-        return DiscountModel.from_orm(discount)
+        return DiscountModel.model_validate(discount)
 
     def create_tmg_group_discount_for_attendee(self, attendee: AttendeeModel, event_id: uuid.UUID) -> DiscountModel:
         if not attendee.look_id:
@@ -535,7 +535,7 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
-        return DiscountModel.from_orm(discount)
+        return DiscountModel.model_validate(discount)
 
     def apply_discounts(self, attendee_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
         attendee = self.attendee_service.get_attendee_by_id(attendee_id)

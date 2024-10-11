@@ -34,8 +34,8 @@ class EventService:
         if not event_with_owner:
             raise NotFoundError("Event not found.")
 
-        event_model = EventModel.from_orm(event_with_owner[0])
-        event_model.owner = UserModel.from_orm(event_with_owner[1])
+        event_model = EventModel.model_validate(event_with_owner[0])
+        event_model.owner = UserModel.model_validate(event_with_owner[1])
 
         if enriched:
             attendees = self.attendee_service.get_attendees_for_events([event_model.id])
@@ -51,7 +51,7 @@ class EventService:
     @staticmethod
     def get_events(event_ids: List[uuid.UUID]) -> List[EventModel]:
         events = db.session.execute(select(Event).where(Event.id.in_(event_ids), Event.is_active)).scalars().all()
-        return [EventModel.from_orm(event) for event in events]
+        return [EventModel.model_validate(event) for event in events]
 
     def create_event(
         self, create_event: CreateEventModel, ignore_event_date_creation_condition: bool = False
@@ -104,8 +104,8 @@ class EventService:
             db.session.rollback()
             raise ServiceError("Failed to create event.", e)
 
-        event = EventModel.from_orm(db_event)
-        event.owner = UserModel.from_orm(user)
+        event = EventModel.model_validate(db_event)
+        event.owner = UserModel.model_validate(user)
 
         return event
 
@@ -143,8 +143,8 @@ class EventService:
         except Exception as e:
             raise ServiceError("Failed to update event.", e)
 
-        event = EventModel.from_orm(db_event)
-        event.owner = UserModel.from_orm(
+        event = EventModel.model_validate(db_event)
+        event.owner = UserModel.model_validate(
             db.session.execute(select(User).where(User.id == db_event.user_id)).scalar_one_or_none()
         )
 
@@ -186,8 +186,8 @@ class EventService:
 
         models = []
         for event, user in events:
-            event_model = EventModel.from_orm(event)
-            event_model.owner = UserModel.from_orm(user)
+            event_model = EventModel.model_validate(event)
+            event_model.owner = UserModel.model_validate(user)
             models.append(event_model)
 
         if enriched:
@@ -221,8 +221,8 @@ class EventService:
         events = []
 
         for event, user in events_with_owners:
-            event_model = EventModel.from_orm(event)
-            event_model.owner = UserModel.from_orm(user)
+            event_model = EventModel.model_validate(event)
+            event_model.owner = UserModel.model_validate(user)
             events.append(event_model)
 
         if not events:
@@ -287,7 +287,7 @@ class EventService:
             .all()
         )
 
-        return [EventModel.from_orm(event) for event in events]
+        return [EventModel.model_validate(event) for event in events]
 
     @staticmethod
     def __is_ahead_n_weeks(event_at: datetime, number_of_weeks: int) -> bool:

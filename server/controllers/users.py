@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def create_user(create_user):
     user_service = FlaskApp.current().user_service
 
-    user = user_service.create_user(CreateUserModel(**create_user), True)
+    user = user_service.create_user(CreateUserModel(**create_user), send_activation_email=True)
 
     return user.to_response(), 201
 

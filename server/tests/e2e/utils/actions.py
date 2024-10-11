@@ -483,7 +483,7 @@ def populate_fit_survey(
 
     # gender
     gender_radio_button = page.locator(
-        f'//label[.//span[text()="{gender}"] and .//input[@name="measurement_gender" and @value="{gender}"]]'
+        f'//label[.//span[text()="{gender}"] and .//input[@name="fitQizGender" and @value="{gender}"]]'
     )
     gender_radio_button.click()
 
@@ -509,7 +509,7 @@ def populate_fit_survey(
 
     # chest shape
     measurement_chest_shape_radio_button = page.locator(
-        f'//input[@name="measurement_chest_shape" and @value="{chest_shape}"]/parent::label'
+        f'//input[@name="fitQizChestShape" and @value="{chest_shape}"]/parent::label'
     )
     measurement_chest_shape_radio_button.scroll_into_view_if_needed()
     measurement_chest_shape_radio_button.wait_for(state="visible")
@@ -517,7 +517,7 @@ def populate_fit_survey(
 
     # stomach shape
     measurement_stomach_shape_radio_button = page.locator(
-        f'//input[@name="measurement_stomach_shape" and @value="{stomach_shape}"]/parent::label'
+        f'//input[@name="fitQizStomachShape" and @value="{stomach_shape}"]/parent::label'
     )
     measurement_stomach_shape_radio_button.scroll_into_view_if_needed()
     measurement_stomach_shape_radio_button.wait_for(state="visible")
@@ -525,7 +525,7 @@ def populate_fit_survey(
 
     # hip shape
     measurement_hip_shape_radio_button = page.locator(
-        f'//input[@name="measurement_hip_shape" and @value="{hip_shape}"]/parent::label'
+        f'//input[@name="fitQizHipShape" and @value="{hip_shape}"]/parent::label'
     )
     measurement_hip_shape_radio_button.scroll_into_view_if_needed()
     measurement_hip_shape_radio_button.wait_for(state="visible")

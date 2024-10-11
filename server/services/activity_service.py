@@ -1,18 +1,13 @@
-from datetime import datetime
-from functools import wraps
+import hashlib
 import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
-from urllib.parse import urlencode
-import hashlib
+from datetime import datetime
 
-from server.controllers.util import http
+from server.database.database_manager import db
+from server.database.models import Activity
 from server.flask_app import FlaskApp
 from server.services import ServiceError
-from server.logs import audit
-from server.database.models import Activity
-from server.database.database_manager import db
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +24,7 @@ def suppress_exceptions(func):
 
 class AbstractActivityService(ABC):
     @abstractmethod
-    def generic(self, email, type, data):
+    def generic(self, email, tt, data):
         pass
 
 
@@ -37,13 +32,13 @@ class FakeActivityService(AbstractActivityService):
     def __init__(self):
         self.contacts = []
 
-    def generic(self, email, type, data):
+    def generic(self, email, tt, data):
         pass
 
 
 class ActivityService(AbstractActivityService):
     @suppress_exceptions
-    def generic(self, email, type, data):
+    def generic(self, email, tt, data):
         user_service = FlaskApp.current().user_service
         user = user_service.get_user_by_email(email)
         data_md5 = hashlib.md5(json.dumps(data).encode("utf-8")).hexdigest()
@@ -51,7 +46,7 @@ class ActivityService(AbstractActivityService):
         try:
             activity = Activity(
                 user_id=user.id,
-                type=type,
+                type=tt,
                 data=data,
                 data_md5=data_md5,
                 created_at=datetime.now(),
@@ -65,7 +60,7 @@ class ActivityService(AbstractActivityService):
 
         count = Activity.query.filter(
             Activity.user_id == user.id,
-            Activity.type == type,
+            Activity.type == tt,
             Activity.data_md5 == data_md5,
         ).count()
         return {"count": count}

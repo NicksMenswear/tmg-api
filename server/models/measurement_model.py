@@ -31,7 +31,7 @@ class MeasurementModel(CoreModel):
         from_attributes = True
 
     @classmethod
-    def from_orm(cls, measurement: Measurement) -> "MeasurementModel":
+    def model_validate(cls, measurement: Measurement) -> "MeasurementModel":
         return cls(
             id=measurement.id,
             user_id=measurement.user_id,

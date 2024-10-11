@@ -27,7 +27,7 @@ class TestShipping(BaseTestCase):
         db.session.commit()
         db.session.refresh(db_event)
 
-        return EventModel.from_orm(db_event)
+        return EventModel.model_validate(db_event)
 
     def test_shipping_no_items(self):
         # when

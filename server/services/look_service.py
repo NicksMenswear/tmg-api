@@ -40,11 +40,11 @@ class LookService:
         if not db_look:
             raise NotFoundError("Look not found")
 
-        return LookModel.from_orm(db_look)
+        return LookModel.model_validate(db_look)
 
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
         look_models = [
-            LookModel.from_orm(look)
+            LookModel.model_validate(look)
             for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
         ]
 
@@ -64,7 +64,7 @@ class LookService:
         if not look:
             raise NotFoundError("Look not found")
 
-        return LookModel.from_orm(look)
+        return LookModel.model_validate(look)
 
     def get_look_price(self, look) -> float:
         return look.product_specs.get("bundle", {}).get("variant_price")
@@ -217,7 +217,7 @@ class LookService:
             logger.exception(e)
             raise ServiceError("Failed to create look.", e)
 
-        return LookModel.from_orm(db_look)
+        return LookModel.model_validate(db_look)
 
     def update_look(self, look_id: uuid.UUID, update_look: UpdateLookModel) -> LookModel:
         db_look = Look.query.filter(Look.id == look_id).first()
@@ -242,7 +242,7 @@ class LookService:
         except Exception as e:
             raise ServiceError("Failed to update look.", e)
 
-        return LookModel.from_orm(db_look)
+        return LookModel.model_validate(db_look)
 
     def delete_look(self, look_id: uuid.UUID) -> None:
         look = Look.query.filter(Look.id == look_id).first()

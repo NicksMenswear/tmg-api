@@ -1,16 +1,15 @@
-import logging
 import uuid
 from typing import Any, Dict
 
-logger = logging.getLogger(__name__)
 
-
-# noinspection PyMethodMayBeStatic
+# noinspection PyUnusedLocal
 class ShopifyWebhookCartHandler:
-    def cart_create(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def cart_create(webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         # noop
         return {}
 
-    def cart_update(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def cart_update(webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         # noop
         return {}

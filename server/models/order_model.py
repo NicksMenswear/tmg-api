@@ -75,6 +75,7 @@ class OrderModel(CoreModel):
     shopify_order_number: str
     order_date: datetime
     status: Optional[str] = None
+    shipping_method: Optional[str] = None
     ship_by_date: Optional[datetime] = None
     shipping_address_line1: Optional[str] = None
     shipping_address_line2: Optional[str] = None

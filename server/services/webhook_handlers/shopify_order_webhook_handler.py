@@ -38,7 +38,6 @@ logger = logging.getLogger(__name__)
 BUNDLE_IDENTIFIER_PRODUCT_SKU_PREFIX = "bundle-"
 
 
-# noinspection PyMethodMayBeStatic
 class ShopifyWebhookOrderHandler:
     def __init__(
         self,
@@ -82,7 +81,8 @@ class ShopifyWebhookOrderHandler:
 
         return self.__process_paid_order(webhook_id, payload)
 
-    def __error(self, message):
+    @staticmethod
+    def __error(message):
         logger.error(message)
         return {"errors": message}
 
@@ -242,6 +242,11 @@ class ShopifyWebhookOrderHandler:
                 continue
 
             if not order_id:
+                shipping_method = None
+
+                if payload.get("shipping_lines") and len(payload.get("shipping_lines")) > 0:
+                    shipping_method = payload.get("shipping_lines")[0].get("title")
+
                 create_order = CreateOrderModel(
                     user_id=user.id,
                     order_number=order_number,
@@ -251,6 +256,7 @@ class ShopifyWebhookOrderHandler:
                     order_date=created_at,
                     order_type=[OrderType.NEW_ORDER.value],
                     shipping_address=shipping_address,
+                    shipping_method=shipping_method,
                     event_id=event_id,
                     ship_by_date=ship_by_date,
                     meta={
@@ -365,7 +371,8 @@ class ShopifyWebhookOrderHandler:
 
         return order_model.to_response()
 
-    def __get_event_id_from_note_attributes(self, payload: Dict[str, Any]) -> Optional[uuid.UUID]:
+    @staticmethod
+    def __get_event_id_from_note_attributes(payload: Dict[str, Any]) -> Optional[uuid.UUID]:
         note_attributes = payload.get("note_attributes")
 
         if not note_attributes:
@@ -420,7 +427,7 @@ class ShopifyWebhookOrderHandler:
             logger.error(f"Error creating product from ShipHero for SKU '{shiphero_sku}': {e}")
             return None
 
-        return ProductModel.from_orm(product)
+        return ProductModel.model_validate(product)
 
     def __track_swatch_purchase(self, user, payload):
         items = payload.get("line_items", [])

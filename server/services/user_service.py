@@ -71,7 +71,7 @@ class UserService:
             db.session.commit()
             db.session.refresh(db_user)
 
-            user_model = UserModel.from_orm(db_user)
+            user_model = UserModel.model_validate(db_user)
 
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
@@ -103,7 +103,7 @@ class UserService:
         if not db_user:
             raise NotFoundError("User not found.")
 
-        return UserModel.from_orm(db_user)
+        return UserModel.model_validate(db_user)
 
     @staticmethod
     def get_user_by_email(email: str) -> UserModel:
@@ -112,7 +112,7 @@ class UserService:
         if not db_user:
             raise NotFoundError("User not found.")
 
-        return UserModel.from_orm(db_user)
+        return UserModel.model_validate(db_user)
 
     @staticmethod
     def get_user_by_shopify_id(shopify_id: str) -> UserModel:
@@ -121,7 +121,7 @@ class UserService:
         if not db_user:
             raise NotFoundError("User not found.")
 
-        return UserModel.from_orm(db_user)
+        return UserModel.model_validate(db_user)
 
     @staticmethod
     def get_user_for_attendee(attendee_id: uuid.UUID) -> UserModel:
@@ -130,7 +130,7 @@ class UserService:
         if not user:
             raise NotFoundError("User not found.")
 
-        return UserModel.from_orm(user)
+        return UserModel.model_validate(user)
 
     @staticmethod
     def get_gift_paid_but_not_used_discounts(attendee_id: uuid.UUID) -> List[DiscountModel]:
@@ -149,7 +149,7 @@ class UserService:
             .all()
         )
 
-        return [DiscountModel.from_orm(discount) for discount in discounts]
+        return [DiscountModel.model_validate(discount) for discount in discounts]
 
     def update_user(self, user_id: uuid.UUID, update_user: UpdateUserModel, update_shopify=True) -> UserModel:
         user: User = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
@@ -196,7 +196,7 @@ class UserService:
         self.activecampaign_service.sync_contact(
             user.email, user.first_name, user.last_name, phone=user.phone_number, events=events
         )
-        return UserModel.from_orm(user)
+        return UserModel.model_validate(user)
 
     @staticmethod
     def set_size(user_id: uuid.UUID) -> None:

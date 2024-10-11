@@ -28,7 +28,7 @@ class SizeService:
         if not size:
             return None
 
-        return SizeModel.from_orm(size)
+        return SizeModel.model_validate(size)
 
     def create_size(self, create_size_request: CreateSizeRequestModel) -> SizeModel:
         try:
@@ -42,7 +42,7 @@ class SizeService:
             db.session.commit()
             db.session.refresh(size)
 
-            size_model = SizeModel.from_orm(size)
+            size_model = SizeModel.model_validate(size)
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to save size data", e)

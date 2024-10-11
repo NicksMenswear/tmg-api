@@ -5,8 +5,8 @@ from typing import Any, Dict
 
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError
-from server.services.user_service import UserService
 from server.services.integrations.activecampaign_service import ActiveCampaignService
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -74,5 +74,6 @@ class ShopifyWebhookUserHandler:
         else:
             return user.to_response()
 
-    def __get_name_from_email(self, email: str) -> str:
+    @staticmethod
+    def __get_name_from_email(email: str) -> str:
         return re.sub(r"\W+", "", email.split("@")[0])

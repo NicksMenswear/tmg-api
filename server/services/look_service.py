@@ -25,7 +25,6 @@ DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
 TMP_DIR = os.environ.get("TMPDIR", "/tmp")
 
 
-# noinspection PyMethodMayBeStatic
 class LookService:
     def __init__(
         self, user_service: UserService, aws_service: AbstractAWSService, shopify_service: AbstractShopifyService
@@ -34,7 +33,8 @@ class LookService:
         self.aws_service = aws_service
         self.shopify_service = shopify_service
 
-    def get_look_by_id(self, look_id: uuid.UUID) -> LookModel:
+    @staticmethod
+    def get_look_by_id(look_id: uuid.UUID) -> LookModel:
         db_look = Look.query.filter(Look.id == look_id).first()
 
         if not db_look:
@@ -53,7 +53,8 @@ class LookService:
 
         return look_models
 
-    def get_user_look_for_event(self, user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
+    @staticmethod
+    def get_user_look_for_event(user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
         attendee = Attendee.query.filter(Attendee.user_id == user_id, Attendee.event_id == event_id).first()
 
         if not attendee:
@@ -66,10 +67,12 @@ class LookService:
 
         return LookModel.model_validate(look)
 
-    def get_look_price(self, look) -> float:
+    @staticmethod
+    def get_look_price(look) -> float:
         return look.product_specs.get("bundle", {}).get("variant_price")
 
-    def __persist_new_look_to_db(self, create_look: CreateLookModel) -> Look:
+    @staticmethod
+    def __persist_new_look_to_db(create_look: CreateLookModel) -> Look:
         look = Look(
             id=uuid.uuid4(),
             name=create_look.name,
@@ -81,7 +84,8 @@ class LookService:
         db.session.add(look)
         return look
 
-    def __verify_that_look_does_not_exist(self, create_look: CreateLookModel) -> None:
+    @staticmethod
+    def __verify_that_look_does_not_exist(create_look: CreateLookModel) -> None:
         db_look: Look = Look.query.filter(
             Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active
         ).first()
@@ -132,8 +136,11 @@ class LookService:
 
         return [jacket_variant, pants_variant, vest_variant]
 
+    @staticmethod
     def __enrich_product_specs_variants_with_suit_parts(
-        self, suit_variant_id: str, product_spec_variants: List[str], suit_parts_variants: List[ShopifyVariantModel]
+        suit_variant_id: str,
+        product_spec_variants: List[str],
+        suit_parts_variants: List[ShopifyVariantModel],
     ) -> List[str]:
         enriched_product_specs_variants = product_spec_variants.copy()
         enriched_product_specs_variants.remove(suit_variant_id)
@@ -192,6 +199,7 @@ class LookService:
             )
 
             bundle_product_variant_id = self.shopify_service.create_bundle(
+                create_look.name,
                 bundle_id,
                 enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
@@ -219,7 +227,8 @@ class LookService:
 
         return LookModel.model_validate(db_look)
 
-    def update_look(self, look_id: uuid.UUID, update_look: UpdateLookModel) -> LookModel:
+    @staticmethod
+    def update_look(look_id: uuid.UUID, update_look: UpdateLookModel) -> LookModel:
         db_look = Look.query.filter(Look.id == look_id).first()
 
         if not db_look:
@@ -244,7 +253,8 @@ class LookService:
 
         return LookModel.model_validate(db_look)
 
-    def delete_look(self, look_id: uuid.UUID) -> None:
+    @staticmethod
+    def delete_look(look_id: uuid.UUID) -> None:
         look = Look.query.filter(Look.id == look_id).first()
 
         if not look:
@@ -263,7 +273,8 @@ class LookService:
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
 
-    def __save_image(self, image_b64: str, local_file: str) -> None:
+    @staticmethod
+    def __save_image(image_b64: str, local_file: str) -> None:
         try:
             image_b64 = image_b64.replace("data:image/png;base64,", "")
             decoded_image = base64.b64decode(image_b64)
@@ -274,7 +285,8 @@ class LookService:
             logger.exception(e)
             raise ServiceError("Failed to save image.", e)
 
-    def find_look_by_product_id(self, product_id: str) -> Optional[LookModel]:
+    @staticmethod
+    def find_look_by_product_id(product_id: str) -> Optional[LookModel]:
         query = text(
             f"""
             SELECT id, name, user_id, product_specs, image_path, is_active

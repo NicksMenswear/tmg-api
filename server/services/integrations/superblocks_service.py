@@ -1,18 +1,19 @@
 import json
-import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from server.controllers.util import http
 
-logger = logging.getLogger(__name__)
-
 
 class AbstractSuperblocksService(ABC):
-    pass
+    @abstractmethod
+    def api_request(self, method, endpoint, body=None):
+        pass
 
 
+# noinspection PyUnusedLocal
 class FakeSuperblocksService(AbstractSuperblocksService):
-    pass
+    def api_request(self, method, endpoint, body=None):
+        return 200, {}
 
 
 class SuperblocksService(AbstractSuperblocksService):

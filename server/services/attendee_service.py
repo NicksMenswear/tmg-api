@@ -149,8 +149,8 @@ class AttendeeService:
                     ship=attendee.ship or bool(attendee_tracking),
                     role_id=attendee.role_id,
                     look_id=attendee.look_id,
-                    role=RoleModel.from_orm(role) if role else None,
-                    look=LookModel.from_orm(look) if look else None,
+                    role=RoleModel.model_validate(role) if role else None,
+                    look=LookModel.model_validate(look) if look else None,
                     is_active=attendee.is_active,
                     gift_codes=attendee_gift_codes,
                     has_gift_codes=has_gift_codes,
@@ -256,7 +256,7 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to create attendee.", e)
 
-        return AttendeeModel.from_orm(new_attendee)
+        return AttendeeModel.model_validate(new_attendee)
 
     def update_attendee(self, attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
         attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active).first()
@@ -285,7 +285,7 @@ class AttendeeService:
         except Exception as e:
             raise ServiceError("Failed to update attendee.", e)
 
-        return AttendeeModel.from_orm(attendee)
+        return AttendeeModel.model_validate(attendee)
 
     @staticmethod
     def __is_attendee_paid_or_has_discount(attendee: Attendee) -> bool:
@@ -436,7 +436,7 @@ class AttendeeService:
         if not invited_users:
             return
 
-        event = EventModel.from_orm(rows[0][1])
+        event = EventModel.model_validate(rows[0][1])
 
         self.email_service.send_invites_batch(event, invited_users)
 
@@ -470,7 +470,7 @@ class AttendeeService:
     def find_attendees_by_look_id(look_id: uuid.UUID) -> List[AttendeeModel]:
         attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
 
-        return [AttendeeModel.from_orm(attendee) for attendee in attendees]
+        return [AttendeeModel.model_validate(attendee) for attendee in attendees]
 
     @staticmethod
     def get_invited_attendees_for_the_event(event_id: uuid.UUID) -> List[AttendeeModel]:

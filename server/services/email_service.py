@@ -31,6 +31,16 @@ class AbstractEmailService(ABC):
     def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
         pass
 
+    @abstractmethod
+    def send_gift_discount_code_email(
+        self,
+        event: EventModel,
+        owner_user: UserModel,
+        attendee_user: UserModel,
+        gift_discount_code: str,
+    ) -> None:
+        pass
+
 
 class FakeEmailService(AbstractEmailService):
     def __init__(self) -> None:
@@ -45,6 +55,15 @@ class FakeEmailService(AbstractEmailService):
 
         for user in users:
             self.sent_invites[event.id].add(user.id)
+
+    def send_gift_discount_code_email(
+        self,
+        event: EventModel,
+        owner_user: UserModel,
+        attendee_user: UserModel,
+        gift_discount_code: str,
+    ) -> None:
+        pass
 
 
 class EmailService(AbstractEmailService):
@@ -66,7 +85,11 @@ class EmailService(AbstractEmailService):
             raise ServiceError(f"Error sending email: {response.data.decode('utf-8')}")
 
     def send_gift_discount_code_email(
-        self, event: EventModel, owner_user: UserModel, attendee_user: UserModel, gift_discount_code: str
+        self,
+        event: EventModel,
+        owner_user: UserModel,
+        attendee_user: UserModel,
+        gift_discount_code: str,
     ) -> None:
         template_model = {
             "first_name": attendee_user.first_name,

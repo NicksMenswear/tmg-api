@@ -183,6 +183,7 @@ def webhook_shopify_paid_order(
         },
         "order_number": random.randint(1000, 1000000),
         "created_at": datetime.now().isoformat(),
+        "shipping_lines": [{"id": 4513271480451, "title": "Standard Shipping"}],
         "shipping_address": {
             "address1": "123 Shipping Address",
             "city": "City",

@@ -242,6 +242,11 @@ class ShopifyWebhookOrderHandler:
                 continue
 
             if not order_id:
+                shipping_method = None
+
+                if payload.get("shipping_lines") and len(payload.get("shipping_lines")) > 0:
+                    shipping_method = payload.get("shipping_lines")[0].get("title")
+
                 create_order = CreateOrderModel(
                     user_id=user.id,
                     order_number=order_number,
@@ -251,6 +256,7 @@ class ShopifyWebhookOrderHandler:
                     order_date=created_at,
                     order_type=[OrderType.NEW_ORDER.value],
                     shipping_address=shipping_address,
+                    shipping_method=shipping_method,
                     event_id=event_id,
                     ship_by_date=ship_by_date,
                     meta={

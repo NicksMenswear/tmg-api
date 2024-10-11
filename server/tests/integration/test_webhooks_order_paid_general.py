@@ -258,6 +258,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(order.discount_codes, [])
         self.assertEqual(order.shopify_order_id, str(webhook_request["id"]))
         self.assertEqual(order.shopify_order_number, str(webhook_request["order_number"]))
+        self.assertEqual(order.shipping_method, "Standard Shipping")
         self.assertEqual(order.shipping_address_line1, webhook_request["shipping_address"].get("address1"))
         self.assertEqual(order.shipping_address_line2, webhook_request["shipping_address"].get("address2"))
         self.assertEqual(order.shipping_city, webhook_request["shipping_address"]["city"])

@@ -35,15 +35,11 @@ class AbstractShopifyService(ABC):
         return {}
 
     @abstractmethod
-    def create_customer(self, first_name, last_name, email):
+    def create_customer(self, first_name: str, last_name: str, email: str) -> dict:
         pass
 
     @abstractmethod
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
-
-    @abstractmethod
-    def append_customer_tags(self, shopify_customer_id, tags):
         pass
 
     @abstractmethod
@@ -153,16 +149,13 @@ class FakeShopifyService(AbstractShopifyService):
 
         return self.customers.get(email)
 
-    def create_customer(self, first_name, last_name, email):
+    def create_customer(self, first_name: str, last_name: str, email: str) -> dict:
         if email.endswith("@shopify-user-exists.com"):
             raise DuplicateError("Shopify customer with this email address already exists.")
 
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
-
-    def append_customer_tags(self, shopify_customer_id, tags):
         pass
 
     def get_account_login_url(self, customer_id):
@@ -339,7 +332,6 @@ class ShopifyService(AbstractShopifyService):
         self.__shopify_store_host = f"{self.__shopify_store}.myshopify.com"
         self.__admin_api_access_token = os.getenv("admin_api_access_token")
         self.__storefront_api_access_token = os.getenv("storefront_api_access_token")
-        self.__shopify_rest_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
         self.__shopify_graphql_admin_api_endpoint = f"https://{self.__shopify_store_host}/admin/api/2024-01"
         self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store_host}/api/2024-01"
 
@@ -436,129 +428,221 @@ class ShopifyService(AbstractShopifyService):
         return f"https://{self.__shopify_store_host}/account/login"
 
     def get_account_activation_url(self, customer_id):
+        query = """
+        mutation customerCreateAccountActivationUrl($customerId: ID!) {
+          customerCreateAccountActivationUrl(customerId: $customerId) {
+            accountActivationUrl
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"customerId": ShopifyService.customer_gid(customer_id)}
+
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
-        if status == 422 and "account already enabled" in body.get("errors", []):
-            raise ServiceError("Account already activated.")
+        user_errors = body.get("data", {}).get("customerCreateAccountActivationUrl", {}).get("userErrors", [])
 
-        if status >= 400:
+        if user_errors:
+            for error in user_errors:
+                if "already enabled" in error.get("message", "").lower():
+                    raise ServiceError("Account already activated.")
+
             raise ServiceError("Failed to create activation url.")
 
-        return body.get("account_activation_url")
+        return body.get("data", {}).get("customerCreateAccountActivationUrl", {}).get("accountActivationUrl")
 
     def get_customer_by_email(self, email: str) -> dict:
+        query = """
+        query($query: String!) {
+          customers(first: 1, query: $query) {
+            edges {
+              node {
+                id
+                email
+                firstName
+                lastName
+                # Add other fields you need, like phone, addresses, etc.
+              }
+            }
+          }
+        }
+        """
+
+        variables = {"query": f"email:{email}"}
+
         status, body = self.admin_api_request(
-            "GET", f"{self.__shopify_rest_admin_api_endpoint}/customers/search.json?query=email:{email}"
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
         if status >= 400:
             raise ServiceError("Failed to get customer")
 
-        if body.get("customers") and len(body["customers"]) > 0:
-            return body["customers"][0]
+        customers = body.get("data", {}).get("customers", {}).get("edges", [])
+
+        if customers:
+            return customers[0]["node"]
         else:
             raise NotFoundError("Customer not found.")
 
-    def create_customer(self, first_name, last_name, email):
+    def create_customer(self, first_name: str, last_name: str, email: str) -> dict:
+        query = """
+        mutation customerCreate($input: CustomerInput!) {
+          customerCreate(input: $input) {
+            customer {
+              id
+              email
+              firstName
+              lastName
+              # Add other fields if needed
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"input": {"firstName": first_name, "lastName": last_name, "email": email}}
+
         status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers.json",
-            {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
+            "POST", f"{self.__shopify_graphql_admin_api_endpoint}", body={"query": query, "variables": variables}
         )
 
-        if status == 422:
-            raise DuplicateError("Shopify customer with this email address already exists.")
-        if status >= 400:
+        user_errors = body.get("data", {}).get("customerCreate", {}).get("userErrors", [])
+
+        if user_errors:
+            for error in user_errors:
+                if "already exists" in error.get("message", "").lower():
+                    raise DuplicateError("Shopify customer with this email address already exists.")
+
             raise ServiceError("Failed to create shopify customer.")
 
-        return body["customer"]
+        return body.get("data", {}).get("customerCreate", {}).get("customer")
 
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        customer = {
-            "id": shopify_customer_id,
+        query = """
+        mutation customerUpdate($input: CustomerInput!) {
+          customerUpdate(input: $input) {
+            customer {
+              id
+              firstName
+              lastName
+              email
+              phone
+              # Add other fields if needed
+            }
+            userErrors {
+              field
+              message
+            }
+          }
         }
+        """
+
+        customer_input = {
+            "id": ShopifyService.customer_gid(shopify_customer_id),
+        }
+
         if first_name:
-            customer["first_name"] = first_name
+            customer_input["firstName"] = first_name
         if last_name:
-            customer["last_name"] = last_name
+            customer_input["lastName"] = last_name
         if email:
-            customer["email"] = email
+            customer_input["email"] = email
         if phone_number:
-            customer["phone"] = phone_number
+            customer_input["phone"] = phone_number
 
-        status, body = self.admin_api_request(
-            "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-            {"customer": customer},
-        )
+        variables = {"input": customer_input}
 
-        if status == 422:
-            if body.get("errors", {}).get("phone"):
-                raise BadRequestError(str(body.get("errors", {}).get("phone")))
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer.")
-
-        return body["customer"]
-
-    def append_customer_tags(self, shopify_customer_id, tags):
-        status, body = self.admin_api_request(
-            "GET",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to get shopify customer.")
-
-        existing_tags = body["customer"]["tags"].split(", ")
-        combinded_tags = list(set(existing_tags + tags))
-        if sorted(combinded_tags) == sorted(existing_tags):
-            return body["customer"]
-
-        customer = {"id": shopify_customer_id, "tags": ", ".join(combinded_tags)}
-
-        status, body = self.admin_api_request(
-            "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-            {"customer": customer},
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer tags.")
-
-        return body["customer"]
-
-    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
-            {
-                "product": {
-                    "title": title,
-                    "body_html": body_html,
-                    "vendor": vendor,
-                    "product_type": "Virtual Goods",
-                    "tags": tags,
-                    "variants": [
-                        {
-                            "option1": title,
-                            "price": str(price),
-                            "sku": sku,
-                            "requires_shipping": False,
-                            "taxable": False,
-                            "inventory_management": None,
-                        }
-                    ],
-                }
-            },
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
-        if status >= 400:
-            raise ServiceError("Failed to create virtual product in shopify store.")
+        # Check for user errors in the response
+        user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
+        if user_errors:
+            for error in user_errors:
+                if "phone" in error.get("field", []):
+                    raise BadRequestError(error.get("message"))
+            raise ServiceError("Failed to update Shopify customer.")
 
-        return body.get("product")
+        # Return the updated customer data
+        return body.get("data", {}).get("customerUpdate", {}).get("customer")
+
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        query = """
+        mutation productCreate($input: ProductInput!) {
+          productCreate(input: $input) {
+            product {
+              id
+              title
+              vendor
+              productType
+              tags
+              variants(first: 1) {
+                edges {
+                  node {
+                    id
+                    title
+                    price
+                    sku
+                  }
+                }
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "input": {
+                "title": title,
+                "bodyHtml": body_html,
+                "vendor": vendor,
+                "productType": "Virtual Goods",
+                "tags": tags,
+                "variants": [
+                    {
+                        "price": str(price),
+                        "sku": sku,
+                        "requiresShipping": False,
+                        "taxable": False,
+                        "inventoryManagement": None,
+                        "title": title,
+                    }
+                ],
+            }
+        }
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
+        )
+
+        user_errors = body.get("data", {}).get("productCreate", {}).get("userErrors", [])
+
+        if user_errors:
+            raise ServiceError(f"Failed to create virtual product: {user_errors[0]['message']}")
+
+        return body.get("data", {}).get("productCreate", {}).get("product")
 
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         attendee_discount_product = self.create_virtual_product(
@@ -577,57 +661,127 @@ class ShopifyService(AbstractShopifyService):
         bundle_identifier_product_name = f"Bundle #{bundle_id}"
         bundle_identifier_product_handle = f"bundle-{bundle_id}"
 
+        query = """
+        mutation productCreate($input: ProductInput!) {
+          productCreate(input: $input) {
+            product {
+              id
+              title
+              variants(first: 1) {
+                edges {
+                  node {
+                    id
+                    sku
+                    price
+                  }
+                }
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "input": {
+                "title": bundle_identifier_product_name,
+                "vendor": "The Modern Groom",
+                "tags": ["hidden"],
+                "images": [{"src": self.__bundle_image_path}],
+                "variants": [
+                    {
+                        "price": "0",
+                        "sku": bundle_identifier_product_handle,
+                        "requiresShipping": True,
+                        "taxable": False,
+                        "inventoryManagement": None,
+                    }
+                ],
+            }
+        }
+
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
-            {
-                "product": {
-                    "title": bundle_identifier_product_name,
-                    "vendor": "The Modern Groom",
-                    "tags": ["hidden"],
-                    "images": [{"src": self.__bundle_image_path}],
-                    "variants": [
-                        {
-                            "price": "0",
-                            "sku": bundle_identifier_product_handle,
-                            "requires_shipping": True,
-                            "taxable": False,
-                            "inventory_management": None,
-                        }
-                    ],
-                }
-            },
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
-        if status >= 400:
-            raise ServiceError("Failed to create bundle identifier product in shopify store.")
+        user_errors = body.get("data", {}).get("productCreate", {}).get("userErrors", [])
 
-        return body.get("product").get("variants", {})[0].get("id")
+        if user_errors:
+            raise ServiceError(f"Failed to create bundle identifier product: {user_errors[0]['message']}")
+
+        product_data = body.get("data", {}).get("productCreate", {}).get("product", {})
+        variant = product_data.get("variants", {}).get("edges", [])[0].get("node", {})
+
+        return variant.get("id")
 
     def archive_product(self, shopify_product_id):
+        query = """
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product {
+              id
+              status
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "input": {
+                "id": f"gid://shopify/Product/{shopify_product_id}",
+                "status": "ARCHIVED",
+                "publishedAt": None,
+            }
+        }
+
         status, body = self.admin_api_request(
-            "PATCH",
-            f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json",
-            {"product": {"id": shopify_product_id, "status": "archived", "published_at": None}},
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
-        if status >= 400:
-            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}' in shopify store.")
+        user_errors = body.get("data", {}).get("productUpdate", {}).get("userErrors", [])
 
-        if "errors" in body:
-            raise ServiceError(
-                f"Failed to archive product by id '{shopify_product_id}' in shopify store: {body['errors']}"
-            )
+        if user_errors:
+            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}': {user_errors[0]['message']}")
 
-        return body.get("product")
+        return body.get("data", {}).get("productUpdate", {}).get("product")
 
     def delete_product(self, shopify_product_id):
+        query = """
+        mutation productDelete($id: ID!) {
+          productDelete(input: {id: $id}) {
+            deletedProductId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"id": ShopifyService.product_gid(shopify_product_id)}
+
         status, body = self.admin_api_request(
-            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json"
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
         )
 
-        if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}' in shopify store.")
+        user_errors = body.get("data", {}).get("productDelete", {}).get("userErrors", [])
+        if user_errors:
+            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}': {user_errors[0]['message']}")
+
+        return body.get("data", {}).get("productDelete", {}).get("deletedProductId")
 
     def create_discount_code(
         self,

@@ -67,7 +67,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def delete_product(self, product_id):
+    def delete_product(self, shopify_product_id) -> None:
         pass
 
     @abstractmethod
@@ -88,7 +88,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def archive_product(self, shopify_product_id):
+    def archive_product(self, shopify_product_id) -> None:
         pass
 
     @abstractmethod
@@ -192,7 +192,7 @@ class FakeShopifyService(AbstractShopifyService):
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
 
-    def delete_product(self, product_id):
+    def delete_product(self, shopify_product_id) -> None:
         pass
 
     def create_discount_code(
@@ -213,7 +213,7 @@ class FakeShopifyService(AbstractShopifyService):
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
         pass
 
-    def archive_product(self, shopify_product_id):
+    def archive_product(self, shopify_product_id) -> None:
         pass
 
     def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
@@ -429,8 +429,8 @@ class ShopifyService(AbstractShopifyService):
 
     def get_account_activation_url(self, customer_id):
         query = """
-        mutation customerCreateAccountActivationUrl($customerId: ID!) {
-          customerCreateAccountActivationUrl(customerId: $customerId) {
+        mutation customerGenerateAccountActivationUrl($customerId: ID!) {
+          customerGenerateAccountActivationUrl(customerId: $customerId) {
             accountActivationUrl
             userErrors {
               field
@@ -444,20 +444,14 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 
-        user_errors = body.get("data", {}).get("customerCreateAccountActivationUrl", {}).get("userErrors", [])
+        if status >= 400 or "errors" in body:
+            raise ServiceError(f"Failed to create activation url")
 
-        if user_errors:
-            for error in user_errors:
-                if "already enabled" in error.get("message", "").lower():
-                    raise ServiceError("Account already activated.")
-
-            raise ServiceError("Failed to create activation url.")
-
-        return body.get("data", {}).get("customerCreateAccountActivationUrl", {}).get("accountActivationUrl")
+        return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
 
     def get_customer_by_email(self, email: str) -> dict:
         query = """
@@ -480,11 +474,11 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 
-        if status >= 400:
+        if status >= 400 or "errors" in body:
             raise ServiceError("Failed to get customer")
 
         customers = body.get("data", {}).get("customers", {}).get("edges", [])
@@ -516,14 +510,19 @@ class ShopifyService(AbstractShopifyService):
         variables = {"input": {"firstName": first_name, "lastName": last_name, "email": email}}
 
         status, body = self.admin_api_request(
-            "POST", f"{self.__shopify_graphql_admin_api_endpoint}", body={"query": query, "variables": variables}
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
         )
 
         user_errors = body.get("data", {}).get("customerCreate", {}).get("userErrors", [])
 
+        if status >= 400:
+            raise ServiceError(f"Failed to create customer")
+
         if user_errors:
             for error in user_errors:
-                if "already exists" in error.get("message", "").lower():
+                if "email has already been taken" in error.get("message", "").lower():
                     raise DuplicateError("Shopify customer with this email address already exists.")
 
             raise ServiceError("Failed to create shopify customer.")
@@ -571,7 +570,6 @@ class ShopifyService(AbstractShopifyService):
             body={"query": query, "variables": variables},
         )
 
-        # Check for user errors in the response
         user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
         if user_errors:
             for error in user_errors:
@@ -579,7 +577,6 @@ class ShopifyService(AbstractShopifyService):
                     raise BadRequestError(error.get("message"))
             raise ServiceError("Failed to update Shopify customer.")
 
-        # Return the updated customer data
         return body.get("data", {}).get("customerUpdate", {}).get("customer")
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -614,7 +611,7 @@ class ShopifyService(AbstractShopifyService):
         variables = {
             "input": {
                 "title": title,
-                "bodyHtml": body_html,
+                "descriptionHtml": body_html,
                 "vendor": vendor,
                 "productType": "Virtual Goods",
                 "tags": tags,
@@ -633,7 +630,7 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 
@@ -719,7 +716,7 @@ class ShopifyService(AbstractShopifyService):
 
         return variant.get("id")
 
-    def archive_product(self, shopify_product_id):
+    def archive_product(self, shopify_product_id) -> None:
         query = """
         mutation productUpdate($input: ProductInput!) {
           productUpdate(input: $input) {
@@ -737,26 +734,24 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {
             "input": {
-                "id": f"gid://shopify/Product/{shopify_product_id}",
+                "id": ShopifyService.product_gid(shopify_product_id),
                 "status": "ARCHIVED",
-                "publishedAt": None,
             }
         }
 
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 
-        user_errors = body.get("data", {}).get("productUpdate", {}).get("userErrors", [])
+        if status >= 400:
+            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}'. Status code: {status}")
 
-        if user_errors:
-            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}': {user_errors[0]['message']}")
+        if "errors" in body:
+            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}': {body['errors']}")
 
-        return body.get("data", {}).get("productUpdate", {}).get("product")
-
-    def delete_product(self, shopify_product_id):
+    def delete_product(self, shopify_product_id) -> None:
         query = """
         mutation productDelete($id: ID!) {
           productDelete(input: {id: $id}) {
@@ -773,15 +768,15 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 
-        user_errors = body.get("data", {}).get("productDelete", {}).get("userErrors", [])
-        if user_errors:
-            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}': {user_errors[0]['message']}")
+        if status >= 400:
+            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}'. Status code: {status}")
 
-        return body.get("data", {}).get("productDelete", {}).get("deletedProductId")
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}': {body['errors']}")
 
     def create_discount_code(
         self,

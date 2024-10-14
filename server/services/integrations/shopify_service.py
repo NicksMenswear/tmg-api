@@ -424,7 +424,7 @@ class ShopifyService(AbstractShopifyService):
                 email
                 firstName
                 lastName
-                # Add other fields you need, like phone, addresses, etc.
+                state
               }
             }
           }

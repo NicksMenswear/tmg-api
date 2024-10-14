@@ -1,6 +1,15 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+
+class ShopifyCustomer(BaseModel):
+    gid: str
+    email: str
+    first_name: str
+    last_name: str
+    state: str
+    tags: List[str] = None
 
 
 class ShopifyVariantModel(BaseModel):

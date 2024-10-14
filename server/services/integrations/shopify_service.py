@@ -10,7 +10,7 @@ from typing import List, Optional, Any, Set
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
-from server.models.shopify_model import ShopifyVariantModel
+from server.models.shopify_model import ShopifyVariantModel, ShopifyCustomer
 from server.services import BadRequestError, ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ class DiscountAmountType(enum.Enum):
 
 class AbstractShopifyService(ABC):
     @abstractmethod
-    def get_customer_by_email(self, email: str) -> dict:
-        return {}
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer:
+        pass
 
     @abstractmethod
     def create_customer(self, first_name: str, last_name: str, email: str) -> dict:
@@ -137,7 +137,7 @@ class FakeShopifyService(AbstractShopifyService):
         )
         self.customers = {}
 
-    def get_customer_by_email(self, email: str) -> dict:
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer:
         if email.endswith("@shopify-user-does-not-exists.com"):
             raise NotFoundError("Shopify customer doesn't exist.")
 
@@ -385,6 +385,51 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer:
+        query = """
+        query($query: String!) {
+          customers(first: 1, query: $query) {
+            edges {
+              node {
+                id
+                email
+                firstName
+                lastName
+                state
+                tags
+              }
+            }
+          }
+        }
+        """
+
+        variables = {"query": f"email:{email}"}
+
+        status, body = self.admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            body={"query": query, "variables": variables},
+        )
+
+        if status >= 400 or "errors" in body:
+            raise ServiceError("Failed to get customer")
+
+        customers = body.get("data", {}).get("customers", {}).get("edges", [])
+
+        if customers:
+            customer = customers[0]["node"]
+
+            return ShopifyCustomer(
+                id=customer["id"],
+                email=customer["email"],
+                first_name=customer["firstName"],
+                last_name=customer["lastName"],
+                state=customer["state"],
+                tags=customer["tags"],
+            )
+        else:
+            raise NotFoundError("Customer not found.")
+
     def get_account_login_url(self, customer_id):
         return f"https://{self.__shopify_store_host}/account/login"
 
@@ -413,41 +458,6 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to create activation url")
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
-
-    def get_customer_by_email(self, email: str) -> dict:
-        query = """
-        query($query: String!) {
-          customers(first: 1, query: $query) {
-            edges {
-              node {
-                id
-                email
-                firstName
-                lastName
-                state
-              }
-            }
-          }
-        }
-        """
-
-        variables = {"query": f"email:{email}"}
-
-        status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            body={"query": query, "variables": variables},
-        )
-
-        if status >= 400 or "errors" in body:
-            raise ServiceError("Failed to get customer")
-
-        customers = body.get("data", {}).get("customers", {}).get("edges", [])
-
-        if customers:
-            return customers[0]["node"]
-        else:
-            raise NotFoundError("Customer not found.")
 
     def create_customer(self, first_name: str, last_name: str, email: str) -> dict:
         query = """

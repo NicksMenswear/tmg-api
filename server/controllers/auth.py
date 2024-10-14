@@ -20,15 +20,16 @@ def login(email):
         logger.warning(f"User not found for email: {email}")
         return None, 404
 
-    try:
-        shopify_customer = shopify_service.get_customer_by_email(email)
-    except NotFoundError as e:
+    shopify_customer = shopify_service.get_customer_by_email(email)
+
+    if not shopify_customer:
         logger.warning(f"Shopify customer not found for email: {email}")
         return None, 404
 
     state = shopify_customer["state"]
     tags = shopify_customer["tags"]
-    is_legacy = "legacy" in tags.split(",") if tags else False
+
+    is_legacy = "legacy" in tags
 
     if is_legacy and state == "disabled":
         email_service.send_activation_email(user)

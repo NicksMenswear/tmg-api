@@ -23,14 +23,6 @@ class DiscountAmountType(enum.Enum):
 
 class AbstractShopifyService(ABC):
     @abstractmethod
-    def get_online_store_sales_channel_id(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_online_store_shop_id(self) -> str:
-        return "0"
-
-    @abstractmethod
     def get_customer_by_email(self, email: str) -> dict:
         return {}
 
@@ -144,12 +136,6 @@ class FakeShopifyService(AbstractShopifyService):
             shopify_virtual_product_variants if shopify_virtual_product_variants else {}
         )
         self.customers = {}
-
-    def get_online_store_sales_channel_id(self) -> str:
-        return "gid://shopify/Publication/1234567890"
-
-    def get_online_store_shop_id(self) -> str:
-        return "666"
 
     def get_customer_by_email(self, email: str) -> dict:
         if email.endswith("@shopify-user-does-not-exists.com"):
@@ -398,45 +384,6 @@ class ShopifyService(AbstractShopifyService):
             )
 
         return response.status, json.loads(response.data.decode("utf-8"))
-
-    def get_online_store_sales_channel_id(self) -> str:
-        status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": "{ publications(first: 10) { edges { node { id name } } } }"},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get sales channels in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get sales channels in shopify store: {body['errors']}")
-
-        publication_edges = body.get("data", {}).get("publications", {}).get("edges", [])
-
-        for publication in publication_edges:
-            if publication["node"]["name"] == "Online Store":
-                return publication["node"]["id"]
-
-        raise ServiceError("Online Store sales channel not found.")
-
-    def get_online_store_shop_id(self) -> str:
-        status, body = self.admin_api_request(
-            "POST", f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json", {"query": "{ shop { id } }"}
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get shop id. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get shop id: {body['errors']}")
-
-        shop_id = body.get("data", {}).get("shop", {}).get("id")
-
-        if shop_id and shop_id.startswith("gid://shopify/Shop/"):
-            return shop_id.replace("gid://shopify/Shop/", "")
-
-        raise ServiceError("Failed to get shop id.")
 
     def get_account_login_url(self, customer_id):
         return f"https://{self.__shopify_store_host}/account/login"

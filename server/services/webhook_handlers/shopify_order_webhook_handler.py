@@ -19,7 +19,7 @@ from server.services.email_service import AbstractEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
-from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType
+from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType, ShopifyService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -93,7 +93,7 @@ class ShopifyWebhookOrderHandler:
         logger.info(f"Handling discount for variant_id '{shopify_product_id}/{shopify_variant_id}'")
 
         try:
-            self.shopify_service.archive_product(shopify_product_id)
+            self.shopify_service.archive_product(ShopifyService.product_gid(shopify_product_id))
         except Exception as e:
             logger.warning(
                 f"Error archiving product with id '{shopify_product_id}/{shopify_variant_id}': {e}"

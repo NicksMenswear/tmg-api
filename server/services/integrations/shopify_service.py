@@ -69,7 +69,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def delete_product(self, product_id: int) -> None:
+    def delete_product(self, product_gid: str) -> None:
         pass
 
     @abstractmethod
@@ -203,7 +203,7 @@ class FakeShopifyService(AbstractShopifyService):
     def archive_product(self, product_gid: str) -> None:
         pass
 
-    def delete_product(self, product_id: int) -> None:
+    def delete_product(self, product_gid: str) -> None:
         pass
 
     ##############################
@@ -809,7 +809,7 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to archive product by id '{product_gid}': {body['errors']}")
 
-    def delete_product(self, product_id: int) -> None:
+    def delete_product(self, product_gid: str) -> None:
         query = """
         mutation productDelete($id: ID!) {
           productDelete(input: {id: $id}) {
@@ -822,7 +822,7 @@ class ShopifyService(AbstractShopifyService):
         }
         """
 
-        variables = {"id": ShopifyService.product_gid(product_id)}
+        variables = {"id": product_gid}
 
         status, body = self.__admin_api_request(
             "POST",
@@ -831,12 +831,12 @@ class ShopifyService(AbstractShopifyService):
         )
 
         if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{product_id}'. Status code: {status}")
+            raise ServiceError(f"Failed to delete product by id '{product_gid}'. Status code: {status}")
 
         if "errors" in body:
-            raise ServiceError(f"Failed to delete product by id '{product_id}': {body['errors']}")
+            raise ServiceError(f"Failed to delete product by id '{product_gid}': {body['errors']}")
 
-    def __admin_api_request(self, method, endpoint, body=None):
+    def __admin_api_request(self, method: str, endpoint: str, body: dict = None):
         response = http(
             method,
             endpoint,
@@ -857,7 +857,7 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def __storefront_api_request(self, method, endpoint, body=None):
+    def __storefront_api_request(self, method: str, endpoint: str, body: dict = None):
         response = http(
             method,
             endpoint,

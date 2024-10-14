@@ -21,7 +21,7 @@ from server.models.discount_model import (
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
-from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType
+from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType, ShopifyService
 from server.services.look_service import LookService
 from server.services.user_service import UserService
 
@@ -403,7 +403,7 @@ class DiscountService:
 
             for shopify_product_id in shopify_products_to_remove:
                 try:
-                    self.shopify_service.delete_product(shopify_product_id)
+                    self.shopify_service.delete_product(ShopifyService.product_gid(shopify_product_id))
                 except Exception as e:
                     # do not raise exception if shopify product deletion fails
                     pass

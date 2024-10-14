@@ -55,7 +55,11 @@ class LookService:
 
     @staticmethod
     def get_user_look_for_event(user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
-        attendee = Attendee.query.filter(Attendee.user_id == user_id, Attendee.event_id == event_id).first()
+        attendee = Attendee.query.filter(
+            Attendee.user_id == user_id,
+            Attendee.event_id == event_id,
+            Attendee.is_active,
+        ).first()
 
         if not attendee:
             raise NotFoundError("Attendee not found")

@@ -458,7 +458,6 @@ class ShopifyService(AbstractShopifyService):
               email
               firstName
               lastName
-              # Add other fields if needed
             }
             userErrors {
               field
@@ -634,7 +633,7 @@ class ShopifyService(AbstractShopifyService):
 
         self.update_product_variant(variant["id"], price, sku)
 
-        return product
+        return created_product
 
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         attendee_discount_product = self.create_virtual_product(
@@ -1333,9 +1332,3 @@ class ShopifyService(AbstractShopifyService):
 
         if "errors" in body:
             raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
-
-
-if __name__ == "__main__":
-    shopify_service = ShopifyService()
-    product = shopify_service.create_bundle_identifier_product("bundle-test5")
-    print(product)

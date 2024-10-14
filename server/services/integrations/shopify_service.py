@@ -23,12 +23,14 @@ class DiscountAmountType(enum.Enum):
 
 class AbstractShopifyService(ABC):
     @abstractmethod
-    def get_online_store_sales_channel_id(self) -> str:
+    def get_account_login_url(self) -> str:
         pass
 
     @abstractmethod
-    def get_online_store_shop_id(self) -> str:
-        return "0"
+    def get_account_activation_url(self, customer_id: int) -> str:
+        pass
+
+    ##############################
 
     @abstractmethod
     def get_customer_by_email(self, email: str) -> dict:
@@ -40,18 +42,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
-
-    @abstractmethod
-    def append_customer_tags(self, shopify_customer_id, tags):
-        pass
-
-    @abstractmethod
-    def get_account_login_url(self, customer_id):
-        pass
-
-    @abstractmethod
-    def get_account_activation_url(self, customer_id):
         pass
 
     @abstractmethod
@@ -141,11 +131,13 @@ class FakeShopifyService(AbstractShopifyService):
         )
         self.customers = {}
 
-    def get_online_store_sales_channel_id(self) -> str:
-        return "gid://shopify/Publication/1234567890"
+    def get_account_login_url(self) -> str:
+        pass
 
-    def get_online_store_shop_id(self) -> str:
-        return "666"
+    def get_account_activation_url(self, customer_id: int) -> str:
+        pass
+
+    ##############################
 
     def get_customer_by_email(self, email: str) -> dict:
         if email.endswith("@shopify-user-does-not-exists.com"):
@@ -160,15 +152,6 @@ class FakeShopifyService(AbstractShopifyService):
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
-
-    def append_customer_tags(self, shopify_customer_id, tags):
-        pass
-
-    def get_account_login_url(self, customer_id):
-        pass
-
-    def get_account_activation_url(self, customer_id):
         pass
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -344,18 +327,47 @@ class ShopifyService(AbstractShopifyService):
         self.__shopify_storefront_api_endpoint = f"https://{self.__shopify_store_host}/api/2024-01"
 
     @classmethod
-    def customer_gid(cls, shopify_id):
+    def customer_gid(cls, shopify_id: int) -> str:
         return f"gid://shopify/Customer/{shopify_id}"
 
     @classmethod
-    def product_gid(cls, shopify_id):
+    def product_gid(cls, shopify_id: int) -> str:
         return f"gid://shopify/Product/{shopify_id}"
 
     @classmethod
-    def product_variant_gid(cls, shopify_id):
+    def product_variant_gid(cls, shopify_id: int) -> str:
         return f"gid://shopify/ProductVariant/{shopify_id}"
 
-    def admin_api_request(self, method, endpoint, body=None):
+    def get_account_login_url(self) -> str:
+        return f"https://{self.__shopify_store_host}/account/login"
+
+    def get_account_activation_url(self, customer_id: int) -> str:
+        query = """
+        mutation customerGenerateAccountActivationUrl($customerId: ID!) {
+          customerGenerateAccountActivationUrl(customerId: $customerId) {
+            accountActivationUrl
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"customerId": ShopifyService.customer_gid(customer_id)}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            body={"query": query, "variables": variables},
+        )
+
+        if status >= 400 or "errors" in body:
+            raise ServiceError(f"Failed to create activation url")
+
+        return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
+
+    def __admin_api_request(self, method, endpoint, body=None):
         response = http(
             method,
             endpoint,
@@ -376,7 +388,7 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def storefront_api_request(self, method, endpoint, body=None):
+    def __storefront_api_request(self, method, endpoint, body=None):
         response = http(
             method,
             endpoint,
@@ -393,64 +405,10 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def get_online_store_sales_channel_id(self) -> str:
-        status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": "{ publications(first: 10) { edges { node { id name } } } }"},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get sales channels in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get sales channels in shopify store: {body['errors']}")
-
-        publication_edges = body.get("data", {}).get("publications", {}).get("edges", [])
-
-        for publication in publication_edges:
-            if publication["node"]["name"] == "Online Store":
-                return publication["node"]["id"]
-
-        raise ServiceError("Online Store sales channel not found.")
-
-    def get_online_store_shop_id(self) -> str:
-        status, body = self.admin_api_request(
-            "POST", f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json", {"query": "{ shop { id } }"}
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get shop id. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get shop id: {body['errors']}")
-
-        shop_id = body.get("data", {}).get("shop", {}).get("id")
-
-        if shop_id and shop_id.startswith("gid://shopify/Shop/"):
-            return shop_id.replace("gid://shopify/Shop/", "")
-
-        raise ServiceError("Failed to get shop id.")
-
-    def get_account_login_url(self, customer_id):
-        return f"https://{self.__shopify_store_host}/account/login"
-
-    def get_account_activation_url(self, customer_id):
-        status, body = self.admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{customer_id}/account_activation_url.json",
-        )
-
-        if status == 422 and "account already enabled" in body.get("errors", []):
-            raise ServiceError("Account already activated.")
-
-        if status >= 400:
-            raise ServiceError("Failed to create activation url.")
-
-        return body.get("account_activation_url")
+    ##############################
 
     def get_customer_by_email(self, email: str) -> dict:
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "GET", f"{self.__shopify_rest_admin_api_endpoint}/customers/search.json?query=email:{email}"
         )
 
@@ -463,7 +421,7 @@ class ShopifyService(AbstractShopifyService):
             raise NotFoundError("Customer not found.")
 
     def create_customer(self, first_name, last_name, email):
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_rest_admin_api_endpoint}/customers.json",
             {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
@@ -489,7 +447,7 @@ class ShopifyService(AbstractShopifyService):
         if phone_number:
             customer["phone"] = phone_number
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "PUT",
             f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
             {"customer": customer},
@@ -503,35 +461,8 @@ class ShopifyService(AbstractShopifyService):
 
         return body["customer"]
 
-    def append_customer_tags(self, shopify_customer_id, tags):
-        status, body = self.admin_api_request(
-            "GET",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to get shopify customer.")
-
-        existing_tags = body["customer"]["tags"].split(", ")
-        combinded_tags = list(set(existing_tags + tags))
-        if sorted(combinded_tags) == sorted(existing_tags):
-            return body["customer"]
-
-        customer = {"id": shopify_customer_id, "tags": ", ".join(combinded_tags)}
-
-        status, body = self.admin_api_request(
-            "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-            {"customer": customer},
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer tags.")
-
-        return body["customer"]
-
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_rest_admin_api_endpoint}/products.json",
             {
@@ -577,7 +508,7 @@ class ShopifyService(AbstractShopifyService):
         bundle_identifier_product_name = f"Bundle #{bundle_id}"
         bundle_identifier_product_handle = f"bundle-{bundle_id}"
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_rest_admin_api_endpoint}/products.json",
             {
@@ -605,7 +536,7 @@ class ShopifyService(AbstractShopifyService):
         return body.get("product").get("variants", {})[0].get("id")
 
     def archive_product(self, shopify_product_id):
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "PATCH",
             f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json",
             {"product": {"id": shopify_product_id, "status": "archived", "published_at": None}},
@@ -622,7 +553,7 @@ class ShopifyService(AbstractShopifyService):
         return body.get("product")
 
     def delete_product(self, shopify_product_id):
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json"
         )
 
@@ -668,7 +599,7 @@ class ShopifyService(AbstractShopifyService):
                 "title": title,
                 "code": code,
                 "usageLimit": 1,
-                "customerSelection": {"customers": {"add": [ShopifyService.customer_gid(shopify_customer_id)]}},
+                "customerSelection": {"customers": {"add": [ShopifyService.customer_gid(int(shopify_customer_id))]}},
                 "startsAt": datetime.now(timezone.utc).isoformat(),
                 "appliesOncePerCustomer": True,
                 "combinesWith": {"orderDiscounts": True, "productDiscounts": True},
@@ -692,14 +623,14 @@ class ShopifyService(AbstractShopifyService):
             variables["basicCodeDiscount"]["customerGets"]["items"] = {
                 "products": {
                     "productVariantsToAdd": [
-                        ShopifyService.product_variant_gid(variant_id) for variant_id in variant_ids
+                        ShopifyService.product_variant_gid(int(variant_id)) for variant_id in variant_ids
                     ]
                 }
             }
         else:
             variables["basicCodeDiscount"]["customerGets"]["items"] = {"all": True}
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -723,7 +654,7 @@ class ShopifyService(AbstractShopifyService):
         }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
-        status, body = self.storefront_api_request(
+        status, body = self.__storefront_api_request(
             "POST",
             f"{self.__shopify_storefront_api_endpoint}/graphql.json",
             {
@@ -755,7 +686,7 @@ class ShopifyService(AbstractShopifyService):
         """
         variables = {"id": f"gid://shopify/DiscountCodeNode/{discount_code_id}"}
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": query, "variables": variables},
@@ -794,7 +725,7 @@ class ShopifyService(AbstractShopifyService):
         }}
         """
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": query},
@@ -855,7 +786,7 @@ class ShopifyService(AbstractShopifyService):
         }}
         """
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": query},
@@ -918,7 +849,7 @@ class ShopifyService(AbstractShopifyService):
             "productId": product_id,
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -941,7 +872,7 @@ class ShopifyService(AbstractShopifyService):
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
 
         shopify_variant_ids = [
-            ShopifyService.product_variant_gid(variant_id) for variant_id in variant_ids if variant_id
+            ShopifyService.product_variant_gid(int(variant_id)) for variant_id in variant_ids if variant_id
         ]
 
         self.__add_variants_to_product_bundle(parent_product_variant_id, shopify_variant_ids)
@@ -981,7 +912,7 @@ class ShopifyService(AbstractShopifyService):
         """
         variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"]}}
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1032,7 +963,7 @@ class ShopifyService(AbstractShopifyService):
             ]
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1075,7 +1006,7 @@ class ShopifyService(AbstractShopifyService):
             },
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1104,10 +1035,10 @@ class ShopifyService(AbstractShopifyService):
             """
 
         variables = {
-            "customerId": ShopifyService.customer_gid(customer_id),
+            "customerId": ShopifyService.customer_gid(int(customer_id)),
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1122,7 +1053,7 @@ class ShopifyService(AbstractShopifyService):
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
 
     def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {
@@ -1160,7 +1091,7 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"input": {"id": customer_id}}
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1191,7 +1122,7 @@ class ShopifyService(AbstractShopifyService):
             "tags": ",".join(list(tags)),
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},
@@ -1222,7 +1153,7 @@ class ShopifyService(AbstractShopifyService):
             "tags": ",".join(list(tags)),
         }
 
-        status, body = self.admin_api_request(
+        status, body = self.__admin_api_request(
             "POST",
             f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             {"query": mutation, "variables": variables},

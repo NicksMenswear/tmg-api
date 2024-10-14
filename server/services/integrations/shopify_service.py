@@ -549,7 +549,7 @@ class ShopifyService(AbstractShopifyService):
 
         status, body = self.__admin_api_request(
             "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
             body={"query": query, "variables": variables},
         )
 

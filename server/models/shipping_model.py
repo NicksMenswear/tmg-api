@@ -2,9 +2,9 @@ from typing import List
 
 from pydantic import BaseModel
 
-GROUND_SHIPPING_NAME: str = "Ground"
+GROUND_SHIPPING_NAME: str = "UPS Ground"
 GROUND_SHIPPING_PRICE_IN_CENTS: str = "0"
-EXPEDITED_SHIPPING_NAME: str = "Expedited"
+EXPEDITED_SHIPPING_NAME: str = "UPS 2nd Day Air"
 EXPEDITED_SHIPPING_PRICE_IN_CENTS: str = "4500"
 
 

@@ -39,18 +39,20 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def create_customer(self, first_name: str, last_name: str, email: str) -> ShopifyCustomer:
+        pass
+
+    @abstractmethod
+    def update_customer(
+        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+    ) -> ShopifyCustomer:
+        pass
+
+    @abstractmethod
     def delete_customer(self, customer_gid: str) -> None:
         pass
 
     ##############################
-
-    @abstractmethod
-    def create_customer(self, first_name, last_name, email):
-        pass
-
-    @abstractmethod
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
 
     @abstractmethod
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
@@ -156,6 +158,19 @@ class FakeShopifyService(AbstractShopifyService):
 
         return customers[:num_customers_to_fetch]
 
+    def create_customer(self, first_name: str, last_name: str, email: str) -> ShopifyCustomer:
+        if email.endswith("@shopify-user-exists.com"):
+            raise DuplicateError("Shopify customer with this email address already exists.")
+
+        return ShopifyCustomer(
+            gid=f"gid://shopify/Customer/{random.randint(1000, 100000)}",
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            state="enabled",
+            tags=[],
+        )
+
     def delete_customer(self, customer_gid: str) -> None:
         for email, customer in self.customers.items():
             if customer.gid == customer_gid:
@@ -164,13 +179,9 @@ class FakeShopifyService(AbstractShopifyService):
 
     ##############################
 
-    def create_customer(self, first_name, last_name, email):
-        if email.endswith("@shopify-user-exists.com"):
-            raise DuplicateError("Shopify customer with this email address already exists.")
-
-        return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
-
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
+    def update_customer(
+        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+    ) -> ShopifyCustomer:
         pass
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -450,6 +461,148 @@ class ShopifyService(AbstractShopifyService):
 
         return customers
 
+    def create_customer(self, first_name: str, last_name: str, email: str) -> ShopifyCustomer:
+        query = """
+        mutation customerCreate($input: CustomerInput!) {
+          customerCreate(input: $input) {
+            customer {
+              id
+              email
+              firstName
+              lastName
+              state
+              tags
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"input": {"firstName": first_name, "lastName": last_name, "email": email}}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
+        )
+
+        user_errors = body.get("data", {}).get("customerCreate", {}).get("userErrors", [])
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create customer")
+
+        if user_errors:
+            for error in user_errors:
+                if "email has already been taken" in error.get("message", "").lower():
+                    raise DuplicateError("Shopify customer with this email address already exists.")
+
+            raise ServiceError("Failed to create shopify customer.")
+
+        customer = body.get("data", {}).get("customerCreate", {}).get("customer")
+
+        return ShopifyCustomer(
+            gid=customer["id"],
+            email=customer["email"],
+            first_name=customer["firstName"],
+            last_name=customer["lastName"],
+            state=customer["state"].lower(),
+            tags=customer["tags"],
+        )
+
+    def update_customer(
+        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+    ) -> ShopifyCustomer:
+        query = """
+        mutation customerUpdate($input: CustomerInput!) {
+          customerUpdate(input: $input) {
+            customer {
+              id
+              firstName
+              lastName
+              email
+              state
+              tags
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        customer_input = {"id": customer_gid}
+
+        if first_name:
+            customer_input["firstName"] = first_name
+        if last_name:
+            customer_input["lastName"] = last_name
+        if email:
+            customer_input["email"] = email
+        if phone_number:
+            customer_input["phone"] = phone_number
+
+        variables = {"input": customer_input}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}",
+            body={"query": query, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to update shopify customer.")
+
+        user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
+
+        if user_errors:
+            for error in user_errors:
+                if "phone" in error.get("field", []):
+                    raise BadRequestError(error.get("message"))
+
+            raise ServiceError("Failed to update Shopify customer.")
+
+        customer = body.get("data", {}).get("customerCreate", {}).get("customer")
+
+        return ShopifyCustomer(
+            gid=customer["id"],
+            email=customer["email"],
+            first_name=customer["firstName"],
+            last_name=customer["lastName"],
+            state=customer["state"].lower(),
+            tags=customer["tags"],
+        )
+
+    def delete_customer(self, customer_gid: str) -> None:
+        mutation = """
+        mutation customerDelete($input: CustomerDeleteInput!) {
+          customerDelete(input: $input) {
+            deletedCustomerId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"input": {"id": customer_gid}}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
+
     def __admin_api_request(self, method, endpoint, body=None):
         response = http(
             method,
@@ -488,75 +641,7 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def delete_customer(self, customer_gid: str) -> None:
-        mutation = """
-        mutation customerDelete($input: CustomerDeleteInput!) {
-          customerDelete(input: $input) {
-            deletedCustomerId
-            userErrors {
-              field
-              message
-            }
-          }
-        }
-        """
-
-        variables = {"input": {"id": customer_gid}}
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
-
     ##############################
-
-    def create_customer(self, first_name, last_name, email):
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers.json",
-            {"customer": {"first_name": first_name, "last_name": last_name, "email": email}},
-        )
-
-        if status == 422:
-            raise DuplicateError("Shopify customer with this email address already exists.")
-        if status >= 400:
-            raise ServiceError("Failed to create shopify customer.")
-
-        return body["customer"]
-
-    def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        customer = {
-            "id": shopify_customer_id,
-        }
-        if first_name:
-            customer["first_name"] = first_name
-        if last_name:
-            customer["last_name"] = last_name
-        if email:
-            customer["email"] = email
-        if phone_number:
-            customer["phone"] = phone_number
-
-        status, body = self.__admin_api_request(
-            "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-            {"customer": customer},
-        )
-
-        if status == 422:
-            if body.get("errors", {}).get("phone"):
-                raise BadRequestError(str(body.get("errors", {}).get("phone")))
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer.")
-
-        return body["customer"]
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         status, body = self.__admin_api_request(

@@ -12,7 +12,7 @@ from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +46,9 @@ class UserService:
             shopify_customer_id = create_user.shopify_id
         else:
             try:
-                shopify_customer_id = self.shopify_service.create_customer(first_name, last_name, create_user.email)[
-                    "id"
-                ]
+                shopify_customer_id = self.shopify_service.create_customer(
+                    first_name, last_name, create_user.email
+                ).get_id()
             except DuplicateError as e:
                 # If the user already exists in Shopify, we should still create a user in our database
                 logger.debug(e)
@@ -177,7 +177,11 @@ class UserService:
         try:
             if update_shopify:
                 self.shopify_service.update_customer(
-                    int(user.shopify_id), user.first_name, user.last_name, user.email, new_phone_number
+                    ShopifyService.customer_gid(int(user.shopify_id)),
+                    user.first_name,
+                    user.last_name,
+                    user.email,
+                    new_phone_number,
                 )
 
             db.session.commit()

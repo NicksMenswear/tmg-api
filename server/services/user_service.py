@@ -221,7 +221,7 @@ class UserService:
         if not user or not user.shopify_id:
             raise ServiceError("User does not have a Shopify ID.")
 
-        return self.shopify_service.generate_activation_url(user.shopify_id)
+        return self.shopify_service.get_account_activation_url(int(user.shopify_id))
 
     @staticmethod
     def add_meta_tag(user_id: uuid.UUID, tags: Set[str]) -> None:

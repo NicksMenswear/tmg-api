@@ -52,6 +52,14 @@ class AbstractShopifyService(ABC):
     def delete_customer(self, customer_gid: str) -> None:
         pass
 
+    @abstractmethod
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        pass
+
+    @abstractmethod
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        pass
+
     ##############################
 
     @abstractmethod
@@ -104,23 +112,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def generate_activation_url(self, customer_id: str) -> str:
-        pass
-
-    @abstractmethod
     def create_bundle_identifier_product(self, bundle_id: str):
         pass
 
     @abstractmethod
     def delete_discount(self, discount_code_id: int) -> None:
-        pass
-
-    @abstractmethod
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        pass
-
-    @abstractmethod
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
 
@@ -163,7 +159,7 @@ class FakeShopifyService(AbstractShopifyService):
             raise DuplicateError("Shopify customer with this email address already exists.")
 
         return ShopifyCustomer(
-            gid=f"gid://shopify/Customer/{random.randint(1000, 100000)}",
+            gid=ShopifyService.customer_gid(random.randint(1000, 100000)),
             email=email,
             first_name=first_name,
             last_name=last_name,
@@ -176,6 +172,22 @@ class FakeShopifyService(AbstractShopifyService):
             if customer.gid == customer_gid:
                 del self.customers[customer.gid]
                 break
+
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        customer = self.customers.get(shopify_gid)
+
+        if not customer:
+            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+        customer.tags = list(set(customer.tags) | tags)
+
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        customer = self.customers.get(shopify_gid)
+
+        if not customer:
+            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+        customer.tags = list(set(customer.tags) - set(tags))
 
     ##############################
 
@@ -269,9 +281,6 @@ class FakeShopifyService(AbstractShopifyService):
     def add_image_to_product(self, product_id: str, image_url: str):
         pass
 
-    def generate_activation_url(self, customer_id: str) -> str:
-        pass
-
     def create_bundle_identifier_product(self, bundle_id: str):
         bundle_identifier_virtual_product_id = str(random.randint(1000, 100000))
         bundle_identifier_product_variant_id = str(random.randint(1000, 100000))
@@ -310,22 +319,6 @@ class FakeShopifyService(AbstractShopifyService):
 
     def delete_discount(self, discount_code_id: int) -> None:
         pass
-
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        customer = self.customers.get(shopify_gid)
-
-        if not customer:
-            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
-
-        customer["tags"] = list(set(customer["tags"]) | tags)
-
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        customer = self.customers.get(shopify_gid)
-
-        if not customer:
-            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
-
-        customer["tags"] = list(set(customer["tags"]) - set(tags))
 
 
 class ShopifyService(AbstractShopifyService):
@@ -559,13 +552,9 @@ class ShopifyService(AbstractShopifyService):
         user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
 
         if user_errors:
-            for error in user_errors:
-                if "phone" in error.get("field", []):
-                    raise BadRequestError(error.get("message"))
-
             raise ServiceError("Failed to update Shopify customer.")
 
-        customer = body.get("data", {}).get("customerCreate", {}).get("customer")
+        customer = body.get("data", {}).get("customerUpdate", {}).get("customer")
 
         return ShopifyCustomer(
             gid=customer["id"],
@@ -602,6 +591,68 @@ class ShopifyService(AbstractShopifyService):
 
         if "errors" in body:
             raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
+
+    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        mutation = """
+            mutation addTags($id: ID!, $tags: [String!]!) {
+                tagsAdd(id: $id, tags: $tags) {
+                    node {
+                        id
+                    }
+                    userErrors {
+                        message
+                    }
+                }
+            }
+        """
+
+        variables = {
+            "id": shopify_gid,
+            "tags": ",".join(list(tags)),
+        }
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to add tags in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to add tags in shopify store. {body['errors']}")
+
+    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+        mutation = """
+            mutation removeTags($id: ID!, $tags: [String!]!) {
+                tagsRemove(id: $id, tags: $tags) {
+                    node {
+                        id
+                    }
+                    userErrors {
+                        message
+                    }
+                }
+            }
+        """
+
+        variables = {
+            "id": shopify_gid,
+            "tags": ",".join(list(tags)),
+        }
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to remove tags in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
 
     def __admin_api_request(self, method, endpoint, body=None):
         response = http(
@@ -1201,97 +1252,3 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
 
         return body
-
-    def generate_activation_url(self, customer_id: str) -> str:
-        mutation = """
-            mutation customerGenerateAccountActivationUrl($customerId: ID!) {
-              customerGenerateAccountActivationUrl(customerId: $customerId) {
-                accountActivationUrl
-                userErrors
-                {
-                    field
-                    message
-                }
-              }
-            }
-            """
-
-        variables = {
-            "customerId": ShopifyService.customer_gid(int(customer_id)),
-        }
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to generate activation url in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to generate activation url in shopify store. {body['errors']}")
-
-        return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
-
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        mutation = """
-            mutation addTags($id: ID!, $tags: [String!]!) {
-                tagsAdd(id: $id, tags: $tags) {
-                    node {
-                        id
-                    }
-                    userErrors {
-                        message
-                    }
-                }
-            }
-        """
-
-        variables = {
-            "id": shopify_gid,
-            "tags": ",".join(list(tags)),
-        }
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to add tags in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to add tags in shopify store. {body['errors']}")
-
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        mutation = """
-            mutation removeTags($id: ID!, $tags: [String!]!) {
-                tagsRemove(id: $id, tags: $tags) {
-                    node {
-                        id
-                    }
-                    userErrors {
-                        message
-                    }
-                }
-            }
-        """
-
-        variables = {
-            "id": shopify_gid,
-            "tags": ",".join(list(tags)),
-        }
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to remove tags in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")

@@ -438,8 +438,10 @@ class DiscountService:
             )
 
             for discount_intent in intents:
-                discount_intent.shopify_virtual_product_id = shopify_product["id"]
-                discount_intent.shopify_virtual_product_variant_id = shopify_product["variants"][0]["id"]
+                discount_intent.shopify_virtual_product_id = shopify_product["id"].replace("gid://shopify/Product/", "")
+                discount_intent.shopify_virtual_product_variant_id = shopify_product["variants"][0]["id"].replace(
+                    "gid://shopify/ProductVariant/", ""
+                )
                 db.session.add(discount_intent)
 
             db.session.commit()
@@ -452,7 +454,9 @@ class DiscountService:
 
             raise ServiceError("Failed to create discount product in Shopify.", e)
 
-        return DiscountPayResponseModel(variant_id=shopify_product["variants"][0]["id"])
+        return DiscountPayResponseModel(
+            variant_id=int(shopify_product["variants"][0]["id"].replace("gid://shopify/ProductVariant/", ""))
+        )
 
     def __filter_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
         return [

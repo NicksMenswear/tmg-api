@@ -9,6 +9,7 @@ from server.database.models import DiscountType
 from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
 )
+from server.services.integrations.shopify_service import ShopifyService
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -229,7 +230,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertEqual(discount_intent.attendee_id, attendee.id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            ShopifyService.product_variant_gid(response_variant_id)
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request["amount"])
@@ -286,7 +287,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertEqual(discount_intent2.event_id, event.id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            f"gid://shopify/ProductVariant/{response_variant_id}"
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
@@ -347,7 +348,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertIsNotNone(response_variant_id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            ShopifyService.product_variant_gid(response_variant_id)
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request1.amount)
@@ -413,7 +414,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertIsNotNone(response_variant_id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            ShopifyService.product_variant_gid(response_variant_id)
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(
@@ -460,7 +461,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertIsNotNone(response_variant_id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            ShopifyService.product_variant_gid(response_variant_id)
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request.amount)
@@ -511,7 +512,7 @@ class TestDiscountsCreateDiscountIntent(BaseTestCase):
         self.assertIsNotNone(response_variant_id)
 
         shopify_virtual_product_variant = self.app.shopify_service.shopify_virtual_product_variants.get(
-            response_variant_id
+            ShopifyService.product_variant_gid(response_variant_id)
         )
         self.assertIsNotNone(shopify_virtual_product_variant)
         self.assertEqual(shopify_virtual_product_variant["price"], created_discount_intent_request.amount)

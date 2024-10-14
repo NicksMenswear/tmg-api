@@ -26,8 +26,8 @@ def login(email):
         logger.warning(f"Shopify customer not found for email: {email}")
         return None, 404
 
-    state = shopify_customer["state"]
-    tags = shopify_customer["tags"]
+    state = shopify_customer.state
+    tags = shopify_customer.tags
 
     is_legacy = "legacy" in tags
 

@@ -6,11 +6,11 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Optional, Any, Set
+from typing import List, Optional, Set, Dict
 
 from server.controllers.util import http
 from server.flask_app import FlaskApp
-from server.models.shopify_model import ShopifyVariantModel
+from server.models.shopify_model import ShopifyVariantModel, ShopifyCustomer
 from server.services import BadRequestError, ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
@@ -30,11 +30,19 @@ class AbstractShopifyService(ABC):
     def get_account_activation_url(self, customer_id: int) -> str:
         pass
 
-    ##############################
+    @abstractmethod
+    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
+        pass
 
     @abstractmethod
-    def get_customer_by_email(self, email: str) -> dict:
-        return {}
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+        pass
+
+    @abstractmethod
+    def delete_customer(self, customer_gid: str) -> None:
+        pass
+
+    ##############################
 
     @abstractmethod
     def create_customer(self, first_name, last_name, email):
@@ -106,14 +114,6 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
-        pass
-
-    @abstractmethod
-    def delete_customer(self, customer_id: str) -> None:
-        pass
-
-    @abstractmethod
     def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
@@ -129,7 +129,7 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants = (
             shopify_virtual_product_variants if shopify_virtual_product_variants else {}
         )
-        self.customers = {}
+        self.customers: Dict[str, ShopifyCustomer] = {}
 
     def get_account_login_url(self) -> str:
         pass
@@ -137,13 +137,32 @@ class FakeShopifyService(AbstractShopifyService):
     def get_account_activation_url(self, customer_id: int) -> str:
         pass
 
-    ##############################
-
-    def get_customer_by_email(self, email: str) -> dict:
+    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
         if email.endswith("@shopify-user-does-not-exists.com"):
-            raise NotFoundError("Shopify customer doesn't exist.")
+            return None
 
-        return self.customers.get(email)
+        for customer in self.customers.values():
+            if customer.email == email:
+                return customer
+
+        return None
+
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+        customers = []
+
+        for gid, customer in self.customers.items():
+            if fnmatch.fnmatch(customer.email, email_pattern):
+                customers.append(customer)
+
+        return customers[:num_customers_to_fetch]
+
+    def delete_customer(self, customer_gid: str) -> None:
+        for email, customer in self.customers.items():
+            if customer.gid == customer_gid:
+                del self.customers[customer.gid]
+                break
+
+    ##############################
 
     def create_customer(self, first_name, last_name, email):
         if email.endswith("@shopify-user-exists.com"):
@@ -281,21 +300,6 @@ class FakeShopifyService(AbstractShopifyService):
     def delete_discount(self, discount_code_id: int) -> None:
         pass
 
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
-        customers = []
-
-        for email, customer in self.customers.items():
-            if fnmatch.fnmatch(email, email_pattern):
-                customers.append(customer)
-
-        return customers[:num_customers_to_fetch]
-
-    def delete_customer(self, customer_id: str) -> None:
-        for email, customer in self.customers.items():
-            if customer["id"] == customer_id:
-                del self.customers[email]
-                break
-
     def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         customer = self.customers.get(shopify_gid)
 
@@ -367,6 +371,85 @@ class ShopifyService(AbstractShopifyService):
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
 
+    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
+        query = """
+        query($query: String!) {
+          customers(first: 1, query: $query) {
+            edges {
+              node {
+                id
+                email
+                firstName
+                lastName
+                state
+                tags
+              }
+            }
+          }
+        }
+        """
+
+        variables = {"query": f"email:{email}"}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            body={"query": query, "variables": variables},
+        )
+
+        if status >= 400 or "errors" in body:
+            raise ServiceError("Failed to get customer")
+
+        customers = body.get("data", {}).get("customers", {}).get("edges", [])
+
+        if customers:
+            customer = customers[0]["node"]
+
+            return ShopifyCustomer(
+                gid=customer["id"],
+                email=customer["email"],
+                first_name=customer["firstName"],
+                last_name=customer["lastName"],
+                state=customer["state"].lower(),
+                tags=customer["tags"],
+            )
+
+        return None
+
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {
+                "query": f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email firstName lastName state tags }} }} }} }}'
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get customers by email suffix in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get customers by email suffix in shopify store. {body['errors']}")
+
+        customer_edges = body.get("data", {}).get("customers", {}).get("edges", [])
+
+        customers = []
+
+        for edge in customer_edges:
+            customer = edge.get("node")
+            customers.append(
+                ShopifyCustomer(
+                    gid=customer["id"],
+                    email=customer["email"],
+                    first_name=customer["firstName"],
+                    last_name=customer["lastName"],
+                    state=customer["state"].lower(),
+                    tags=customer["tags"],
+                )
+            )
+
+        return customers
+
     def __admin_api_request(self, method, endpoint, body=None):
         response = http(
             method,
@@ -405,20 +488,34 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    ##############################
+    def delete_customer(self, customer_gid: str) -> None:
+        mutation = """
+        mutation customerDelete($input: CustomerDeleteInput!) {
+          customerDelete(input: $input) {
+            deletedCustomerId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
 
-    def get_customer_by_email(self, email: str) -> dict:
+        variables = {"input": {"id": customer_gid}}
+
         status, body = self.__admin_api_request(
-            "GET", f"{self.__shopify_rest_admin_api_endpoint}/customers/search.json?query=email:{email}"
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
         )
 
         if status >= 400:
-            raise ServiceError("Failed to get customer")
+            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
 
-        if body.get("customers") and len(body["customers"]) > 0:
-            return body["customers"][0]
-        else:
-            raise NotFoundError("Customer not found.")
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
+
+    ##############################
 
     def create_customer(self, first_name, last_name, email):
         status, body = self.__admin_api_request(
@@ -1051,57 +1148,6 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to generate activation url in shopify store. {body['errors']}")
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
-
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[Any]:
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {
-                "query": f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email }} }} }} }}'
-            },
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get customers by email suffix in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get customers by email suffix in shopify store. {body['errors']}")
-
-        customer_edges = body.get("data", {}).get("customers", {}).get("edges", [])
-
-        customers = []
-
-        for edge in customer_edges:
-            customers.append(edge.get("node"))
-
-        return customers
-
-    def delete_customer(self, customer_id: str) -> None:
-        mutation = """
-        mutation customerDelete($input: CustomerDeleteInput!) {
-          customerDelete(input: $input) {
-            deletedCustomerId
-            userErrors {
-              field
-              message
-            }
-          }
-        }
-        """
-
-        variables = {"input": {"id": customer_id}}
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
 
     def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         mutation = """

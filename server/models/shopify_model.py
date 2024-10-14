@@ -1,6 +1,18 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+
+class ShopifyCustomer(BaseModel):
+    gid: str
+    email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    state: str = "enabled"
+    tags: List[str] = []
+
+    def get_id(self) -> int:
+        return int(self.gid.removeprefix("gid://shopify/Customer/"))
 
 
 class ShopifyVariantModel(BaseModel):

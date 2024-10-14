@@ -53,7 +53,7 @@ class UserService:
                 # If the user already exists in Shopify, we should still create a user in our database
                 logger.debug(e)
 
-                shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
+                shopify_customer_id = str(self.shopify_service.get_customer_by_email(create_user.email).get_id())
 
         try:
             db_user = User(

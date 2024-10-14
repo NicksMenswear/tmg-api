@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from server.controllers.util import token_verification, error_handler
 from server.flask_app import FlaskApp

@@ -410,7 +410,7 @@ class ShopifyService(AbstractShopifyService):
                 email=customer["email"],
                 first_name=customer["firstName"],
                 last_name=customer["lastName"],
-                state=customer["state"],
+                state=customer["state"].lower(),
                 tags=customer["tags"],
             )
 
@@ -443,7 +443,7 @@ class ShopifyService(AbstractShopifyService):
                     email=customer["email"],
                     first_name=customer["firstName"],
                     last_name=customer["lastName"],
-                    state=customer["state"],
+                    state=customer["state"].lower(),
                     tags=customer["tags"],
                 )
             )

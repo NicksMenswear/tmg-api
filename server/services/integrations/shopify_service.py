@@ -11,7 +11,7 @@ from typing import List, Optional, Set, Dict
 from server.controllers.util import http
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel, ShopifyCustomer
-from server.services import BadRequestError, ServiceError, NotFoundError, DuplicateError
+from server.services import ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,10 @@ class AbstractShopifyService(ABC):
     def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
+    @abstractmethod
+    def delete_product(self, product_id: int) -> None:
+        pass
+
     ##############################
 
     @abstractmethod
@@ -76,10 +80,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
-        pass
-
-    @abstractmethod
-    def delete_product(self, product_id):
         pass
 
     @abstractmethod
@@ -167,6 +167,11 @@ class FakeShopifyService(AbstractShopifyService):
             tags=[],
         )
 
+    def update_customer(
+        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+    ) -> ShopifyCustomer:
+        pass
+
     def delete_customer(self, customer_gid: str) -> None:
         for email, customer in self.customers.items():
             if customer.gid == customer_gid:
@@ -189,12 +194,10 @@ class FakeShopifyService(AbstractShopifyService):
 
         customer.tags = list(set(customer.tags) - set(tags))
 
-    ##############################
-
-    def update_customer(
-        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
-    ) -> ShopifyCustomer:
+    def delete_product(self, product_id: int) -> None:
         pass
+
+    ##############################
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         virtual_product_id = random.randint(1000, 100000)
@@ -223,9 +226,6 @@ class FakeShopifyService(AbstractShopifyService):
 
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
-
-    def delete_product(self, product_id):
-        pass
 
     def create_discount_code(
         self,
@@ -654,6 +654,33 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
 
+    def delete_product(self, product_id: int) -> None:
+        query = """
+        mutation productDelete($id: ID!) {
+          productDelete(input: {id: $id}) {
+            deletedProductId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"id": ShopifyService.product_gid(product_id)}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete product by id '{product_id}'. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete product by id '{product_id}': {body['errors']}")
+
     def __admin_api_request(self, method, endpoint, body=None):
         response = http(
             method,
@@ -784,14 +811,6 @@ class ShopifyService(AbstractShopifyService):
             )
 
         return body.get("product")
-
-    def delete_product(self, shopify_product_id):
-        status, body = self.__admin_api_request(
-            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json"
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}' in shopify store.")
 
     def create_discount_code(
         self,

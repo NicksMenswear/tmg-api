@@ -45,10 +45,6 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def append_customer_tags(self, shopify_customer_id, tags):
-        pass
-
-    @abstractmethod
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
         pass
 
@@ -156,9 +152,6 @@ class FakeShopifyService(AbstractShopifyService):
         return {"id": random.randint(1000, 100000), "first_name": first_name, "last_name": last_name, "email": email}
 
     def update_customer(self, shopify_customer_id, first_name, last_name, email, phone_number=None):
-        pass
-
-    def append_customer_tags(self, shopify_customer_id, tags):
         pass
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -465,33 +458,6 @@ class ShopifyService(AbstractShopifyService):
                 raise BadRequestError(str(body.get("errors", {}).get("phone")))
         if status >= 400:
             raise ServiceError("Failed to update shopify customer.")
-
-        return body["customer"]
-
-    def append_customer_tags(self, shopify_customer_id, tags):
-        status, body = self.__admin_api_request(
-            "GET",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to get shopify customer.")
-
-        existing_tags = body["customer"]["tags"].split(", ")
-        combined_tags = list(set(existing_tags + tags))
-        if sorted(combined_tags) == sorted(existing_tags):
-            return body["customer"]
-
-        customer = {"id": shopify_customer_id, "tags": ", ".join(combined_tags)}
-
-        status, body = self.__admin_api_request(
-            "PUT",
-            f"{self.__shopify_rest_admin_api_endpoint}/customers/{shopify_customer_id}.json",
-            {"customer": customer},
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer tags.")
 
         return body["customer"]
 

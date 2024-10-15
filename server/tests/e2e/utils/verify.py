@@ -150,7 +150,7 @@ def warning_in_pay_dialog_for_attendee_by_name(page, first_name, last_name, warn
 
 def shopify_open_order_summary_if_needed(page: Page, open_order_summary: bool = True):
     if is_mobile_view(page) and open_order_summary:
-        time.sleep(5)
+        time.sleep(15)
 
         show_order_summary_button = page.locator("button:has-text('Show order summary')")
         show_order_summary_button.scroll_into_view_if_needed()

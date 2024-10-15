@@ -194,6 +194,9 @@ class LookService:
 
             all_variants = look_variants + suit_parts_variants
 
+            tags = self.__get_tags_from_look_variants(all_variants)
+            tags.append("suit_bundle")
+
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 
             enriched_product_specs_variants = self.__enrich_product_specs_variants_with_suit_parts(
@@ -207,6 +210,7 @@ class LookService:
                 bundle_id,
                 enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
+                tags=tags,
             )
 
             if not bundle_product_variant_id:
@@ -319,3 +323,30 @@ class LookService:
             image_path=look_row.image_path,
             is_active=look_row.is_active,
         )
+
+    @staticmethod
+    def __get_tags_from_look_variants(variants: List[ShopifyVariantModel]) -> List[str]:
+        tags = set()
+
+        for variant in variants:
+            if not variant.variant_sku:
+                continue
+
+            if variant.variant_sku.startswith("4"):
+                tags.add("has_shirt")
+            elif variant.variant_sku.startswith("5"):
+                tags.add("has_bow_tie")
+                tags.add("has_tie")
+            elif variant.variant_sku.startswith("6"):
+                tags.add("has_tie")
+                tags.add("has_neck_tie")
+            elif variant.variant_sku.startswith("7"):
+                tags.add("has_belt")
+            elif variant.variant_sku.startswith("8"):
+                tags.add("has_shoes")
+            elif variant.variant_sku.startswith("9"):
+                tags.add("has_socks")
+            elif variant.variant_sku.startswith("P"):
+                tags.add("has_premium_pocket_square")
+
+        return list(tags)

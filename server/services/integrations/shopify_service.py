@@ -76,16 +76,6 @@ class AbstractShopifyService(ABC):
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
         pass
 
-    ##############################
-
-    @abstractmethod
-    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
-        pass
-
-    @abstractmethod
-    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
-        pass
-
     @abstractmethod
     def create_discount_code(
         self,
@@ -104,7 +94,23 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def delete_discount(self, discount_code_id: int) -> None:
+        pass
+
+    ##############################
+
+    @abstractmethod
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        pass
+
+    @abstractmethod
+    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
+        pass
+
+    @abstractmethod
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+    ) -> str:
         pass
 
     @abstractmethod
@@ -113,10 +119,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_bundle_identifier_product(self, bundle_id: str):
-        pass
-
-    @abstractmethod
-    def delete_discount(self, discount_code_id: int) -> None:
         pass
 
 
@@ -206,6 +208,27 @@ class FakeShopifyService(AbstractShopifyService):
     def delete_product(self, product_gid: str) -> None:
         pass
 
+    def create_discount_code(
+        self,
+        title: str,
+        code: str,
+        shopify_customer_id: str,
+        discount_type: DiscountAmountType,
+        amount: float,
+        minimum_order_amount: Optional[int] = None,
+        variant_ids: Optional[List[str]] = None,
+    ):
+        return {
+            "shopify_discount_code": code,
+            "shopify_discount_id": random.randint(1000, 100000),
+        }
+
+    def apply_discount_codes_to_cart(self, cart_id, discount_codes):
+        pass
+
+    def delete_discount(self, discount_code_id: int) -> None:
+        pass
+
     ##############################
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -230,25 +253,9 @@ class FakeShopifyService(AbstractShopifyService):
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         return self.create_virtual_product(title, body_html, amount, sku, tags)
 
-    def create_discount_code(
-        self,
-        title: str,
-        code: str,
-        shopify_customer_id: str,
-        discount_type: DiscountAmountType,
-        amount: float,
-        minimum_order_amount: Optional[int] = None,
-        variant_ids: Optional[List[str]] = None,
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
     ):
-        return {
-            "shopify_discount_code": code,
-            "shopify_discount_id": random.randint(1000, 100000),
-        }
-
-    def apply_discount_codes_to_cart(self, cart_id, discount_codes):
-        pass
-
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
 
@@ -316,9 +323,6 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants[bundle_identifier_product_variant_id] = product_variant
 
         return virtual_product.get("variants", {})[0].get("id")
-
-    def delete_discount(self, discount_code_id: int) -> None:
-        pass
 
 
 class ShopifyService(AbstractShopifyService):
@@ -836,119 +840,47 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to delete product by id '{product_gid}': {body['errors']}")
 
-    def __admin_api_request(self, method: str, endpoint: str, body: dict = None):
-        response = http(
-            method,
-            endpoint,
-            json=body,
-            headers={
-                "Content-Type": "application/json",
-                "X-Shopify-Access-Token": self.__admin_api_access_token,
-            },
-        )
-        if response.status == 429:
-            raise ServiceError(
-                f"Shopify API rate limit exceeded. Retry in f{response.headers.get('Retry-After')} seconds."
-            )
-        if response.status >= 500:
-            raise ServiceError(
-                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
-            )
-
-        return response.status, json.loads(response.data.decode("utf-8"))
-
-    def __storefront_api_request(self, method: str, endpoint: str, body: dict = None):
-        response = http(
-            method,
-            endpoint,
-            json=body,
-            headers={
-                "Content-Type": "application/json",
-                "X-Shopify-Storefront-Access-Token": self.__storefront_api_access_token,
-            },
-        )
-        if response.status >= 500:
-            raise ServiceError(
-                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
-            )
-
-        return response.status, json.loads(response.data.decode("utf-8"))
-
-    ##############################
-
-    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
-            {
-                "product": {
-                    "title": title,
-                    "body_html": body_html,
-                    "vendor": vendor,
-                    "product_type": "Virtual Goods",
-                    "tags": tags,
-                    "variants": [
-                        {
-                            "option1": title,
-                            "price": str(price),
-                            "sku": sku,
-                            "requires_shipping": False,
-                            "taxable": False,
-                            "inventory_management": None,
-                        }
-                    ],
+    def __create_bundle_product(self, product_name: str, tags: List[str]):
+        mutation = """
+        mutation CreateProductBundle($input: ProductInput!) {
+          productCreate(input: $input) {
+            product {
+              id
+              title
+              tags
+              variants(first: 10) {
+                edges{
+                  node{
+                    id
+                    price
+                  }
                 }
-            },
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to create virtual product in shopify store.")
-
-        return body.get("product")
-
-    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
-        attendee_discount_product = self.create_virtual_product(
-            title=title,
-            body_html=body_html,
-            price=amount,
-            sku=sku,
-            tags=tags,
-        )
-
-        self.add_image_to_product(ShopifyService.product_gid(attendee_discount_product["id"]), self.__gift_image_path)
-
-        return attendee_discount_product
-
-    def create_bundle_identifier_product(self, bundle_id: str):
-        bundle_identifier_product_name = f"Bundle #{bundle_id}"
-        bundle_identifier_product_handle = f"bundle-{bundle_id}"
+              }
+            }
+            userErrors{
+              field
+              message
+            }
+          }
+        }
+        """
+        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"] + tags}}
 
         status, body = self.__admin_api_request(
             "POST",
-            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
-            {
-                "product": {
-                    "title": bundle_identifier_product_name,
-                    "vendor": "The Modern Groom",
-                    "tags": ["hidden"],
-                    "images": [{"src": self.__bundle_image_path}],
-                    "variants": [
-                        {
-                            "price": "0",
-                            "sku": bundle_identifier_product_handle,
-                            "requires_shipping": True,
-                            "taxable": False,
-                            "inventory_management": None,
-                        }
-                    ],
-                }
-            },
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
         )
 
         if status >= 400:
-            raise ServiceError("Failed to create bundle identifier product in shopify store.")
+            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
 
-        return body.get("product").get("variants", {})[0].get("id")
+        if "errors" in body:
+            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
+
+        parent_product = body.get("data", {}).get("productCreate", {}).get("product")
+
+        return parent_product
 
     def create_discount_code(
         self,
@@ -1090,6 +1022,120 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
+    def __admin_api_request(self, method: str, endpoint: str, body: dict = None):
+        response = http(
+            method,
+            endpoint,
+            json=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-Shopify-Access-Token": self.__admin_api_access_token,
+            },
+        )
+        if response.status == 429:
+            raise ServiceError(
+                f"Shopify API rate limit exceeded. Retry in f{response.headers.get('Retry-After')} seconds."
+            )
+        if response.status >= 500:
+            raise ServiceError(
+                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
+            )
+
+        return response.status, json.loads(response.data.decode("utf-8"))
+
+    def __storefront_api_request(self, method: str, endpoint: str, body: dict = None):
+        response = http(
+            method,
+            endpoint,
+            json=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-Shopify-Storefront-Access-Token": self.__storefront_api_access_token,
+            },
+        )
+        if response.status >= 500:
+            raise ServiceError(
+                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
+            )
+
+        return response.status, json.loads(response.data.decode("utf-8"))
+
+    ##############################
+
+    def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
+            {
+                "product": {
+                    "title": title,
+                    "body_html": body_html,
+                    "vendor": vendor,
+                    "product_type": "Virtual Goods",
+                    "tags": tags,
+                    "variants": [
+                        {
+                            "option1": title,
+                            "price": str(price),
+                            "sku": sku,
+                            "requires_shipping": False,
+                            "taxable": False,
+                            "inventory_management": None,
+                        }
+                    ],
+                }
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to create virtual product in shopify store.")
+
+        return body.get("product")
+
+    def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
+        attendee_discount_product = self.create_virtual_product(
+            title=title,
+            body_html=body_html,
+            price=amount,
+            sku=sku,
+            tags=tags,
+        )
+
+        self.add_image_to_product(ShopifyService.product_gid(attendee_discount_product["id"]), self.__gift_image_path)
+
+        return attendee_discount_product
+
+    def create_bundle_identifier_product(self, bundle_id: str):
+        bundle_identifier_product_name = f"Bundle #{bundle_id}"
+        bundle_identifier_product_handle = f"bundle-{bundle_id}"
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_rest_admin_api_endpoint}/products.json",
+            {
+                "product": {
+                    "title": bundle_identifier_product_name,
+                    "vendor": "The Modern Groom",
+                    "tags": ["hidden"],
+                    "images": [{"src": self.__bundle_image_path}],
+                    "variants": [
+                        {
+                            "price": "0",
+                            "sku": bundle_identifier_product_handle,
+                            "requires_shipping": True,
+                            "taxable": False,
+                            "inventory_management": None,
+                        }
+                    ],
+                }
+            },
+        )
+
+        if status >= 400:
+            raise ServiceError("Failed to create bundle identifier product in shopify store.")
+
+        return body.get("product").get("variants", {})[0].get("id")
+
     def add_image_to_product(self, product_id: str, image_url: str):
         mutation = """
         mutation productCreateMedia($media: [CreateMediaInput!]!, $productId: ID!) {
@@ -1133,10 +1179,12 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+    ) -> str:
         bundle_parent_product_name = bundle_name
         bundle_parent_product_handle = f"suit-bundle-{bundle_id}"
-        bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name)
+        bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name, tags or [])
 
         parent_product_id = bundle_parent_product.get("id")
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
@@ -1155,48 +1203,6 @@ class ShopifyService(AbstractShopifyService):
             self.add_image_to_product(parent_product_id, image_src)
 
         return parent_product_variant_id.removeprefix("gid://shopify/ProductVariant/")
-
-    def __create_bundle_product(self, product_name: str):
-        mutation = """
-        mutation CreateProductBundle($input: ProductInput!) {
-          productCreate(input: $input) {
-            product {
-              id
-              title
-              tags
-              variants(first: 10) {
-                edges{
-                  node{
-                    id
-                    price
-                  }
-                }
-              }
-            }
-            userErrors{
-              field
-              message
-            }
-          }
-        }
-        """
-        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"]}}
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
-
-        parent_product = body.get("data", {}).get("productCreate", {}).get("product")
-
-        return parent_product
 
     def __add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
         bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]

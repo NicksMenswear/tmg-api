@@ -195,6 +195,7 @@ class LookService:
             all_variants = look_variants + suit_parts_variants
 
             tags = self.__get_tags_from_look_variants(all_variants)
+            tags.append("suit_bundle")
 
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 

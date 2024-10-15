@@ -108,7 +108,9 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+    ) -> str:
         pass
 
     @abstractmethod
@@ -251,7 +253,9 @@ class FakeShopifyService(AbstractShopifyService):
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         return self.create_virtual_product(title, body_html, amount, sku, tags)
 
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+    ):
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
 
@@ -836,6 +840,48 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to delete product by id '{product_gid}': {body['errors']}")
 
+    def __create_bundle_product(self, product_name: str, tags: List[str]):
+        mutation = """
+        mutation CreateProductBundle($input: ProductInput!) {
+          productCreate(input: $input) {
+            product {
+              id
+              title
+              tags
+              variants(first: 10) {
+                edges{
+                  node{
+                    id
+                    price
+                  }
+                }
+              }
+            }
+            userErrors{
+              field
+              message
+            }
+          }
+        }
+        """
+        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"] + tags}}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": mutation, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
+
+        parent_product = body.get("data", {}).get("productCreate", {}).get("product")
+
+        return parent_product
+
     def create_discount_code(
         self,
         title: str,
@@ -1133,10 +1179,12 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
+    def create_bundle(
+        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+    ) -> str:
         bundle_parent_product_name = bundle_name
         bundle_parent_product_handle = f"suit-bundle-{bundle_id}"
-        bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name)
+        bundle_parent_product = self.__create_bundle_product(bundle_parent_product_name, tags or [])
 
         parent_product_id = bundle_parent_product.get("id")
         parent_product_variant_id = bundle_parent_product.get("variants", {}).get("edges")[0].get("node").get("id")
@@ -1155,48 +1203,6 @@ class ShopifyService(AbstractShopifyService):
             self.add_image_to_product(parent_product_id, image_src)
 
         return parent_product_variant_id.removeprefix("gid://shopify/ProductVariant/")
-
-    def __create_bundle_product(self, product_name: str):
-        mutation = """
-        mutation CreateProductBundle($input: ProductInput!) {
-          productCreate(input: $input) {
-            product {
-              id
-              title
-              tags
-              variants(first: 10) {
-                edges{
-                  node{
-                    id
-                    price
-                  }
-                }
-              }
-            }
-            userErrors{
-              field
-              message
-            }
-          }
-        }
-        """
-        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"]}}
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
-
-        parent_product = body.get("data", {}).get("productCreate", {}).get("product")
-
-        return parent_product
 
     def __add_variants_to_product_bundle(self, parent_product_shopify_variant_id: str, variants: List[str]):
         bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]

@@ -24,7 +24,7 @@ def suppress_exceptions(func):
 
 class AbstractActivityService(ABC):
     @abstractmethod
-    def generic(self, email, tt, data):
+    def generic(self, email, type, data):
         pass
 
 
@@ -32,13 +32,13 @@ class FakeActivityService(AbstractActivityService):
     def __init__(self):
         self.contacts = []
 
-    def generic(self, email, tt, data):
+    def generic(self, email, type, data):
         pass
 
 
 class ActivityService(AbstractActivityService):
     @suppress_exceptions
-    def generic(self, email, tt, data):
+    def generic(self, email, type, data):
         user_service = FlaskApp.current().user_service
         user = user_service.get_user_by_email(email)
         data_md5 = hashlib.md5(json.dumps(data).encode("utf-8")).hexdigest()
@@ -46,7 +46,7 @@ class ActivityService(AbstractActivityService):
         try:
             activity = Activity(
                 user_id=user.id,
-                type=tt,
+                type=type,
                 data=data,
                 data_md5=data_md5,
                 created_at=datetime.now(),
@@ -60,7 +60,7 @@ class ActivityService(AbstractActivityService):
 
         count = Activity.query.filter(
             Activity.user_id == user.id,
-            Activity.type == tt,
+            Activity.type == type,
             Activity.data_md5 == data_md5,
         ).count()
         return {"count": count}

@@ -43,11 +43,14 @@ def get_bundle_product_specs_for_inactive_looks() -> List[dict]:
     return [row[0] for row in rows]
 
 
-def remove_product(product_id: str) -> None:
+def archive_product(product_id: str) -> None:
     query = """
-    mutation productDelete($id: ID!) {
-      productDelete(input: {id: $id}) {
-        deletedProductId
+    mutation productUpdate($input: ProductInput!) {
+      productUpdate(input: $input) {
+        product {
+          id
+          status
+        }
         userErrors {
           field
           message
@@ -57,7 +60,13 @@ def remove_product(product_id: str) -> None:
     """
 
     product_gid = f"gid://shopify/Product/{product_id}"
-    variables = {"id": product_gid}
+
+    variables = {
+        "input": {
+            "id": product_gid,
+            "status": "ARCHIVED",
+        }
+    }
 
     response = urllib3.PoolManager().request(
         "POST",
@@ -67,14 +76,17 @@ def remove_product(product_id: str) -> None:
     )
 
     if response.status >= 400:
-        logger.error(f"Failed to delete product by id '{product_gid}'. Status code: {response.status}")
+        logger.error(f"Failed to archive product by id '{product_gid}': {response.data}")
 
-    data = json.loads(response.data.decode("utf-8")).get("data", {})
+    try:
+        data = json.loads(response.data.decode("utf-8")).get("data", {})
 
-    if "errors" in data:
-        logger.error(f"Failed to delete product by id '{product_gid}': {data['errors']}")
+        if "errors" in data:
+            logger.error(f"Failed to archive product by id '{product_gid}': {data['errors']}")
 
-    logger.info(f"Deleted product by id '{product_gid}'")
+        logger.info(f"Archived product by id '{product_gid}'")
+    except Exception as e:
+        logger.error(f"Failed to archive product by id '{product_gid}': {e}")
 
 
 def main():
@@ -90,7 +102,7 @@ def main():
         items = product_spec.get("items", [])
 
         if not items:
-            remove_product(product_id)
+            archive_product(product_id)
             logger.error(f"Product spec {product_spec} does not have any items")
             continue
 
@@ -110,10 +122,10 @@ def main():
                 has_bundle_identifier_product = True
                 break
 
-        remove_product(product_id)
+        archive_product(product_id)
 
         if has_bundle_identifier_product:
-            remove_product(bundle_identifier_product_id)
+            archive_product(bundle_identifier_product_id)
 
 
 if __name__ == "__main__":

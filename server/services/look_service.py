@@ -280,9 +280,9 @@ class LookService:
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
 
-        self.__remove_suit_bundle_from_shopify(look.product_specs)
+        self.__archive_suit_bundle(look.product_specs)
 
-    def __remove_suit_bundle_from_shopify(self, product_specs: dict) -> None:
+    def __archive_suit_bundle(self, product_specs: dict) -> None:
         if not product_specs:
             return
 
@@ -296,7 +296,7 @@ class LookService:
 
         if not items:
             logger.warning(f"Product spec {product_specs} does not have any items")
-            self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
+            self.shopify_service.archive_product(ShopifyService.product_gid(product_id))
             return
 
         has_bundle_identifier_product = False
@@ -314,10 +314,10 @@ class LookService:
                 has_bundle_identifier_product = True
                 break
 
-        self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
+        self.shopify_service.archive_product(ShopifyService.product_gid(product_id))
 
         if has_bundle_identifier_product:
-            self.shopify_service.delete_product(ShopifyService.product_gid(bundle_identifier_product_id))
+            self.shopify_service.archive_product(ShopifyService.product_gid(bundle_identifier_product_id))
 
     @staticmethod
     def __save_image(image_b64: str, local_file: str) -> None:

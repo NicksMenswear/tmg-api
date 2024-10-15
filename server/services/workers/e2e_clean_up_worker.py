@@ -19,7 +19,7 @@ from server.database.models import (
     Address,
 )
 from server.services import ServiceError
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ class E2ECleanUpWorker:
 
     def __delete_shopify_product(self, product_id: int) -> None:
         try:
-            self.shopify_service.delete_product(product_id)
+            self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
         except ServiceError:
             logger.exception(f"Failed to delete product from shopify: {product_id}")
 

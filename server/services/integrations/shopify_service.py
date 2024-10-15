@@ -11,7 +11,7 @@ from typing import List, Optional, Set, Dict
 from server.controllers.util import http
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel, ShopifyCustomer
-from server.services import BadRequestError, ServiceError, NotFoundError, DuplicateError
+from server.services import ServiceError, NotFoundError, DuplicateError
 
 logger = logging.getLogger(__name__)
 
@@ -60,15 +60,23 @@ class AbstractShopifyService(ABC):
     def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
         pass
 
-    ##############################
+    @abstractmethod
+    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
+        pass
+
+    @abstractmethod
+    def archive_product(self, product_gid: str) -> None:
+        pass
+
+    @abstractmethod
+    def delete_product(self, product_gid: str) -> None:
+        pass
 
     @abstractmethod
     def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
         pass
 
-    @abstractmethod
-    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
-        pass
+    ##############################
 
     @abstractmethod
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
@@ -76,10 +84,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
-        pass
-
-    @abstractmethod
-    def delete_product(self, product_id):
         pass
 
     @abstractmethod
@@ -97,10 +101,6 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
-        pass
-
-    @abstractmethod
-    def archive_product(self, shopify_product_id):
         pass
 
     @abstractmethod
@@ -167,6 +167,11 @@ class FakeShopifyService(AbstractShopifyService):
             tags=[],
         )
 
+    def update_customer(
+        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+    ) -> ShopifyCustomer:
+        pass
+
     def delete_customer(self, customer_gid: str) -> None:
         for email, customer in self.customers.items():
             if customer.gid == customer_gid:
@@ -189,12 +194,19 @@ class FakeShopifyService(AbstractShopifyService):
 
         customer.tags = list(set(customer.tags) - set(tags))
 
-    ##############################
+    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
+        return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
 
-    def update_customer(
-        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
-    ) -> ShopifyCustomer:
+    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+        return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
+
+    def archive_product(self, product_gid: str) -> None:
         pass
+
+    def delete_product(self, product_gid: str) -> None:
+        pass
+
+    ##############################
 
     def create_virtual_product(self, title, body_html, price, sku, tags, vendor="The Modern Groom"):
         virtual_product_id = random.randint(1000, 100000)
@@ -218,15 +230,6 @@ class FakeShopifyService(AbstractShopifyService):
     def create_attendee_discount_product(self, title, body_html, amount, sku, tags):
         return self.create_virtual_product(title, body_html, amount, sku, tags)
 
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
-        return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
-
-    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
-        return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
-
-    def delete_product(self, product_id):
-        pass
-
     def create_discount_code(
         self,
         title: str,
@@ -243,9 +246,6 @@ class FakeShopifyService(AbstractShopifyService):
         }
 
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
-        pass
-
-    def archive_product(self, shopify_product_id):
         pass
 
     def create_bundle(self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None) -> str:
@@ -654,7 +654,189 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
 
-    def __admin_api_request(self, method, endpoint, body=None):
+    def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
+        query = f"""
+        {{
+          productVariants(first: 1, query: "sku:{sku}") {{
+            edges {{
+              node {{
+                id
+                title
+                sku
+                price
+                product {{
+                  id
+                  title
+                  images(first: 1) {{
+                    edges {{
+                      node {{
+                        url
+                      }}
+                    }}
+                  }}
+                }}
+              }}
+            }}
+          }}
+        }}
+        """
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get variants by sku in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get variants by sku in shopify store. {body['errors']}")
+
+        edges = body.get("data", {}).get("productVariants", {}).get("edges")
+
+        if not edges:
+            return None
+
+        variant = edges[0].get("node")
+        product = variant["product"]
+        image_edges = product.get("images", {}).get("edges", [{}])
+        image_url = image_edges[0].get("node", {}).get("url") if image_edges else None
+
+        return ShopifyVariantModel(
+            **{
+                "product_id": product["id"].removeprefix("gid://shopify/Product/"),
+                "product_title": product["title"],
+                "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
+                "variant_title": variant["title"],
+                "variant_price": variant["price"],
+                "variant_sku": variant["sku"],
+                "image_url": image_url,
+            }
+        )
+
+    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+        if not variant_ids:
+            return []
+
+        ids_query = ", ".join(
+            [f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids if variant_id]
+        )
+
+        query = f"""
+        {{
+            nodes(ids: [{ids_query}]) {{
+            ... on ProductVariant {{
+                id
+                title
+                sku
+                price
+                product {{
+                    id
+                    title
+                }}
+            }}
+            }}
+        }}
+        """
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
+
+        variants = []
+
+        for variant in body["data"]["nodes"]:
+            if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
+                continue
+
+            product = variant["product"]
+            variants.append(
+                ShopifyVariantModel(
+                    **{
+                        "product_id": product["id"].removeprefix("gid://shopify/Product/"),
+                        "product_title": product["title"],
+                        "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
+                        "variant_title": variant["title"],
+                        "variant_sku": variant["sku"],
+                        "variant_price": variant["price"],
+                    }
+                )
+            )
+
+        return variants
+
+    def archive_product(self, product_gid: str) -> None:
+        query = """
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product {
+              id
+              status
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "input": {
+                "id": product_gid,
+                "status": "ARCHIVED",
+            }
+        }
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to archive product by id '{product_gid}'. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to archive product by id '{product_gid}': {body['errors']}")
+
+    def delete_product(self, product_gid: str) -> None:
+        query = """
+        mutation productDelete($id: ID!) {
+          productDelete(input: {id: $id}) {
+            deletedProductId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"id": product_gid}
+
+        status, body = self.__admin_api_request(
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            {"query": query, "variables": variables},
+        )
+
+        if status >= 400:
+            raise ServiceError(f"Failed to delete product by id '{product_gid}'. Status code: {status}")
+
+        if "errors" in body:
+            raise ServiceError(f"Failed to delete product by id '{product_gid}': {body['errors']}")
+
+    def __admin_api_request(self, method: str, endpoint: str, body: dict = None):
         response = http(
             method,
             endpoint,
@@ -675,7 +857,7 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def __storefront_api_request(self, method, endpoint, body=None):
+    def __storefront_api_request(self, method: str, endpoint: str, body: dict = None):
         response = http(
             method,
             endpoint,
@@ -767,31 +949,6 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError("Failed to create bundle identifier product in shopify store.")
 
         return body.get("product").get("variants", {})[0].get("id")
-
-    def archive_product(self, shopify_product_id):
-        status, body = self.__admin_api_request(
-            "PATCH",
-            f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json",
-            {"product": {"id": shopify_product_id, "status": "archived", "published_at": None}},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to archive product by id '{shopify_product_id}' in shopify store.")
-
-        if "errors" in body:
-            raise ServiceError(
-                f"Failed to archive product by id '{shopify_product_id}' in shopify store: {body['errors']}"
-            )
-
-        return body.get("product")
-
-    def delete_product(self, shopify_product_id):
-        status, body = self.__admin_api_request(
-            "DELETE", f"{self.__shopify_rest_admin_api_endpoint}/products/{shopify_product_id}.json"
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{shopify_product_id}' in shopify store.")
 
     def create_discount_code(
         self,
@@ -932,126 +1089,6 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to delete discount code in shopify store: {body['errors']}")
 
         return body
-
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
-        if not variant_ids:
-            return []
-
-        ids_query = ", ".join(
-            [f'"gid://shopify/ProductVariant/{variant_id}"' for variant_id in variant_ids if variant_id]
-        )
-
-        query = f"""
-        {{
-            nodes(ids: [{ids_query}]) {{
-            ... on ProductVariant {{
-                id
-                title
-                sku
-                price
-                product {{
-                    id
-                    title
-                }}
-            }}
-            }}
-        }}
-        """
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
-
-        variants = []
-
-        for variant in body["data"]["nodes"]:
-            if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
-                continue
-
-            product = variant["product"]
-            variants.append(
-                ShopifyVariantModel(
-                    **{
-                        "product_id": product["id"].removeprefix("gid://shopify/Product/"),
-                        "product_title": product["title"],
-                        "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
-                        "variant_title": variant["title"],
-                        "variant_sku": variant["sku"],
-                        "variant_price": variant["price"],
-                    }
-                )
-            )
-
-        return variants
-
-    def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
-        query = f"""
-        {{
-          productVariants(first: 1, query: "sku:{sku}") {{
-            edges {{
-              node {{
-                id
-                title
-                sku
-                price
-                product {{
-                  id
-                  title
-                  images(first: 1) {{
-                    edges {{
-                      node {{
-                        url
-                      }}
-                    }}
-                  }}
-                }}
-              }}
-            }}
-          }}
-        }}
-        """
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get variants by sku in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get variants by sku in shopify store. {body['errors']}")
-
-        edges = body.get("data", {}).get("productVariants", {}).get("edges")
-
-        if not edges:
-            return None
-
-        variant = edges[0].get("node")
-        product = variant["product"]
-        image_edges = product.get("images", {}).get("edges", [{}])
-        image_url = image_edges[0].get("node", {}).get("url") if image_edges else None
-
-        return ShopifyVariantModel(
-            **{
-                "product_id": product["id"].removeprefix("gid://shopify/Product/"),
-                "product_title": product["title"],
-                "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
-                "variant_title": variant["title"],
-                "variant_price": variant["price"],
-                "variant_sku": variant["sku"],
-                "image_url": image_url,
-            }
-        )
 
     def add_image_to_product(self, product_id: str, image_url: str):
         mutation = """

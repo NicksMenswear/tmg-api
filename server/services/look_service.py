@@ -16,7 +16,7 @@ from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -261,8 +261,7 @@ class LookService:
 
         return LookModel.model_validate(db_look)
 
-    @staticmethod
-    def delete_look(look_id: uuid.UUID) -> None:
+    def delete_look(self, look_id: uuid.UUID) -> None:
         look = Look.query.filter(Look.id == look_id).first()
 
         if not look:
@@ -280,6 +279,45 @@ class LookService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
+
+        self.__remove_suit_bundle_from_shopify(look.product_specs)
+
+    def __remove_suit_bundle_from_shopify(self, product_specs: dict) -> None:
+        if not product_specs:
+            return
+
+        product_id = product_specs.get("bundle", {}).get("product_id")
+
+        if not product_id:
+            logger.warning(f"Product spec {product_specs} does not have a bundle.product_id")
+            return
+
+        items = product_specs.get("items", [])
+
+        if not items:
+            logger.warning(f"Product spec {product_specs} does not have any items")
+            self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
+            return
+
+        has_bundle_identifier_product = False
+        bundle_identifier_product_id = None
+
+        for item in items:
+            sku = item.get("variant_sku")
+            bundle_identifier_product_id = item.get("product_id")
+
+            if not sku:
+                continue
+
+            if sku.startswith("bundle-"):
+                bundle_identifier_product_id = item.get("product_id")
+                has_bundle_identifier_product = True
+                break
+
+        self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
+
+        if has_bundle_identifier_product:
+            self.shopify_service.delete_product(ShopifyService.product_gid(bundle_identifier_product_id))
 
     @staticmethod
     def __save_image(image_b64: str, local_file: str) -> None:

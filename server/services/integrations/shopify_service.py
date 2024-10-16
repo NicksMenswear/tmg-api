@@ -985,6 +985,10 @@ class ShopifyService(AbstractShopifyService):
             requires_shipping=False,
         )
 
+        self.__publish_and_add_to_online_sales_channel(
+            attendee_discount_product.gid, FlaskApp.current().online_store_sales_channel_id
+        )
+
         self.__add_image_to_product(attendee_discount_product.gid, self.__gift_image_path)
 
         return attendee_discount_product
@@ -993,15 +997,18 @@ class ShopifyService(AbstractShopifyService):
         created_product = self.create_product(f"Bundle #{bundle_id}", "", 0, f"bundle-{bundle_id}", ["hidden"], True)
 
         self.__add_image_to_product(created_product.gid, self.__bundle_image_path)
+        self.__publish_and_add_to_online_sales_channel(
+            created_product.gid, FlaskApp.current().online_store_sales_channel_id
+        )
 
         return created_product
 
     def create_bundle(
         self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
     ) -> str:
-        bundle_parent_product: ShopifyProduct = self.__create_bundle_product(bundle_name, tags or [])
-
-        parent_product_id = bundle_parent_product.get_id()
+        bundle_parent_product: ShopifyProduct = self.__create_bundle_product(
+            bundle_name, f"suit-bundle-{bundle_id}", tags or []
+        )
 
         shopify_variant_gids = [
             ShopifyService.product_variant_gid(int(variant_id)) for variant_id in variant_ids if variant_id
@@ -1010,7 +1017,7 @@ class ShopifyService(AbstractShopifyService):
         self.__add_variants_to_product_bundle(bundle_parent_product.variants[0].gid, shopify_variant_gids)
 
         self.__publish_and_add_to_online_sales_channel(
-            f"suit-bundle-{bundle_id}", bundle_parent_product.gid, FlaskApp.current().online_store_sales_channel_id
+            bundle_parent_product.gid, FlaskApp.current().online_store_sales_channel_id
         )
 
         if image_src:
@@ -1187,7 +1194,7 @@ class ShopifyService(AbstractShopifyService):
             ],
         )
 
-    def __create_bundle_product(self, product_name: str, tags: List[str]) -> ShopifyProduct:
+    def __create_bundle_product(self, product_name: str, handle: str, tags: List[str]) -> ShopifyProduct:
         mutation = """
         mutation CreateProductBundle($input: ProductInput!) {
           productCreate(input: $input) {
@@ -1213,7 +1220,7 @@ class ShopifyService(AbstractShopifyService):
           }
         }
         """
-        variables = {"input": {"title": product_name, "variants": [], "tags": ["hidden"] + tags}}
+        variables = {"input": {"title": product_name, "handle": handle, "variants": [], "tags": ["hidden"] + tags}}
 
         status, body = self.__admin_api_request(
             "POST",
@@ -1293,9 +1300,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def __publish_and_add_to_online_sales_channel(
-        self, product_handle: str, parent_product_gid: str, sales_channel_id: str
-    ):
+    def __publish_and_add_to_online_sales_channel(self, parent_product_gid: str, sales_channel_id: str):
         mutation = """
         mutation productUpdate($input: ProductInput!) {
             productUpdate(input: $input) {
@@ -1314,7 +1319,6 @@ class ShopifyService(AbstractShopifyService):
             "input": {
                 "id": parent_product_gid,
                 "publishedAt": datetime.now(timezone.utc).isoformat(),
-                "handle": product_handle,
                 "productPublications": {
                     "publicationId": sales_channel_id,
                     "publishDate": datetime.now(timezone.utc).isoformat(),

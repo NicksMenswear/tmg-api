@@ -313,9 +313,10 @@ class AttendeeService:
         attendee.look_id = update_attendee.look_id
 
         # TODO Tracking async
-        look = self.look_service.get_look_by_id(attendee.look_id)
-        user = self.user_service.get_user_by_id(attendee.user_id)
-        self.active_campaign_service.sync_contact(user.email, fields={"LOOK_IMAGE": f"{DATA_CDN}{look.image_path}"})
+        if attendee.user_id:
+            user = self.user_service.get_user_by_id(attendee.user_id)
+            look = self.look_service.get_look_by_id(attendee.look_id)
+            self.active_campaign_service.sync_contact(user.email, fields={"LOOK_IMAGE": f"{DATA_CDN}{look.image_path}"})
 
     def __update_email(self, attendee: Attendee, update_attendee: UpdateAttendeeModel) -> None:
         if update_attendee.email is None:

@@ -50,7 +50,6 @@ class TestShipping(BaseTestCase):
         # when
         response = self.client.open(
             "/shipping/price",
-            # query_string=self.hmac_query_params,
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,

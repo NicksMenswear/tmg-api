@@ -18,6 +18,7 @@ from server.models.discount_model import (
     DiscountStatusModel,
     DiscountPayResponseModel,
 )
+from server.models.shopify_model import ShopifyProduct
 from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
@@ -429,17 +430,17 @@ class DiscountService:
 
             product_body += "</ul>"
 
-            shopify_product = self.shopify_service.create_attendee_discount_product(
+            shopify_product: ShopifyProduct = self.shopify_service.create_attendee_discount_product(
                 title=f"{event.name} attendees discount",
                 body_html=product_body,
                 amount=total_intent_amount,
                 sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{str(event.id)}-{datetime.now(timezone.utc).isoformat()}",
-                tags=",".join(["hidden", "event_id=" + str(event.id), "user_id=" + str(event.user_id)]),
+                tags=["hidden", "event_id=" + str(event.id), "user_id=" + str(event.user_id)],
             )
 
             for discount_intent in intents:
-                discount_intent.shopify_virtual_product_id = shopify_product["id"]
-                discount_intent.shopify_virtual_product_variant_id = shopify_product["variants"][0]["id"]
+                discount_intent.shopify_virtual_product_id = shopify_product.get_id()
+                discount_intent.shopify_virtual_product_variant_id = shopify_product.variants[0].get_id()
                 db.session.add(discount_intent)
 
             db.session.commit()
@@ -452,7 +453,7 @@ class DiscountService:
 
             raise ServiceError("Failed to create discount product in Shopify.", e)
 
-        return DiscountPayResponseModel(variant_id=shopify_product["variants"][0]["id"])
+        return DiscountPayResponseModel(variant_id=shopify_product.variants[0].get_id())
 
     def __filter_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
         return [

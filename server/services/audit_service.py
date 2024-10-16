@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from flask import request
 from sqlalchemy import event
+from sqlalchemy.orm.attributes import get_history
 
 from server.database.database_manager import db
 from server.database.models import (
@@ -52,7 +53,7 @@ class AuditLogService:
             )
             event.listen(
                 entity,
-                "after_delete",
+                "before_delete",
                 lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_DELETED"),
             )
 

@@ -33,12 +33,17 @@ class AuditLogService:
         entities = [User, Event, Attendee, Look, Order, OrderItem, Product, Discount, Size, Measurement, Address]
 
         for entity in entities:
-            log_prefix = f"{entity.__name__.upper()}"
+            log_prefix = entity.__name__.upper()
 
             event.listen(
                 entity,
                 "after_insert",
                 lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_CREATED"),
+            )
+            event.listen(
+                entity,
+                "before_update",
+                lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_UPDATING"),
             )
             event.listen(
                 entity,

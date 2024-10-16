@@ -314,7 +314,8 @@ class FakeShopifyService(AbstractShopifyService):
 
 
 class ShopifyService(AbstractShopifyService):
-    def __init__(self):
+    def __init__(self, online_store_sales_channel_id: str):
+        self.__online_store_sales_channel_id = online_store_sales_channel_id
         self.__shopify_store = os.getenv("shopify_store")
         self.__stage = os.getenv("STAGE", "dev")
         self.__bundle_image_path = f"https://data.{self.__stage}.tmgcorp.net/bundle.jpg"
@@ -985,9 +986,7 @@ class ShopifyService(AbstractShopifyService):
             requires_shipping=False,
         )
 
-        self.__publish_and_add_to_online_sales_channel(
-            attendee_discount_product.gid, FlaskApp.current().online_store_sales_channel_id
-        )
+        self.__publish_and_add_to_online_sales_channel(attendee_discount_product.gid)
 
         self.__add_image_to_product(attendee_discount_product.gid, self.__gift_image_path)
 
@@ -997,9 +996,7 @@ class ShopifyService(AbstractShopifyService):
         created_product = self.create_product(f"Bundle #{bundle_id}", "", 0, f"bundle-{bundle_id}", ["hidden"], True)
 
         self.__add_image_to_product(created_product.gid, self.__bundle_image_path)
-        self.__publish_and_add_to_online_sales_channel(
-            created_product.gid, FlaskApp.current().online_store_sales_channel_id
-        )
+        self.__publish_and_add_to_online_sales_channel(created_product.gid)
 
         return created_product
 
@@ -1015,10 +1012,7 @@ class ShopifyService(AbstractShopifyService):
         ]
 
         self.__add_variants_to_product_bundle(bundle_parent_product.variants[0].gid, shopify_variant_gids)
-
-        self.__publish_and_add_to_online_sales_channel(
-            bundle_parent_product.gid, FlaskApp.current().online_store_sales_channel_id
-        )
+        self.__publish_and_add_to_online_sales_channel(bundle_parent_product.gid)
 
         if image_src:
             self.__add_image_to_product(bundle_parent_product.gid, image_src)
@@ -1300,7 +1294,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def __publish_and_add_to_online_sales_channel(self, parent_product_gid: str, sales_channel_id: str):
+    def __publish_and_add_to_online_sales_channel(self, parent_product_gid: str):
         mutation = """
         mutation productUpdate($input: ProductInput!) {
             productUpdate(input: $input) {
@@ -1320,7 +1314,7 @@ class ShopifyService(AbstractShopifyService):
                 "id": parent_product_gid,
                 "publishedAt": datetime.now(timezone.utc).isoformat(),
                 "productPublications": {
-                    "publicationId": sales_channel_id,
+                    "publicationId": self.__online_store_sales_channel_id,
                     "publishDate": datetime.now(timezone.utc).isoformat(),
                 },
             },

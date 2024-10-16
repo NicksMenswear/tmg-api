@@ -207,18 +207,24 @@ class LookService:
                 suit_parts_variants,
             )
 
-            bundle_product_variant_id = self.shopify_service.create_bundle(
-                create_look.name,
-                bundle_id,
-                enriched_product_specs_variants,
-                image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
-                tags=tags,
+            bundle_product_variant_id = (
+                self.shopify_service.create_bundle(
+                    create_look.name,
+                    bundle_id,
+                    enriched_product_specs_variants,
+                    image_src=(
+                        f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None
+                    ),
+                    tags=tags,
+                )
+                .variants[0]
+                .get_id()
             )
 
             if not bundle_product_variant_id:
                 raise ServiceError("Failed to create bundle product variant.")
 
-            bundle_product_variant = self.shopify_service.get_variants_by_id([bundle_product_variant_id])[0]
+            bundle_product_variant = self.shopify_service.get_variants_by_id([str(bundle_product_variant_id)])[0]
 
             enriched_product_specs = {
                 "bundle": bundle_product_variant.model_dump(),

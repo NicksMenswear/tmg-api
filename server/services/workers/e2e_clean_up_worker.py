@@ -171,7 +171,7 @@ class E2ECleanUpWorker:
 
     def __delete_shopify_discount(self, discount_id: int) -> None:
         try:
-            self.shopify_service.delete_discount(discount_id)
+            self.shopify_service.delete_discount(f"gid://shopify/DiscountCodeNode/{discount_id}")
         except ServiceError:
             logger.error(f"Failed to delete discount from shopify: {discount_id}")
 

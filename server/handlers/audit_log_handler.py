@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from typing import Dict, Set
 
@@ -32,7 +33,12 @@ class FakeLambdaContext(LambdaContext):
 
 @logger.inject_lambda_context
 def lambda_handler(event: dict, context: LambdaContext):
-    shopify_service = FlaskApp().current().shopify_service if __in_test_context(context) else ShopifyService()
+    online_store_sales_channel_id = os.getenv("online_store_sales_channel_id", "gid://shopify/Publication/94480072835")
+    shopify_service = (
+        FlaskApp().current().shopify_service
+        if __in_test_context(context)
+        else ShopifyService(online_store_sales_channel_id)
+    )
     audit_log_service = AuditLogService()
     user_service = UserService(shopify_service)
     attendee_service = AttendeeService(shopify_service, user_service, None, None, None)

@@ -320,7 +320,7 @@ class ShopifyWebhookOrderHandler:
                     continue
 
                 shopify_suit_sku = suit_parts[ProductType.SUIT]
-                suit_variant = self.shopify_service.get_variant_by_sku(shopify_suit_sku)
+                shopify_suit_product = self.shopify_service.get_product_by_sku(shopify_suit_sku)
                 shiphero_suit_sku = self.sku_builder.build(shopify_suit_sku, size_model, measurement_model)
                 suit_product = None
 
@@ -332,7 +332,7 @@ class ShopifyWebhookOrderHandler:
                     order_id=order_id,
                     product_id=suit_product.id if suit_product else None,
                     shopify_sku=shopify_suit_sku,
-                    purchased_price=suit_variant.variant_price,
+                    purchased_price=shopify_suit_product.variants[0].price,
                     quantity=1,
                 )
 

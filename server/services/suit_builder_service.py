@@ -9,7 +9,7 @@ import requests
 
 from server.database.database_manager import db
 from server.database.models import SuitBuilderItem, SuitBuilderItemType
-from server.models.shopify_model import ShopifyVariantModel
+from server.models.shopify_model import ShopifyProduct
 from server.models.suit_builder_model import (
     CreateSuitBuilderModel,
     SuitBuilderItemModel,
@@ -65,7 +65,7 @@ class SuitBuilderService:
             raise DuplicateError(f"Item with sku {item.sku} already exists")
 
         try:
-            shopify_variant: ShopifyVariantModel = self.shopify_service.get_variant_by_sku(item.sku)
+            product: ShopifyProduct = self.shopify_service.get_product_by_sku(item.sku)
         except ServiceError as e:
             raise ServiceError(f"Failed to fetch item from Shopify: {e}")
 
@@ -73,10 +73,10 @@ class SuitBuilderService:
             suit_builder_item: SuitBuilderItem = SuitBuilderItem(
                 type=SuitBuilderItemType(item.type),
                 sku=item.sku,
-                name=shopify_variant.product_title,
-                variant_id=shopify_variant.variant_id,
-                product_id=shopify_variant.product_id,
-                price=shopify_variant.variant_price,
+                name=product.title,
+                variant_id=product.variants[0].get_id(),
+                product_id=product.get_id(),
+                price=product.variants[0].price,
                 index=item.index,
             )
 
@@ -86,9 +86,9 @@ class SuitBuilderService:
             if item.icon_url:
                 self.__save_image_by_url_to_s3(item.icon_url, item.type, f"{item.sku}-icon.png")
 
-            if not item.image_url and not item.image_url and shopify_variant.image_url:
-                self.__save_image_by_url_to_s3(shopify_variant.image_url, item.type, f"{item.sku}.png")
-                self.__save_image_by_url_to_s3(shopify_variant.image_url, item.type, f"{item.sku}-icon.png")
+            if not item.image_url and not item.image_url and product.image_url:
+                self.__save_image_by_url_to_s3(product.image_url, item.type, f"{item.sku}.png")
+                self.__save_image_by_url_to_s3(product.image_url, item.type, f"{item.sku}-icon.png")
 
             db.session.add(suit_builder_item)
             db.session.commit()

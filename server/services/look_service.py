@@ -13,7 +13,7 @@ from server.database.database_manager import db
 from server.database.models import Look, Attendee
 from server.flask_app import FlaskApp
 from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel, ProductSpecType
-from server.models.shopify_model import ShopifyVariantModel
+from server.models.shopify_model import ShopifyProduct
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
 from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
@@ -107,20 +107,20 @@ class LookService:
 
         return s3_file
 
-    def __get_suit_parts(self, suit_variant_id: str) -> List[ShopifyVariantModel]:
-        suit_variants: List[ShopifyVariantModel] = self.shopify_service.get_variants_by_id([suit_variant_id])
+    def __get_suit_parts(self, suit_variant_id: str) -> List[ShopifyProduct]:
+        suit_products: List[ShopifyProduct] = self.shopify_service.get_variants_by_id([suit_variant_id])
 
-        if not suit_variants or len(suit_variants) == 0 or not suit_variants[0]:
+        if not suit_products or len(suit_products) == 0 or not suit_products[0]:
             raise ServiceError("Suit variant not found.")
 
-        suit_variant = suit_variants[0]
-        suit_sku = suit_variant.variant_sku
+        suit_product = suit_products[0]
+        suit_sku = suit_product.variants[0].sku
 
         if not suit_sku:
             raise ServiceError("Suit variant sku not found.")
 
         if not suit_sku.startswith("00"):
-            raise ServiceError(f"Invalid suit variant sku: {suit_variant}")
+            raise ServiceError(f"Invalid suit variant sku: {suit_product.variants[0].sku}")
 
         jacket_sku = "1" + suit_sku[1:]
 
@@ -131,9 +131,9 @@ class LookService:
             pants_sku = "2" + suit_sku[1:]
             vest_sku = "3" + suit_sku[1:]
 
-        jacket_variant = self.shopify_service.get_variant_by_sku(jacket_sku)
-        pants_variant = self.shopify_service.get_variant_by_sku(pants_sku)
-        vest_variant = self.shopify_service.get_variant_by_sku(vest_sku)
+        jacket_variant = self.shopify_service.get_product_by_sku(jacket_sku)
+        pants_variant = self.shopify_service.get_product_by_sku(pants_sku)
+        vest_variant = self.shopify_service.get_product_by_sku(vest_sku)
 
         if not jacket_variant or not pants_variant or not vest_variant:
             raise ServiceError("Not all suit parts were found.")
@@ -156,14 +156,14 @@ class LookService:
         return enriched_product_specs_variants
 
     def __convert_sku_spec_to_variant_model(self, create_look: CreateLookModel):
-        create_look.product_specs["suit_variant"] = self.shopify_service.get_variant_by_sku(
-            create_look.product_specs["suit_variant"]
-        ).variant_id
+        create_look.product_specs["suit_variant"] = (
+            self.shopify_service.get_product_by_sku(create_look.product_specs["suit_variant"]).variants[0].get_id()
+        )
 
         variants = [create_look.product_specs["suit_variant"]]
 
         for sku in create_look.product_specs.get("variants", []):
-            variants.append(self.shopify_service.get_variant_by_sku(sku).variant_id)
+            variants.append(self.shopify_service.get_product_by_sku(sku).variants[0].get_id())
 
         create_look.product_specs["variants"] = variants
 
@@ -190,7 +190,7 @@ class LookService:
 
             enriched_look_variants = create_look.product_specs.get("variants") + [bundle_identifier_variant_id]
 
-            look_variants = self.shopify_service.get_variants_by_id(enriched_look_variants)
+            look_products = self.shopify_service.get_variants_by_id(enriched_look_variants)
 
             suit_parts_variants = self.__get_suit_parts(suit_variant_id)
 
@@ -224,10 +224,19 @@ class LookService:
             if not bundle_product_variant_id:
                 raise ServiceError("Failed to create bundle product variant.")
 
-            bundle_product_variant = self.shopify_service.get_variants_by_id([str(bundle_product_variant_id)])[0]
+            bundle_product = self.shopify_service.get_variants_by_id([str(bundle_product_variant_id)])[0]
+            bundle_product_variant = bundle_product.variants[0]
 
             enriched_product_specs = {
-                "bundle": bundle_product_variant.model_dump(),
+                "bundle": {
+                    "product_id": str(bundle_product.get_id()),
+                    "product_title": bundle_product.title,
+                    "variant_id": str(bundle_product_variant.get_id()),
+                    "variant_title": bundle_product_variant.title,
+                    "variant_sku": bundle_product_variant.sku,
+                    "variant_price": bundle_product_variant.price,
+                    "image_url": bundle_product.image_url,
+                },
                 "suit": id_to_variants[suit_variant_id].model_dump(),
                 "items": [id_to_variants[variant_id].model_dump() for variant_id in enriched_product_specs_variants],
             }

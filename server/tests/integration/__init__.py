@@ -26,7 +26,6 @@ from server.database.models import (
     AuditLog,
 )
 from server.flask_app import FlaskApp
-from server.models.shopify_model import ShopifyVariantModel
 from server.services.integrations.shopify_service import FakeShopifyService
 from server.services.sku_builder_service import ProductType
 

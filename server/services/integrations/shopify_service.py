@@ -61,7 +61,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
+    def get_product_by_sku(self, sku: str) -> Optional[ShopifyProduct]:
         pass
 
     @abstractmethod
@@ -73,7 +73,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyProduct]:
         pass
 
     @abstractmethod
@@ -122,7 +122,7 @@ class AbstractShopifyService(ABC):
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
-        self.shopify_variants2 = {}
+        self.shopify_products = {}
         self.shopify_variants = shopify_variants if shopify_variants else {}
         self.shopify_virtual_products = shopify_virtual_products if shopify_virtual_products else {}
         self.shopify_virtual_product_variants = (
@@ -195,11 +195,17 @@ class FakeShopifyService(AbstractShopifyService):
 
         customer.tags = list(set(customer.tags) - set(tags))
 
-    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
-        return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
+    def get_product_by_sku(self, sku: str) -> Optional[ShopifyProduct]:
+        return self.shopify_products[random.choice(list(self.shopify_products.keys()))]
 
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
-        return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
+    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyProduct]:
+        result = []
+
+        for shopify_product in self.shopify_products:
+            if shopify_product.variants[0].get_id() in variant_ids:
+                result.append(shopify_product)
+
+        return result
 
     def archive_product(self, product_gid: str) -> None:
         pass
@@ -654,7 +660,7 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
 
-    def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
+    def get_product_by_sku(self, sku: str) -> Optional[ShopifyProduct]:
         query = f"""
         {{
           productVariants(first: 1, query: "sku:{sku}") {{
@@ -667,6 +673,7 @@ class ShopifyService(AbstractShopifyService):
                 product {{
                   id
                   title
+                  tags
                   images(first: 1) {{
                     edges {{
                       node {{
@@ -703,19 +710,22 @@ class ShopifyService(AbstractShopifyService):
         image_edges = product.get("images", {}).get("edges", [{}])
         image_url = image_edges[0].get("node", {}).get("url") if image_edges else None
 
-        return ShopifyVariantModel(
-            **{
-                "product_id": product["id"].removeprefix("gid://shopify/Product/"),
-                "product_title": product["title"],
-                "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
-                "variant_title": variant["title"],
-                "variant_price": variant["price"],
-                "variant_sku": variant["sku"],
-                "image_url": image_url,
-            }
+        return ShopifyProduct(
+            gid=product["id"],
+            title=product["title"],
+            tags=product["tags"],
+            image_url=image_url,
+            variants=[
+                ShopifyVariant(
+                    gid=variant["id"],
+                    title=variant["title"],
+                    price=variant["price"],
+                    sku=variant["sku"],
+                )
+            ],
         )
 
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyProduct]:
         if not variant_ids:
             return []
 
@@ -734,6 +744,7 @@ class ShopifyService(AbstractShopifyService):
                 product {{
                     id
                     title
+                    tags
                 }}
             }}
             }}
@@ -752,27 +763,27 @@ class ShopifyService(AbstractShopifyService):
         if "errors" in body:
             raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
 
-        variants = []
+        products = []
 
         for variant in body["data"]["nodes"]:
             if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
                 continue
 
             product = variant["product"]
-            variants.append(
-                ShopifyVariantModel(
-                    **{
-                        "product_id": product["id"].removeprefix("gid://shopify/Product/"),
-                        "product_title": product["title"],
-                        "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
-                        "variant_title": variant["title"],
-                        "variant_sku": variant["sku"],
-                        "variant_price": variant["price"],
-                    }
+            products.append(
+                ShopifyProduct(
+                    gid=product["id"],
+                    title=product["title"],
+                    tags=product["tags"],
+                    variants=[
+                        ShopifyVariant(
+                            gid=variant["id"], title=variant["title"], price=variant["price"], sku=variant["sku"]
+                        )
+                    ],
                 )
             )
 
-        return variants
+        return products
 
     def archive_product(self, product_gid: str) -> None:
         query = """

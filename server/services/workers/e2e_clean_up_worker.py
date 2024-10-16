@@ -133,7 +133,9 @@ class E2ECleanUpWorker:
 
                         self.__delete_shopify_product(item.get("product_id"))
 
-                self.__delete_look(look.id)
+                attendees_with_look = self.__get_attendees_with_look(look.id)
+                if not attendees_with_look:
+                    self.__delete_look(look.id)
 
                 db.session.commit()
 
@@ -171,7 +173,7 @@ class E2ECleanUpWorker:
 
     def __delete_shopify_discount(self, discount_id: int) -> None:
         try:
-            self.shopify_service.delete_discount(discount_id)
+            self.shopify_service.delete_discount(f"gid://shopify/DiscountCodeNode/{discount_id}")
         except ServiceError:
             logger.error(f"Failed to delete discount from shopify: {discount_id}")
 

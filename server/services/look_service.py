@@ -184,7 +184,9 @@ class LookService:
 
             bundle_id = str(random.randint(100000, 1000000000))
 
-            bundle_identifier_variant_id = str(self.shopify_service.create_bundle_identifier_product(bundle_id))
+            bundle_identifier_variant_id = str(
+                self.shopify_service.create_bundle_identifier_product(bundle_id).variants[0].get_id()
+            )
 
             enriched_look_variants = create_look.product_specs.get("variants") + [bundle_identifier_variant_id]
 

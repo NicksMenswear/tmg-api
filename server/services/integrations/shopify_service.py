@@ -1010,11 +1010,11 @@ class ShopifyService(AbstractShopifyService):
         self.__add_variants_to_product_bundle(bundle_parent_product.variants[0].gid, shopify_variant_gids)
 
         self.__publish_and_add_to_online_sales_channel(
-            f"suit-bundle-{bundle_id}", str(parent_product_id), FlaskApp.current().online_store_sales_channel_id
+            f"suit-bundle-{bundle_id}", bundle_parent_product.gid, FlaskApp.current().online_store_sales_channel_id
         )
 
         if image_src:
-            self.__add_image_to_product(str(parent_product_id), image_src)
+            self.__add_image_to_product(bundle_parent_product.gid, image_src)
 
         return str(bundle_parent_product.variants[0].get_id())
 
@@ -1294,7 +1294,7 @@ class ShopifyService(AbstractShopifyService):
         return body
 
     def __publish_and_add_to_online_sales_channel(
-        self, product_handle: str, parent_product_id: str, sales_channel_id: str
+        self, product_handle: str, parent_product_gid: str, sales_channel_id: str
     ):
         mutation = """
         mutation productUpdate($input: ProductInput!) {
@@ -1312,7 +1312,7 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {
             "input": {
-                "id": parent_product_id,
+                "id": parent_product_gid,
                 "publishedAt": datetime.now(timezone.utc).isoformat(),
                 "handle": product_handle,
                 "productPublications": {

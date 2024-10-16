@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from typing import List, Optional, Set, Dict
 
 from server.controllers.util import http
-from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyCustomer, ShopifyVariantModel, ShopifyProduct, ShopifyVariant
 from server.services import ServiceError, NotFoundError, DuplicateError
 
@@ -19,6 +18,11 @@ logger = logging.getLogger(__name__)
 class DiscountAmountType(enum.Enum):
     FIXED_AMOUNT = "fixed_amount"
     PERCENTAGE = "percentage"
+
+
+class ShopifyQueryError(Exception):
+    def __init__(self):
+        super().__init__("Shopify API Error")
 
 
 class AbstractShopifyService(ABC):
@@ -94,7 +98,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def delete_discount(self, discount_code_id: int) -> None:
+    def delete_discount(self, discount_code_gid: str) -> None:
         pass
 
     @abstractmethod
@@ -224,7 +228,7 @@ class FakeShopifyService(AbstractShopifyService):
     def apply_discount_codes_to_cart(self, cart_id, discount_codes):
         pass
 
-    def delete_discount(self, discount_code_id: int) -> None:
+    def delete_discount(self, discount_code_gid: str) -> None:
         pass
 
     def create_product(
@@ -345,7 +349,7 @@ class ShopifyService(AbstractShopifyService):
         query = """
         mutation customerGenerateAccountActivationUrl($customerId: ID!) {
           customerGenerateAccountActivationUrl(customerId: $customerId) {
-            accountActivationUrl
+            accountActivationUrl3
             userErrors {
               field
               message
@@ -356,13 +360,9 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"customerId": ShopifyService.customer_gid(customer_id)}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            body={"query": query, "variables": variables},
-        )
-
-        if status >= 400 or "errors" in body:
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
             raise ServiceError(f"Failed to create activation url")
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
@@ -387,14 +387,10 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"query": f"email:{email}"}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            body={"query": query, "variables": variables},
-        )
-
-        if status >= 400 or "errors" in body:
-            raise ServiceError("Failed to get customer")
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to get customer")
 
         customers = body.get("data", {}).get("customers", {}).get("edges", [])
 
@@ -413,19 +409,12 @@ class ShopifyService(AbstractShopifyService):
         return None
 
     def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {
-                "query": f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email firstName lastName state tags }} }} }} }}'
-            },
-        )
+        query = f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email firstName lastName state tags }} }} }} }}'
 
-        if status >= 400:
-            raise ServiceError(f"Failed to get customers by email suffix in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get customers by email suffix in shopify store. {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(query)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to get customers by email suffix")
 
         customer_edges = body.get("data", {}).get("customers", {}).get("edges", [])
 
@@ -468,23 +457,10 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"input": {"firstName": first_name, "lastName": last_name, "email": email}}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        user_errors = body.get("data", {}).get("customerCreate", {}).get("userErrors", [])
-
-        if status >= 400:
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
             raise ServiceError(f"Failed to create customer")
-
-        if user_errors:
-            for error in user_errors:
-                if "email has already been taken" in error.get("message", "").lower():
-                    raise DuplicateError("Shopify customer with this email address already exists.")
-
-            raise ServiceError("Failed to create shopify customer.")
 
         customer = body.get("data", {}).get("customerCreate", {}).get("customer")
 
@@ -532,14 +508,10 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"input": customer_input}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            body={"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError("Failed to update shopify customer.")
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to update shopify customer.")
 
         user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
 
@@ -558,7 +530,7 @@ class ShopifyService(AbstractShopifyService):
         )
 
     def delete_customer(self, customer_gid: str) -> None:
-        mutation = """
+        query = """
         mutation customerDelete($input: CustomerDeleteInput!) {
           customerDelete(input: $input) {
             deletedCustomerId
@@ -572,20 +544,13 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"input": {"id": customer_gid}}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete customer in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to delete customer in shopify store. {body['errors']}")
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to delete customer")
 
     def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        mutation = """
+        query = """
             mutation addTags($id: ID!, $tags: [String!]!) {
                 tagsAdd(id: $id, tags: $tags) {
                     node {
@@ -603,20 +568,13 @@ class ShopifyService(AbstractShopifyService):
             "tags": ",".join(list(tags)),
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to add tags in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to add tags in shopify store. {body['errors']}")
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to add tags in shopify store.")
 
     def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
-        mutation = """
+        query = """
             mutation removeTags($id: ID!, $tags: [String!]!) {
                 tagsRemove(id: $id, tags: $tags) {
                     node {
@@ -634,17 +592,10 @@ class ShopifyService(AbstractShopifyService):
             "tags": ",".join(list(tags)),
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to remove tags in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to remove tags in shopify store. {body['errors']}")
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to remove tags in shopify store.")
 
     def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
         query = f"""
@@ -673,17 +624,10 @@ class ShopifyService(AbstractShopifyService):
         }}
         """
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get variants by sku in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get variants by sku in shopify store. {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(query)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to get variants by sku in shopify store.")
 
         edges = body.get("data", {}).get("productVariants", {}).get("edges")
 
@@ -732,17 +676,10 @@ class ShopifyService(AbstractShopifyService):
         }}
         """
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to get titles for {variant_ids} in shopify store. {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(query)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to get variants by ids in shopify store.")
 
         variants = []
 
@@ -789,17 +726,10 @@ class ShopifyService(AbstractShopifyService):
             }
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to archive product by id '{product_gid}'. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to archive product by id '{product_gid}': {body['errors']}")
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to archive product by id '{product_gid}'")
 
     def delete_product(self, product_gid: str) -> None:
         query = """
@@ -816,17 +746,10 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {"id": product_gid}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete product by id '{product_gid}'. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to delete product by id '{product_gid}': {body['errors']}")
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to delete product by id '{product_gid}'")
 
     def create_discount_code(
         self,
@@ -898,17 +821,10 @@ class ShopifyService(AbstractShopifyService):
         else:
             variables["basicCodeDiscount"]["customerGets"]["items"] = {"all": True}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create discount code in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to apply discount codes to cart in shopify store: {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(mutation, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to create discount code in shopify store.")
 
         logger.info(f"Discount code created: {body}")
 
@@ -939,7 +855,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body
 
-    def delete_discount(self, discount_code_id: int) -> None:
+    def delete_discount(self, discount_code_gid: str) -> None:
         query = """
         mutation discountCodeDelete($id: ID!) {
           discountCodeDelete(id: $id) {
@@ -952,21 +868,12 @@ class ShopifyService(AbstractShopifyService):
           }
         }
         """
-        variables = {"id": f"gid://shopify/DiscountCodeNode/{discount_code_id}"}
+        variables = {"id": discount_code_gid}
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to delete discount code in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to delete discount code in shopify store: {body['errors']}")
-
-        return body
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to delete discount code in shopify store.")
 
     def create_product(
         self, title: str, body_html: str, price: float, sku: str, tags: List[str], requires_shipping: bool = True
@@ -993,7 +900,7 @@ class ShopifyService(AbstractShopifyService):
         return attendee_discount_product
 
     def create_bundle_identifier_product(self, bundle_id: str) -> ShopifyProduct:
-        created_product = self.create_product(f"Bundle #{bundle_id}", "", 0, f"bundle-{bundle_id}", ["hidden"], True)
+        created_product = self.create_product(f"Bundle #{bundle_id}", "", 0, f"bundle-{bundle_id}", ["hidden"])
 
         self.__add_image_to_product(created_product.gid, self.__bundle_image_path)
         self.__publish_and_add_to_online_sales_channel(created_product.gid)
@@ -1003,8 +910,8 @@ class ShopifyService(AbstractShopifyService):
     def create_bundle(
         self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
     ) -> str:
-        bundle_parent_product: ShopifyProduct = self.__create_bundle_product(
-            bundle_name, f"suit-bundle-{bundle_id}", tags or []
+        bundle_parent_product: ShopifyProduct = self.__create_product_with_variant(
+            bundle_name, "", (tags or []) + ["hidden"]
         )
 
         shopify_variant_gids = [
@@ -1019,26 +926,33 @@ class ShopifyService(AbstractShopifyService):
 
         return str(bundle_parent_product.variants[0].get_id())
 
-    def __admin_api_request(self, method: str, endpoint: str, body: dict = None):
+    def __admin_api_graphql_request(self, query: str, variables: dict = None) -> dict:
         response = http(
-            method,
-            endpoint,
-            json=body,
+            "POST",
+            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
+            json={"query": query, "variables": variables},
             headers={
                 "Content-Type": "application/json",
                 "X-Shopify-Access-Token": self.__admin_api_access_token,
             },
         )
-        if response.status == 429:
-            raise ServiceError(
-                f"Shopify API rate limit exceeded. Retry in f{response.headers.get('Retry-After')} seconds."
-            )
-        if response.status >= 500:
-            raise ServiceError(
-                f"Shopify API error. Status code: {response.status}, message: {response.data.decode('utf-8')}"
-            )
 
-        return response.status, json.loads(response.data.decode("utf-8"))
+        response_data = response.data.decode("utf-8")
+
+        if response.status == 429:
+            logger.error(f"Shopify API rate limit exceeded. Retry in {response.headers.get('Retry-After')} seconds.")
+            raise ShopifyQueryError()
+        if response.status >= 400:
+            logger.error(f"Shopify API error. Status code: {response.status}, message: {response_data}")
+            raise ShopifyQueryError()
+
+        response_body = json.loads(response_data)
+
+        if "errors" in response_body:
+            logger.error(f"Shopify API error: {response_data}")
+            raise ShopifyQueryError()
+
+        return response_body
 
     def __storefront_api_request(self, method: str, endpoint: str, body: dict = None):
         response = http(
@@ -1088,17 +1002,10 @@ class ShopifyService(AbstractShopifyService):
             "input": {"title": title, "descriptionHtml": body_html, "vendor": "The Modern Groom", "tags": tags}
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create product. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product: {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to create product")
 
         created_product = body.get("data", {}).get("productCreate", {}).get("product")
         default_variant = created_product.get("variants", {}).get("edges")[0].get("node")
@@ -1159,17 +1066,10 @@ class ShopifyService(AbstractShopifyService):
             }
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": query, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to update variant price. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to update variant price: {body['errors']}")
+        try:
+            body = self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to update variant")
 
         created_product = body.get("data", {}).get("productVariantUpdate", {}).get("product")
         default_variant = created_product.get("variants", {}).get("edges")[0].get("node")
@@ -1188,64 +1088,7 @@ class ShopifyService(AbstractShopifyService):
             ],
         )
 
-    def __create_bundle_product(self, product_name: str, handle: str, tags: List[str]) -> ShopifyProduct:
-        mutation = """
-        mutation CreateProductBundle($input: ProductInput!) {
-          productCreate(input: $input) {
-            product {
-              id
-              title
-              tags
-              variants(first: 1) {
-                edges {
-                  node {
-                    id
-                    title
-                    price
-                    sku
-                  }
-                }
-              }
-            }
-            userErrors{
-              field
-              message
-            }
-          }
-        }
-        """
-        variables = {"input": {"title": product_name, "handle": handle, "variants": [], "tags": ["hidden"] + tags}}
-
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
-
-        created_product = body.get("data", {}).get("productCreate", {}).get("product")
-        default_variant = created_product.get("variants", {}).get("edges")[0].get("node")
-
-        return ShopifyProduct(
-            gid=created_product.get("id"),
-            title=created_product.get("title"),
-            tags=created_product.get("tags"),
-            variants=[
-                ShopifyVariant(
-                    gid=default_variant.get("id"),
-                    title=default_variant.get("title"),
-                    price=default_variant.get("price"),
-                    sku=default_variant.get("sku"),
-                )
-            ],
-        )
-
-    def __add_variants_to_product_bundle(self, parent_product_shopify_variant_gid: str, variants: List[str]):
+    def __add_variants_to_product_bundle(self, parent_product_shopify_variant_gid: str, variants: List[str]) -> None:
         bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]
 
         mutation = """
@@ -1280,21 +1123,12 @@ class ShopifyService(AbstractShopifyService):
             ]
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
+        try:
+            self.__admin_api_graphql_request(mutation, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to create product bundle in shopify store.")
 
-        if status >= 400:
-            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
-
-        return body
-
-    def __publish_and_add_to_online_sales_channel(self, parent_product_gid: str):
+    def __publish_and_add_to_online_sales_channel(self, product_gid: str) -> None:
         mutation = """
         mutation productUpdate($input: ProductInput!) {
             productUpdate(input: $input) {
@@ -1311,7 +1145,7 @@ class ShopifyService(AbstractShopifyService):
 
         variables = {
             "input": {
-                "id": parent_product_gid,
+                "id": product_gid,
                 "publishedAt": datetime.now(timezone.utc).isoformat(),
                 "productPublications": {
                     "publicationId": self.__online_store_sales_channel_id,
@@ -1320,19 +1154,10 @@ class ShopifyService(AbstractShopifyService):
             },
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
-
-        if status >= 400:
-            raise ServiceError(f"Failed to create product bundle in shopify store. Status code: {status}")
-
-        if "errors" in body:
-            raise ServiceError(f"Failed to create product bundle in shopify store. {body['errors']}")
-
-        return body
+        try:
+            self.__admin_api_graphql_request(mutation, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to publish product in shopify store.")
 
     def __add_image_to_product(self, product_gid: str, image_url: str) -> None:
         mutation = """
@@ -1363,14 +1188,12 @@ class ShopifyService(AbstractShopifyService):
             "productId": product_gid,
         }
 
-        status, body = self.__admin_api_request(
-            "POST",
-            f"{self.__shopify_graphql_admin_api_endpoint}/graphql.json",
-            {"query": mutation, "variables": variables},
-        )
+        try:
+            self.__admin_api_graphql_request(mutation, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to add image to product in shopify store.")
 
-        if status >= 400:
-            raise ServiceError(f"Failed to add image to product in shopify store. Status code: {status}")
 
-        if "errors" in body:
-            raise ServiceError(f"Failed to add image to product in shopify store. {body['errors']}")
+if __name__ == "__main__":
+    service = ShopifyService("gid://shopify/SalesChannel/1234567890")
+    print(service.get_account_activation_url(123456))

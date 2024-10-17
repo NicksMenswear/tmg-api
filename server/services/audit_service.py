@@ -20,6 +20,7 @@ from server.database.models import (
     Measurement,
     Address,
     AuditLog,
+    SerializableMixin,
 )
 from server.flask_app import FlaskApp
 from server.models.audit_model import AuditLogMessage
@@ -43,13 +44,8 @@ class AuditLogService:
             )
             event.listen(
                 entity,
-                "before_update",
-                lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_UPDATING"),
-            )
-            event.listen(
-                entity,
                 "after_update",
-                lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_UPDATED"),
+                lambda m, c, t, lp=log_prefix: cls.__log_operation_and_diff(t, f"{lp}_UPDATED"),
             )
             event.listen(
                 entity,
@@ -69,6 +65,46 @@ class AuditLogService:
             FlaskApp.current().aws_service.enqueue_message(
                 FlaskApp.current().audit_log_sqs_queue_url,
                 AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
+            )
+        except Exception as e:
+            logger.exception(f"Failed to enqueue audit log message: {e}")
+
+    @classmethod
+    def __log_operation_and_diff(cls, target, operation):
+        if not FlaskApp.current():
+            return
+
+        diff = {
+            "id": str(getattr(target, "id")),
+        }
+
+        after_state = {attr.key: getattr(target, attr.key) for attr in target.__table__.columns}
+
+        before_state = {}
+        for attr in target.__table__.columns:
+            if attr.key in {"updated_at"}:
+                continue
+
+            history = get_history(target, attr.key)
+
+            if history.has_changes():
+                before_state[attr.key] = history.deleted[0] if history.deleted else None
+                diff[attr.key] = {
+                    "before": SerializableMixin.normalize(before_state[attr.key]),
+                    "after": SerializableMixin.normalize(after_state[attr.key]),
+                }
+
+        try:
+            serializable_request = cls.__request_to_dict()
+            serializable_payload = target.serialize()
+
+            FlaskApp.current().aws_service.enqueue_message(
+                FlaskApp.current().audit_log_sqs_queue_url,
+                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
+            )
+            FlaskApp.current().aws_service.enqueue_message(
+                FlaskApp.current().audit_log_sqs_queue_url,
+                AuditLogMessage(type=f"{operation}_DIFF", request=serializable_request, payload=diff).to_string(),
             )
         except Exception as e:
             logger.exception(f"Failed to enqueue audit log message: {e}")

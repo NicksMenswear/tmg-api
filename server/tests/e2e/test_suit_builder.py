@@ -25,7 +25,7 @@ SOCKS_PRICE = 5.0
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_1
 def test_suit_builder_save_default(page: Page):
     look_name = utils.generate_look_name()
 
@@ -53,7 +53,7 @@ def test_suit_builder_save_default(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_3
 def test_suit_builder_just_a_suit(page: Page):
     look_name = utils.generate_look_name()
 
@@ -83,7 +83,7 @@ def test_suit_builder_just_a_suit(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_5
 def test_suit_builder_neck_tie_socks_and_premium_pocket_square_enabled(page: Page):
     look_name = utils.generate_look_name()
 
@@ -113,7 +113,7 @@ def test_suit_builder_neck_tie_socks_and_premium_pocket_square_enabled(page: Pag
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_1
 def test_suit_builder_shirt_belt_shoes_enabled(page: Page):
     look_name = utils.generate_look_name()
 
@@ -143,7 +143,7 @@ def test_suit_builder_shirt_belt_shoes_enabled(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_3
 def test_suit_builder_bow_tie(page: Page):
     look_name = utils.generate_look_name()
 
@@ -175,7 +175,7 @@ def test_suit_builder_bow_tie(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_5
 def test_suit_builder_select_nth_from_all_sections(page: Page):
     look_name = utils.generate_look_name()
 

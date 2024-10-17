@@ -38,6 +38,7 @@ def login(page: Page, email: str, password: str):
     page.get_by_role("textbox", name="Password").fill(password)
     time.sleep(1)
     page.get_by_role("button", name="Login").click()
+    time.sleep(3)
 
 
 def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18", event_type: str = "wedding"):

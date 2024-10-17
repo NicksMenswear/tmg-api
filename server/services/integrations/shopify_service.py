@@ -349,7 +349,7 @@ class ShopifyService(AbstractShopifyService):
         query = """
         mutation customerGenerateAccountActivationUrl($customerId: ID!) {
           customerGenerateAccountActivationUrl(customerId: $customerId) {
-            accountActivationUrl3
+            accountActivationUrl
             userErrors {
               field
               message
@@ -1192,8 +1192,3 @@ class ShopifyService(AbstractShopifyService):
             self.__admin_api_graphql_request(mutation, variables)
         except ShopifyQueryError:
             raise ServiceError(f"Failed to add image to product in shopify store.")
-
-
-if __name__ == "__main__":
-    service = ShopifyService("gid://shopify/SalesChannel/1234567890")
-    print(service.get_account_activation_url(123456))

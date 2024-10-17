@@ -1,7 +1,7 @@
 import random
 import time
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from playwright.sync_api import Page, expect, Locator
 
@@ -13,6 +13,8 @@ from server.tests.e2e import (
     HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS,
 )
 from server.tests.e2e.utils import api, verify
+
+AVAILABLE_ITEMS = {"shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"}
 
 
 def access_store(page: Page):
@@ -32,7 +34,9 @@ def login(page: Page, email: str, password: str):
     page.goto(f"{STORE_URL}/account")
 
     page.get_by_role("textbox", name="Email address", exact=True).fill(email)
+    time.sleep(1)
     page.get_by_role("textbox", name="Password").fill(password)
+    time.sleep(1)
     page.get_by_role("button", name="Login").click()
 
 
@@ -834,3 +838,98 @@ def click_on_cart_checkout_button(page: Page):
     cart_checkout_button.scroll_into_view_if_needed()
     cart_checkout_button.wait_for(state="visible")
     cart_checkout_button.click()
+
+
+def save_look_with_name(page: Page, look_name: str):
+    look_name_input = page.locator("#lookName")
+    look_name_input.scroll_into_view_if_needed()
+    look_name_input.wait_for(state="visible")
+    look_name_input.fill(look_name)
+
+    save_look_button = page.locator("button#saveLookBtn")
+    save_look_button.scroll_into_view_if_needed()
+    save_look_button.wait_for(state="visible")
+    save_look_button.click()
+
+
+def get_suit_builder_controls_locator(page: Page):
+    suit_builder_controls = page.locator("div.tmg-suit-builder-controls-wrapper")
+    suit_builder_controls.scroll_into_view_if_needed()
+    suit_builder_controls.wait_for(state="visible")
+
+    return suit_builder_controls
+
+
+def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
+    suit_builder_controls = get_suit_builder_controls_locator(page)
+
+    for item in AVAILABLE_ITEMS:
+        control_locator = suit_builder_controls.locator(f'input[type="checkbox"][name="{item}"]').locator("..")
+        control_locator.scroll_into_view_if_needed()
+        control_locator.wait_for(state="visible")
+
+        classes = control_locator.get_attribute("class").split()
+
+        if "active" in classes:
+            if item not in items_to_enable:
+                control_locator.click()
+            else:
+                continue
+        else:
+            if item in items_to_enable:
+                control_locator.click()
+            else:
+                continue
+
+    form_element = page.locator("form#suitBuilderForm")
+    form_element.scroll_into_view_if_needed()
+    form_element.wait_for(state="visible")
+
+    for item in AVAILABLE_ITEMS:
+        options_element = form_element.locator(f'div[data-items="{item}"]')
+        options_element.scroll_into_view_if_needed()
+        options_element.wait_for(state="visible")
+
+        classes = options_element.get_attribute("class").split()
+
+        if item in items_to_enable:
+            assert "disabled" not in classes
+        else:
+            assert "disabled" in classes
+
+
+def open_suit_builder_mobile_tab(page: Page):
+    mobile_settings_tab_showed = page.locator("div.mobile-settings-showed")
+
+    if mobile_settings_tab_showed.is_visible():
+        return
+
+    mobile_settings_tab = page.locator("div.tmg-suit-builder-mobile-settings")
+    mobile_settings_tab.scroll_into_view_if_needed()
+    mobile_settings_tab.wait_for(state="visible")
+    mobile_settings_tab.click()
+
+
+def select_bow_ties_tab(page: Page):
+    if verify.is_mobile_view(page):
+        open_suit_builder_mobile_tab(page)
+
+    bow_ties_tab_locator = page.locator('div[data-tab="bow_tie"]')
+    bow_ties_tab_locator.scroll_into_view_if_needed()
+    bow_ties_tab_locator.wait_for(state="visible")
+    bow_ties_tab_locator.click()
+
+
+def select_suit_builder_item_by_index(page: Page, items_type: str, item_index: int):
+    if verify.is_mobile_view(page):
+        open_suit_builder_mobile_tab(page)
+
+    suit_builder_options = page.locator(f'div[class="tmg-suit-builder-options-item"][data-items="{items_type}"]')
+    suit_builder_options.scroll_into_view_if_needed()
+    suit_builder_options.wait_for(state="visible")
+
+    labels = suit_builder_options.locator("div.tmg-suit-builder-items label.tmg-suit-builder-item")
+    nth_item = labels.nth(item_index)
+    nth_item.scroll_into_view_if_needed()
+    nth_item.wait_for(state="visible")
+    nth_item.click()

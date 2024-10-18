@@ -70,15 +70,15 @@ class UserActivityLogService:
                 f"User account status updated from {'ACTIVE' if old_account_status else 'INACTIVE'} to {'ACTIVE' if new_account_status else 'INACTIVE'}",
             )
 
-        # if "meta" in diff:
-        #     self.__persist(audit_log_message, "user_meta_updated", diff.get("meta"))
-
         if "shopify_id" in diff:
             self.__persist(
                 audit_log_message,
                 "user_shopify_account_associated",
                 f"User associated with Shopify account with ID: {diff.get('after').get('shopify_id')}",
             )
+
+        # if "meta" in diff:
+        #     self.__persist(audit_log_message, "user_meta_updated", diff.get("meta"))
 
     @staticmethod
     def __persist(audit_log_message: AuditLogMessage, handle: str, message: str) -> None:

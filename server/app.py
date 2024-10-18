@@ -20,6 +20,7 @@ from server.logs import (
 )
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
+from server.services.audit_logger import init_audit_logging
 from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
@@ -38,6 +39,7 @@ from server.services.shipping_service import ShippingService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
+from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
 from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
 from server.services.webhook_handlers.shopify_checkout_webhook_handler import ShopifyWebhookCheckoutHandler
@@ -110,7 +112,7 @@ def init_app(is_testing=False):
     FlaskApp.set(api.app)
 
     if not run_in_test_mode:
-        AuditLogService.init_audit_logging()
+        init_audit_logging()
 
     init_services(api.app, run_in_test_mode)
 
@@ -157,6 +159,14 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
+    app.user_activity_log_service = UserActivityLogService()
+    app.audit_log_service = AuditLogService(
+        app.shopify_service,
+        app.user_service,
+        app.attendee_service,
+        app.event_service,
+        app.user_activity_log_service,
+    )
     app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
     app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(

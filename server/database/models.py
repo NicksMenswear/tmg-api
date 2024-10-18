@@ -563,4 +563,5 @@ class AuditLog(Base):
     type = Column(String, nullable=False)  # e.g. USER_CREATED, USER_UPDATED, USER_DELETED, ATTENDEE_CREATED, ...
     request = Column(JSONB, default=dict)
     payload = Column(JSONB, default=dict, nullable=False)
+    diff = Column(JSONB, default=None, nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)

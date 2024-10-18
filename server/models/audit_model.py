@@ -1,13 +1,15 @@
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from pydantic import BaseModel
 
 
 class AuditLogMessage(BaseModel):
+    id: str
     type: str
     payload: Dict[str, Any]
     request: Dict[str, Any]
+    diff: Optional[Dict[str, Any]] = None
 
     def to_string(self) -> str:
         return json.dumps(self.model_dump())

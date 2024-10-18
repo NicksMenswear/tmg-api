@@ -1,176 +1,180 @@
-import json
 import logging
+import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict
-
-from flask import request
-from sqlalchemy import event
-from sqlalchemy.orm.attributes import get_history
+from typing import Dict, Set
 
 from server.database.database_manager import db
 from server.database.models import (
-    User,
-    Event,
-    Attendee,
-    Look,
-    Order,
-    OrderItem,
-    Product,
-    Discount,
-    Size,
-    Measurement,
-    Address,
     AuditLog,
-    SerializableMixin,
 )
-from server.flask_app import FlaskApp
 from server.models.audit_model import AuditLogMessage
-from server.services import ServiceError
+from server.services.attendee_service import AttendeeService
+from server.services.event_service import EventService
+from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
+from server.services.user_activity_log_service import UserActivityLogService
+from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
+TAG_EVENT_OWNER_4_PLUS = "event_owner_4_plus"
+TAG_MEMBER_OF_4_PLUS_EVENT = "member_of_4_plus_event"
+
 
 class AuditLogService:
-    @classmethod
-    def init_audit_logging(cls):
-        entities = [User, Event, Attendee, Look, Order, OrderItem, Product, Discount, Size, Measurement, Address]
-
-        for entity in entities:
-            log_prefix = entity.__name__.upper()
-
-            event.listen(
-                entity,
-                "after_insert",
-                lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_CREATED"),
-            )
-            event.listen(
-                entity,
-                "after_update",
-                lambda m, c, t, lp=log_prefix: cls.__log_operation_and_diff(t, f"{lp}_UPDATED"),
-            )
-            event.listen(
-                entity,
-                "before_delete",
-                lambda m, c, t, lp=log_prefix: cls.__log_operation(t, f"{lp}_DELETED"),
-            )
-
-    @classmethod
-    def __log_operation(cls, target, operation):
-        if not FlaskApp.current():
-            return
-
-        try:
-            serializable_request = cls.__request_to_dict()
-            serializable_payload = target.serialize()
-
-            FlaskApp.current().aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
-            )
-        except Exception as e:
-            logger.exception(f"Failed to enqueue audit log message: {e}")
-
-    @classmethod
-    def __log_operation_and_diff(cls, target, operation):
-        if not FlaskApp.current():
-            return
-
-        diff: Dict[str, Any] = cls.__build_diff(target)
-
-        if not diff:
-            # nothing changed => no audit logging
-            return
-
-        try:
-            serializable_request = cls.__request_to_dict()
-            serializable_payload = target.serialize()
-            aws_service = FlaskApp.current().aws_service
-
-            diff["id"] = str(getattr(target, "id"))  # additionally log the id of the entity
-
-            aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
-            )
-            aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=f"{operation}_DIFF", request=serializable_request, payload=diff).to_string(),
-            )
-        except Exception as e:
-            logger.exception(f"Failed to enqueue audit log message: {e}")
-
-    @classmethod
-    def __build_diff(cls, target):
-        diff = {}
-
-        after_state = {attr.key: getattr(target, attr.key) for attr in target.__table__.columns}
-
-        before_state = {}
-        for attr in target.__table__.columns:
-            if attr.key in {"updated_at"}:
-                continue
-
-            history = get_history(target, attr.key)
-
-            if history.has_changes():
-                before_state[attr.key] = history.deleted[0] if history.deleted else None
-                diff[attr.key] = {
-                    "before": SerializableMixin.normalize(before_state[attr.key]),
-                    "after": SerializableMixin.normalize(after_state[attr.key]),
-                }
-
-        return diff
-
-    @classmethod
-    def __request_to_dict(cls) -> dict:
-        # if no request or default request
-        if not request or (
-            request.method == "GET" and request.path == "/" and not request.query_string and not request.data
-        ):
-            return {}
-
-        query_string = request.query_string.decode("utf-8") if request.query_string else ""
-        items = query_string.split("&")
-        loggable_items = {}
-
-        for item in items:
-            if not item:
-                continue
-
-            key, value = item.split("=")
-
-            if key in {"path_prefix", "shop", "signature"}:
-                continue
-
-            loggable_items[key] = value
-
-        data = request.data.decode("utf-8")
-        json_data = {}
-
-        if data:
-            json_data = json.loads(data)
-
-            # do not send serialized image base64 into audit log queue - too big
-            if "image" in json_data:
-                json_data["image"] = "<skipped>"
-
-        return {
-            "method": request.method,
-            "path": request.path,
-            "qs": loggable_items,
-            "data": json_data,
-        }
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        user_service: UserService,
+        attendee_service: AttendeeService,
+        event_service: EventService,
+        user_activity_log_service: UserActivityLogService,
+    ):
+        self.shopify_service = shopify_service
+        self.user_service = user_service
+        self.attendee_service = attendee_service
+        self.event_service = event_service
+        self.user_activity_log_service = user_activity_log_service
 
     @staticmethod
-    def save_audit_log(audit_log_message: AuditLogMessage):
-        try:
-            audit_log = AuditLog()
-            audit_log.request = audit_log_message.request
-            audit_log.type = audit_log_message.type
-            audit_log.payload = audit_log_message.payload
-            audit_log.created_at = datetime.now(timezone.utc)
+    def persist(audit_log_message: AuditLogMessage) -> None:
+        db.session.add(
+            AuditLog(
+                id=uuid.UUID(audit_log_message.id),
+                request=audit_log_message.request,
+                type=audit_log_message.type,
+                payload=audit_log_message.payload,
+                diff=audit_log_message.diff,
+                created_at=datetime.now(timezone.utc),
+            )
+        )
 
-            db.session.add(audit_log)
-            db.session.commit()
-        except Exception as e:
-            raise ServiceError(f"Error saving audit log: {e}")
+    def process(self, audit_log_message: AuditLogMessage) -> None:
+        self.persist(audit_log_message)
+
+        if audit_log_message.type == "USER_CREATED":
+            self.user_activity_log_service.user_created(audit_log_message)
+        elif audit_log_message.type == "EVENT_UPDATED":
+            self.__tag_customers_on_event_updated(audit_log_message)
+        elif audit_log_message.type == "ATTENDEE_UPDATED":
+            self.__tag_customers_on_attendee_updated(audit_log_message)
+
+    def __tag_customers_on_event_updated(self, audit_log_message: AuditLogMessage):
+        user_id = audit_log_message.payload.get("user_id")
+        event_id = audit_log_message.payload.get("id")
+
+        user_tags_that_should_be_present = {}
+        user_tags_that_should_not_be_present = {}
+
+        logger.info(f"Processing 'EVENT_UPDATED' message for user {user_id} and event {event_id}")
+
+        events = self.event_service.get_user_owned_events_with_n_attendees(user_id, 4)
+
+        if events:
+            user_tags_that_should_be_present[user_id] = {TAG_EVENT_OWNER_4_PLUS}
+        else:
+            user_tags_that_should_not_be_present[user_id] = {TAG_EVENT_OWNER_4_PLUS}
+
+        attendees = self.attendee_service.get_invited_attendees_for_the_event(uuid.UUID(event_id))
+
+        for attendee in attendees:
+            events = self.event_service.get_user_member_events_with_n_attendees(attendee.user_id, 4)
+
+            user_tags_that_should_be_present.setdefault(attendee.user_id, set())
+            user_tags_that_should_not_be_present.setdefault(attendee.user_id, set())
+
+            if events:
+                if not user_tags_that_should_be_present.get(attendee.user_id):
+                    user_tags_that_should_be_present[attendee.user_id] = set()
+
+                user_tags_that_should_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
+            else:
+                if not user_tags_that_should_not_be_present.get(attendee.user_id):
+                    user_tags_that_should_not_be_present[attendee.user_id] = set()
+
+                user_tags_that_should_not_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
+
+        if user_tags_that_should_be_present:
+            self.__add_tags(user_tags_that_should_be_present)
+
+        if user_tags_that_should_not_be_present:
+            self.__remove_tags(user_tags_that_should_not_be_present)
+
+    def __tag_customers_on_attendee_updated(self, audit_log_message: AuditLogMessage):
+        event_id = audit_log_message.payload.get("event_id")
+        user_id = audit_log_message.payload.get("user_id")
+        attendee_id = audit_log_message.payload.get("id")
+        attendee_is_active = audit_log_message.payload.get("is_active")
+
+        if not user_id:
+            # nothing to do, we don't care about attendees without user_id (not invited)
+            return
+
+        event = self.event_service.get_event_by_id(uuid.UUID(event_id))
+        event_owner_user_id = event.user_id
+
+        logger.info(f"Processing 'ATTENDEE_UPDATED' message for user {user_id}")
+
+        user_tags_that_should_be_present: Dict[uuid.UUID, Set[str]] = {}
+        user_tags_that_should_not_be_present: Dict[uuid.UUID, Set[str]] = {}
+
+        events = self.event_service.get_user_owned_events_with_n_attendees(event_owner_user_id, 4)
+
+        if events:
+            user_tags_that_should_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS}
+        else:
+            user_tags_that_should_not_be_present[event_owner_user_id] = {TAG_EVENT_OWNER_4_PLUS}
+
+        attendees = self.attendee_service.get_invited_attendees_for_the_event(uuid.UUID(event_id))
+
+        if not attendee_is_active:
+            attendees.append(self.attendee_service.get_attendee_by_id(uuid.UUID(attendee_id), False))
+
+        for attendee in attendees:
+            events = self.event_service.get_user_member_events_with_n_attendees(attendee.user_id, 4)
+
+            if events:
+                if not user_tags_that_should_be_present.get(attendee.user_id):
+                    user_tags_that_should_be_present[attendee.user_id] = set()
+
+                user_tags_that_should_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
+            else:
+                if not user_tags_that_should_not_be_present.get(attendee.user_id):
+                    user_tags_that_should_not_be_present[attendee.user_id] = set()
+
+                user_tags_that_should_not_be_present[attendee.user_id].add(TAG_MEMBER_OF_4_PLUS_EVENT)
+
+        if user_tags_that_should_be_present:
+            self.__add_tags(user_tags_that_should_be_present)
+
+        if user_tags_that_should_not_be_present:
+            self.__remove_tags(user_tags_that_should_not_be_present)
+
+    def __add_tags(self, user_tags_that_should_be_present: Dict[uuid.UUID, Set[str]]):
+        for user_id, tags in user_tags_that_should_be_present.items():
+            user = self.user_service.get_user_by_id(user_id)
+
+            current_user_tags = set(user.meta.get("tags", []))
+
+            if tags.issubset(current_user_tags):
+                logger.info(f"User {user.id}/{user.shopify_id} already has tags {tags}. Skipping ...")
+            else:
+                logger.info(f"User {user.id}/{user.shopify_id} does not have tags {tags}. Adding ...")
+                current_user_tags.update(tags)
+
+                self.shopify_service.add_tags(ShopifyService.customer_gid(int(user.shopify_id)), current_user_tags)
+                self.user_service.add_meta_tag(user.id, current_user_tags)
+
+    def __remove_tags(self, user_tags_that_should_not_be_present: Dict[uuid.UUID, Set[str]]):
+        for user_id, tags in user_tags_that_should_not_be_present.items():
+            user = self.user_service.get_user_by_id(user_id)
+
+            current_user_tags = set(user.meta.get("tags", []))
+
+            if not tags.intersection(current_user_tags):
+                logger.info(f"User {user.id}/{user.shopify_id} does not have tags {tags}. Skipping ...")
+            else:
+                logger.info(f"User {user.id}/{user.shopify_id} has tags {tags}. Removing ...")
+                current_user_tags.difference_update(tags)
+
+                self.shopify_service.remove_tags(ShopifyService.customer_gid(int(user.shopify_id)), tags)
+                self.user_service.remove_meta_tag(user.id, tags)

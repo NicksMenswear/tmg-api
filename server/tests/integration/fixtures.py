@@ -482,11 +482,15 @@ def add_suit_builder_item_request(**item_data) -> CreateSuitBuilderModel:
     )
 
 
-def audit_log_queue_message(audit_type: str, payload: SerializableMixin, request: dict = None) -> str:
+def audit_log_queue_message(
+    audit_type: str, payload: SerializableMixin, request: dict = None, diff: dict = None
+) -> str:
     return json.dumps(
         {
+            "id": str(uuid.uuid4()),
             "type": audit_type,
             "payload": payload.serialize(),
             "request": request if request else {},
+            "diff": diff,
         }
     )

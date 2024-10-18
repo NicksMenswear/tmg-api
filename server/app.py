@@ -49,7 +49,14 @@ from server.services.workers.e2e_clean_up_worker import E2ECleanUpWorker
 from server.version import get_version
 
 
+def is_tmg_app_testing():
+    return os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+
+
 def init_sentry():
+    if is_tmg_app_testing():
+        return
+
     def filter_transactions(event, hint):
         url_string = event["request"]["url"]
         parsed_url = urlparse(url_string)
@@ -96,7 +103,7 @@ def init_app(is_testing=False):
     )
     api.app.json_encoder = encoder.CustomJSONEncoder
 
-    run_in_test_mode = is_testing or os.getenv("TMG_APP_TESTING", "false").lower() == "true"
+    run_in_test_mode = is_testing or is_tmg_app_testing()
 
     api.app.config["TMG_APP_TESTING"] = run_in_test_mode
 

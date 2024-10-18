@@ -37,16 +37,21 @@ class AuditLogService:
 
     @staticmethod
     def persist(audit_log_message: AuditLogMessage) -> None:
-        db.session.add(
-            AuditLog(
-                id=uuid.UUID(audit_log_message.id),
-                request=audit_log_message.request,
-                type=audit_log_message.type,
-                payload=audit_log_message.payload,
-                diff=audit_log_message.diff,
-                created_at=datetime.now(timezone.utc),
+        try:
+            db.session.add(
+                AuditLog(
+                    id=uuid.UUID(audit_log_message.id),
+                    request=audit_log_message.request,
+                    type=audit_log_message.type,
+                    payload=audit_log_message.payload,
+                    diff=audit_log_message.diff,
+                    created_at=datetime.now(timezone.utc),
+                )
             )
-        )
+            db.session.commit()
+        except Exception as e:
+            logger.exception(f"Error persisting audit log message: {audit_log_message}")
+            db.session.rollback()
 
     def process(self, audit_log_message: AuditLogMessage) -> None:
         self.persist(audit_log_message)

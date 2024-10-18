@@ -26,7 +26,7 @@ class UserActivityLogService:
         self.__persist(audit_log_message, "user_created", f"User created: {', '.join(items)}")
 
     def user_updated(self, audit_log_message: AuditLogMessage):
-        diff = audit_log_message.get("diff")
+        diff = audit_log_message.diff
 
         if "first_name" in diff or "last_name" in diff:
             old_first_name = diff.get("first_name", {}).get("before", audit_log_message.payload.get("first_name"))
@@ -81,11 +81,14 @@ class UserActivityLogService:
 
     @staticmethod
     def __persist(audit_log_message: AuditLogMessage, handle: str, message: str) -> None:
-        user_activity_log = UserActivityLog(
-            user_id=audit_log_message.payload.get("id"),
-            audit_log_id=uuid.UUID(audit_log_message.id),
-            handle=handle,
-            message=message,
-        )
-        db.session.save(user_activity_log)
-        db.session.commit()
+        try:
+            user_activity_log = UserActivityLog(
+                user_id=audit_log_message.payload.get("id"),
+                audit_log_id=uuid.UUID(audit_log_message.id),
+                handle=handle,
+                message=message,
+            )
+            db.session.add(user_activity_log)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()

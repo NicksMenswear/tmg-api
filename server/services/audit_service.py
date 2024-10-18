@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from typing import Any, Dict
 
 from flask import request
 from sqlalchemy import event
@@ -74,9 +75,33 @@ class AuditLogService:
         if not FlaskApp.current():
             return
 
-        diff = {
-            "id": str(getattr(target, "id")),
-        }
+        diff: Dict[str, Any] = cls.__build_diff(target)
+
+        if not diff:
+            # nothing changed => no audit logging
+            return
+
+        try:
+            serializable_request = cls.__request_to_dict()
+            serializable_payload = target.serialize()
+            aws_service = FlaskApp.current().aws_service
+
+            diff["id"] = str(getattr(target, "id"))  # additionally log the id of the entity
+
+            aws_service.enqueue_message(
+                FlaskApp.current().audit_log_sqs_queue_url,
+                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
+            )
+            aws_service.enqueue_message(
+                FlaskApp.current().audit_log_sqs_queue_url,
+                AuditLogMessage(type=f"{operation}_DIFF", request=serializable_request, payload=diff).to_string(),
+            )
+        except Exception as e:
+            logger.exception(f"Failed to enqueue audit log message: {e}")
+
+    @classmethod
+    def __build_diff(cls, target):
+        diff = {}
 
         after_state = {attr.key: getattr(target, attr.key) for attr in target.__table__.columns}
 
@@ -94,20 +119,7 @@ class AuditLogService:
                     "after": SerializableMixin.normalize(after_state[attr.key]),
                 }
 
-        try:
-            serializable_request = cls.__request_to_dict()
-            serializable_payload = target.serialize()
-
-            FlaskApp.current().aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=operation, request=serializable_request, payload=serializable_payload).to_string(),
-            )
-            FlaskApp.current().aws_service.enqueue_message(
-                FlaskApp.current().audit_log_sqs_queue_url,
-                AuditLogMessage(type=f"{operation}_DIFF", request=serializable_request, payload=diff).to_string(),
-            )
-        except Exception as e:
-            logger.exception(f"Failed to enqueue audit log message: {e}")
+        return diff
 
     @classmethod
     def __request_to_dict(cls) -> dict:
@@ -127,7 +139,7 @@ class AuditLogService:
 
             key, value = item.split("=")
 
-            if key in {"path_prefix", "shop", "timestamp", "signature"}:
+            if key in {"path_prefix", "shop", "signature"}:
                 continue
 
             loggable_items[key] = value

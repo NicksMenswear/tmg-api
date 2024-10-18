@@ -58,6 +58,8 @@ class AuditLogService:
 
         if audit_log_message.type == "USER_CREATED":
             self.user_activity_log_service.user_created(audit_log_message)
+        elif audit_log_message.type == "USER_UPDATED":
+            self.user_activity_log_service.user_updated(audit_log_message)
         elif audit_log_message.type == "EVENT_UPDATED":
             self.__tag_customers_on_event_updated(audit_log_message)
         elif audit_log_message.type == "ATTENDEE_UPDATED":

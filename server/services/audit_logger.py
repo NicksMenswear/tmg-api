@@ -64,8 +64,6 @@ def _log_operation(target, operation, include_diff=False):
             if not diff:
                 return
 
-            diff["id"] = str(getattr(target, "id"))  # additionally log the id of the entity
-
             _send_message(
                 AuditLogMessage(
                     id=str(uuid.uuid4()),
@@ -160,7 +158,7 @@ def _send_message(audit_log_message: AuditLogMessage) -> None:
 
     if _is_in_test_mode():
         audit_log_service = app.audit_log_service
-        audit_log_service.persist(audit_log_message)
+        audit_log_service.process(audit_log_message)
     else:
         aws_service = app.aws_service
         aws_service.enqueue_message(app.audit_log_sqs_queue_url, audit_log_message.to_string())

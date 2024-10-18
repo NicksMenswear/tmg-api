@@ -9,7 +9,7 @@ class AuditLogMessage(BaseModel):
     type: str
     payload: Dict[str, Any]
     request: Dict[str, Any]
-    diff: Optional[Dict[str, Any]]
+    diff: Optional[Dict[str, Any]] = None
 
     def to_string(self) -> str:
         return json.dumps(self.model_dump())

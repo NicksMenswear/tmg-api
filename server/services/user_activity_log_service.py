@@ -3,6 +3,7 @@ import uuid
 from server.database.database_manager import db
 from server.database.models import UserActivityLog
 from server.models.audit_model import AuditLogMessage
+from server.services.integrations.activecampaign_service import logger
 
 
 class UserActivityLogService:
@@ -91,4 +92,5 @@ class UserActivityLogService:
             db.session.add(user_activity_log)
             db.session.commit()
         except Exception as e:
+            logger.exception(f"Error persisting user activity log message: {audit_log_message}")
             db.session.rollback()

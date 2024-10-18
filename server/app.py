@@ -118,13 +118,11 @@ def init_app(is_testing=False):
 
 def init_services(app, is_testing=False):
     app.stage = os.getenv("STAGE", "dev")
-    app.online_store_sales_channel_id = os.getenv(
-        "online_store_sales_channel_id", "gid://shopify/Publication/94480072835"
-    )
+    online_store_sales_channel_id = os.getenv("online_store_sales_channel_id", "gid://shopify/Publication/94480072835")
     app.online_store_shop_id = os.getenv("online_store_shop_id", "56965365891")
     app.audit_log_sqs_queue_url = os.getenv("AUDIT_QUEUE_URL", "https://sqs.us-west-2.amazonaws.com/123456789012/audit")
     app.aws_service = FakeAWSService() if is_testing else AWSService()
-    app.shopify_service = FakeShopifyService() if is_testing else ShopifyService()
+    app.shopify_service = FakeShopifyService() if is_testing else ShopifyService(online_store_sales_channel_id)
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
     app.activecampaign_service = ActiveCampaignService() if app.stage == "prd" else FakeActiveCampaignService()

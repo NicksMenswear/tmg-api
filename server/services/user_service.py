@@ -12,7 +12,7 @@ from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
 from server.services.email_service import AbstractEmailService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +51,14 @@ class UserService:
             shopify_customer_id = create_user.shopify_id
         else:
             try:
-                shopify_customer_id = self.shopify_service.create_customer(first_name, last_name, create_user.email)[
-                    "id"
-                ]
+                shopify_customer_id = self.shopify_service.create_customer(
+                    first_name, last_name, create_user.email
+                ).get_id()
             except DuplicateError as e:
                 # If the user already exists in Shopify, we should still create a user in our database
                 logger.debug(e)
 
-                shopify_customer_id = self.shopify_service.get_customer_by_email(create_user.email)["id"]
+                shopify_customer_id = str(self.shopify_service.get_customer_by_email(create_user.email).get_id())
 
         try:
             db_user = User(
@@ -182,7 +182,11 @@ class UserService:
         try:
             if update_shopify:
                 self.shopify_service.update_customer(
-                    int(user.shopify_id), user.first_name, user.last_name, user.email, new_phone_number
+                    ShopifyService.customer_gid(int(user.shopify_id)),
+                    user.first_name,
+                    user.last_name,
+                    user.email,
+                    new_phone_number,
                 )
 
             db.session.commit()
@@ -222,7 +226,7 @@ class UserService:
         if not user or not user.shopify_id:
             raise ServiceError("User does not have a Shopify ID.")
 
-        return self.shopify_service.generate_activation_url(user.shopify_id)
+        return self.shopify_service.get_account_activation_url(int(user.shopify_id))
 
     @staticmethod
     def add_meta_tag(user_id: uuid.UUID, tags: Set[str]) -> None:

@@ -10,6 +10,7 @@ from server.handlers.audit_log_handler import (
     FakeLambdaContext,
     TAG_MEMBER_OF_4_PLUS_EVENT,
 )
+from server.models.shopify_model import ShopifyCustomer
 from server.services.integrations.shopify_service import ShopifyService
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
@@ -73,10 +74,13 @@ class TestAuditLogHandler(BaseTestCase):
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         # when
         response = lambda_handler(
@@ -94,7 +98,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertTrue(
             TAG_EVENT_OWNER_4_PLUS
-            not in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            not in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertTrue(
             TAG_EVENT_OWNER_4_PLUS not in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -157,10 +161,13 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.attendee_service.deactivate_attendee(attendee_id=attendee1.id)
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         # when
         response = lambda_handler(
@@ -178,7 +185,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -199,10 +206,13 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.event_service.delete_event(event_id=event.id, force=True)
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": ["test1", TAG_EVENT_OWNER_4_PLUS, "test2"],
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=["test1", TAG_EVENT_OWNER_4_PLUS, "test2"],
+        )
 
         # when
         response = lambda_handler(
@@ -220,7 +230,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -239,20 +249,26 @@ class TestAuditLogHandler(BaseTestCase):
         attendee_model3 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
         attendee_model4 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
         attendee4 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model4.id)).scalar_one()
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
         self.attendee_service.send_invites(
             attendee_ids=[attendee_model1.id, attendee_model2.id, attendee_model3.id, attendee_model4.id]
         )
 
         for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event.id):
             attendee_user = self.user_service.get_user_by_id(attendee.user_id)
-            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
-                "id": attendee_user.shopify_id,
-                "tags": {"test3"},
-            }
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = ShopifyCustomer(
+                gid=ShopifyService.customer_gid(attendee_user.shopify_id),
+                first_name=attendee_user.first_name,
+                last_name=attendee_user.last_name,
+                email=attendee_user.email,
+                tags=["test3"],
+            )
 
         # when
         response = lambda_handler(
@@ -270,7 +286,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertTrue(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
 
         self.assertTrue(
@@ -287,10 +303,13 @@ class TestAuditLogHandler(BaseTestCase):
         event_model = self.event_service.create_event(fixtures.create_event_request(user_id=user_model.id))
         event = db.session.execute(select(Event).where(Event.id == event_model.id)).scalar_one()
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         attendee_model1 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
         attendee_model2 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
@@ -306,10 +325,13 @@ class TestAuditLogHandler(BaseTestCase):
 
         for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event.id):
             attendee_user = self.user_service.get_user_by_id(attendee.user_id)
-            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
-                "id": attendee_user.shopify_id,
-                "tags": {"test3"},
-            }
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = ShopifyCustomer(
+                gid=ShopifyService.customer_gid(attendee_user.shopify_id),
+                first_name=attendee_user.first_name,
+                last_name=attendee_user.last_name,
+                email=attendee_user.email,
+                tags=["test3"],
+            )
 
         # when
         lambda_handler(
@@ -324,7 +346,7 @@ class TestAuditLogHandler(BaseTestCase):
         # then
         self.assertTrue(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
 
         # when
@@ -342,7 +364,7 @@ class TestAuditLogHandler(BaseTestCase):
         # then
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -359,10 +381,13 @@ class TestAuditLogHandler(BaseTestCase):
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=True))
         self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id, invite=False))
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         # when
         response = lambda_handler(
@@ -380,7 +405,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -402,10 +427,13 @@ class TestAuditLogHandler(BaseTestCase):
         event.event_at = datetime.now().replace(year=2020)
         db.session.commit()
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         # when
         response = lambda_handler(
@@ -423,7 +451,7 @@ class TestAuditLogHandler(BaseTestCase):
 
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS
-            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].get("tags", [])
+            in self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)].tags
         )
         self.assertFalse(
             TAG_EVENT_OWNER_4_PLUS in db.session.execute(select(User)).scalars().first().meta.get("tags", [])
@@ -443,10 +471,13 @@ class TestAuditLogHandler(BaseTestCase):
         attendee_model4 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event.id))
         attendee1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = {
-            "id": user_model.shopify_id,
-            "tags": tags,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model.shopify_id),
+            first_name=user_model.first_name,
+            last_name=user_model.last_name,
+            email=user_model.email,
+            tags=tags,
+        )
 
         self.attendee_service.send_invites(
             attendee_ids=[
@@ -459,10 +490,14 @@ class TestAuditLogHandler(BaseTestCase):
 
         for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event.id):
             attendee_user = self.user_service.get_user_by_id(attendee.user_id)
-            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
-                "id": attendee_user.shopify_id,
-                "tags": {"test3"},
-            }
+
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = ShopifyCustomer(
+                gid=ShopifyService.customer_gid(attendee_user.shopify_id),
+                first_name=attendee_user.first_name,
+                last_name=attendee_user.last_name,
+                email=attendee_user.email,
+                tags=["test3"],
+            )
 
         # when
         lambda_handler(
@@ -532,14 +567,20 @@ class TestAuditLogHandler(BaseTestCase):
         attendee_model8 = self.attendee_service.create_attendee(fixtures.create_attendee_request(event_id=event2.id))
         attendee_1 = db.session.execute(select(Attendee).where(Attendee.id == attendee_model1.id)).scalar_one()
 
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model1.shopify_id)] = {
-            "id": user_model1.shopify_id,
-            "tags": tags1,
-        }
-        self.shopify_service.customers[ShopifyService.customer_gid(user_model2.shopify_id)] = {
-            "id": user_model2.shopify_id,
-            "tags": tags2,
-        }
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model1.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model1.shopify_id),
+            first_name=user_model1.first_name,
+            last_name=user_model1.last_name,
+            email=user_model1.email,
+            tags=tags1,
+        )
+        self.shopify_service.customers[ShopifyService.customer_gid(user_model2.shopify_id)] = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(user_model2.shopify_id),
+            first_name=user_model2.first_name,
+            last_name=user_model2.last_name,
+            email=user_model2.email,
+            tags=tags2,
+        )
 
         self.attendee_service.send_invites(
             attendee_ids=[
@@ -556,17 +597,23 @@ class TestAuditLogHandler(BaseTestCase):
 
         for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event1.id):
             attendee_user = self.user_service.get_user_by_id(attendee.user_id)
-            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
-                "id": attendee_user.shopify_id,
-                "tags": {"test3"},
-            }
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = ShopifyCustomer(
+                gid=ShopifyService.customer_gid(attendee_user.shopify_id),
+                first_name=attendee_user.first_name,
+                last_name=attendee_user.last_name,
+                email=attendee_user.email,
+                tags=["test3"],
+            )
 
         for attendee in self.attendee_service.get_invited_attendees_for_the_event(event_id=event2.id):
             attendee_user = self.user_service.get_user_by_id(attendee.user_id)
-            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = {
-                "id": attendee_user.shopify_id,
-                "tags": {"test4"},
-            }
+            self.shopify_service.customers[ShopifyService.customer_gid(attendee_user.shopify_id)] = ShopifyCustomer(
+                gid=ShopifyService.customer_gid(attendee_user.shopify_id),
+                first_name=attendee_user.first_name,
+                last_name=attendee_user.last_name,
+                email=attendee_user.email,
+                tags=["test4"],
+            )
 
         # when
         lambda_handler(

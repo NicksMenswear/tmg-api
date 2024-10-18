@@ -16,7 +16,7 @@ from server.models.look_model import CreateLookModel, LookModel, UpdateLookModel
 from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,11 @@ class LookService:
 
     @staticmethod
     def get_user_look_for_event(user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
-        attendee = Attendee.query.filter(Attendee.user_id == user_id, Attendee.event_id == event_id).first()
+        attendee = Attendee.query.filter(
+            Attendee.user_id == user_id,
+            Attendee.event_id == event_id,
+            Attendee.is_active,
+        ).first()
 
         if not attendee:
             raise NotFoundError("Attendee not found")
@@ -180,7 +184,9 @@ class LookService:
 
             bundle_id = str(random.randint(100000, 1000000000))
 
-            bundle_identifier_variant_id = str(self.shopify_service.create_bundle_identifier_product(bundle_id))
+            bundle_identifier_variant_id = str(
+                self.shopify_service.create_bundle_identifier_product(bundle_id).variants[0].get_id()
+            )
 
             enriched_look_variants = create_look.product_specs.get("variants") + [bundle_identifier_variant_id]
 
@@ -189,6 +195,9 @@ class LookService:
             suit_parts_variants = self.__get_suit_parts(suit_variant_id)
 
             all_variants = look_variants + suit_parts_variants
+
+            tags = self.__get_tags_from_look_variants(all_variants)
+            tags.append("suit_bundle")
 
             id_to_variants = {variant.variant_id: variant for variant in all_variants}
 
@@ -203,6 +212,7 @@ class LookService:
                 bundle_id,
                 enriched_product_specs_variants,
                 image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
+                tags=tags,
             )
 
             if not bundle_product_variant_id:
@@ -253,8 +263,7 @@ class LookService:
 
         return LookModel.model_validate(db_look)
 
-    @staticmethod
-    def delete_look(look_id: uuid.UUID) -> None:
+    def delete_look(self, look_id: uuid.UUID) -> None:
         look = Look.query.filter(Look.id == look_id).first()
 
         if not look:
@@ -272,6 +281,45 @@ class LookService:
             db.session.commit()
         except Exception as e:
             raise ServiceError("Failed to delete look.", e)
+
+        self.__archive_suit_bundle(look.product_specs)
+
+    def __archive_suit_bundle(self, product_specs: dict) -> None:
+        if not product_specs:
+            return
+
+        product_id = product_specs.get("bundle", {}).get("product_id")
+
+        if not product_id:
+            logger.warning(f"Product spec {product_specs} does not have a bundle.product_id")
+            return
+
+        items = product_specs.get("items", [])
+
+        if not items:
+            logger.warning(f"Product spec {product_specs} does not have any items")
+            self.shopify_service.archive_product(ShopifyService.product_gid(product_id))
+            return
+
+        has_bundle_identifier_product = False
+        bundle_identifier_product_id = None
+
+        for item in items:
+            sku = item.get("variant_sku")
+            bundle_identifier_product_id = item.get("product_id")
+
+            if not sku:
+                continue
+
+            if sku.startswith("bundle-"):
+                bundle_identifier_product_id = item.get("product_id")
+                has_bundle_identifier_product = True
+                break
+
+        self.shopify_service.archive_product(ShopifyService.product_gid(product_id))
+
+        if has_bundle_identifier_product:
+            self.shopify_service.archive_product(ShopifyService.product_gid(bundle_identifier_product_id))
 
     @staticmethod
     def __save_image(image_b64: str, local_file: str) -> None:
@@ -315,3 +363,30 @@ class LookService:
             image_path=look_row.image_path,
             is_active=look_row.is_active,
         )
+
+    @staticmethod
+    def __get_tags_from_look_variants(variants: List[ShopifyVariantModel]) -> List[str]:
+        tags = set()
+
+        for variant in variants:
+            if not variant.variant_sku:
+                continue
+
+            if variant.variant_sku.startswith("4"):
+                tags.add("has_shirt")
+            elif variant.variant_sku.startswith("5"):
+                tags.add("has_bow_tie")
+                tags.add("has_tie")
+            elif variant.variant_sku.startswith("6"):
+                tags.add("has_tie")
+                tags.add("has_neck_tie")
+            elif variant.variant_sku.startswith("7"):
+                tags.add("has_belt")
+            elif variant.variant_sku.startswith("8"):
+                tags.add("has_shoes")
+            elif variant.variant_sku.startswith("9"):
+                tags.add("has_socks")
+            elif variant.variant_sku.startswith("P"):
+                tags.add("has_premium_pocket_square")
+
+        return list(tags)

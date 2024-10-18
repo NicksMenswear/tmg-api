@@ -134,7 +134,7 @@ class EmailService(AbstractEmailService):
             shopify_url = self.__get_account_activation_url(user)
             button_text = "Activate Account & Get Started"
         else:
-            shopify_url = self.shopify_service.get_account_login_url(user.shopify_id)
+            shopify_url = self.shopify_service.get_account_login_url()
             button_text = "Get Started"
 
         template = PostmarkTemplates.INVITE_DEFAULT
@@ -158,7 +158,7 @@ class EmailService(AbstractEmailService):
         return body
 
     def __get_account_activation_url(self, user: UserModel) -> str:
-        activation_url = self.shopify_service.get_account_activation_url(user.shopify_id)
+        activation_url = self.shopify_service.get_account_activation_url(int(user.shopify_id))
 
         url_params = urlencode(
             {"id": user.id, "email": user.email, "first_name": user.first_name, "last_name": user.last_name}

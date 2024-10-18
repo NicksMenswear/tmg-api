@@ -19,7 +19,7 @@ from server.database.models import (
     Address,
 )
 from server.services import ServiceError
-from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +54,11 @@ class E2ECleanUpWorker:
         result = []
 
         for customer in customers:
-            result.append({"id": customer.get("id"), "email": customer.get("email")})
+            result.append({"id": customer.gid, "email": customer.email})
 
         return result
 
-    def cleanup(self, shopify_id: str, email: str) -> None:
+    def cleanup(self, customer_gid: str, email: str) -> None:
         is_system_user = email in SYSTEM_E2E_EMAILS_TO_KEEP
 
         logger.info(f"Processing customer: {email}")
@@ -69,7 +69,7 @@ class E2ECleanUpWorker:
             if not user:
                 logger.error(f"User not found in db by email: {email}")
 
-                self.__delete_shopify_customer(shopify_id)
+                self.__delete_shopify_customer(customer_gid)
 
                 return
 
@@ -133,7 +133,9 @@ class E2ECleanUpWorker:
 
                         self.__delete_shopify_product(item.get("product_id"))
 
-                self.__delete_look(look.id)
+                attendees_with_look = self.__get_attendees_with_look(look.id)
+                if not attendees_with_look:
+                    self.__delete_look(look.id)
 
                 db.session.commit()
 
@@ -143,11 +145,11 @@ class E2ECleanUpWorker:
 
             logger.info(f"Deleting customer: {email}")
 
-            self.__delete_shopify_customer(shopify_id)
+            self.__delete_shopify_customer(customer_gid)
             self.__delete_user(user.id)
 
             db.session.commit()
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             logger.exception(f"Failed to process customer: {email}")
 
@@ -157,21 +159,21 @@ class E2ECleanUpWorker:
         for customer in customers:
             self.cleanup(customer.get("id"), customer.get("email"))
 
-    def __delete_shopify_customer(self, shopify_customer_id: str) -> None:
+    def __delete_shopify_customer(self, customer_gid: str) -> None:
         try:
-            self.shopify_service.delete_customer(shopify_customer_id)
+            self.shopify_service.delete_customer(customer_gid)
         except ServiceError:
-            logger.error(f"Failed to delete customer from shopify: {shopify_customer_id}")
+            logger.error(f"Failed to delete customer from shopify: {customer_gid}")
 
     def __delete_shopify_product(self, product_id: int) -> None:
         try:
-            self.shopify_service.delete_product(product_id)
+            self.shopify_service.delete_product(ShopifyService.product_gid(product_id))
         except ServiceError:
             logger.exception(f"Failed to delete product from shopify: {product_id}")
 
     def __delete_shopify_discount(self, discount_id: int) -> None:
         try:
-            self.shopify_service.delete_discount(discount_id)
+            self.shopify_service.delete_discount(f"gid://shopify/DiscountCodeNode/{discount_id}")
         except ServiceError:
             logger.error(f"Failed to delete discount from shopify: {discount_id}")
 

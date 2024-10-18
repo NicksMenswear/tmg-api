@@ -7,7 +7,6 @@ on:
         type: choice
         description: Stage to run tests against
         options:
-        - all
         - dev
         - stg
         - prd
@@ -27,25 +26,11 @@ on:
         - firefox
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      stages: ${{ steps.set-matrix.outputs.stages }}
-    steps:
-      - id: set-matrix
-        run: |
-          if [ "${{ inputs.stage }}" = "all" ]; then
-            echo stages='["dev","stg","prd"]' >> $GITHUB_OUTPUT
-          else
-            echo stages='["${{ inputs.stage }}"]' >> $GITHUB_OUTPUT
-          fi
-
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
-    needs: setup
     with:
       ref: ${{ github.ref_name }}
-      stage: ${{ matrix.stage }}
+      stage: ${{ inputs.stage }}
       browser: ${{ inputs.browser }}
       notify: true
       viewport: ${{ inputs.viewport }}
@@ -53,7 +38,3 @@ jobs:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
-    strategy:
-      fail-fast: false
-      matrix:
-        stage: ${{fromJson(needs.setup.outputs.stages)}}

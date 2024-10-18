@@ -7,7 +7,9 @@ import uuid
 from server.controllers import FORCE_DELETE_HEADER
 from server.database.database_manager import db
 from server.database.models import DiscountType, Attendee, User
+from server.models.shopify_model import ShopifyCustomer
 from server.services.discount_service import GIFT_DISCOUNT_CODE_PREFIX, TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX
+from server.services.integrations.shopify_service import ShopifyService
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -1171,7 +1173,14 @@ class TestAttendees(BaseTestCase):
         user = self.user_service.create_user(fixtures.create_user_request())
         event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
         email = f"{uuid.uuid4()}@shopify-user-exists.com"
-        self.shopify_service.customers[email] = {"id": random.randint(1000, 100000), "email": email}
+        shopify_customer = ShopifyCustomer(
+            gid=ShopifyService.customer_gid(random.randint(1000, 100000)),
+            email=email,
+            first_name=utils.generate_unique_name(),
+            last_name=utils.generate_unique_name(),
+            state="enabled",
+        )
+        self.shopify_service.customers[shopify_customer.gid] = shopify_customer
         attendee = self.attendee_service.create_attendee(
             fixtures.create_attendee_request(event_id=event.id, email=email)
         )

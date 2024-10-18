@@ -17,6 +17,8 @@ response=$(curl https://api."${STAGE}".tmgcorp.net/jobs/system/e2e-clean-up --si
   -H "X-API-ACCESS-TOKEN: ${X_API_ACCESS_TOKEN}")
 
 echo "$response" | jq -c '.[]' | while read -r item; do
+  echo "$item"
+
   id=$(echo "$item" | jq -r '.id')
   email=$(echo "$item" | jq -r '.email')
 

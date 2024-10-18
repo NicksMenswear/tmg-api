@@ -126,14 +126,14 @@ class EventType(enum.Enum):
 class SerializableMixin:
     def serialize(self):
         columns = inspect(self.__class__).columns.keys()
-        return {column: self.__serialize_field(getattr(self, column)) for column in columns}
+        return {column: SerializableMixin.normalize(getattr(self, column)) for column in columns}
 
-    @staticmethod
-    def __serialize_field(value):
+    @classmethod
+    def normalize(cls, value):
         if value is None:
             return None
         elif isinstance(value, list):
-            return [SerializableMixin.__serialize_field(v) for v in value]
+            return [SerializableMixin.normalize(v) for v in value]
         elif isinstance(value, uuid.UUID):
             return str(value)
         elif isinstance(value, datetime):
@@ -143,7 +143,7 @@ class SerializableMixin:
         elif isinstance(value, enum.Enum):
             return value.name
         elif isinstance(value, dict):
-            return {k: SerializableMixin.__serialize_field(v) for k, v in value.items()}
+            return {k: SerializableMixin.normalize(v) for k, v in value.items()}
 
         return value
 

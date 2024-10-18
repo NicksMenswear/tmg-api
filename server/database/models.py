@@ -91,6 +91,7 @@ class RMAStatus(enum.Enum):
     WAREHOUSE_COMPLETE = "Warehouse Complete"
     WAREHOUSE_CANCELED = "Warehouse Cancelled"
     COMPLETED = "Completed"
+    CS_COMPLETE = "CS Complete"
 
 
 @enum.unique

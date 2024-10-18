@@ -39,32 +39,8 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_user_activity_logs_user_id"), "user_activity_logs", ["user_id"], unique=False)
-    op.create_foreign_key(None, "attendees", "roles", ["role_id"], ["id"])
-    op.create_foreign_key(None, "attendees", "users", ["user_id"], ["id"])
-    op.create_index(op.f("ix_looks_name"), "looks", ["name"], unique=False)
-    op.create_index(op.f("ix_roles_name"), "roles", ["name"], unique=False)
-    op.alter_column(
-        "users",
-        "meta",
-        existing_type=postgresql.JSON(astext_type=sa.Text()),
-        nullable=True,
-        existing_server_default=sa.text("'{}'::jsonb"),
-    )
-    op.drop_index("unique_lower_email", table_name="users")
 
 
 def downgrade() -> None:
-    op.create_index("unique_lower_email", "users", [sa.text("lower(email::text)")], unique=True)
-    op.alter_column(
-        "users",
-        "meta",
-        existing_type=postgresql.JSON(astext_type=sa.Text()),
-        nullable=False,
-        existing_server_default=sa.text("'{}'::jsonb"),
-    )
-    op.drop_index(op.f("ix_roles_name"), table_name="roles")
-    op.drop_index(op.f("ix_looks_name"), table_name="looks")
-    op.drop_constraint(None, "attendees", type_="foreignkey")
-    op.drop_constraint(None, "attendees", type_="foreignkey")
     op.drop_index(op.f("ix_user_activity_logs_user_id"), table_name="user_activity_logs")
     op.drop_table("user_activity_logs")

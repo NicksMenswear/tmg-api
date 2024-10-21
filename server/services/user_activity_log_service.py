@@ -285,7 +285,7 @@ class UserActivityLogService:
                 event.user_id,
                 audit_log_id,
                 "attendee_was_invited_to_event",
-                message=f'Attendee "{attendee.name}" has been invited to event {event.name}',
+                message=f'Attendee "{attendee_name}" has been invited to event {event.name}',
             )
 
         if "pay" in diff:
@@ -293,7 +293,7 @@ class UserActivityLogService:
                 event.user_id,
                 audit_log_id,
                 "attendee_was_invited_to_event",
-                message=f'Attendee "{attendee.name}" paid for a suit in {event.name}',
+                message=f'Attendee "{attendee_name}" paid for a suit in {event.name}',
             )
 
     @staticmethod

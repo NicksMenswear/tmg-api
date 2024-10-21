@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import text
+from sqlalchemy import text, select, func
 
 from server.database.database_manager import db
 from server.database.models import Look, Attendee
@@ -38,7 +38,7 @@ class LookService:
 
     @staticmethod
     def get_look_by_id(look_id: uuid.UUID) -> LookModel:
-        db_look = Look.query.filter(Look.id == look_id).first()
+        db_look = db.session.execute(select(Look).where(Look.id == look_id)).scalar_one_or_none()
 
         if not db_look:
             raise NotFoundError("Look not found")
@@ -48,7 +48,11 @@ class LookService:
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> List[LookModel]:
         look_models = [
             LookModel.model_validate(look)
-            for look in Look.query.filter(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc()).all()
+            for look in db.session.execute(
+                select(Look).where(Look.user_id == user_id, Look.is_active).order_by(Look.created_at.asc())
+            )
+            .scalars()
+            .all()
         ]
 
         for look_model in look_models:
@@ -58,16 +62,14 @@ class LookService:
 
     @staticmethod
     def get_user_look_for_event(user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
-        attendee = Attendee.query.filter(
-            Attendee.user_id == user_id,
-            Attendee.event_id == event_id,
-            Attendee.is_active,
-        ).first()
+        attendee = db.session.execute(
+            select(Attendee).where(Attendee.user_id == user_id, Attendee.event_id == event_id, Attendee.is_active)
+        ).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found")
 
-        look = Look.query.filter(Look.id == attendee.look_id).first()
+        look = db.session.execute(select(Look).where(Look.id == attendee.look_id)).scalar_one_or_none()
 
         if not look:
             raise NotFoundError("Look not found")
@@ -93,9 +95,9 @@ class LookService:
 
     @staticmethod
     def __verify_that_look_does_not_exist(create_look: CreateLookModel) -> None:
-        db_look: Look = Look.query.filter(
-            Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active
-        ).first()
+        db_look = db.session.execute(
+            select(Look).where(Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active)
+        ).scalar_one_or_none()
 
         if db_look:
             raise DuplicateError("Look already exists with that name.")
@@ -242,14 +244,14 @@ class LookService:
 
     @staticmethod
     def update_look(look_id: uuid.UUID, update_look: UpdateLookModel) -> LookModel:
-        db_look = Look.query.filter(Look.id == look_id).first()
+        db_look = db.session.execute(select(Look).where(Look.id == look_id)).scalar_one_or_none()
 
         if not db_look:
             raise NotFoundError("Look not found")
 
-        existing_look = Look.query.filter(
-            Look.name == update_look.name, Look.user_id == db_look.user_id, Look.id != look_id
-        ).first()
+        existing_look = db.session.execute(
+            select(Look).where(Look.name == update_look.name, Look.user_id == db_look.user_id, Look.id != look_id)
+        ).scalar_one_or_none()
 
         if existing_look:
             raise DuplicateError("Look already exists with that name.")
@@ -267,12 +269,14 @@ class LookService:
         return LookModel.model_validate(db_look)
 
     def delete_look(self, look_id: uuid.UUID) -> None:
-        look = Look.query.filter(Look.id == look_id).first()
+        look = db.session.execute(select(Look).where(Look.id == look_id)).scalar_one_or_none()
 
         if not look:
             raise NotFoundError("Look not found")
 
-        num_attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).count()
+        num_attendees = db.session.execute(
+            select(func.count(Attendee.id)).where(Attendee.look_id == look_id, Attendee.is_active)
+        ).scalar()
 
         if num_attendees > 0:
             raise BadRequestError("Can't delete look associated with attendee")

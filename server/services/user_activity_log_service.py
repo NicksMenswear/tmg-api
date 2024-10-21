@@ -57,10 +57,10 @@ class UserActivityLogService:
         diff = audit_log_message.diff
 
         if "first_name" in diff or "last_name" in diff:
-            old_first_name = diff["first_name"].get("before", data.get("first_name"))
-            old_last_name = diff["last_name"].get("before", data.get("last_name"))
-            new_first_name = diff["first_name"].get("after", data.get("first_name"))
-            new_last_name = diff["last_name"].get("after", data.get("last_name"))
+            old_first_name = diff.get("first_name", {}).get("before", data.get("first_name"))
+            old_last_name = diff.get("last_name", {}).get("before", data.get("last_name"))
+            new_first_name = diff.get("first_name", {}).get("after", data.get("first_name"))
+            new_last_name = diff.get("last_name", {}).get("after", data.get("last_name"))
 
             self.__persist(
                 user_id,

@@ -7,7 +7,7 @@ from server.database.database_manager import db
 from server.database.models import (
     AuditLog,
 )
-from server.models.audit_model import AuditLogMessage
+from server.models.audit_log_model import AuditLogMessage
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
 from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
@@ -40,7 +40,7 @@ class AuditLogService:
         try:
             db.session.add(
                 AuditLog(
-                    id=uuid.UUID(audit_log_message.id),
+                    id=audit_log_message.id,
                     request=audit_log_message.request,
                     type=audit_log_message.type,
                     payload=audit_log_message.payload,
@@ -60,7 +60,10 @@ class AuditLogService:
             self.user_activity_log_service.user_created(audit_log_message)
         elif audit_log_message.type == "USER_UPDATED":
             self.user_activity_log_service.user_updated(audit_log_message)
+        elif audit_log_message.type == "EVENT_CREATED":
+            self.user_activity_log_service.event_created(audit_log_message)
         elif audit_log_message.type == "EVENT_UPDATED":
+            self.user_activity_log_service.event_updated(audit_log_message)
             self.__tag_customers_on_event_updated(audit_log_message)
         elif audit_log_message.type == "ATTENDEE_UPDATED":
             self.__tag_customers_on_attendee_updated(audit_log_message)

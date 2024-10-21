@@ -6,7 +6,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from server.flask_app import FlaskApp
 from server.handlers import init_sentry
-from server.models.audit_model import AuditLogMessage
+from server.models.audit_log_model import AuditLogMessage
 from server.services.attendee_service import AttendeeService
 from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
@@ -39,7 +39,7 @@ def lambda_handler(event: dict, context: LambdaContext):
     user_service = UserService(shopify_service)
     attendee_service = AttendeeService(shopify_service, user_service, None, None, None)
     event_service = EventService()
-    user_activity_log_service = UserActivityLogService()
+    user_activity_log_service = UserActivityLogService(user_service, event_service)
     audit_log_service = AuditLogService(
         shopify_service, user_service, attendee_service, event_service, user_activity_log_service
     )

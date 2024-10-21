@@ -22,7 +22,7 @@ from server.database.models import (
     SerializableMixin,
 )
 from server.flask_app import FlaskApp
-from server.models.audit_model import AuditLogMessage
+from server.models.audit_log_model import AuditLogMessage
 
 logger = logging.getLogger(__name__)
 
@@ -156,9 +156,12 @@ def _is_in_test_mode() -> bool:
 def _send_message(audit_log_message: AuditLogMessage) -> None:
     app = FlaskApp.current()
 
-    if _is_in_test_mode():
-        audit_log_service = app.audit_log_service
-        audit_log_service.process(audit_log_message)
-    else:
-        aws_service = app.aws_service
-        aws_service.enqueue_message(app.audit_log_sqs_queue_url, audit_log_message.to_string())
+    try:
+        if _is_in_test_mode():
+            audit_log_service = app.audit_log_service
+            audit_log_service.process(audit_log_message)
+        else:
+            aws_service = app.aws_service
+            aws_service.enqueue_message(app.audit_log_sqs_queue_url, audit_log_message.to_string())
+    except Exception as e:
+        logger.exception(f"Failed to send audit log message: {e}")

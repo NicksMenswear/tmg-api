@@ -159,7 +159,7 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
-    app.user_activity_log_service = UserActivityLogService()
+    app.user_activity_log_service = UserActivityLogService(app.user_service, app.event_service)
     app.audit_log_service = AuditLogService(
         app.shopify_service,
         app.user_service,

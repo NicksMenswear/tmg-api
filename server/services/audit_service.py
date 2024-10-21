@@ -55,21 +55,17 @@ class AuditLogService:
 
     @staticmethod
     def __persist(audit_log_message: AuditLogMessage) -> None:
-        try:
-            db.session.add(
-                AuditLog(
-                    id=audit_log_message.id,
-                    request=audit_log_message.request,
-                    type=audit_log_message.type,
-                    payload=audit_log_message.payload,
-                    diff=audit_log_message.diff,
-                    created_at=datetime.now(timezone.utc),
-                )
+        db.session.add(
+            AuditLog(
+                id=audit_log_message.id,
+                request=audit_log_message.request,
+                type=audit_log_message.type,
+                payload=audit_log_message.payload,
+                diff=audit_log_message.diff,
+                created_at=datetime.now(timezone.utc),
             )
-            db.session.commit()
-        except Exception as e:
-            logger.exception(f"Error persisting audit log message: {audit_log_message}")
-            db.session.rollback()
+        )
+        db.session.commit()
 
     def __tag_customers_on_event_updated(self, audit_log_message: AuditLogMessage):
         user_id = audit_log_message.payload.get("user_id")

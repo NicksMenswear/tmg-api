@@ -298,15 +298,11 @@ class UserActivityLogService:
 
     @staticmethod
     def __persist(user_id: UUID, audit_log_id: UUID, handle: str, message: str) -> None:
-        try:
-            user_activity_log = UserActivityLog(
-                user_id=user_id,
-                audit_log_id=audit_log_id,
-                handle=handle,
-                message=message,
-            )
-            db.session.add(user_activity_log)
-            db.session.commit()
-        except Exception as e:
-            logger.exception(f"Error persisting user activity log message: {audit_log_id}")
-            db.session.rollback()
+        user_activity_log = UserActivityLog(
+            user_id=user_id,
+            audit_log_id=audit_log_id,
+            handle=handle,
+            message=message,
+        )
+        db.session.add(user_activity_log)
+        db.session.commit()

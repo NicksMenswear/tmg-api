@@ -35,8 +35,23 @@ class AuditLogService:
         self.event_service = event_service
         self.user_activity_log_service = user_activity_log_service
 
+    def process(self, audit_log_message: AuditLogMessage) -> None:
+        self.__persist(audit_log_message)
+
+        if audit_log_message.type == "USER_CREATED":
+            self.user_activity_log_service.user_created(audit_log_message)
+        elif audit_log_message.type == "USER_UPDATED":
+            self.user_activity_log_service.user_updated(audit_log_message)
+        elif audit_log_message.type == "EVENT_CREATED":
+            self.user_activity_log_service.event_created(audit_log_message)
+        elif audit_log_message.type == "EVENT_UPDATED":
+            self.user_activity_log_service.event_updated(audit_log_message)
+            self.__tag_customers_on_event_updated(audit_log_message)
+        elif audit_log_message.type == "ATTENDEE_UPDATED":
+            self.__tag_customers_on_attendee_updated(audit_log_message)
+
     @staticmethod
-    def persist(audit_log_message: AuditLogMessage) -> None:
+    def __persist(audit_log_message: AuditLogMessage) -> None:
         try:
             db.session.add(
                 AuditLog(
@@ -52,21 +67,6 @@ class AuditLogService:
         except Exception as e:
             logger.exception(f"Error persisting audit log message: {audit_log_message}")
             db.session.rollback()
-
-    def process(self, audit_log_message: AuditLogMessage) -> None:
-        self.persist(audit_log_message)
-
-        if audit_log_message.type == "USER_CREATED":
-            self.user_activity_log_service.user_created(audit_log_message)
-        elif audit_log_message.type == "USER_UPDATED":
-            self.user_activity_log_service.user_updated(audit_log_message)
-        elif audit_log_message.type == "EVENT_CREATED":
-            self.user_activity_log_service.event_created(audit_log_message)
-        elif audit_log_message.type == "EVENT_UPDATED":
-            self.user_activity_log_service.event_updated(audit_log_message)
-            self.__tag_customers_on_event_updated(audit_log_message)
-        elif audit_log_message.type == "ATTENDEE_UPDATED":
-            self.__tag_customers_on_attendee_updated(audit_log_message)
 
     def __tag_customers_on_event_updated(self, audit_log_message: AuditLogMessage):
         user_id = audit_log_message.payload.get("user_id")

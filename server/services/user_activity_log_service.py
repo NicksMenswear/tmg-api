@@ -29,8 +29,8 @@ class UserActivityLogService:
 
     def user_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
-        user_id = data["id"]
-        audit_log_id = audit_log_message.id
+        user_id = UUID(data["id"])
+        audit_log_id = UUID(audit_log_message.id)
 
         items = []
 
@@ -43,12 +43,17 @@ class UserActivityLogService:
         if data.get("phone_number"):
             items.append(data.get("phone_number"))
 
-        self.__persist(UUID(user_id), audit_log_id, "user_created", f"User created: {', '.join(items)}")
+        self.__persist(
+            user_id,
+            audit_log_id,
+            "user_created",
+            f"User created: {', '.join(items)}",
+        )
 
     def user_updated(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
-        user_id = data.get("id")
-        audit_log_id = audit_log_message.id
+        user_id = UUID(data.get("id"))
+        audit_log_id = UUID(audit_log_message.id)
         diff = audit_log_message.diff
 
         if "first_name" in diff or "last_name" in diff:
@@ -58,7 +63,7 @@ class UserActivityLogService:
             new_last_name = diff["last_name"].get("after", data.get("last_name"))
 
             self.__persist(
-                UUID(user_id),
+                user_id,
                 audit_log_id,
                 "user_name_updated",
                 f'Name changed from "{old_first_name} {old_last_name}" to "{new_first_name} {new_last_name}"',
@@ -69,7 +74,7 @@ class UserActivityLogService:
             new_email = diff["email"]["after"]
 
             self.__persist(
-                UUID(user_id),
+                user_id,
                 audit_log_id,
                 "user_email_updated",
                 f'User email changed from "{old_email}" to "{new_email}"',
@@ -80,7 +85,7 @@ class UserActivityLogService:
             new_phone_number = diff["phone_number"]["after"]
 
             self.__persist(
-                UUID(user_id),
+                user_id,
                 audit_log_id,
                 "user_phone_number_updated",
                 f"User phone number updated from {old_phone_number} to {new_phone_number}",
@@ -91,7 +96,7 @@ class UserActivityLogService:
             new_account_status = diff["account_status"]["after"]
 
             self.__persist(
-                UUID(user_id),
+                user_id,
                 audit_log_id,
                 "user_account_status_updated",
                 f"User account status updated from {'ACTIVE' if old_account_status else 'INACTIVE'} to {'ACTIVE' if new_account_status else 'INACTIVE'}",
@@ -101,7 +106,7 @@ class UserActivityLogService:
             new_shopify_id = diff["shopify_id"]["after"]
 
             self.__persist(
-                UUID(user_id),
+                user_id,
                 audit_log_id,
                 "user_shopify_account_associated",
                 f"User associated with Shopify account with ID: {new_shopify_id}",
@@ -110,6 +115,7 @@ class UserActivityLogService:
     def event_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
         event = self.__event_service.get_event_by_id(data["id"])
+        audit_log_id = UUID(audit_log_message.id)
 
         event_name = data["name"]
         event_date = datetime.fromisoformat(data["event_at"]).strftime("%d %b %Y")
@@ -117,18 +123,19 @@ class UserActivityLogService:
 
         self.__persist(
             event.user_id,
-            audit_log_message.id,
+            audit_log_id,
             "event_created",
             f"Event created: {event_type}, {event_name}, {event_date}",
         )
 
     def event_updated(self, audit_log_message: AuditLogMessage):
-        data = audit_log_message.payload
         diff = audit_log_message.diff
 
         if not diff:
             return
 
+        data = audit_log_message.payload
+        audit_log_id = UUID(audit_log_message.id)
         event = self.__event_service.get_event_by_id(data["id"])
 
         if "name" in diff:
@@ -137,7 +144,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "event_name_updated",
                 f'Event name changed from "{old_name}" to "{new_name}"',
             )
@@ -148,7 +155,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "event_date_updated",
                 f'Event date changed from "{old_date}" to "{new_date}"',
             )
@@ -156,7 +163,7 @@ class UserActivityLogService:
         if "is_active" in diff and not diff["is_active"]["after"]:
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "event_deleted",
                 f'Event "{data["name"]}" deleted',
             )
@@ -167,13 +174,14 @@ class UserActivityLogService:
         event_id = data.get("event_id")
         event = self.__event_service.get_event_by_id(event_id)
         attendee_email = data.get("email")
+        audit_log_id = UUID(audit_log_message.id)
 
         attendee_name = f'{data.get("first_name")} {data.get("last_name")}'
         attendee_email = attendee_email if attendee_email else "email not provided"
 
         self.__persist(
             event.user_id,
-            audit_log_message.id,
+            audit_log_id,
             "attendee_created",
             f'Attendee added to event "{event.name}": {attendee_name}, {attendee_email}',
         )
@@ -181,6 +189,7 @@ class UserActivityLogService:
     def attendee_updated(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
         diff = audit_log_message.diff
+        audit_log_id = UUID(audit_log_message.id)
 
         if not diff:
             return
@@ -194,7 +203,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_deleted",
                 f'Attendee "{attendee.first_name} {attendee.last_name}" has been removed from event "{event.name}"',
             )
@@ -212,7 +221,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_name_updated",
                 f'Attendee name changed from "{old_first_name} {old_last_name}" to "{new_first_name} {new_last_name}"',
             )
@@ -228,7 +237,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_email_updated",
                 message,
             )
@@ -247,7 +256,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_role_updated",
                 message,
             )
@@ -266,7 +275,7 @@ class UserActivityLogService:
 
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_look_updated",
                 message,
             )
@@ -274,7 +283,7 @@ class UserActivityLogService:
         if "invite" in diff:
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_was_invited_to_event",
                 message=f'Attendee "{attendee.name}" has been invited to event {event.name}',
             )
@@ -282,7 +291,7 @@ class UserActivityLogService:
         if "pay" in diff:
             self.__persist(
                 event.user_id,
-                audit_log_message.id,
+                audit_log_id,
                 "attendee_was_invited_to_event",
                 message=f'Attendee "{attendee.name}" paid for a suit in {event.name}',
             )

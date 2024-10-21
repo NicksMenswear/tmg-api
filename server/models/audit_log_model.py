@@ -1,12 +1,11 @@
 import json
 from typing import Dict, Any, Optional
-from uuid import UUID
 
 from pydantic import BaseModel
 
 
 class AuditLogMessage(BaseModel):
-    id: UUID
+    id: str
     type: str
     payload: Dict[str, Any]
     request: Dict[str, Any]

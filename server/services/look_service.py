@@ -27,7 +27,10 @@ TMP_DIR = os.environ.get("TMPDIR", "/tmp")
 
 class LookService:
     def __init__(
-        self, user_service: UserService, aws_service: AbstractAWSService, shopify_service: AbstractShopifyService
+        self,
+        user_service: UserService,
+        aws_service: Optional[AbstractAWSService],
+        shopify_service: Optional[AbstractShopifyService],
     ):
         self.user_service = user_service
         self.aws_service = aws_service

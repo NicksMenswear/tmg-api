@@ -118,7 +118,7 @@ class UserActivityLogService:
         audit_log_id = UUID(audit_log_message.id)
 
         event_name = data["name"]
-        event_date = datetime.fromisoformat(data["event_at"]).strftime("%d %b %Y")
+        event_date = datetime.fromisoformat(data["event_at"]).strftime("%d %b %Y") if data["event_at"] else None
         event_type = data["type"]
 
         self.__persist(
@@ -150,8 +150,16 @@ class UserActivityLogService:
             )
 
         if "event_at" in diff:
-            old_date = datetime.fromisoformat(diff["event_at"]["before"]).strftime("%d %b %Y")
-            new_date = datetime.fromisoformat(diff["event_at"]["after"]).strftime("%d %b %Y")
+            old_date = (
+                datetime.fromisoformat(diff["event_at"]["before"]).strftime("%d %b %Y")
+                if diff["event_at"]["before"]
+                else None
+            )
+            new_date = (
+                datetime.fromisoformat(diff["event_at"]["after"]).strftime("%d %b %Y")
+                if diff["event_at"]["before"]
+                else None
+            )
 
             self.__persist(
                 event.user_id,

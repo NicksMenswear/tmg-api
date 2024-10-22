@@ -189,6 +189,34 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("owner"))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
+    def test_create_event_without_type(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+
+        # when
+        event_request = fixtures.create_event_request(user_id=user.id, event_at=None)
+
+        data = event_request.model_dump()
+        del data["type"]
+
+        response = self.client.open(
+            "/events",
+            query_string=self.hmac_query_params,
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(data, cls=encoder.CustomJSONEncoder),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+
+        created_event = response.json
+        self.assertIsNotNone(created_event.get("id"))
+        self.assertEqual(created_event.get("name"), event_request.name)
+        self.assertIsNotNone(created_event.get("owner"))
+        self.assertEqual(created_event.get("type"), str(event_request.type))
+
     def test_create_too_early_event(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
@@ -215,7 +243,7 @@ class TestEvents(BaseTestCase):
         self.assertStatus(response, 400)
         self.assertEqual(
             response.json["errors"],
-            f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks.",
+            f"You cannot schedule events within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks. Please select a later date.",
         )
 
     def test_get_event_non_existing(self):

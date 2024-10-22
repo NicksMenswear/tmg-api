@@ -31,7 +31,7 @@ class EventTypeModel(str, Enum):
 
 class EventRequestModel(CoreModel):
     name: str
-    event_at: datetime
+    event_at: Optional[datetime] = None
 
     @field_validator("name")
     @classmethod

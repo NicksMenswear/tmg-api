@@ -1973,6 +1973,7 @@ components:
           type: string
           title: event_at
           format: date-time
+          nullable: true
         type:
           type: string
           title: type
@@ -2003,13 +2004,13 @@ components:
           format: date-time
           title: event_at
           type: string
+          nullable: true
         owner:
           title: owner
           $ref: '#/components/schemas/User'
       required:
         - owner
         - name
-        - event_at
       title: Event
       type: object
     UpdateEvent:
@@ -2022,6 +2023,7 @@ components:
           format: date-time
           title: event_at
           type: string
+          nullable: true
       required:
         - name
       title: Event

@@ -53,9 +53,7 @@ class EventService:
         events = db.session.execute(select(Event).where(Event.id.in_(event_ids), Event.is_active)).scalars().all()
         return [EventModel.model_validate(event) for event in events]
 
-    def create_event(
-        self, create_event: CreateEventModel, ignore_event_date_creation_condition: bool = False
-    ) -> EventModel:
+    def create_event(self, create_event: CreateEventModel, ignore_event_date_creation_condition=False) -> EventModel:
         user = db.session.execute(select(User).where(User.id == create_event.user_id)).scalar_one_or_none()
 
         if not user:
@@ -77,12 +75,13 @@ class EventService:
         if db_event:
             raise DuplicateError("Event with the same name and date already exists.")
 
-        if not ignore_event_date_creation_condition and not self.__is_ahead_n_weeks(
-            create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
-        ):
-            raise BadRequestError(
-                f"You can only create events up to {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks in advance. Please choose a date that is within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks."
-            )
+        if not ignore_event_date_creation_condition:
+            if create_event.event_at and not self.__is_ahead_n_weeks(
+                create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
+            ):
+                raise BadRequestError(
+                    f"You cannot schedule events within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks. Please select a later date."
+                )
 
         try:
             db_event = Event(
@@ -109,8 +108,7 @@ class EventService:
 
         return event
 
-    @staticmethod
-    def update_event(event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
+    def update_event(self, event_id: uuid.UUID, update_event: UpdateEventModel) -> EventModel:
         db_event = db.session.execute(select(Event).where(Event.id == event_id, Event.is_active)).scalar_one_or_none()
 
         if not db_event:
@@ -132,6 +130,13 @@ class EventService:
 
         if existing_event:
             raise DuplicateError("Event with the same details already exists.")
+
+        if update_event.event_at and not self.__is_ahead_n_weeks(
+            update_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
+        ):
+            raise BadRequestError(
+                f"You cannot edit events scheduled within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks. Please choose a later date."
+            )
 
         try:
             db_event.event_at = update_event.event_at
@@ -291,10 +296,15 @@ class EventService:
 
     @staticmethod
     def __is_ahead_n_weeks(event_at: datetime, number_of_weeks: int) -> bool:
+        if not event_at:
+            return True
         return event_at > datetime.now() + timedelta(weeks=number_of_weeks)
 
     @staticmethod
     def __owner_notifications(event: EventModel, attendees: List[AttendeeModel]) -> List[dict]:
+        if not event.event_at:
+            return []
+
         if not any([a.invite for a in attendees]):
             return []
 
@@ -341,6 +351,9 @@ class EventService:
 
     @staticmethod
     def __attendee_notifications(event: EventModel, attendees: List[AttendeeModel]):
+        if not event.event_at:
+            return []
+
         if not attendees:
             return []
 

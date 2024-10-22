@@ -31,7 +31,7 @@ class EventTypeModel(str, Enum):
 
 class EventRequestModel(CoreModel):
     name: str
-    event_at: datetime
+    event_at: Optional[datetime] = None
 
     @field_validator("name")
     @classmethod
@@ -44,6 +44,8 @@ class EventRequestModel(CoreModel):
     @field_validator("event_at")
     @classmethod
     def date_in_the_future(cls, v):
+        if v is None:
+            return v
         v = v.replace(tzinfo=None)
         if v <= datetime.now():
             raise ValueError("Event date must be in the future")
@@ -60,7 +62,7 @@ class EventModel(CoreModel):
     id: UUID
     user_id: UUID
     name: str
-    event_at: datetime
+    event_at: Optional[datetime] = None
     is_active: bool
     status: EventUserStatus = EventUserStatus.OWNER
     type: EventTypeModel

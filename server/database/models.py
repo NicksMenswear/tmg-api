@@ -161,7 +161,7 @@ class Event(Base, SerializableMixin):
         nullable=False,
     )
     name = Column(String, nullable=False)
-    event_at = Column(DateTime, nullable=False)
+    event_at = Column(DateTime, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     type = Column(Enum(EventType), default=EventType.WEDDING, nullable=False)

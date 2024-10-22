@@ -1987,7 +1987,6 @@ components:
       required:
         - user_id
         - name
-        - event_at
       title: CreateEvent
       type: object
     Event:
@@ -2025,7 +2024,6 @@ components:
           type: string
       required:
         - name
-        - event_at
       title: Event
       type: object
     CreateLook:

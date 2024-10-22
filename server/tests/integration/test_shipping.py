@@ -8,7 +8,8 @@ from server.database.models import Event
 from server.models.event_model import EventModel
 from server.models.shipping_model import (
     GROUND_SHIPPING_NAME,
-    GROUND_SHIPPING_PRICE_IN_CENTS,
+    FREE_SHIPPING_PRICE_IN_CENTS,
+    STANDARD_SHIPPING_PRICE_IN_CENTS,
     EXPEDITED_SHIPPING_NAME,
     EXPEDITED_SHIPPING_PRICE_IN_CENTS,
 )
@@ -33,7 +34,6 @@ class TestShipping(BaseTestCase):
         # when
         response = self.client.open(
             "/shipping/price",
-            # query_string=self.hmac_query_params,
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
@@ -44,23 +44,125 @@ class TestShipping(BaseTestCase):
         self.assertStatus(response, 200)
         rate = response.json.get("rates", {})[0]
         self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
-        self.assertEqual(rate.get("total_price"), GROUND_SHIPPING_PRICE_IN_CENTS)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
 
-    def test_shipping_just_an_items(self):
+    def test_shipping_few_items_with_total_price_zero(self):
         # when
         response = self.client.open(
             "/shipping/price",
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=json.dumps(fixtures.shipping_rate_request([fixtures.shipping_item()])),
+            data=json.dumps(
+                fixtures.shipping_rate_request(
+                    [fixtures.shipping_item(price=0), fixtures.shipping_item(price=0), fixtures.shipping_item(price=0)]
+                )
+            ),
         )
 
         # then
         self.assertStatus(response, 200)
         rate = response.json.get("rates", {})[0]
         self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
-        self.assertEqual(rate.get("total_price"), GROUND_SHIPPING_PRICE_IN_CENTS)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
+
+    def test_shipping_an_item_with_price_below_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(fixtures.shipping_rate_request([fixtures.shipping_item(price=12000)])),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), STANDARD_SHIPPING_PRICE_IN_CENTS)
+
+    def test_shipping_an_item_with_price_above_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(fixtures.shipping_rate_request([fixtures.shipping_item(price=30100)])),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
+
+    def test_shipping_a_lot_of_cheap_items_which_in_total_are_above_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(fixtures.shipping_rate_request([fixtures.shipping_item(price=2500, quantity=9)])),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
+
+    def test_shipping_few_items_total_below_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(
+                fixtures.shipping_rate_request(
+                    [
+                        fixtures.shipping_item(price=5000),
+                        fixtures.shipping_item(price=6000),
+                        fixtures.shipping_item(price=7000),
+                        fixtures.shipping_item(price=0),
+                    ]
+                )
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), STANDARD_SHIPPING_PRICE_IN_CENTS)
+
+    def test_shipping_few_items_total_above_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(
+                fixtures.shipping_rate_request(
+                    [
+                        fixtures.shipping_item(price=5000),
+                        fixtures.shipping_item(price=6000),
+                        fixtures.shipping_item(price=17000),
+                        fixtures.shipping_item(price=0),
+                    ]
+                )
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
 
     def test_shipping_suit_bundle_not_associated_with_any_attendee(self):
         # given
@@ -77,7 +179,7 @@ class TestShipping(BaseTestCase):
                     product_id=item.get("product_id"),
                     variant_id=item.get("variant_id"),
                     sku=item.get("variant_sku"),
-                    price=item.get("variant_price"),
+                    price=int(item.get("variant_price") * 100),  # convert to cents
                     name=item.get("variant_title"),
                 )
             )
@@ -95,25 +197,26 @@ class TestShipping(BaseTestCase):
         self.assertStatus(response, 200)
         rate = response.json.get("rates", {})[0]
         self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
-        self.assertEqual(rate.get("total_price"), GROUND_SHIPPING_PRICE_IN_CENTS)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
 
     @parameterized.expand(
         [
-            [[10], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # event in the future
-            [[-10], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # event in the past
+            [[10], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # event in the future
+            [[-10], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # event in the past
             [[5], EXPEDITED_SHIPPING_NAME, EXPEDITED_SHIPPING_PRICE_IN_CENTS],  # event in expedited shipping window
-            [[-10, 10], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # not in expedited shipping window
+            [[-10, 10], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # not in expedited shipping window
             [[-10, 5], EXPEDITED_SHIPPING_NAME, EXPEDITED_SHIPPING_PRICE_IN_CENTS],  # one in expedited shipping window
-            [[-10, -20], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # few past events
-            [[10, 20], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # few future events
-            [[10, 5], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # one future and one expedited events
+            [[-10, -20], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # few past events
+            [[10, 20], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # few future events
+            [[10, 5], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # one future and one expedited events
             [[3, 5], EXPEDITED_SHIPPING_NAME, EXPEDITED_SHIPPING_PRICE_IN_CENTS],  # few expedited events
-            [[3, 5, 10], GROUND_SHIPPING_NAME, GROUND_SHIPPING_PRICE_IN_CENTS],  # 2 expedited and 1 future event
+            [[3, 5, 10], GROUND_SHIPPING_NAME, FREE_SHIPPING_PRICE_IN_CENTS],  # 2 expedited and 1 future event
         ]
     )
     def test_shipping_looks_belong_to_event_in_past_and_future(self, weeks, shipping_name, shipping_price):
         # given
         user = self.app.user_service.create_user(fixtures.create_user_request())
+
         look = self.app.look_service.create_look(
             fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
         )
@@ -134,7 +237,7 @@ class TestShipping(BaseTestCase):
                     product_id=item.get("product_id"),
                     variant_id=item.get("variant_id"),
                     sku=item.get("variant_sku"),
-                    price=item.get("variant_price"),
+                    price=int(item.get("variant_price") * 100),  # convert to cents
                     name=item.get("variant_title"),
                 )
             )

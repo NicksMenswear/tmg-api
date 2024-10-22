@@ -590,7 +590,7 @@ class TestEvents(BaseTestCase):
 
         # when
         updated_name = str(uuid.uuid4())
-        updated_event_at = (datetime.now() + timedelta(days=1)).isoformat()
+        updated_event_at = (datetime.now() + timedelta(months=2)).isoformat()
 
         response = self.client.open(
             f"/events/{str(event.id)}",

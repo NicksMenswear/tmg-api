@@ -210,7 +210,7 @@ class UserActivityLogService:
 
             return
 
-        attendee = self.__attendee_service.get_attendee_by_id(attendee_id)
+        attendee = self.__attendee_service.get_attendee_by_id(attendee_id, False)
         attendee_name = f"{attendee.first_name} {attendee.last_name}"
 
         if "first_name" in diff or "last_name" in diff:

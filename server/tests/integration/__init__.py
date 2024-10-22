@@ -24,6 +24,7 @@ from server.database.models import (
     Address,
     SuitBuilderItem,
     AuditLog,
+    UserActivityLog,
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
@@ -55,6 +56,7 @@ class BaseTestCase(TestCase):
         db.session.execute(delete(Event))
         db.session.execute(delete(Size))
         db.session.execute(delete(Measurement))
+        db.session.execute(delete(UserActivityLog))
         db.session.execute(delete(User))
         db.session.execute(delete(SuitBuilderItem))
         db.session.execute(delete(AuditLog))

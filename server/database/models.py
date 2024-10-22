@@ -566,3 +566,20 @@ class AuditLog(Base):
     payload = Column(JSONB, default=dict, nullable=False)
     diff = Column(JSONB, default=None, nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+
+
+class UserActivityLog(Base):
+    __tablename__ = "user_activity_logs"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=False)
+    audit_log_id = Column(UUID(as_uuid=True), ForeignKey("audit_logs.id"), nullable=False)
+    handle = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)

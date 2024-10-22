@@ -47,10 +47,13 @@ class AttendeeService:
         self.active_campaign_service = activecampaign_service
 
     @staticmethod
-    def get_attendee_by_id(attendee_id: uuid.UUID, is_active: bool = True) -> AttendeeModel:
-        attendee = db.session.execute(
-            select(Attendee).where(Attendee.id == attendee_id, Attendee.is_active == is_active)
-        ).scalar_one_or_none()
+    def get_attendee_by_id(attendee_id: uuid.UUID, only_active: bool = True) -> AttendeeModel:
+        query = select(Attendee).where(Attendee.id == attendee_id)
+
+        if only_active:
+            query = query.where(Attendee.is_active == True)
+
+        attendee = db.session.execute(query).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")

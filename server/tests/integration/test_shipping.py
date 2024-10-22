@@ -98,6 +98,22 @@ class TestShipping(BaseTestCase):
         self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
         self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
 
+    def test_shipping_a_lot_of_cheap_items_which_in_total_are_above_210(self):
+        # when
+        response = self.client.open(
+            "/shipping/price",
+            method="POST",
+            content_type=self.content_type,
+            headers=self.request_headers,
+            data=json.dumps(fixtures.shipping_rate_request([fixtures.shipping_item(price=2500, quantity=9)])),
+        )
+
+        # then
+        self.assertStatus(response, 200)
+        rate = response.json.get("rates", {})[0]
+        self.assertEqual(rate.get("service_name"), GROUND_SHIPPING_NAME)
+        self.assertEqual(rate.get("total_price"), FREE_SHIPPING_PRICE_IN_CENTS)
+
     def test_shipping_few_items_total_below_210(self):
         # when
         response = self.client.open(

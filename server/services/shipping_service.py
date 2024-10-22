@@ -93,7 +93,7 @@ class ShippingService:
         total_price = 0
 
         for item in items:
-            total_price += item.get("price", 0)
+            total_price += item.get("price", 0) * item.get("quantity", 1)
 
         return total_price
 

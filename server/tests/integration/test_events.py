@@ -189,15 +189,12 @@ class TestEvents(BaseTestCase):
         self.assertIsNotNone(created_event.get("owner"))
         self.assertEqual(created_event.get("type"), str(EventTypeModel.WEDDING))
 
-    def test_create_event_without_type(self):
+    def test_create_event_without_date(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())
 
         # when
         event_request = fixtures.create_event_request(user_id=user.id, event_at=None)
-
-        data = event_request.model_dump()
-        del data["type"]
 
         response = self.client.open(
             "/events",
@@ -205,7 +202,7 @@ class TestEvents(BaseTestCase):
             method="POST",
             content_type=self.content_type,
             headers=self.request_headers,
-            data=json.dumps(data, cls=encoder.CustomJSONEncoder),
+            data=event_request.json(),
         )
 
         # then
@@ -576,7 +573,7 @@ class TestEvents(BaseTestCase):
             content_type=self.content_type,
             headers=self.request_headers,
             data=fixtures.update_event_request(
-                name=str(uuid.uuid4()), event_at=(datetime.now() + timedelta(days=1)).isoformat()
+                name=str(uuid.uuid4()), event_at=(datetime.now() + timedelta(days=90)).isoformat()
             ).json(),
         )
 
@@ -590,7 +587,7 @@ class TestEvents(BaseTestCase):
 
         # when
         updated_name = str(uuid.uuid4())
-        updated_event_at = (datetime.now() + timedelta(months=2)).isoformat()
+        updated_event_at = (datetime.now() + timedelta(days=90)).isoformat()
 
         response = self.client.open(
             f"/events/{str(event.id)}",

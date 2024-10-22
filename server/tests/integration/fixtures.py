@@ -463,7 +463,7 @@ def shipping_item(**data):
         "sku": data.get("sku", "101A2BLK"),
         "quantity": data.get("quantity", 1),
         "grams": data.get("grams", 0),
-        "price": data.get("price", random.randint(100, 200)),
+        "price": data.get("price", random.randint(10000, 20000)),
         "vendor": data.get("vendor", "themodern-groom"),
         "requires_shipping": data.get("requires_shipping", True),
         "taxable": data.get("taxable", True),

@@ -165,6 +165,7 @@ def init_services(app, is_testing=False):
         app.attendee_service,
         app.role_service,
         app.look_service,
+        app.order_service,
     )
     app.audit_log_service = AuditLogService(
         app.shopify_service,

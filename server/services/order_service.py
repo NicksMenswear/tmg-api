@@ -32,9 +32,9 @@ class OrderService:
     def __init__(
         self,
         user_service: UserService,
-        product_service: ProductService,
-        measurement_service: MeasurementService,
-        sku_builder: SkuBuilder,
+        product_service: Optional[ProductService] = None,
+        measurement_service: Optional[MeasurementService] = None,
+        sku_builder: Optional[SkuBuilder] = None,
     ):
         self.user_service = user_service
         self.product_service = product_service

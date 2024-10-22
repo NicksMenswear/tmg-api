@@ -53,7 +53,7 @@ class EventService:
         events = db.session.execute(select(Event).where(Event.id.in_(event_ids), Event.is_active)).scalars().all()
         return [EventModel.model_validate(event) for event in events]
 
-    def create_event(self, create_event: CreateEventModel) -> EventModel:
+    def create_event(self, create_event: CreateEventModel, ignore_event_date_creation_condition=False) -> EventModel:
         user = db.session.execute(select(User).where(User.id == create_event.user_id)).scalar_one_or_none()
 
         if not user:
@@ -75,12 +75,13 @@ class EventService:
         if db_event:
             raise DuplicateError("Event with the same name and date already exists.")
 
-        if create_event.event_at and not self.__is_ahead_n_weeks(
-            create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
-        ):
-            raise BadRequestError(
-                f"You cannot schedule events within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks. Please select a later date."
-            )
+        if not ignore_event_date_creation_condition:
+            if create_event.event_at and not self.__is_ahead_n_weeks(
+                create_event.event_at, NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION
+            ):
+                raise BadRequestError(
+                    f"You cannot schedule events within the next {NUMBER_OF_WEEKS_IN_ADVANCE_FOR_EVENT_CREATION} weeks. Please select a later date."
+                )
 
         try:
             db_event = Event(

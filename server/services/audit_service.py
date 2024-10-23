@@ -52,6 +52,18 @@ class AuditLogService:
         elif audit_log_message.type == "ATTENDEE_UPDATED":
             self.user_activity_log_service.attendee_updated(audit_log_message)
             self.__tag_customers_on_attendee_updated(audit_log_message)
+        elif audit_log_message.type == "LOOK_CREATED":
+            self.user_activity_log_service.look_created(audit_log_message)
+        elif audit_log_message.type == "LOOK_UPDATED":
+            self.user_activity_log_service.look_updated(audit_log_message)
+        elif audit_log_message.type == "MEASUREMENT_CREATED":
+            self.user_activity_log_service.measurements_created(audit_log_message)
+        elif audit_log_message.type == "SIZE_CREATED":
+            self.user_activity_log_service.sizes_created(audit_log_message)
+        elif audit_log_message.type == "ORDER_CREATED":
+            self.user_activity_log_service.order_created(audit_log_message)
+        elif audit_log_message.type == "ORDER_UPDATED":
+            self.user_activity_log_service.order_updated(audit_log_message)
 
     @staticmethod
     def __persist(audit_log_message: AuditLogMessage) -> None:

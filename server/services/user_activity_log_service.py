@@ -6,8 +6,8 @@ from server.database.models import UserActivityLog
 from server.models.audit_log_model import AuditLogMessage
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
-from server.services.integrations.activecampaign_service import logger
 from server.services.look_service import LookService
+from server.services.order_service import OrderService
 from server.services.role_service import RoleService
 from server.services.user_service import UserService
 
@@ -20,12 +20,14 @@ class UserActivityLogService:
         attendee_service: AttendeeService,
         role_service: RoleService,
         look_service: LookService,
+        order_service: OrderService,
     ):
         self.__user_service = user_service
         self.__event_service = event_service
         self.__attendee_service = attendee_service
         self.__role_service = role_service
         self.__look_service = look_service
+        self.__order_service = order_service
 
     def user_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
@@ -302,6 +304,104 @@ class UserActivityLogService:
                 audit_log_id,
                 "attendee_was_invited_to_event",
                 message=f'Attendee "{attendee_name}" paid for a suit in {event.name}',
+            )
+
+    def look_created(self, audit_log_message: AuditLogMessage):
+        data = audit_log_message.payload
+
+        user_id = UUID(data.get("user_id"))
+        audit_log_id = UUID(audit_log_message.id)
+        look_name = data.get("name")
+
+        self.__persist(
+            user_id,
+            audit_log_id,
+            "look_created",
+            f'Created look "{look_name}"',
+        )
+
+    def look_updated(self, audit_log_message: AuditLogMessage):
+        diff = audit_log_message.diff
+
+        if not diff:
+            return
+
+        data = audit_log_message.payload
+        audit_log_id = UUID(audit_log_message.id)
+        user_id = UUID(data.get("user_id"))
+        look_id = UUID(data.get("id"))
+
+        look = self.__look_service.get_look_by_id(look_id)
+
+        if "is_active" in diff:
+            self.__persist(
+                user_id,
+                audit_log_id,
+                "look_deleted",
+                f'Look "{look.name}" has been removed',
+            )
+
+    def measurements_created(self, audit_log_message: AuditLogMessage):
+        data = audit_log_message.payload
+
+        user_id = UUID(data.get("user_id"))
+        audit_log_id = UUID(audit_log_message.id)
+
+        self.__persist(
+            user_id,
+            audit_log_id,
+            "measurements_provided",
+            f"Provided new measurements",
+        )
+
+    def sizes_created(self, audit_log_message: AuditLogMessage):
+        data = audit_log_message.payload
+
+        user_id = UUID(data.get("user_id"))
+        audit_log_id = UUID(audit_log_message.id)
+
+        self.__persist(
+            user_id,
+            audit_log_id,
+            "sizes_recalculated",
+            f"Sizes calculated",
+        )
+
+    def order_created(self, audit_log_message: AuditLogMessage):
+        data = audit_log_message.payload
+
+        user_id = UUID(data.get("user_id"))
+        audit_log_id = UUID(audit_log_message.id)
+        order_id = UUID(data.get("id"))
+
+        order = self.__order_service.get_order_by_id(order_id)
+
+        self.__persist(
+            user_id,
+            audit_log_id,
+            "order_placed",
+            f"Order placed {order.order_number}, {order.shipping_method}, {order.status}",
+        )
+
+    def order_updated(self, audit_log_message: AuditLogMessage):
+        diff = audit_log_message.diff
+
+        if not diff:
+            return
+
+        data = audit_log_message.payload
+        user_id = UUID(data.get("user_id"))
+        audit_log_id = UUID(audit_log_message.id)
+
+        if "status" in diff:
+            old_status = diff["status"]["before"]
+            new_status = diff["status"]["after"]
+
+            self.__persist(
+                user_id,
+                audit_log_id,
+                "order_status_updated",
+                f'Order status updated from "{old_status}" to "{new_status}"',
             )
 
     @staticmethod

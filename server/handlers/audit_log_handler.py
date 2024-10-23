@@ -12,6 +12,7 @@ from server.services.audit_service import AuditLogService
 from server.services.event_service import EventService
 from server.services.integrations.shopify_service import ShopifyService
 from server.services.look_service import LookService
+from server.services.order_service import OrderService
 from server.services.role_service import RoleService
 from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
@@ -42,9 +43,10 @@ def lambda_handler(event: dict, context: LambdaContext):
     attendee_service = AttendeeService(shopify_service, user_service, None, None, None)
     event_service = EventService()
     role_service = RoleService()
+    order_service = OrderService(user_service)
     look_service = LookService(user_service, None, None)
     user_activity_log_service = UserActivityLogService(
-        user_service, event_service, attendee_service, role_service, look_service
+        user_service, event_service, attendee_service, role_service, look_service, order_service
     )
     audit_log_service = AuditLogService(
         shopify_service, user_service, attendee_service, event_service, user_activity_log_service

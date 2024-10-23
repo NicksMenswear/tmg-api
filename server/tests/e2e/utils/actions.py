@@ -934,3 +934,31 @@ def select_suit_builder_item_by_index(page: Page, items_type: str, item_index: i
     nth_item.scroll_into_view_if_needed()
     nth_item.wait_for(state="visible")
     nth_item.click()
+
+
+def click_add_to_cart_on_product_page(page: Page):
+    buttons_container = page.locator("div.purchase-details")
+    buttons_container.scroll_into_view_if_needed()
+    buttons_container.wait_for(state="visible")
+
+    add_to_cart_button = buttons_container.locator("button:has-text('Add to cart')")
+    add_to_cart_button.scroll_into_view_if_needed()
+    add_to_cart_button.wait_for(state="visible")
+    add_to_cart_button.click()
+
+
+def press_plus_button_to_increase_quantity_in_cart(page: Page):
+    plus_button = page.locator("span.quantity-plus").nth(1)
+    plus_button.scroll_into_view_if_needed()
+    plus_button.wait_for(state="visible")
+    time.sleep(1)
+    plus_button.click()
+    time.sleep(1)
+    plus_button.click()
+    time.sleep(1)
+    plus_button.click()
+    time.sleep(1)
+    plus_button.click()
+    time.sleep(1)
+    plus_button.click()
+    time.sleep(1)

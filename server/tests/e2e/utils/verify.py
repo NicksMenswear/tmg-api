@@ -202,3 +202,17 @@ def looks_page_is_empty(page: Page):
     looks_message = page.locator(".tmg-empty-data p:has-text('Your looks will be displayed here.')")
     looks_message.scroll_into_view_if_needed()
     looks_message.wait_for(state="visible")
+
+
+def shopify_checkout_shipping_method_is(page: Page, shipping_method: str, shipping_price: str):
+    shipping_methods_section = page.locator("fieldset#shipping_methods")
+    shipping_methods_section.scroll_into_view_if_needed()
+    shipping_methods_section.wait_for(state="visible")
+
+    shipping_carrier = shipping_methods_section.locator("p", has_text=shipping_method)
+    shipping_carrier.scroll_into_view_if_needed()
+    shipping_carrier.wait_for(state="visible")
+
+    shipping_price = shipping_methods_section.locator("span", has_text=shipping_price)
+    shipping_price.scroll_into_view_if_needed()
+    shipping_price.wait_for(state="visible")

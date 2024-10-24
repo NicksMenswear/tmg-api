@@ -62,7 +62,7 @@ def test_free_shipping_for_swatches_forever(page: Page):
     verify.shopify_checkout_shipping_method_is(page, "UPS Ground", "FREE")
 
 
-@e2e_allowed_in({"dev"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_standard_10usd_shipping_for_items_under_210(page: Page):
@@ -80,7 +80,7 @@ def test_standard_10usd_shipping_for_items_under_210(page: Page):
     verify.shopify_checkout_shipping_method_is(page, "UPS Ground", "$10.00")
 
 
-@e2e_allowed_in({"dev"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_free_shipping_for_multiple_cheap_items_over_210_in_total(page: Page):

@@ -77,7 +77,7 @@ def test_pay_dialog_correctness(page: Page):
 
     actions.open_pay_dialog(page, event_id)
 
-    verify.verify_input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name_1, attendee_last_name_1, 0)
+    verify.verify_input_value_in_pay_dialog_for_attendee_by_name(page, attendee_first_name_1, attendee_last_name_1, "")
 
     verify.warning_in_pay_dialog_for_attendee_by_name(
         page, attendee_first_name_2, attendee_last_name_2, "No invite was accepted"

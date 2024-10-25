@@ -62,7 +62,7 @@ def test_free_shipping_for_swatches_forever(page: Page):
     verify.shopify_checkout_shipping_method_is(page, "UPS Ground", "FREE")
 
 
-@e2e_allowed_in({"dev"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_standard_10usd_shipping_for_items_under_210(page: Page):
@@ -72,7 +72,7 @@ def test_standard_10usd_shipping_for_items_under_210(page: Page):
     page.goto(f"{STORE_URL}/products/apple-red-bow-tie")
 
     actions.click_add_to_cart_on_product_page(page)
-    actions.continue_shopping(page)
+    # actions.continue_shopping(page)
     actions.click_on_cart_checkout_button(page)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, "Apple Red Bow Tie", "40", True)
@@ -80,7 +80,7 @@ def test_standard_10usd_shipping_for_items_under_210(page: Page):
     verify.shopify_checkout_shipping_method_is(page, "UPS Ground", "$10.00")
 
 
-@e2e_allowed_in({"dev"})
+@e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_4
 def test_free_shipping_for_multiple_cheap_items_over_210_in_total(page: Page):
@@ -90,7 +90,7 @@ def test_free_shipping_for_multiple_cheap_items_over_210_in_total(page: Page):
     page.goto(f"{STORE_URL}/products/apple-red-bow-tie")
 
     actions.click_add_to_cart_on_product_page(page)
-    actions.continue_shopping(page)
+    # actions.continue_shopping(page)
     actions.press_plus_button_to_increase_quantity_in_cart(page)
     actions.click_on_cart_checkout_button(page)
 

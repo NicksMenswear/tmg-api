@@ -6,6 +6,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+from sqlalchemy import select
+
 from server.database.database_manager import db
 from server.database.models import Order, SourceType, Product, OrderItem, OrderType, Address
 from server.models.measurement_model import MeasurementModel
@@ -52,13 +54,15 @@ class OrderService:
         return new_order_number
 
     def get_order_by_id(self, order_id: uuid.UUID) -> OrderModel:
-        order = Order.query.filter(Order.id == order_id).first()
+        order = db.session.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
 
         if not order:
             raise NotFoundError("Order not found")
 
         order_model = OrderModel.model_validate(order)
-        products = Product.query.join(OrderItem).filter(OrderItem.order_id == order_id).all()
+        products = (
+            db.session.execute(select(Product).join(OrderItem).where(OrderItem.order_id == order_id)).scalars().all()
+        )
         order_model.products = [ProductModel.model_validate(product) for product in products]
 
         return order_model
@@ -129,7 +133,7 @@ class OrderService:
         return OrderItemModel.model_validate(order_item)
 
     def get_order_items_by_order_id(self, order_id: uuid.UUID) -> List[OrderItemModel]:
-        order_items = OrderItem.query.filter(OrderItem.order_id == order_id).all()
+        order_items = db.session.execute(select(OrderItem).where(OrderItem.order_id == order_id)).scalars().all()
 
         return [OrderItemModel.model_validate(order_item) for order_item in order_items]
 
@@ -137,12 +141,12 @@ class OrderService:
         self, status: str, days: int, user_id: uuid.UUID = None
     ) -> List[OrderModel]:
         cutoff_date = datetime.utcnow() - timedelta(days=days)
-        query = Order.query.filter(Order.status == status).filter(Order.created_at >= cutoff_date)
+        query = select(Order).where(Order.status == status).where(Order.created_at >= cutoff_date)
 
         if user_id:
-            query = query.filter(Order.user_id == user_id)
+            query = query.where(Order.user_id == user_id)
 
-        orders = query.all()
+        orders = db.session.execute(query).scalars().all()
 
         return [OrderModel.model_validate(order) for order in orders]
 
@@ -154,7 +158,7 @@ class OrderService:
         measurement_model: Optional[MeasurementModel] = None,
     ) -> OrderModel:
         try:
-            order = Order.query.filter(Order.id == order_id).first()
+            order = db.session.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
             order.status = status
 
             if order.meta is None:
@@ -186,7 +190,7 @@ class OrderService:
 
     def associate_order_item_with_product(self, order_item_id: uuid.UUID, product_id: uuid.UUID):
         try:
-            order_item = OrderItem.query.filter(OrderItem.id == order_item_id).first()
+            order_item = db.session.execute(select(OrderItem).where(OrderItem.id == order_item_id)).scalar_one_or_none()
             order_item.product_id = product_id
 
             db.session.commit()

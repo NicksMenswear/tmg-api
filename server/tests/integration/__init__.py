@@ -209,6 +209,8 @@ class BaseTestCase(TestCase):
             file_id = "swatches"
         elif product_type == ProductType.PREMIUM_POCKET_SQUARE:
             file_id = "premium_pocket_squares"
+        elif product_type == ProductType.GARMENT_BAG:
+            file_id = "garment_bags"
         else:
             return set()
 

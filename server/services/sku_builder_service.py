@@ -223,6 +223,7 @@ class ProductType(Enum):
     THREE_PIECE_SUIT_OR_TUX = "0"
     SWATCHES = "S"
     PREMIUM_POCKET_SQUARE = "P"
+    GARMENT_BAG = "G"
     UNKNOWN = "UNKNOWN"
 
 
@@ -272,6 +273,8 @@ class SkuBuilder:
             return self.__build_swatches_sku(shopify_sku)
         elif product_type == ProductType.PREMIUM_POCKET_SQUARE:
             return self.__build_premium_pocket_square_sku(shopify_sku)
+        elif product_type == ProductType.GARMENT_BAG:
+            return shopify_sku
         else:
             return None
 

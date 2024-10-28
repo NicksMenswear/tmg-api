@@ -26,7 +26,7 @@ from server.services.integrations.shopify_service import AbstractShopifyService,
 from server.services.look_service import LookService
 from server.services.user_service import UserService
 
-GIFT_FOR_ATTENDEE = "GIFT_FOR_ATTENDEE"
+DISCOUNT_GIFT_FOR_ATTENDEE = "DISCOUNT_GIFT_FOR_ATTENDEE"
 GIFT_DISCOUNT_CODE_PREFIX = "GIFT"
 TMG_GROUP_50_USD_OFF_DISCOUNT_CODE_PREFIX = "TMG-GROUP-50-OFF"
 TMG_GROUP_50_USD_AMOUNT = 50
@@ -434,7 +434,7 @@ class DiscountService:
                 title=f"{event.name} attendees discount",
                 body_html=product_body,
                 amount=total_intent_amount,
-                sku=GIFT_FOR_ATTENDEE,
+                sku=DISCOUNT_GIFT_FOR_ATTENDEE,
                 tags=["hidden", "event_id=" + str(event.id), "user_id=" + str(event.user_id)],
             )
 

@@ -10,7 +10,7 @@ from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import (
-    GIFT_FOR_ATTENDEE,
+    DISCOUNT_GIFT_FOR_ATTENDEE,
     DiscountService,
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
@@ -235,7 +235,7 @@ class ShopifyWebhookOrderHandler:
                 num_processable_items -= 1
                 continue
 
-            if shopify_sku and shopify_sku.startswith(GIFT_FOR_ATTENDEE):
+            if shopify_sku and shopify_sku.startswith(DISCOUNT_GIFT_FOR_ATTENDEE):
                 self.__process_gift_discount(line_item, shopify_customer_email)
                 num_processable_items -= 1
 
@@ -269,10 +269,10 @@ class ShopifyWebhookOrderHandler:
 
             shiphero_sku = None
             product = None
+            product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
             try:
                 shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
-                product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
                 if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
                     shopify_suit_sku_suffix = f"{shopify_sku[-5:]}"
@@ -293,7 +293,7 @@ class ShopifyWebhookOrderHandler:
             except ServiceError as e:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
-            if shiphero_sku:
+            if shiphero_sku and product_type is not ProductType.UNKNOWN:
                 product = self.__get_product_by_shiphero_sku(shiphero_sku)
 
                 if product:

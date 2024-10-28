@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from parameterized import parameterized
 
 from server.database.models import Product, Address, DiscountType, Discount
-from server.services.discount_service import GIFT_FOR_ATTENDEE, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import DISCOUNT_GIFT_FOR_ATTENDEE, GIFT_DISCOUNT_CODE_PREFIX
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -730,7 +730,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
                 line_items=[
                     fixtures.webhook_shopify_line_item(sku=product_sku),
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
+                        sku=f"{DISCOUNT_GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     ),

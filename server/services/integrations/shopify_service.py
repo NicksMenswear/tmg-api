@@ -516,6 +516,7 @@ class ShopifyService(AbstractShopifyService):
         user_errors = body.get("data", {}).get("customerUpdate", {}).get("userErrors", [])
 
         if user_errors:
+            logger.error(f"Failed to update Shopify customer: {user_errors}")
             raise ServiceError("Failed to update Shopify customer.")
 
         customer = body.get("data", {}).get("customerUpdate", {}).get("customer")

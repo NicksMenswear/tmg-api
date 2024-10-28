@@ -76,9 +76,7 @@ class UserService:
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
         except Exception as e:
-            db.session.rollback()
             logger.exception(e)
-            raise ServiceError("Failed to create user.")
 
         # Tracking # TODO: async
         events = ["Signed Up"]
@@ -191,15 +189,17 @@ class UserService:
             raise
         except Exception as e:
             logger.exception(e)
-            raise ServiceError("Failed to update user.", e)
 
         # Tracking # TODO: async
         events = []
+
         if activated_account:
             events.append("Activated Account")
+
         self.activecampaign_service.sync_contact(
             user.email, user.first_name, user.last_name, phone=user.phone_number, events=events
         )
+
         return UserModel.model_validate(user)
 
     @staticmethod

@@ -10,7 +10,7 @@ from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import (
-    DISCOUNT_VIRTUAL_PRODUCT_PREFIX,
+    GIFT_FOR_ATTENDEE,
     DiscountService,
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
@@ -235,11 +235,9 @@ class ShopifyWebhookOrderHandler:
                 num_processable_items -= 1
                 continue
 
-            if shopify_sku and shopify_sku.startswith(DISCOUNT_VIRTUAL_PRODUCT_PREFIX):
+            if shopify_sku and shopify_sku.startswith(GIFT_FOR_ATTENDEE):
                 self.__process_gift_discount(line_item, shopify_customer_email)
-                # Skip attendees discount products
                 num_processable_items -= 1
-                continue
 
             if not order_id:
                 shipping_method = None
@@ -285,9 +283,7 @@ class ShopifyWebhookOrderHandler:
                         track_suit_parts[shopify_suit_sku_suffix][ProductType.SUIT] = f"0{shopify_sku[1:]}"
 
                 if not shiphero_sku:
-                    if product_type is ProductType.UNKNOWN:
-                        shiphero_sku = shopify_sku
-                    elif size_model and measurement_model:
+                    if product_type is not ProductType.UNKNOWN and size_model and measurement_model:
                         logger.error(
                             f"ShipHero SKU not generated for '{shopify_sku}' in order '{shopify_order_number}'"
                         )

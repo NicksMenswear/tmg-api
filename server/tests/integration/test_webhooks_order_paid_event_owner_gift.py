@@ -1,7 +1,7 @@
 import random
 
 from server.database.models import DiscountType, Discount
-from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import GIFT_FOR_ATTENDEE, GIFT_DISCOUNT_CODE_PREFIX
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
 
 PAID_ORDER_REQUEST_HEADERS = {
@@ -24,9 +24,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
             fixtures.webhook_shopify_paid_order(
                 customer_email=user.email,
                 line_items=[
-                    fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}"
-                    )
+                    fixtures.webhook_shopify_line_item(sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}")
                 ],
             ),
             PAID_ORDER_REQUEST_HEADERS,
@@ -34,7 +32,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertTrue(len(response.json) == 0)
+        self.assertTrue(len(response.json["order_items"]) == 1)
 
     def test_order_discount_product(self):
         # given
@@ -62,7 +60,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
                 customer_email=user.email,
                 line_items=[
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
@@ -104,7 +102,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
                 customer_email=user.email,
                 line_items=[
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
@@ -161,7 +159,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
                 customer_email=user.email,
                 line_items=[
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )
@@ -240,7 +238,7 @@ class TestWebhooksOrderPaidEventOwnerGift(BaseTestCase):
                 customer_email=user.email,
                 line_items=[
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     )

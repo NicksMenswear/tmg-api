@@ -10,7 +10,7 @@ from server.models.product_model import CreateProductModel, ProductModel
 from server.services import NotFoundError, ServiceError
 from server.services.attendee_service import AttendeeService
 from server.services.discount_service import (
-    GIFT_FOR_ATTENDEE,
+    DISCOUNT_GIFT_FOR_ATTENDEE,
     DiscountService,
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
@@ -235,7 +235,7 @@ class ShopifyWebhookOrderHandler:
                 num_processable_items -= 1
                 continue
 
-            if shopify_sku and shopify_sku.startswith(GIFT_FOR_ATTENDEE):
+            if shopify_sku and shopify_sku.startswith(DISCOUNT_GIFT_FOR_ATTENDEE):
                 self.__process_gift_discount(line_item, shopify_customer_email)
                 num_processable_items -= 1
 

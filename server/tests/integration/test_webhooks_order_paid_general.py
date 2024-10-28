@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from parameterized import parameterized
 
 from server.database.models import Product, Address, DiscountType, Discount
-from server.services.discount_service import DISCOUNT_VIRTUAL_PRODUCT_PREFIX, GIFT_DISCOUNT_CODE_PREFIX
+from server.services.discount_service import GIFT_FOR_ATTENDEE, GIFT_DISCOUNT_CODE_PREFIX
 from server.services.order_service import (
     ORDER_STATUS_READY,
     ORDER_STATUS_PENDING_MEASUREMENTS,
@@ -233,9 +233,9 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         # then
         self.assert200(response)
-        self.assertEqual(response.json["status"], ORDER_STATUS_READY)
+        self.assertEqual(response.json["status"], ORDER_STATUS_PENDING_MISSING_SKU)
         self.assertEqual(response.json["order_items"][0]["shopify_sku"], line_item["sku"])
-        self.assertTrue(len(response.json["products"]) == 1)
+        self.assertTrue(len(response.json["products"]) == 0)
 
     def test_order_general_details(self):
         # given
@@ -395,8 +395,8 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         order = self.order_service.get_order_by_id(response.json["id"])
         self.assertIsNotNone(order)
         self.assertEqual(order.order_items[0].shopify_sku, webhook_request["line_items"][0]["sku"])
-        self.assertTrue(len(order.products) == 1)
-        self.assertEqual(order.status, ORDER_STATUS_READY)
+        self.assertTrue(len(order.products) == 0)
+        self.assertEqual(order.status, ORDER_STATUS_PENDING_MISSING_SKU)
 
     @parameterized.expand(
         [
@@ -730,7 +730,7 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
                 line_items=[
                     fixtures.webhook_shopify_line_item(sku=product_sku),
                     fixtures.webhook_shopify_line_item(
-                        sku=f"{DISCOUNT_VIRTUAL_PRODUCT_PREFIX}-{random.randint(1000, 1000000)}",
+                        sku=f"{GIFT_FOR_ATTENDEE}-{random.randint(1000, 1000000)}",
                         product_id=product_id,
                         variant_id=variant_id,
                     ),
@@ -743,11 +743,34 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
             self.assert200(response)
             order = self.order_service.get_order_by_id(response.json["id"])
             self.assertIsNotNone(order)
-            self.assertTrue(len(order.order_items) == 1)
-            response_order_item = response.json["order_items"][0]
-            request_line_item = webhook_request["line_items"][0]
-            self.assertEqual(response_order_item["shopify_sku"], request_line_item["sku"])
-            self.assertTrue(response_order_item["shopify_sku"].startswith(product_sku))
+            self.assertTrue(len(order.order_items) == 2)
+
+            gift_request_item = (
+                webhook_request["line_items"][1]
+                if webhook_request["line_items"][0]["sku"] == product_sku
+                else webhook_request["line_items"][0]
+            )
+            product_request_item = (
+                webhook_request["line_items"][0]
+                if webhook_request["line_items"][0]["sku"] == product_sku
+                else webhook_request["line_items"][1]
+            )
+
+            self.assertEqual(len(response.json["order_items"]), 2)
+
+            gift_response_item = (
+                response.json["order_items"][1]
+                if response.json["order_items"][0]["shopify_sku"] == product_sku
+                else response.json["order_items"][0]
+            )
+            product_response_item = (
+                response.json["order_items"][0]
+                if response.json["order_items"][0]["shopify_sku"] == product_sku
+                else response.json["order_items"][1]
+            )
+
+            self.assertEqual(gift_request_item["sku"], gift_response_item["shopify_sku"])
+            self.assertEqual(product_request_item["sku"], product_response_item["shopify_sku"])
 
             discounts = Discount.query.filter(Discount.attendee_id == attendee.id).all()
             self.assertEqual(len(discounts), 1)

@@ -269,10 +269,10 @@ class ShopifyWebhookOrderHandler:
 
             shiphero_sku = None
             product = None
+            product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
             try:
                 shiphero_sku = self.sku_builder.build(shopify_sku, size_model, measurement_model)
-                product_type = self.sku_builder.get_product_type_by_sku(shopify_sku)
 
                 if product_type in {ProductType.JACKET, ProductType.VEST, ProductType.PANTS}:
                     shopify_suit_sku_suffix = f"{shopify_sku[-5:]}"
@@ -293,7 +293,7 @@ class ShopifyWebhookOrderHandler:
             except ServiceError as e:
                 logger.error(f"Error building ShipHero SKU for '{shopify_sku}': {e}")
 
-            if shiphero_sku:
+            if shiphero_sku and product_type is not ProductType.UNKNOWN:
                 product = self.__get_product_by_shiphero_sku(shiphero_sku)
 
                 if product:

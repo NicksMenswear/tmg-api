@@ -116,15 +116,15 @@ class UserActivityLogService:
 
     def event_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
-        event = self.__event_service.get_event_by_id(data["id"])
         audit_log_id = UUID(audit_log_message.id)
 
         event_name = data["name"]
         event_date = datetime.fromisoformat(data["event_at"]).strftime("%d %b %Y") if data["event_at"] else None
         event_type = data["type"]
+        user_id = UUID(data["user_id"])
 
         self.__persist(
-            event.user_id,
+            user_id,
             audit_log_id,
             "event_created",
             f"Event created: {event_type}, {event_name}, {event_date}",
@@ -138,14 +138,14 @@ class UserActivityLogService:
 
         data = audit_log_message.payload
         audit_log_id = UUID(audit_log_message.id)
-        event = self.__event_service.get_event_by_id(data["id"])
+        user_id = UUID(data["user_id"])
 
         if "name" in diff:
             old_name = diff["name"]["before"]
             new_name = diff["name"]["after"]
 
             self.__persist(
-                event.user_id,
+                user_id,
                 audit_log_id,
                 "event_name_updated",
                 f'Event name changed from "{old_name}" to "{new_name}"',
@@ -164,7 +164,7 @@ class UserActivityLogService:
             )
 
             self.__persist(
-                event.user_id,
+                user_id,
                 audit_log_id,
                 "event_date_updated",
                 f'Event date changed from "{old_date}" to "{new_date}"',
@@ -172,7 +172,7 @@ class UserActivityLogService:
 
         if "is_active" in diff and not diff["is_active"]["after"]:
             self.__persist(
-                event.user_id,
+                user_id,
                 audit_log_id,
                 "event_deleted",
                 f'Event "{data["name"]}" deleted',

@@ -193,7 +193,7 @@ class UserActivityLogService:
             event.user_id,
             audit_log_id,
             "attendee_created",
-            f'Attendee added to event "{event.name}": {attendee_name}, {attendee_email}',
+            f'Attendee "{attendee_name}", "{attendee_email}" added to event "{event.name}"',
         )
 
     def attendee_updated(self, audit_log_message: AuditLogMessage):
@@ -207,21 +207,18 @@ class UserActivityLogService:
         event_id: UUID = UUID(data.get("event_id"))
         attendee_id: UUID = UUID(data.get("id"))
         event = self.__event_service.get_event_by_id(event_id)
+        attendee = self.__attendee_service.get_attendee_by_id(attendee_id, False)
+        attendee_name = f"{attendee.first_name} {attendee.last_name}"
 
         if "is_active" in diff:
-            attendee = self.__attendee_service.get_attendee_by_id(attendee_id, False)
-
             self.__persist(
                 event.user_id,
                 audit_log_id,
                 "attendee_deleted",
-                f'Attendee "{attendee.first_name} {attendee.last_name}" has been removed from event "{event.name}"',
+                f'Attendee "{attendee_name}" has been removed from event "{event.name}"',
             )
 
             return
-
-        attendee = self.__attendee_service.get_attendee_by_id(attendee_id, False)
-        attendee_name = f"{attendee.first_name} {attendee.last_name}"
 
         if "first_name" in diff or "last_name" in diff:
             old_first_name = diff.get("first_name", {}).get("before", data.get("first_name"))
@@ -259,10 +256,10 @@ class UserActivityLogService:
             new_role = self.__role_service.get_role_by_id(new_role_id)
 
             if not old_role_id:
-                message = f'Attendee role was set to "{new_role.name}"'
+                message = f'Attendee "{attendee_name}" role was set to "{new_role.name}"'
             else:
                 old_role = self.__role_service.get_role_by_id(old_role_id)
-                message = f'Attendee role was updated from "{old_role.name}" to "{new_role.name}"'
+                message = f'Attendee "{attendee_name}" role was updated from "{old_role.name}" to "{new_role.name}"'
 
             self.__persist(
                 event.user_id,
@@ -278,10 +275,10 @@ class UserActivityLogService:
             new_look = self.__look_service.get_look_by_id(new_look_id)
 
             if not old_look_id:
-                message = f'Attendee look was set to "{new_look.name}"'
+                message = f'Attendee "{attendee_name}" look was set to "{new_look.name}"'
             else:
                 old_look = self.__look_service.get_look_by_id(old_look_id)
-                message = f'Attendee look was updated from "{old_look.name}" to "{new_look.name}"'
+                message = f'Attendee "{attendee_name}" look was updated from "{old_look.name}" to "{new_look.name}"'
 
             self.__persist(
                 event.user_id,
@@ -295,15 +292,15 @@ class UserActivityLogService:
                 event.user_id,
                 audit_log_id,
                 "attendee_was_invited_to_event",
-                message=f'Attendee "{attendee_name}" has been invited to event {event.name}',
+                message=f'Attendee "{attendee_name}" has been invited to event "{event.name}"',
             )
 
         if "pay" in diff:
             self.__persist(
                 event.user_id,
                 audit_log_id,
-                "attendee_was_invited_to_event",
-                message=f'Attendee "{attendee_name}" paid for a suit in {event.name}',
+                "attendee_was_paid_for_suit",
+                message=f'Attendee "{attendee_name}" paid for a suit in "{event.name}" event',
             )
 
     def look_created(self, audit_log_message: AuditLogMessage):
@@ -312,12 +309,13 @@ class UserActivityLogService:
         user_id = UUID(data.get("user_id"))
         audit_log_id = UUID(audit_log_message.id)
         look_name = data.get("name")
+        look_price = data.get("product_specs", {}).get("bundle", {}).get("variant_price", 0)
 
         self.__persist(
             user_id,
             audit_log_id,
             "look_created",
-            f'Created look "{look_name}"',
+            f'Created look "{look_name}". Price ${look_price}',
         )
 
     def look_updated(self, audit_log_message: AuditLogMessage):
@@ -392,6 +390,10 @@ class UserActivityLogService:
         data = audit_log_message.payload
         user_id = UUID(data.get("user_id"))
         audit_log_id = UUID(audit_log_message.id)
+        order_id = UUID(data.get("id"))
+        order = self.__order_service.get_order_by_id(order_id)
+        order_number = order.order_number
+        shopify_order_number = order.shopify_order_number
 
         if "status" in diff:
             old_status = diff["status"]["before"]
@@ -401,7 +403,7 @@ class UserActivityLogService:
                 user_id,
                 audit_log_id,
                 "order_status_updated",
-                f'Order status updated from "{old_status}" to "{new_status}"',
+                f'Order {order_number}, {shopify_order_number} status updated from "{old_status}" to "{new_status}"',
             )
 
     @staticmethod

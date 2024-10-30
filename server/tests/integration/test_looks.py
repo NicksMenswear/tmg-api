@@ -48,36 +48,6 @@ class TestLooks(BaseTestCase):
         )
         self.assertEqual(db_look.user_id, user.id)
 
-    def test_create_look_with_sku(self):
-        # given
-        user = self.user_service.create_user(fixtures.create_user_request())
-
-        # when
-        look_data = fixtures.create_look_request(
-            user_id=user.id,
-            spec_type=ProductSpecType.SKU,
-            product_specs=self.create_look_test_product_specs_of_type_sku(),
-        )
-
-        response = self.client.open(
-            "/looks",
-            query_string=self.hmac_query_params,
-            data=look_data.json(),
-            method="POST",
-            headers=self.request_headers,
-            content_type=self.content_type,
-        )
-
-        # then
-        self.assertStatus(response, 201)
-        self.assertIsNotNone(response.json["id"])
-        self.assertEqual(response.json["name"], look_data.name)
-        db_look = self.look_service.get_look_by_id(response.json["id"])
-        self.assertIsNotNone(db_look)
-        self.assertIsNotNone(db_look.product_specs.get("bundle").get("variant_id"))
-        self.assertIsNotNone(db_look.product_specs.get("suit").get("variant_id"))
-        self.assertEqual(db_look.user_id, user.id)
-
     def test_create_look_with_image(self):
         # given
         user = self.user_service.create_user(fixtures.create_user_request())

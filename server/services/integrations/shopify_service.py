@@ -128,6 +128,17 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def create_bundle2(
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
+    ) -> ShopifyVariantModel:
+        pass
+
+    @abstractmethod
     def create_bundle_identifier_product(self, bundle_id: str) -> ShopifyProduct:
         pass
 
@@ -327,6 +338,43 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_variants[bundle_variant_id] = bundle_model
 
         return bundle_model.variant_id
+
+    def create_bundle2(
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
+    ) -> ShopifyVariantModel:
+        if not variant_ids:
+            raise ServiceError("No variants provided for bundle creation.")
+
+        bundle_price = 0.0
+
+        for variant_id in variant_ids:
+            variant = self.shopify_variants.get(variant_id)
+            if not variant:
+                raise NotFoundError(f"Variant with id {variant_id} not found.")
+
+            bundle_price += variant.variant_price
+
+        bundle_variant_id = str(random.randint(1000000, 1000000000))
+
+        bundle_model = ShopifyVariantModel(
+            **{
+                "product_id": str(random.randint(10000, 1000000)),
+                "product_title": f"Product for bundle {bundle_variant_id}",
+                "variant_id": bundle_variant_id,
+                "variant_title": f"Variant for bundle {bundle_variant_id}",
+                "variant_sku": f"00{random.randint(10000, 1000000)}",
+                "variant_price": bundle_price,
+            }
+        )
+
+        self.shopify_variants[bundle_variant_id] = bundle_model
+
+        return bundle_model
 
     def create_bundle_identifier_product(self, bundle_id: str) -> ShopifyProduct:
         return self.create_product(
@@ -1007,8 +1055,10 @@ class ShopifyService(AbstractShopifyService):
         image_src: str = None,
         tags: list[str] = None,
     ) -> str:
+        bundle_sku = f"suit-bundle-{bundle_id}"
+
         bundle_parent_product: ShopifyProduct = self.create_product(
-            bundle_name, "", 0.0, f"suit-bundle-{bundle_id}", (tags or []) + ["hidden"]
+            bundle_name, "", 0.0, bundle_sku, (tags or []) + ["hidden"]
         )
 
         shopify_variant_gids = [
@@ -1022,6 +1072,32 @@ class ShopifyService(AbstractShopifyService):
             self.__add_image_to_product(bundle_parent_product.gid, image_src)
 
         return str(bundle_parent_product.variants[0].get_id())
+
+    def create_bundle2(
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
+    ) -> ShopifyVariantModel:
+        bundle_sku = f"suit-bundle-{bundle_id}"
+
+        bundle_parent_product: ShopifyProduct = self.create_product(
+            bundle_name, "", 0.0, bundle_sku, (tags or []) + ["hidden"]
+        )
+
+        shopify_variant_gids = [
+            ShopifyService.product_variant_gid(int(variant_id)) for variant_id in variant_ids if variant_id
+        ]
+
+        self.__add_variants_to_product_bundle(bundle_parent_product.variants[0].gid, shopify_variant_gids)
+        self.__publish_and_add_to_online_sales_channel(bundle_parent_product.gid)
+
+        if image_src:
+            self.__add_image_to_product(bundle_parent_product.gid, image_src)
+
+        return self.get_variant_by_sku(bundle_sku)
 
     def __admin_api_graphql_request(self, query: str, variables: dict = None) -> dict:
         response = http(

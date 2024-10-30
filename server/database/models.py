@@ -544,6 +544,8 @@ class SuitBuilderItem(Base):
     sku = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     index = Column(Integer, nullable=False, default=0)
+    variant_id = Column(BigInteger, nullable=False)
+    product_id = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     price = Column(Numeric, nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)

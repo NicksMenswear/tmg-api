@@ -93,7 +93,6 @@ class TestAdminSuitBuilder(BaseTestCase):
         response_item = response.json.get(item.type)[0]
         self.assertEqual(response_item.get("sku"), item.sku)
         self.assertIsNotNone(response_item.get("id"))
-        self.assertIsNotNone(response_item.get("product_id"))
         self.assertIsNotNone(response_item.get("is_active"))
         self.assertIsNotNone(response_item.get("image_url"))
         self.assertIsNotNone(response_item.get("icon_url"))

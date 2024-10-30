@@ -281,6 +281,8 @@ class LookService:
         if not bundle:
             raise ServiceError("Failed to create bundle.")
 
+        all_skus.append(bundle_identifier_variant.sku)
+
         enriched_product_specs = {
             "bundle": {
                 "sku": bundle.variant_sku,

@@ -218,7 +218,9 @@ class TestShipping(BaseTestCase):
         user = self.app.user_service.create_user(fixtures.create_user_request())
 
         look = self.app.look_service.create_look(
-            fixtures.create_look_request(user_id=user.id, product_specs=self.create_look_test_product_specs())
+            fixtures.create_look_request(
+                user_id=user.id, product_specs=self.create_look_test_product_specs_of_type_sku()
+            )
         )
         for week in weeks:
             event = self.app.event_service.create_event(fixtures.create_event_request(user_id=user.id))
@@ -234,11 +236,9 @@ class TestShipping(BaseTestCase):
         for item in look.product_specs.get("items", []):
             shipping_items.append(
                 fixtures.shipping_item(
-                    product_id=item.get("product_id"),
-                    variant_id=item.get("variant_id"),
-                    sku=item.get("variant_sku"),
-                    price=int(item.get("variant_price") * 100),  # convert to cents
-                    name=item.get("variant_title"),
+                    sku=item.get("sku"),
+                    price=0,  # convert to cents
+                    name=item.get("sku"),
                 )
             )
 

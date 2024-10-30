@@ -25,8 +25,6 @@ class SuitBuilderItemModel(CoreModel):
     sku: str
     name: str
     index: int
-    variant_id: int
-    product_id: int
     is_active: bool
     price: float
 
@@ -34,7 +32,7 @@ class SuitBuilderItemModel(CoreModel):
         from_attributes = True
 
     def to_response(self) -> Dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "variant_id", "price"})
+        response = self.model_dump(include={"type", "sku", "name", "price"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"
@@ -47,7 +45,6 @@ class SuitBuilderItemModel(CoreModel):
         response["id"] = self.id
         response["index"] = self.index
         response["is_active"] = self.is_active
-        response["product_id"] = self.product_id
 
         return response
 

@@ -68,6 +68,10 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
+    def get_variants_by_skus(self, skus: list[str]) -> list[ShopifyVariantModel]:
+        pass
+
+    @abstractmethod
     def archive_product(self, product_gid: str) -> None:
         pass
 
@@ -114,7 +118,12 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
     ) -> str:
         pass
 
@@ -200,6 +209,14 @@ class FakeShopifyService(AbstractShopifyService):
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
 
+    def get_variants_by_skus(self, skus: list[str]) -> list[ShopifyVariantModel]:
+        result = []
+
+        for sku in skus:
+            result.append(self.get_variant_by_sku(sku))
+
+        return result
+
     def get_variants_by_id(self, variant_ids: list[str]) -> list[ShopifyVariantModel]:
         return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
 
@@ -275,7 +292,12 @@ class FakeShopifyService(AbstractShopifyService):
         return self.create_product(title, body_html, amount, sku, tags, False)
 
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
     ):
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
@@ -651,6 +673,76 @@ class ShopifyService(AbstractShopifyService):
             }
         )
 
+    def get_variants_by_skus(self, skus: list[str]) -> list[ShopifyVariantModel]:
+        if not skus:
+            return []
+
+        or_statement = " OR ".join([f"sku:{sku}" for sku in skus])
+
+        query = f"""
+        {{
+            products(first: 100, query: "{or_statement}") {{
+                edges {{
+                    node {{
+                        id
+                        title
+                        images(first: 1) {{
+                            edges {{
+                                node {{
+                                    url
+                                }}
+                            }}
+                        }}
+                        variants(first: 1) {{
+                            edges {{
+                                node {{
+                                    id
+                                    title
+                                    sku
+                                    price
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        """
+
+        try:
+            body = self.__admin_api_graphql_request(query)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to get variants by sku in shopify store.")
+
+        edges = body.get("data", {}).get("products", {}).get("edges")
+
+        if not edges:
+            return []
+
+        variants: list[ShopifyVariantModel] = []
+
+        for edge in edges:
+            product = edge.get("node")
+            variant = product.get("variants", {}).get("edges", [{}])[0].get("node")
+            image_edges = product.get("images", {}).get("edges", [{}])
+            image_url = image_edges[0].get("node", {}).get("url") if image_edges else None
+
+            variants.append(
+                ShopifyVariantModel(
+                    **{
+                        "product_id": product["id"].removeprefix("gid://shopify/Product/"),
+                        "product_title": product["title"],
+                        "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
+                        "variant_title": variant["title"],
+                        "variant_price": variant["price"],
+                        "variant_sku": variant["sku"],
+                        "image_url": image_url,
+                    }
+                )
+            )
+
+        return variants
+
     def get_variants_by_id(self, variant_ids: list[str]) -> list[ShopifyVariantModel]:
         if not variant_ids:
             return []
@@ -908,10 +1000,15 @@ class ShopifyService(AbstractShopifyService):
         return created_product
 
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
+        self,
+        bundle_name: str,
+        bundle_id: str,
+        variant_ids: list[str],
+        image_src: str = None,
+        tags: list[str] = None,
     ) -> str:
-        bundle_parent_product: ShopifyProduct = self.__create_product_with_variant(
-            bundle_name, "", (tags or []) + ["hidden"]
+        bundle_parent_product: ShopifyProduct = self.create_product(
+            bundle_name, "", 0.0, f"suit-bundle-{bundle_id}", (tags or []) + ["hidden"]
         )
 
         shopify_variant_gids = [

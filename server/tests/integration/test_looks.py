@@ -5,7 +5,6 @@ import uuid
 
 from server import encoder
 from server.database.models import Look
-from server.models.look_model import ProductSpecType
 from server.tests.integration import BaseTestCase, fixtures
 
 

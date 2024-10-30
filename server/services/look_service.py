@@ -77,7 +77,12 @@ class LookService:
 
     @staticmethod
     def get_look_price(look) -> float:
-        return look.product_specs.get("bundle", {}).get("variant_price")
+        bundle = look.product_specs.get("bundle", {})
+
+        if not bundle:
+            return 0.0
+
+        return bundle.get("variant_price", bundle.get("price", 0.0))
 
     @staticmethod
     def __persist_new_look_to_db(create_look: CreateLookModel) -> Look:
@@ -177,18 +182,6 @@ class LookService:
         ] + enriched_product_specs_variants
 
         return enriched_product_specs_variants
-
-    def __convert_sku_spec_to_variant_model(self, create_look: CreateLookModel):
-        create_look.product_specs["suit_variant"] = self.shopify_service.get_variant_by_sku(
-            create_look.product_specs["suit_variant"]
-        ).variant_id
-
-        variants = [create_look.product_specs["suit_variant"]]
-
-        for sku in create_look.product_specs.get("variants", []):
-            variants.append(self.shopify_service.get_variant_by_sku(sku).variant_id)
-
-        create_look.product_specs["variants"] = variants
 
     def __create_id_based_look(self, create_look: CreateLookModel) -> LookModel:
         db_look = self.__persist_new_look_to_db(create_look)
@@ -291,8 +284,9 @@ class LookService:
         enriched_product_specs = {
             "bundle": {
                 "sku": bundle.variant_sku,
+                "product_id": bundle.product_id,
                 "variant_id": bundle.variant_id,
-                "variant_price": bundle.variant_price,
+                "price": bundle.variant_price,
             },
             "suit": {"sku": suit_sku},
             "items": [{"sku": sku} for sku in all_skus],
@@ -425,14 +419,19 @@ class LookService:
         bundle_identifier_product_id = None
 
         for item in items:
-            sku = item.get("variant_sku")
+            sku = item.get("variant_sku", item.get("sku"))
             bundle_identifier_product_id = item.get("product_id")
 
             if not sku:
                 continue
 
             if sku.startswith("bundle-"):
-                bundle_identifier_product_id = item.get("product_id")
+                bundle_identifier_product = self.shopify_service.get_variant_by_sku(sku)
+
+                if not bundle_identifier_product:
+                    continue
+
+                bundle_identifier_product_id = bundle_identifier_product.product_id
                 has_bundle_identifier_product = True
                 break
 
@@ -454,7 +453,7 @@ class LookService:
             raise ServiceError("Failed to save image.", e)
 
     @staticmethod
-    def find_look_by_product_id(product_id: str) -> LookModel | None:
+    def find_look_by_item_sku(sku: str) -> LookModel | None:
         query = text(
             f"""
             SELECT id, name, user_id, product_specs, image_path, is_active
@@ -464,7 +463,7 @@ class LookService:
               AND EXISTS (
                 SELECT 1 
                 FROM json_array_elements(product_specs->'items') AS item 
-                WHERE item->>'product_id' = '{product_id}');
+                WHERE item->>'sku' = '{sku}');
             """
         )
 

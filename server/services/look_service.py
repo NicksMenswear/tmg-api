@@ -94,7 +94,7 @@ class LookService:
         return look
 
     @staticmethod
-    def __verify_that_look_does_not_exist(create_look: CreateLookModel) -> None:
+    def __verify_if_look_exist(create_look: CreateLookModel) -> None:
         db_look = db.session.execute(
             select(Look).where(Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active)
         ).scalar_one_or_none()
@@ -173,7 +173,7 @@ class LookService:
         create_look.product_specs["variants"] = variants
 
     def create_look(self, create_look: CreateLookModel) -> LookModel:
-        self.__verify_that_look_does_not_exist(create_look)
+        self.__verify_if_look_exist(create_look)
 
         try:
             if create_look.spec_type == ProductSpecType.SKU:

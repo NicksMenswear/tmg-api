@@ -6,7 +6,6 @@ import os
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import List, Optional, Set, Dict
 
 from server.controllers.util import http
 from server.models.shopify_model import ShopifyCustomer, ShopifyVariantModel, ShopifyProduct, ShopifyVariant
@@ -35,11 +34,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer | None:
         pass
 
     @abstractmethod
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> list[ShopifyCustomer]:
         pass
 
     @abstractmethod
@@ -57,11 +56,11 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: set[str]) -> None:
         pass
 
     @abstractmethod
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: set[str]) -> None:
         pass
 
     @abstractmethod
@@ -77,7 +76,7 @@ class AbstractShopifyService(ABC):
         pass
 
     @abstractmethod
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+    def get_variants_by_id(self, variant_ids: list[str]) -> list[ShopifyVariantModel]:
         pass
 
     @abstractmethod
@@ -88,8 +87,8 @@ class AbstractShopifyService(ABC):
         shopify_customer_id: str,
         discount_type: DiscountAmountType,
         amount: float,
-        minimum_order_amount: Optional[int] = None,
-        variant_ids: Optional[List[str]] = None,
+        minimum_order_amount: int | None = None,
+        variant_ids: list[str] | None = None,
     ):
         pass
 
@@ -103,19 +102,19 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def create_product(
-        self, title: str, body_html: str, price: float, sku: str, tags: List[str], requires_shipping: bool = True
+        self, title: str, body_html: str, price: float, sku: str, tags: list[str], requires_shipping: bool = True
     ) -> ShopifyProduct:
         pass
 
     @abstractmethod
     def create_attendee_discount_product(
-        self, title: str, body_html: str, amount: float, sku: str, tags: List[str]
+        self, title: str, body_html: str, amount: float, sku: str, tags: list[str]
     ) -> ShopifyProduct:
         pass
 
     @abstractmethod
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
     ) -> str:
         pass
 
@@ -131,7 +130,7 @@ class FakeShopifyService(AbstractShopifyService):
         self.shopify_virtual_product_variants = (
             shopify_virtual_product_variants if shopify_virtual_product_variants else {}
         )
-        self.customers: Dict[str, ShopifyCustomer] = {}
+        self.customers: dict[str, ShopifyCustomer] = {}
 
     def get_account_login_url(self) -> str:
         pass
@@ -139,7 +138,7 @@ class FakeShopifyService(AbstractShopifyService):
     def get_account_activation_url(self, customer_id: int) -> str:
         pass
 
-    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer | None:
         if email.endswith("@shopify-user-does-not-exists.com"):
             return None
 
@@ -149,7 +148,7 @@ class FakeShopifyService(AbstractShopifyService):
 
         return None
 
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> list[ShopifyCustomer]:
         customers = []
 
         for gid, customer in self.customers.items():
@@ -182,7 +181,7 @@ class FakeShopifyService(AbstractShopifyService):
                 del self.customers[customer.gid]
                 break
 
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: set[str]) -> None:
         customer = self.customers.get(shopify_gid)
 
         if not customer:
@@ -190,7 +189,7 @@ class FakeShopifyService(AbstractShopifyService):
 
         customer.tags = list(set(customer.tags) | tags)
 
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: set[str]) -> None:
         customer = self.customers.get(shopify_gid)
 
         if not customer:
@@ -201,7 +200,7 @@ class FakeShopifyService(AbstractShopifyService):
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
 
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+    def get_variants_by_id(self, variant_ids: list[str]) -> list[ShopifyVariantModel]:
         return [self.shopify_variants.get(variant_id) for variant_id in variant_ids]
 
     def archive_product(self, product_gid: str) -> None:
@@ -217,8 +216,8 @@ class FakeShopifyService(AbstractShopifyService):
         shopify_customer_id: str,
         discount_type: DiscountAmountType,
         amount: float,
-        minimum_order_amount: Optional[int] = None,
-        variant_ids: Optional[List[str]] = None,
+        minimum_order_amount: int | None = None,
+        variant_ids: list[str] | None = None,
     ):
         return {
             "shopify_discount_code": code,
@@ -232,7 +231,7 @@ class FakeShopifyService(AbstractShopifyService):
         pass
 
     def create_product(
-        self, title: str, body_html: str, price: float, sku: str, tags: List[str], requires_shipping: bool = True
+        self, title: str, body_html: str, price: float, sku: str, tags: list[str], requires_shipping: bool = True
     ) -> ShopifyProduct:
         created_product = ShopifyProduct(
             gid=ShopifyService.product_gid(random.randint(1000, 100000)),
@@ -271,12 +270,12 @@ class FakeShopifyService(AbstractShopifyService):
         return created_product
 
     def create_attendee_discount_product(
-        self, title: str, body_html: str, amount: float, sku: str, tags: List[str]
+        self, title: str, body_html: str, amount: float, sku: str, tags: list[str]
     ) -> ShopifyProduct:
         return self.create_product(title, body_html, amount, sku, tags, False)
 
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
     ):
         if not variant_ids:
             raise ServiceError("No variants provided for bundle creation.")
@@ -367,7 +366,7 @@ class ShopifyService(AbstractShopifyService):
 
         return body.get("data", {}).get("customerGenerateAccountActivationUrl", {}).get("accountActivationUrl")
 
-    def get_customer_by_email(self, email: str) -> Optional[ShopifyCustomer]:
+    def get_customer_by_email(self, email: str) -> ShopifyCustomer | None:
         query = """
         query($query: String!) {
           customers(first: 1, query: $query) {
@@ -408,7 +407,7 @@ class ShopifyService(AbstractShopifyService):
 
         return None
 
-    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> List[ShopifyCustomer]:
+    def get_customers_by_email_pattern(self, email_pattern: str, num_customers_to_fetch=100) -> list[ShopifyCustomer]:
         query = f'{{ customers(first: {num_customers_to_fetch}, query: "email:{email_pattern}") {{ edges {{ node {{ id email firstName lastName state tags }} }} }} }}'
 
         try:
@@ -550,7 +549,7 @@ class ShopifyService(AbstractShopifyService):
         except ShopifyQueryError:
             raise ServiceError(f"Failed to delete customer")
 
-    def add_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def add_tags(self, shopify_gid: str, tags: set[str]) -> None:
         query = """
             mutation addTags($id: ID!, $tags: [String!]!) {
                 tagsAdd(id: $id, tags: $tags) {
@@ -574,7 +573,7 @@ class ShopifyService(AbstractShopifyService):
         except ShopifyQueryError:
             raise ServiceError(f"Failed to add tags in shopify store.")
 
-    def remove_tags(self, shopify_gid: str, tags: Set[str]) -> None:
+    def remove_tags(self, shopify_gid: str, tags: set[str]) -> None:
         query = """
             mutation removeTags($id: ID!, $tags: [String!]!) {
                 tagsRemove(id: $id, tags: $tags) {
@@ -598,7 +597,7 @@ class ShopifyService(AbstractShopifyService):
         except ShopifyQueryError:
             raise ServiceError(f"Failed to remove tags in shopify store.")
 
-    def get_variant_by_sku(self, sku: str) -> Optional[ShopifyVariantModel]:
+    def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel | None:
         query = f"""
         {{
           productVariants(first: 1, query: "sku:{sku}") {{
@@ -652,7 +651,7 @@ class ShopifyService(AbstractShopifyService):
             }
         )
 
-    def get_variants_by_id(self, variant_ids: List[str]) -> List[ShopifyVariantModel]:
+    def get_variants_by_id(self, variant_ids: list[str]) -> list[ShopifyVariantModel]:
         if not variant_ids:
             return []
 
@@ -759,8 +758,8 @@ class ShopifyService(AbstractShopifyService):
         shopify_customer_id: str,
         discount_type: DiscountAmountType,
         amount: float,
-        minimum_order_amount: Optional[int] = None,
-        variant_ids: Optional[List[str]] = None,
+        minimum_order_amount: int | None = None,
+        variant_ids: list[str] | None = None,
     ):
         mutation = """
         mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
@@ -877,13 +876,13 @@ class ShopifyService(AbstractShopifyService):
             raise ServiceError(f"Failed to delete discount code in shopify store.")
 
     def create_product(
-        self, title: str, body_html: str, price: float, sku: str, tags: List[str], requires_shipping: bool = True
+        self, title: str, body_html: str, price: float, sku: str, tags: list[str], requires_shipping: bool = True
     ) -> ShopifyProduct:
         created_product: ShopifyProduct = self.__create_product_with_variant(title, body_html, tags)
         return self.__update_product_variant(created_product.variants[0].gid, price, sku, requires_shipping)
 
     def create_attendee_discount_product(
-        self, title: str, body_html: str, amount: float, sku: str, tags: List[str]
+        self, title: str, body_html: str, amount: float, sku: str, tags: list[str]
     ) -> ShopifyProduct:
         attendee_discount_product: ShopifyProduct = self.create_product(
             title=title,
@@ -909,7 +908,7 @@ class ShopifyService(AbstractShopifyService):
         return created_product
 
     def create_bundle(
-        self, bundle_name: str, bundle_id: str, variant_ids: List[str], image_src: str = None, tags: List[str] = None
+        self, bundle_name: str, bundle_id: str, variant_ids: list[str], image_src: str = None, tags: list[str] = None
     ) -> str:
         bundle_parent_product: ShopifyProduct = self.__create_product_with_variant(
             bundle_name, "", (tags or []) + ["hidden"]
@@ -972,7 +971,7 @@ class ShopifyService(AbstractShopifyService):
 
         return response.status, json.loads(response.data.decode("utf-8"))
 
-    def __create_product_with_variant(self, title: str, body_html: str, tags: List[str]) -> ShopifyProduct:
+    def __create_product_with_variant(self, title: str, body_html: str, tags: list[str]) -> ShopifyProduct:
         query = """
             mutation productCreate($input: ProductInput!) {
               productCreate(input: $input) {
@@ -1089,7 +1088,7 @@ class ShopifyService(AbstractShopifyService):
             ],
         )
 
-    def __add_variants_to_product_bundle(self, parent_product_shopify_variant_gid: str, variants: List[str]) -> None:
+    def __add_variants_to_product_bundle(self, parent_product_shopify_variant_gid: str, variants: list[str]) -> None:
         bundle_variants = [{"id": variant, "quantity": 1} for variant in variants]
 
         mutation = """

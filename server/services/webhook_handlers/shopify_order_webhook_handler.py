@@ -351,7 +351,7 @@ class ShopifyWebhookOrderHandler:
                 num_matched_items_in_order = 0
 
                 for item in items:
-                    if item.get("variant_sku", "") in line_item_skus:
+                    if item.get("variant_sku", item.get("sku", "")) in line_item_skus:
                         num_matched_items_in_order += 1
 
                 if num_items_in_look <= num_matched_items_in_order:

@@ -16,6 +16,7 @@ from server.models.shopify_model import ShopifyVariantModel
 from server.services import ServiceError, DuplicateError, NotFoundError, BadRequestError
 from server.services.integrations.aws_service import AbstractAWSService
 from server.services.integrations.shopify_service import ShopifyService, AbstractShopifyService
+from server.services.shoppify_tagging_service import TAG_PRODUCT_NOT_LINKED_TO_EVENT
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -263,6 +264,7 @@ class LookService:
 
         tags = self.__get_tags_from_look_variants2(all_skus)
         tags.append("suit_bundle")
+        tags.append(TAG_PRODUCT_NOT_LINKED_TO_EVENT)
 
         variants = self.shopify_service.get_variants_by_skus(all_skus)
         variants = self.__filter_out_black_tuxedo_vs_black_suit_items(suit_sku, variants)

@@ -46,7 +46,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
 
-    select_date_in_calendar(page)
+    select_date_in_calendar(page, "dropdown-date")
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
@@ -64,7 +64,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     return event_id
 
 
-def select_date_in_calendar(locator: Locator, control_id: str = "gsModalDatepicker"):
+def select_date_in_calendar(locator: Locator, control_id: str):
     random_day = str(random.randint(1, 28))
     random_month = random.choice(
         [

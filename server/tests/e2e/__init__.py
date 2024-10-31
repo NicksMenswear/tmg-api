@@ -7,7 +7,7 @@ from playwright.sync_api import Page
 
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
-TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2e+02@mail.dev.tmgcorp.net")
+TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2e+06@mail.dev.tmgcorp.net")
 TEST_USER_PASSWORD = "123456"
 EMAIL_FROM = "info@themoderngroom.com"
 IMAP_HOST = "mail.dev.tmgcorp.net"

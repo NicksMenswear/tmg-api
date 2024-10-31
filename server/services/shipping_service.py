@@ -32,7 +32,7 @@ class ShippingService:
             if not bundle_identifier_item:
                 return self.__calculate_shipping_price_model_by_checkout_items(shipping_request)
 
-            look_model = self.look_service.find_look_by_product_id(bundle_identifier_item.get("product_id"))
+            look_model = self.look_service.find_look_by_item_sku(bundle_identifier_item.get("sku"))
 
             if not look_model:
                 return self.__calculate_shipping_price_model_by_checkout_items(shipping_request)

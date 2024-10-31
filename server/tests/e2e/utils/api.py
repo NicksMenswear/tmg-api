@@ -109,8 +109,8 @@ def create_look(look_name, user_id, product_specs=None):
                     product_specs
                     if product_specs
                     else {
-                        "suit_variant": "001A2BLK",  # Black Suit
-                        "variants": [
+                        "suit": "001A2BLK",  # Black Suit
+                        "items": [
                             "001A2BLK",  # Black Suit
                             "403A2WHT",  # White Shirt
                             "603A40NI",  # Apple Red Neck Tie
@@ -139,13 +139,12 @@ def create_look_just_a_suit(look_name, user_id, product_specs=None):
             {
                 "name": look_name,
                 "user_id": user_id,
-                "spec_type": ProductSpecType.SKU,
                 "product_specs": (
                     product_specs
                     if product_specs
                     else {
-                        "suit_variant": "001A2BLK",  # Black Suit
-                        "variants": [],
+                        "suit": "001A2BLK",  # Black Suit
+                        "items": [],
                     }
                 ),
             }

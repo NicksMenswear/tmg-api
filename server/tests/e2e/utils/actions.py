@@ -46,7 +46,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     page.locator(f'label[data-event-type="{event_type}"]').first.click()
     page.locator("#eventName").fill(event_name)
 
-    select_date_in_calendar(page)
+    select_date_in_calendar(page, "dropdown-date")
 
     page.locator(f'input[value="{event_type}"]')
     page.get_by_role("button", name="Create").click()
@@ -64,7 +64,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     return event_id
 
 
-def select_date_in_calendar(page: Page, control_id: str = "dropdown-date"):
+def select_date_in_calendar(locator: Locator, control_id: str):
     random_day = str(random.randint(1, 28))
     random_month = random.choice(
         [
@@ -84,9 +84,9 @@ def select_date_in_calendar(page: Page, control_id: str = "dropdown-date"):
     )
     next_year = str(datetime.now().year + 1)
 
-    page.locator(f"#{control_id} div .dp-day").select_option(random_day)
-    page.locator(f"#{control_id} div .dp-month").select_option(random_month)
-    page.locator(f"#{control_id} div .dp-year").select_option(next_year)
+    locator.locator(f"#{control_id} div .dp-day").select_option(random_day)
+    locator.locator(f"#{control_id} div .dp-month").select_option(random_month)
+    locator.locator(f"#{control_id} div .dp-year").select_option(next_year)
 
 
 def open_event_accordion(page: Page, event_id: str):
@@ -322,18 +322,10 @@ def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
     pay_button.click()
 
 
-def create_default_look(page: Page, name):
-    page.goto(f"{STORE_URL}/products/suit-builder", timeout=120000)
+def create_default_look(page: Page, name: str):
+    page.goto(f"{STORE_URL}/pages/suit-builder")
 
-    time.sleep(3)
-
-    look_name_input = page.locator(f'input[name="properties[_Name this Look]"]')
-    look_name_input.scroll_into_view_if_needed()
-    look_name_input.fill(name)
-
-    save_look_button = page.locator(f'input[type="button"][id="save_look_btn"]')
-    save_look_button.scroll_into_view_if_needed()
-    save_look_button.click()
+    save_look_with_name(page, name)
 
 
 def get_look_by_name_on_looks_page(page: Page, look_name):
@@ -739,11 +731,11 @@ def get_processed_discount_codes_for_event(event_id: str) -> List[str]:
 
 
 def get_get_started_dialog_locator(page: Page) -> Locator:
-    get_started_dialog = page.locator("div.tmg-get-started-modal")
-    get_started_dialog.scroll_into_view_if_needed()
-    get_started_dialog.wait_for(state="visible")
+    get_started_dialog_locator = page.locator("div.tmg-gs-modal")
+    get_started_dialog_locator.scroll_into_view_if_needed()
+    get_started_dialog_locator.wait_for(state="visible")
 
-    return get_started_dialog
+    return get_started_dialog_locator
 
 
 def get_started_select_event_type(get_started_dialog_locator: Locator, event_type: str = "wedding") -> None:
@@ -752,7 +744,7 @@ def get_started_select_event_type(get_started_dialog_locator: Locator, event_typ
 
 
 def get_started_click_next_button(get_started_dialog_locator: Locator) -> None:
-    next_button = get_started_dialog_locator.locator("button#next")
+    next_button = get_started_dialog_locator.locator("button.gsNextBtn")
     next_button.click()
 
 
@@ -761,16 +753,16 @@ def get_started_select_event_role(get_started_dialog_locator: Locator, event_rol
     role_label.click()
 
 
-def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedding"):
+def populate_get_started_dialog(page: Page, event_type: str = "wedding"):
     get_started_dialog_locator = get_get_started_dialog_locator(page)
 
+    select_date_in_calendar(get_started_dialog_locator, "gsModalDatepicker")
+
+    get_started_click_next_button(get_started_dialog_locator)
+
     get_started_select_event_type(get_started_dialog_locator, event_type)
-    get_started_click_next_button(get_started_dialog_locator)
-
     get_started_select_event_role(get_started_dialog_locator, "bride")
-    get_started_click_next_button(get_started_dialog_locator)
 
-    select_date_in_calendar(get_started_dialog_locator, "get-started-event-datepicker")
     get_started_click_next_button(get_started_dialog_locator)
 
 
@@ -887,7 +879,7 @@ def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
     form_element.wait_for(state="visible")
 
     for item in AVAILABLE_ITEMS:
-        options_element = form_element.locator(f'div[data-items="{item}"]')
+        options_element = form_element.locator(f'div.tmg-suit-builder-options-item[data-items="{item}"]')
         options_element.scroll_into_view_if_needed()
         options_element.wait_for(state="visible")
 
@@ -925,7 +917,7 @@ def select_suit_builder_item_by_index(page: Page, items_type: str, item_index: i
     if verify.is_mobile_view(page):
         open_suit_builder_mobile_tab(page)
 
-    suit_builder_options = page.locator(f'div[data-items="{items_type}"]')
+    suit_builder_options = page.locator(f'div.tmg-suit-builder-options-item[data-items="{items_type}"]')
     suit_builder_options.scroll_into_view_if_needed()
     suit_builder_options.wait_for(state="visible")
 

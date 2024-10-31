@@ -618,7 +618,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     )
     verify.shopify_order_confirmed(page)
 
-    time.sleep(10)  # wait for 10 sec so shopify webhook gets triggered and order is processed by our backend
+    time.sleep(20)  # wait for 20 sec so shopify webhook gets triggered and order is processed by our webhook backend
 
     page.goto(f"{STORE_URL}/account")
 

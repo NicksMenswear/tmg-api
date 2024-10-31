@@ -879,7 +879,7 @@ def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
     form_element.wait_for(state="visible")
 
     for item in AVAILABLE_ITEMS:
-        options_element = form_element.locator(f'div[data-items="{item}"]')
+        options_element = form_element.locator(f'div.tmg-suit-builder-options-item[data-items="{item}"]')
         options_element.scroll_into_view_if_needed()
         options_element.wait_for(state="visible")
 

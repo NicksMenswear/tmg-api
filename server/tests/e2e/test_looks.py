@@ -96,7 +96,7 @@ def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
 
     actions.add_look_to_cart(page, data_look_id)
 
-    actions.populate_what_is_special_occasion_dialog(page)
+    actions.populate_get_started_dialog(page)
     time.sleep(3)
 
     page.goto(f"{STORE_URL}/pages/looks")

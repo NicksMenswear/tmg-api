@@ -64,7 +64,7 @@ def create_new_event(page: Page, event_name: str, event_date: str = "2028-04-18"
     return event_id
 
 
-def select_date_in_calendar(page: Page, control_id: str = "dropdown-date"):
+def select_date_in_calendar(locator: Locator, control_id: str = "gsModalDatepicker"):
     random_day = str(random.randint(1, 28))
     random_month = random.choice(
         [
@@ -84,9 +84,9 @@ def select_date_in_calendar(page: Page, control_id: str = "dropdown-date"):
     )
     next_year = str(datetime.now().year + 1)
 
-    page.locator(f"#{control_id} div .dp-day").select_option(random_day)
-    page.locator(f"#{control_id} div .dp-month").select_option(random_month)
-    page.locator(f"#{control_id} div .dp-year").select_option(next_year)
+    locator.locator(f"#{control_id} div .dp-day").select_option(random_day)
+    locator.locator(f"#{control_id} div .dp-month").select_option(random_month)
+    locator.locator(f"#{control_id} div .dp-year").select_option(next_year)
 
 
 def open_event_accordion(page: Page, event_id: str):
@@ -731,11 +731,11 @@ def get_processed_discount_codes_for_event(event_id: str) -> List[str]:
 
 
 def get_get_started_dialog_locator(page: Page) -> Locator:
-    get_started_dialog = page.locator("div.tmg-get-started-modal")
-    get_started_dialog.scroll_into_view_if_needed()
-    get_started_dialog.wait_for(state="visible")
+    get_started_dialog_locator = page.locator("div.tmg-gs-modal")
+    get_started_dialog_locator.scroll_into_view_if_needed()
+    get_started_dialog_locator.wait_for(state="visible")
 
-    return get_started_dialog
+    return get_started_dialog_locator
 
 
 def get_started_select_event_type(get_started_dialog_locator: Locator, event_type: str = "wedding") -> None:
@@ -744,7 +744,7 @@ def get_started_select_event_type(get_started_dialog_locator: Locator, event_typ
 
 
 def get_started_click_next_button(get_started_dialog_locator: Locator) -> None:
-    next_button = get_started_dialog_locator.locator("button#next")
+    next_button = get_started_dialog_locator.locator("button.gsNextBtn")
     next_button.click()
 
 
@@ -753,16 +753,16 @@ def get_started_select_event_role(get_started_dialog_locator: Locator, event_rol
     role_label.click()
 
 
-def populate_what_is_special_occasion_dialog(page: Page, event_type: str = "wedding"):
+def populate_get_started_dialog(page: Page, event_type: str = "wedding"):
     get_started_dialog_locator = get_get_started_dialog_locator(page)
 
+    select_date_in_calendar(get_started_dialog_locator, "gsModalDatepicker")
+
+    get_started_click_next_button(get_started_dialog_locator)
+
     get_started_select_event_type(get_started_dialog_locator, event_type)
-    get_started_click_next_button(get_started_dialog_locator)
-
     get_started_select_event_role(get_started_dialog_locator, "bride")
-    get_started_click_next_button(get_started_dialog_locator)
 
-    select_date_in_calendar(get_started_dialog_locator, "get-started-event-datepicker")
     get_started_click_next_button(get_started_dialog_locator)
 
 

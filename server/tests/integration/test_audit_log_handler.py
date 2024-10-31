@@ -4,13 +4,10 @@ from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import User, AuditLog, Event, Attendee
-from server.handlers.audit_log_handler import (
-    lambda_handler,
-    FakeLambdaContext,
-)
+from server.handlers.audit_log_handler import lambda_handler, FakeLambdaContext
 from server.models.shopify_model import ShopifyCustomer
-from server.services.audit_service import TAG_EVENT_OWNER_4_PLUS, TAG_MEMBER_OF_4_PLUS_EVENT
 from server.services.integrations.shopify_service import ShopifyService
+from server.services.shoppify_tagging_service import TAG_EVENT_OWNER_4_PLUS, TAG_MEMBER_OF_4_PLUS_EVENT
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 

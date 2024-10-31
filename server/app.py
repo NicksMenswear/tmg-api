@@ -36,6 +36,7 @@ from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shipping_service import ShippingService
+from server.services.shoppify_tagging_service import ShopifyTaggingService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
@@ -130,6 +131,8 @@ def init_services(app, is_testing=False):
     online_store_sales_channel_id = os.getenv("online_store_sales_channel_id", "gid://shopify/Publication/94480072835")
     app.online_store_shop_id = os.getenv("online_store_shop_id", "56965365891")
     app.audit_log_sqs_queue_url = os.getenv("AUDIT_QUEUE_URL", "https://sqs.us-west-2.amazonaws.com/123456789012/audit")
+    app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService(online_store_sales_channel_id)
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
@@ -167,14 +170,14 @@ def init_services(app, is_testing=False):
         app.look_service,
         app.order_service,
     )
-    app.audit_log_service = AuditLogService(
-        app.shopify_service,
+    app.shopify_tagging_service = ShopifyTaggingService(
         app.user_service,
-        app.attendee_service,
         app.event_service,
-        app.user_activity_log_service,
+        app.attendee_service,
+        app.look_service,
+        app.shopify_service,
     )
-    app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+    app.audit_log_service = AuditLogService(app.shopify_tagging_service, app.user_activity_log_service)
     app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
         app.shopify_service,

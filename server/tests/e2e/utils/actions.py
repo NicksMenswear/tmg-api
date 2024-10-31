@@ -917,7 +917,7 @@ def select_suit_builder_item_by_index(page: Page, items_type: str, item_index: i
     if verify.is_mobile_view(page):
         open_suit_builder_mobile_tab(page)
 
-    suit_builder_options = page.locator(f'div[data-items="{items_type}"]')
+    suit_builder_options = page.locator(f'div.tmg-suit-builder-options-item[data-items="{items_type}"]')
     suit_builder_options.scroll_into_view_if_needed()
     suit_builder_options.wait_for(state="visible")
 

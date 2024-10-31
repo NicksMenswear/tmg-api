@@ -152,9 +152,17 @@ class ShopifyTaggingService:
             attendees = self.__attendee_service.find_attendees_by_look_id(look.id)
 
             if attendees:
+                logger.info(
+                    f"Look {look_id}/{look.name} belongs to event. Updating product {shopify_product_id} tags ..."
+                )
+
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
             else:
+                logger.info(
+                    f"Look {look_id}/{look.name} doesn't belongs to any event. Updating product {shopify_product_id} tags ..."
+                )
+
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
 
@@ -199,9 +207,17 @@ class ShopifyTaggingService:
             attendees = self.__attendee_service.find_attendees_by_look_id(uuid.UUID(look_id))
 
             if attendees:
+                logger.info(
+                    f"Look {look_id}/{look.name} belongs to event. Updating product {shopify_product_id} tags ..."
+                )
+
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
             else:
+                logger.info(
+                    f"Look {look_id}/{look.name} doesn't belongs to any event. Updating product {shopify_product_id} tags ..."
+                )
+
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
 

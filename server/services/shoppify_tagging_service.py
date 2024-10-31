@@ -155,8 +155,8 @@ class ShopifyTaggingService:
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
             else:
-                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
-                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
+                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
+                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
 
     def tag_products_on_attendee_updated(self, audit_log_message: AuditLogMessage):
         attendee_is_active = audit_log_message.payload.get("is_active")
@@ -202,8 +202,8 @@ class ShopifyTaggingService:
                 self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
                 self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
             else:
-                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
-                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
+                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
+                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
 
     def __add_tags_to_customers(self, user_tags_that_should_be_present: dict[uuid.UUID, set[str]]):
         for user_id, tags in user_tags_that_should_be_present.items():

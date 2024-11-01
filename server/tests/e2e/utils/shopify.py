@@ -51,28 +51,24 @@ def get_variant_by_id(variant_gid: str) -> dict[str, Any]:
 
     return body.get("data", {}).get("node", {})
 
-    # variants = []
-    #
-    # for variant in body["data"]["nodes"]:
-    #     if not variant or "id" not in variant or "title" not in variant or "product" not in variant:
-    #         continue
-    #
-    #     product = variant["product"]
-    #     variants.append(
-    #         ShopifyVariantModel(
-    #             **{
-    #                 "product_id": product["id"].removeprefix("gid://shopify/Product/"),
-    #                 "product_title": product["title"],
-    #                 "variant_id": variant["id"].removeprefix("gid://shopify/ProductVariant/"),
-    #                 "variant_title": variant["title"],
-    #                 "variant_sku": variant["sku"],
-    #                 "variant_price": variant["price"],
-    #             }
-    #         )
-    #     )
-    #
-    # return variants
 
+def get_customer_by_id(customer_gid: str) -> dict[str, Any]:
+    query = """
+        query getCustomer($customerId: ID!) {
+            node(id: $customerId) {
+                ... on Customer {
+                    id
+                    email
+                    firstName
+                    lastName
+                    tags
+                }
+            }
+        }
+    """
 
-if __name__ == "__main__":
-    print(get_variant_by_id("gid://shopify/ProductVariant/1234567890"))
+    variables = {"customerId": customer_gid}
+
+    body = _admin_api_graphql_request(query, variables)
+
+    return body.get("data", {}).get("node", {})

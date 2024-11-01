@@ -60,6 +60,20 @@ class LookService:
         return look_models
 
     @staticmethod
+    def get_looks_for_event(event_id: uuid.UUID) -> list[LookModel]:
+        looks = (
+            db.session.execute(
+                select(Look)
+                .join(Attendee, Look.id == Attendee.look_id)
+                .where(Attendee.event_id == event_id, Attendee.is_active)
+            )
+            .scalars()
+            .all()
+        )
+
+        return [LookModel.model_validate(look) for look in looks]
+
+    @staticmethod
     def get_user_look_for_event(user_id: uuid.UUID, event_id: uuid.UUID) -> LookModel:
         attendee = db.session.execute(
             select(Attendee).where(Attendee.user_id == user_id, Attendee.event_id == event_id, Attendee.is_active)
@@ -263,6 +277,7 @@ class LookService:
 
         tags = self.__get_tags_from_look_variants2(all_skus)
         tags.append("suit_bundle")
+        tags.append("not_linked_to_event")
 
         variants = self.shopify_service.get_variants_by_skus(all_skus)
         variants = self.__filter_out_black_tuxedo_vs_black_suit_items(suit_sku, variants)

@@ -8,6 +8,7 @@ import sentry_sdk
 from flask_cors import CORS
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
+from server.services.audit_service import AuditLogService
 
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
@@ -21,7 +22,6 @@ from server.logs import (
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
 from server.services.audit_logger import init_audit_logging
-from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
@@ -39,6 +39,7 @@ from server.services.shipping_service import ShippingService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
+from server.services.tagging_service import TaggingService
 from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
 from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
@@ -130,6 +131,8 @@ def init_services(app, is_testing=False):
     online_store_sales_channel_id = os.getenv("online_store_sales_channel_id", "gid://shopify/Publication/94480072835")
     app.online_store_shop_id = os.getenv("online_store_shop_id", "56965365891")
     app.audit_log_sqs_queue_url = os.getenv("AUDIT_QUEUE_URL", "https://sqs.us-west-2.amazonaws.com/123456789012/audit")
+    app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+
     app.aws_service = FakeAWSService() if is_testing else AWSService()
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService(online_store_sales_channel_id)
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
@@ -159,7 +162,7 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
-    app.user_activity_log_service = UserActivityLogService(
+    app.__user_activity_log_service = UserActivityLogService(
         app.user_service,
         app.event_service,
         app.attendee_service,
@@ -167,14 +170,14 @@ def init_services(app, is_testing=False):
         app.look_service,
         app.order_service,
     )
-    app.audit_log_service = AuditLogService(
-        app.shopify_service,
+    app.__tagging_service = TaggingService(
         app.user_service,
-        app.attendee_service,
         app.event_service,
-        app.user_activity_log_service,
+        app.attendee_service,
+        app.look_service,
+        app.shopify_service,
     )
-    app.images_data_endpoint_host = f"data.{app.stage if app.stage == 'prd' else 'dev'}.tmgcorp.net"
+    app.audit_log_service = AuditLogService(app.__tagging_service, app.__user_activity_log_service)
     app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
         app.shopify_service,

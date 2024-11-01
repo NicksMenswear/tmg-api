@@ -69,22 +69,28 @@ class AttendeeService:
 
     @staticmethod
     def get_num_attendees_for_event(event_id: uuid.UUID) -> int:
-        db_event = Event.query.filter_by(id=event_id, is_active=True).first()
+        db_event = db.session.execute(
+            select(Event).where(Event.id == event_id, Event.is_active == True)
+        ).scalar_one_or_none()
 
         if not db_event:
             raise NotFoundError("Event not found.")
 
-        return Attendee.query.filter_by(event_id=db_event.id, is_active=True).count()
+        return db.session.execute(
+            select(func.count(Attendee.id)).where(Attendee.event_id == db_event.id, Attendee.is_active)
+        ).scalar()
 
     @staticmethod
     def get_num_discountable_attendees_for_event(event_id: uuid.UUID) -> int:
-        return Attendee.query.filter(
-            Attendee.event_id == event_id,
-            Attendee.is_active == True,
-            # Attendee.look_id != None,
-            # Attendee.style == True,
-            # Attendee.invite == True,
-        ).count()
+        return db.session.execute(
+            select(func.count(Attendee.id)).where(
+                Attendee.event_id == event_id,
+                Attendee.is_active,
+                # Attendee.look_id.isnot(None),
+                # Attendee.style,
+                # Attendee.invite,
+            )
+        ).scalar()
 
     def get_attendees_for_events(
         self, event_ids: List[uuid.UUID], user_id: Optional[uuid.UUID] = None
@@ -175,9 +181,9 @@ class AttendeeService:
 
     @staticmethod
     def update_attendee_pay_status(event_id: uuid.UUID, user_id: uuid.UUID):
-        attendee = Attendee.query.filter(
-            Attendee.event_id == event_id, Attendee.user_id == user_id, Attendee.is_active
-        ).first()
+        attendee = db.session.execute(
+            select(Attendee).where(Attendee.event_id == event_id, Attendee.user_id == user_id, Attendee.is_active)
+        ).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
@@ -190,7 +196,7 @@ class AttendeeService:
             raise ServiceError("Failed to update attendee pay status.", e)
 
     def get_attendees_for_event(self, event_id: uuid.UUID) -> List[AttendeeModel]:
-        event = Event.query.filter_by(id=event_id).first()
+        event = db.session.execute(select(Event).where(Event.id == event_id)).scalar_one_or_none()
 
         if not event:
             raise NotFoundError("Event not found.")
@@ -203,7 +209,9 @@ class AttendeeService:
         return attendees[event_id]
 
     def create_attendee(self, create_attendee: CreateAttendeeModel) -> AttendeeModel:
-        event = Event.query.filter(Event.id == create_attendee.event_id, Event.is_active).first()
+        event = db.session.execute(
+            select(Event).where(Event.id == create_attendee.event_id, Event.is_active)
+        ).scalar_one_or_none()
 
         if not event:
             raise NotFoundError("Event not found.")
@@ -211,9 +219,11 @@ class AttendeeService:
         attendee_user = None
 
         if create_attendee.email:
-            existing_attendee_by_email = Attendee.query.filter(
-                Attendee.event_id == event.id, Attendee.email == create_attendee.email, Attendee.is_active
-            ).first()
+            existing_attendee_by_email = db.session.execute(
+                select(Attendee).where(
+                    Attendee.event_id == event.id, Attendee.email == create_attendee.email, Attendee.is_active
+                )
+            ).scalar_one_or_none()
 
             if existing_attendee_by_email:
                 raise DuplicateError("Attendee with this email already exists.")
@@ -224,17 +234,23 @@ class AttendeeService:
                 pass
 
         if attendee_user:
-            attendee = Attendee.query.filter(
-                Attendee.event_id == create_attendee.event_id,
-                Attendee.user_id == attendee_user.id,
-                Attendee.is_active,
-            ).first()
+            attendee = db.session.execute(
+                select(Attendee).where(
+                    Attendee.event_id == create_attendee.event_id,
+                    Attendee.user_id == attendee_user.id,
+                    Attendee.is_active,
+                )
+            ).scalar_one_or_none()
 
             if attendee:
                 raise DuplicateError("Attendee already exists.")
 
         try:
-            user_size = Size.query.filter(Size.user_id == attendee_user.id).first() if attendee_user else None
+            user_size = (
+                db.session.execute(select(Size).where(Size.user_id == attendee_user.id)).scalar_one_or_none()
+                if attendee_user
+                else None
+            )
             owner_auto_invite = event.user_id == attendee_user.id if attendee_user else False
             new_attendee = Attendee(
                 id=uuid.uuid4(),
@@ -262,7 +278,9 @@ class AttendeeService:
         return AttendeeModel.model_validate(new_attendee)
 
     def update_attendee(self, attendee_id: uuid.UUID, update_attendee: UpdateAttendeeModel) -> AttendeeModel:
-        attendee = Attendee.query.filter(Attendee.id == attendee_id, Attendee.is_active).first()
+        attendee = db.session.execute(
+            select(Attendee).where(Attendee.id == attendee_id, Attendee.is_active)
+        ).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
@@ -274,7 +292,7 @@ class AttendeeService:
             attendee.first_name = update_attendee.first_name or attendee.first_name
             attendee.last_name = update_attendee.last_name or attendee.last_name
         else:
-            user = User.query.filter(User.id == attendee.user_id).first()
+            user = db.session.execute(select(User).where(User.id == attendee.user_id)).scalar_one_or_none()
             attendee.first_name = user.first_name
             attendee.last_name = user.last_name
 
@@ -353,12 +371,14 @@ class AttendeeService:
 
     @staticmethod
     def __verify_that_attendee_does_not_exist_with_same_email(attendee: Attendee, update_attendee: UpdateAttendeeModel):
-        existing_attendee_with_email = Attendee.query.filter(
-            Attendee.id != attendee.id,
-            Attendee.event_id == attendee.event_id,
-            Attendee.email == update_attendee.email,
-            Attendee.is_active,
-        ).first()
+        existing_attendee_with_email = db.session.execute(
+            select(Attendee).where(
+                Attendee.id != attendee.id,
+                Attendee.event_id == attendee.event_id,
+                Attendee.email == update_attendee.email,
+                Attendee.is_active,
+            )
+        ).scalar_one_or_none()
 
         if not existing_attendee_with_email:
             return
@@ -367,7 +387,7 @@ class AttendeeService:
 
     @staticmethod
     def deactivate_attendee(attendee_id: uuid.UUID, force: bool = False) -> None:
-        attendee = Attendee.query.filter(Attendee.id == attendee_id).first()
+        attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee_id)).scalar_one_or_none()
 
         if not attendee:
             raise NotFoundError("Attendee not found.")
@@ -386,12 +406,11 @@ class AttendeeService:
         if not attendee_ids:
             return
 
-        rows = (
-            db.session.query(Attendee, Event)
+        rows = db.session.execute(
+            select(Attendee, Event)
             .join(Event, Event.id == Attendee.event_id)
-            .filter(Attendee.id.in_(attendee_ids), Attendee.is_active)
-            .all()
-        )
+            .where(Attendee.id.in_(attendee_ids), Attendee.is_active)
+        ).all()
 
         if not rows:
             return
@@ -472,7 +491,9 @@ class AttendeeService:
 
     @staticmethod
     def find_attendees_by_look_id(look_id: uuid.UUID) -> List[AttendeeModel]:
-        attendees = Attendee.query.filter(Attendee.look_id == look_id, Attendee.is_active).all()
+        attendees = (
+            db.session.execute(select(Attendee).where(Attendee.look_id == look_id, Attendee.is_active)).scalars().all()
+        )
 
         return [AttendeeModel.model_validate(attendee) for attendee in attendees]
 

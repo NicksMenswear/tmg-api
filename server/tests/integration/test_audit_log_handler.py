@@ -4,13 +4,16 @@ from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import User, AuditLog, Event, Attendee
-from server.handlers.audit_log_handler import (
-    lambda_handler,
-    FakeLambdaContext,
-)
+from server.handlers.audit_log_handler import lambda_handler, FakeLambdaContext
+from server.models.attendee_model import UpdateAttendeeModel
 from server.models.shopify_model import ShopifyCustomer
-from server.services.audit_service import TAG_EVENT_OWNER_4_PLUS, TAG_MEMBER_OF_4_PLUS_EVENT
 from server.services.integrations.shopify_service import ShopifyService
+from server.services.tagging_service import (
+    TAG_EVENT_OWNER_4_PLUS,
+    TAG_MEMBER_OF_4_PLUS_EVENT,
+    TAG_PRODUCT_NOT_LINKED_TO_EVENT,
+    TAG_PRODUCT_LINKED_TO_EVENT,
+)
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
@@ -18,6 +21,8 @@ from server.tests.integration import BaseTestCase, fixtures
 class TestAuditLogHandler(BaseTestCase):
     def setUp(self):
         super().setUp()
+
+        self.populate_shopify_variants()
 
     def test_no_records(self):
         response = lambda_handler({}, FakeLambdaContext())
@@ -665,3 +670,238 @@ class TestAuditLogHandler(BaseTestCase):
                 self.assertFalse(TAG_EVENT_OWNER_4_PLUS in user.meta.get("tags", []))
 
         self.assertEqual(response["statusCode"], 200)
+
+    def test_attendee_updated_but_no_look_associated(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, user_id=attendee_user.id)
+        )
+
+        # when
+        self.attendee_service.update_attendee(
+            attendee.id, UpdateAttendeeModel(first_name=str(utils.generate_unique_name()))
+        )
+        db_attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee.id)).scalar_one()
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", db_attendee)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+        self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+    def test_attendee_removed_but_no_look_associated(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(event_id=event.id, user_id=attendee_user.id)
+        )
+
+        # when
+        self.attendee_service.deactivate_attendee(attendee_id=attendee.id)
+        db_attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee.id)).scalar_one()
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", db_attendee)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+        self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+    def test_attendee_with_look_updated(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user.id,
+                product_specs=self.create_look_test_product_specs_of_type_sku(),
+            )
+        )
+
+        bundle_variant_id = look.product_specs["bundle"]["variant_id"]
+        bundle_product = self.shopify_service.shopify_variants[bundle_variant_id]
+        bundle_product.tags.remove(TAG_PRODUCT_NOT_LINKED_TO_EVENT)
+        bundle_product.tags.append(TAG_PRODUCT_LINKED_TO_EVENT)
+
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product.tags)
+
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                user_id=attendee_user.id,
+                look_id=look.id,
+            )
+        )
+
+        # when
+        self.attendee_service.update_attendee(
+            attendee.id, UpdateAttendeeModel(first_name=str(utils.generate_unique_name()))
+        )
+        attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee.id)).scalar_one()
+        response = lambda_handler(
+            {
+                "Records": [
+                    {"body": fixtures.audit_log_queue_message("ATTENDEE_UPDATED", attendee)},
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+        self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+        bundle_variant_id = look.product_specs["bundle"]["variant_id"]
+        bundle_product = self.shopify_service.shopify_variants[bundle_variant_id]
+
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product.tags)
+
+    def test_attendee_without_look_got_look_associated(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user.id,
+                product_specs=self.create_look_test_product_specs_of_type_sku(),
+            )
+        )
+
+        bundle_variant_id = look.product_specs["bundle"]["variant_id"]
+        bundle_product = self.shopify_service.shopify_variants[bundle_variant_id]
+        bundle_product.tags.remove(TAG_PRODUCT_NOT_LINKED_TO_EVENT)
+        bundle_product.tags.append(TAG_PRODUCT_LINKED_TO_EVENT)
+
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product.tags)
+
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                user_id=attendee_user.id,
+            )
+        )
+
+        # when
+        self.attendee_service.update_attendee(attendee.id, UpdateAttendeeModel(look_id=look.id))
+        attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee.id)).scalar_one()
+        response = lambda_handler(
+            {
+                "Records": [
+                    {
+                        "body": fixtures.audit_log_queue_message(
+                            "ATTENDEE_UPDATED", attendee, {}, {"look_id": {"before": None, "after": str(look.id)}}
+                        )
+                    },
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+        self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+        bundle_variant_id = look.product_specs["bundle"]["variant_id"]
+        bundle_product = self.shopify_service.shopify_variants[bundle_variant_id]
+
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product.tags)
+
+    def test_attendee_with_look_got_look_changed(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=user.id))
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+
+        look1 = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user.id,
+                product_specs=self.create_look_test_product_specs_of_type_sku(),
+            )
+        )
+        look2 = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=user.id,
+                product_specs=self.create_look_test_product_specs_of_type_sku(),
+            )
+        )
+
+        bundle_product1 = self.shopify_service.shopify_variants[look1.product_specs["bundle"]["variant_id"]]
+        bundle_product1.tags.remove(TAG_PRODUCT_NOT_LINKED_TO_EVENT)
+        bundle_product1.tags.append(TAG_PRODUCT_LINKED_TO_EVENT)
+        bundle_product2 = self.shopify_service.shopify_variants[look2.product_specs["bundle"]["variant_id"]]
+
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product1.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product1.tags)
+        self.assertTrue(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product2.tags)
+        self.assertFalse(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product2.tags)
+
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                event_id=event.id,
+                user_id=attendee_user.id,
+                look_id=look1.id,
+            )
+        )
+
+        # when
+        self.attendee_service.update_attendee(attendee.id, UpdateAttendeeModel(look_id=look2.id))
+        attendee = db.session.execute(select(Attendee).where(Attendee.id == attendee.id)).scalar_one()
+        response = lambda_handler(
+            {
+                "Records": [
+                    {
+                        "body": fixtures.audit_log_queue_message(
+                            "ATTENDEE_UPDATED",
+                            attendee,
+                            {},
+                            {"look_id": {"before": str(look1.id), "after": str(look2.id)}},
+                        )
+                    },
+                ]
+            },
+            FakeLambdaContext(),
+        )
+
+        # then
+        audit_logs = db.session.execute(select(AuditLog)).scalars().all()
+        audit_log_event = audit_logs[0]
+        self.assertEqual(audit_log_event.type, "ATTENDEE_UPDATED")
+        self.assertEqual(response["statusCode"], 200)
+
+        bundle_product1 = self.shopify_service.shopify_variants[look1.product_specs["bundle"]["variant_id"]]
+        bundle_product2 = self.shopify_service.shopify_variants[look2.product_specs["bundle"]["variant_id"]]
+
+        self.assertTrue(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product1.tags)
+        self.assertFalse(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product1.tags)
+        self.assertTrue(TAG_PRODUCT_LINKED_TO_EVENT in bundle_product2.tags)
+        self.assertFalse(TAG_PRODUCT_NOT_LINKED_TO_EVENT in bundle_product2.tags)

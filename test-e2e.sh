@@ -3,6 +3,7 @@
 export ACTIVE_ENV=${ACTIVE_ENV:-dev}
 export BROWSER=${BROWSER:-chromium}
 export TEST_GROUP=${TEST_GROUP:-all}
+export VIEWPORT=${VIEWPORT:-"mobile"}
 export SHOPIFY_STORE_HOST=${SHOPIFY_STORE_HOST:-"quickstart-a91e1214.myshopify.com"}
 export SHOPIFY_ADMIN_API_ACCESS_TOKEN=${SHOPIFY_ADMIN_API_ACCESS_TOKEN:-"shpat_1234567890abcdef"}
 
@@ -16,7 +17,7 @@ export SHOPIFY_ADMIN_API_ACCESS_TOKEN=${SHOPIFY_ADMIN_API_ACCESS_TOKEN:-"shpat_1
 #   # for example:
 #   ./test-e2e.sh group-1
 
-echo "Running e2e against '${ACTIVE_ENV}' environment in '${BROWSER}' browser."
+echo "Running e2e against '${ACTIVE_ENV}' environment in '${BROWSER}' browser and viewport '${VIEWPORT}'"
 echo "Shopify host: ${SHOPIFY_STORE_HOST}"
 
 if [ "$TEST_GROUP" == "all" ]; then

@@ -10,7 +10,7 @@ from server.tests.e2e.utils import api, actions, verify, shopify
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_5
 def test_new_customer_for_attendee_has_no_tags(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -75,7 +75,7 @@ def test_new_customer_for_attendee_has_no_tags(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_6
 def test_owner_and_attendee_tagged_for_event_4_plus(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"

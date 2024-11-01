@@ -20,7 +20,7 @@ from server.tests.e2e.utils import api, actions, verify, email
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_9
 def test_invite_attendee(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -85,7 +85,7 @@ def test_invite_attendee(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_10
 def test_invite_multiple_attendees(page: Page):
     event_name = utils.generate_event_name()
 

@@ -19,12 +19,10 @@ from server.tests.e2e.utils import actions, email, verify, api
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_1
 def test_login(page: Page):
     api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
-
-    # verify.not_logged_in(page)
 
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
@@ -35,7 +33,7 @@ def test_login(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_2
 def test_signup_form(page: Page):
     first_name = f"E2E {utils.generate_unique_name(8, 12)}"
     last_name = f"E2E {utils.generate_unique_name(8, 12)}"
@@ -64,7 +62,7 @@ def test_signup_form(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_3
 def test_logout(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)

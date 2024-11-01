@@ -10,7 +10,7 @@ from server.tests.e2e.utils import api, actions, verify, shopify
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_7
 def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
     look_name = utils.generate_look_name()
 
@@ -48,7 +48,7 @@ def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_8
 def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
     look_name = utils.generate_look_name()
 
@@ -83,7 +83,7 @@ def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_9
 def test_associate_look_to_attendee(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
@@ -133,7 +133,7 @@ def test_associate_look_to_attendee(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_10
 def test_associate_look_to_attendee_then_remove_event(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
@@ -187,7 +187,7 @@ def test_associate_look_to_attendee_then_remove_event(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_1
 def test_associate_look1_and_then_look2(page: Page):
     event_name = utils.generate_event_name()
     look_name_1 = utils.generate_look_name()

@@ -17,7 +17,7 @@ from server.tests.e2e.utils import actions, api, verify
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_4
 def test_create_coupon(page: Page):
     event_name = utils.generate_event_name()
 

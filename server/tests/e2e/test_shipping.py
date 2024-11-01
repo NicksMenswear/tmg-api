@@ -10,7 +10,7 @@ from server.tests.e2e.utils import actions, verify, api
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_4
 def test_shipping_customer_buys_a_suit_so_free_shipping(page: Page):
     look_name = utils.generate_look_name()
 
@@ -47,7 +47,7 @@ def test_shipping_customer_buys_a_suit_so_free_shipping(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_5
 def test_free_shipping_for_swatches_forever(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
@@ -64,7 +64,7 @@ def test_free_shipping_for_swatches_forever(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_6
 def test_standard_10usd_shipping_for_items_under_210(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
@@ -72,7 +72,6 @@ def test_standard_10usd_shipping_for_items_under_210(page: Page):
     page.goto(f"{STORE_URL}/products/apple-red-bow-tie")
 
     actions.click_add_to_cart_on_product_page(page)
-    # actions.continue_shopping(page)
     actions.click_on_cart_checkout_button(page)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, "Apple Red Bow Tie", "40", True)
@@ -82,7 +81,7 @@ def test_standard_10usd_shipping_for_items_under_210(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_7
 def test_free_shipping_for_multiple_cheap_items_over_210_in_total(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
@@ -90,7 +89,6 @@ def test_free_shipping_for_multiple_cheap_items_over_210_in_total(page: Page):
     page.goto(f"{STORE_URL}/products/apple-red-bow-tie")
 
     actions.click_add_to_cart_on_product_page(page)
-    # actions.continue_shopping(page)
     actions.press_plus_button_to_increase_quantity_in_cart(page)
     actions.click_on_cart_checkout_button(page)
 

@@ -313,7 +313,8 @@ class UserActivityLogService:
         user_id = UUID(data.get("user_id"))
         audit_log_id = UUID(audit_log_message.id)
         look_name = data.get("name")
-        look_price = data.get("product_specs", {}).get("bundle", {}).get("variant_price", 0)
+        bundle = data.get("product_specs", {}).get("bundle", {})
+        look_price = bundle.get("variant_price", bundle.get("price", 0))
 
         self.__persist(
             user_id,

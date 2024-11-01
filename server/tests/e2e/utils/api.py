@@ -27,7 +27,6 @@ def create_user(first_name, last_name, email, account_status=True):
 
 
 def get_user_by_email(email):
-    # encoded_email = urllib.parse.quote(email)
     response = requests.get(f"{BASE_API_URL}/users/{email}", params=API_HMAC_QUERY_PARAMS, headers=API_HEADERS)
 
     if response.status_code == 200:

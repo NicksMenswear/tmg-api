@@ -5,13 +5,12 @@ from playwright.sync_api import Page, expect
 
 from server.tests import utils
 from server.tests.e2e import TEST_USER_EMAIL, TEST_USER_PASSWORD, STORE_URL, e2e_allowed_in, e2e_error_handling
-from server.tests.e2e.utils import api, actions, verify
-from server.tests.e2e.utils.shopify import get_variant_by_id
+from server.tests.e2e.utils import api, actions, verify, shopify
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_7
 def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
     look_name = utils.generate_look_name()
 
@@ -30,7 +29,7 @@ def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
 
     tags = shopify_variant.get("product", {}).get("tags", [])
 
@@ -49,7 +48,7 @@ def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_8
 def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
     look_name = utils.generate_look_name()
 
@@ -69,7 +68,7 @@ def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
 
     tags = shopify_variant.get("product", {}).get("tags", [])
 
@@ -84,7 +83,7 @@ def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_9
 def test_associate_look_to_attendee(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
@@ -107,7 +106,7 @@ def test_associate_look_to_attendee(page: Page):
     actions.create_default_look(page, look_name)
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
 
     tags = set(shopify_variant.get("product", {}).get("tags", []))
     assert "not_linked_to_event" in tags
@@ -124,7 +123,7 @@ def test_associate_look_to_attendee(page: Page):
 
     time.sleep(2)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
 
     tags = shopify_variant.get("product", {}).get("tags", [])
 
@@ -134,7 +133,7 @@ def test_associate_look_to_attendee(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_10
 def test_associate_look_to_attendee_then_remove_event(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
@@ -161,7 +160,7 @@ def test_associate_look_to_attendee_then_remove_event(page: Page):
     actions.create_default_look(page, look_name)
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
     tags = set(shopify_variant.get("product", {}).get("tags", []))
     assert "not_linked_to_event" in tags
     assert "linked_to_event" not in tags
@@ -171,7 +170,7 @@ def test_associate_look_to_attendee_then_remove_event(page: Page):
 
     time.sleep(2)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
     tags = shopify_variant.get("product", {}).get("tags", [])
     assert "not_linked_to_event" not in tags
     assert "linked_to_event" in tags
@@ -180,7 +179,7 @@ def test_associate_look_to_attendee_then_remove_event(page: Page):
 
     time.sleep(2)
 
-    shopify_variant = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
+    shopify_variant = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id}")
     tags = set(shopify_variant.get("product", {}).get("tags", []))
     assert "not_linked_to_event" in tags
     assert "linked_to_event" not in tags
@@ -188,7 +187,7 @@ def test_associate_look_to_attendee_then_remove_event(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_1
 def test_associate_look1_and_then_look2(page: Page):
     event_name = utils.generate_event_name()
     look_name_1 = utils.generate_look_name()
@@ -220,12 +219,12 @@ def test_associate_look1_and_then_look2(page: Page):
     _, data_look_variant_id_1, _ = actions.get_look_by_name_on_looks_page(page, look_name_1)
     _, data_look_variant_id_2, _ = actions.get_look_by_name_on_looks_page(page, look_name_2)
 
-    shopify_variant_1 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
+    shopify_variant_1 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
     tags_1 = set(shopify_variant_1.get("product", {}).get("tags", []))
     assert "not_linked_to_event" in tags_1
     assert "linked_to_event" not in tags_1
 
-    shopify_variant_2 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
+    shopify_variant_2 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
     tags_2 = set(shopify_variant_2.get("product", {}).get("tags", []))
     assert "not_linked_to_event" in tags_2
     assert "linked_to_event" not in tags_2
@@ -235,13 +234,13 @@ def test_associate_look1_and_then_look2(page: Page):
 
     time.sleep(2)
 
-    shopify_variant_1 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
+    shopify_variant_1 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
     tags_1 = shopify_variant_1.get("product", {}).get("tags", [])
     assert "not_linked_to_event" not in tags_1
     assert "linked_to_event" in tags_1
 
     actions.select_look_for_attendee(page, event_id, attendee_id, look_name_2)
-    shopify_variant_2 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
+    shopify_variant_2 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
     tags_2 = shopify_variant_2.get("product", {}).get("tags", [])
     assert "not_linked_to_event" in tags_2
     assert "linked_to_event" not in tags_2
@@ -250,13 +249,13 @@ def test_associate_look1_and_then_look2(page: Page):
 
     time.sleep(2)
 
-    shopify_variant_1 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
+    shopify_variant_1 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_1}")
     tags_1 = shopify_variant_1.get("product", {}).get("tags", [])
     assert "not_linked_to_event" in tags_1
     assert "linked_to_event" not in tags_1
 
     actions.select_look_for_attendee(page, event_id, attendee_id, look_name_2)
-    shopify_variant_2 = get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
+    shopify_variant_2 = shopify.get_variant_by_id(f"gid://shopify/ProductVariant/{data_look_variant_id_2}")
     tags_2 = shopify_variant_2.get("product", {}).get("tags", [])
     assert "not_linked_to_event" not in tags_2
     assert "linked_to_event" in tags_2

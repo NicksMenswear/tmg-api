@@ -10,7 +10,7 @@ from server.tests.e2e.utils import api, actions, verify
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_1
 def test_create_delete_looks(page: Page):
     look_name = utils.generate_look_name()
 
@@ -37,7 +37,7 @@ def test_create_delete_looks(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_2
 def test_add_look_to_cart_from_looks_page(page: Page):
     event_name = utils.generate_event_name()
     look_name = utils.generate_look_name()
@@ -74,7 +74,7 @@ def test_add_look_to_cart_from_looks_page(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_3
 def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
     look_name = utils.generate_look_name()
 

@@ -84,9 +84,10 @@ services:
       BROWSER: ${BROWSER:-chromium}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: mobile
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -104,9 +105,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+01@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -124,9 +126,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+02@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -144,9 +147,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+03@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -164,9 +168,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+04@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -184,9 +189,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+05@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport mobile"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -204,9 +210,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+06@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport desktop"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_6 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -224,9 +231,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+07@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport desktop"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_7 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -244,9 +252,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+08@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport desktop"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_8 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -264,9 +273,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+09@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport desktop"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_9 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -284,9 +294,10 @@ services:
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+10@mail.dev.tmgcorp.net}
       SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
       SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
+      VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport desktop"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_10 --viewport $VIEWPORT"
     deploy:
       replicas: ${LOAD:-1}
     tty: false

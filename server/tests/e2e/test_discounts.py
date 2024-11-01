@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_5
 def test_pay_dialog_correctness(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -90,7 +90,7 @@ def test_pay_dialog_correctness(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_6
 def test_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -145,7 +145,7 @@ def test_discount_intent_saved(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_7
 def test_pay_in_full_click_discount_intent_saved(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -198,7 +198,7 @@ def test_pay_in_full_click_discount_intent_saved(page: Page):
 
 @e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_8
 def test_grooms_gift(page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -270,7 +270,7 @@ def test_grooms_gift(page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_9
 def test_group_discount(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -340,7 +340,7 @@ def test_group_discount(page):
 
 @e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_10
 def test_group_discount_and_groom_gift_as_well(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -421,7 +421,7 @@ def test_group_discount_and_groom_gift_as_well(page):
 
 @e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_1
 def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -502,7 +502,7 @@ def test_group_discount_and_groom_gift_as_well_with_look_just_a_suit(page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_2
 def test_grooms_gift_and_swatches(page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"

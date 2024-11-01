@@ -35,7 +35,7 @@ DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_3
 def test_basic_create_event(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -64,7 +64,7 @@ def test_basic_create_event(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_4
 def test_create_multiple_events(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -110,7 +110,7 @@ def test_create_multiple_events(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_5
 def test_create_event_and_add_few_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -155,7 +155,7 @@ def test_create_event_and_add_few_attendees(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_6
 def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -203,7 +203,7 @@ def test_create_event_and_add_few_attendees_using_save_and_add_next_button(page:
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_7
 def test_create_event_add_and_remove_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -236,7 +236,7 @@ def test_create_event_add_and_remove_attendees(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_5
+@pytest.mark.group_8
 def test_delete_event(page: Page):
     event_name_1 = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -270,7 +270,7 @@ def test_delete_event(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_9
 def test_delete_all_events(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -295,7 +295,7 @@ def test_delete_all_events(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_10
 def test_delete_all_attendees(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"
@@ -331,7 +331,7 @@ def test_delete_all_attendees(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_1
 def test_create_all_types_of_events_and_check_roles(page: Page):
     event_name1 = utils.generate_event_name()
     attendee_first_name1 = f"E2E {utils.generate_unique_name()}"
@@ -388,7 +388,7 @@ def test_create_all_types_of_events_and_check_roles(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_2
 def test_roles_persistence(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -465,7 +465,7 @@ def test_add_myself_and_then_remove(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_4
 def test_add_myself_and_fill_fit_survey(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -513,7 +513,7 @@ def test_add_myself_and_fill_fit_survey(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_3
+@pytest.mark.group_5
 def test_style_and_invite_checkboxes(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -557,7 +557,7 @@ def test_style_and_invite_checkboxes(page: Page):
 
 @e2e_allowed_in({"dev", "stg"})
 @e2e_error_handling
-@pytest.mark.group_4
+@pytest.mark.group_6
 def test_add_myself_and_pay_for_suit(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name = f"E2E {utils.generate_unique_name()}"
@@ -635,7 +635,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_2
+@pytest.mark.group_7
 def test_update_event_owner_name(page: Page):
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
@@ -677,7 +677,7 @@ def test_update_event_owner_name(page: Page):
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
-@pytest.mark.group_1
+@pytest.mark.group_8
 def test_update_attendee_uber_test(page: Page):
     event_name = utils.generate_event_name()
     attendee_first_name_1 = f"E2E {utils.generate_unique_name()}"

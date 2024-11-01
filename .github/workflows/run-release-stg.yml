@@ -54,6 +54,7 @@ jobs:
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
+    environment: stg
     with:
       ref: ${{ inputs.semver }}
       stage: stg
@@ -62,6 +63,7 @@ jobs:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
 
   release-status:
     runs-on: ubuntu-latest

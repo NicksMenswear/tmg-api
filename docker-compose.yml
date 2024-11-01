@@ -82,6 +82,8 @@ services:
       PYTHONUNBUFFERED: 1
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 --viewport mobile"
@@ -100,6 +102,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+01@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport mobile"
@@ -118,6 +122,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+02@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport mobile"
@@ -136,6 +142,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+03@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport mobile"
@@ -154,6 +162,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+04@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport mobile"
@@ -172,6 +182,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+05@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport mobile"
@@ -190,6 +202,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+06@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport desktop"
@@ -208,6 +222,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+07@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport desktop"
@@ -226,6 +242,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+08@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport desktop"
@@ -244,6 +262,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+09@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport desktop"
@@ -262,6 +282,8 @@ services:
       ACTIVE_ENV: ${ACTIVE_ENV:-stg}
       BROWSER: ${BROWSER:-chromium}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-e2e+10@mail.dev.tmgcorp.net}
+      SHOPIFY_STORE_HOST: ${SHOPIFY_STORE_HOST}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${SHOPIFY_ADMIN_API_ACCESS_TOKEN}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
       pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport desktop"

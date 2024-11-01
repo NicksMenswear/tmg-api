@@ -28,6 +28,7 @@ from server.database.models import (
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
+from server.services.event_service import EventService
 from server.services.integrations.shopify_service import FakeShopifyService
 from server.services.sku_builder_service import ProductType
 
@@ -78,7 +79,7 @@ class BaseTestCase(TestCase):
         self.user_service = self.app.user_service
         self.role_service = self.app.role_service
         self.look_service = self.app.look_service
-        self.event_service = self.app.event_service
+        self.event_service: EventService = self.app.event_service
         self.order_service = self.app.order_service
         self.product_service = self.app.product_service
         self.attendee_service = self.app.attendee_service

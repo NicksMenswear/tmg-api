@@ -2,7 +2,6 @@ import logging
 import uuid
 
 from server.models.audit_log_model import AuditLogMessage
-from server.models.event_model import EventModel
 from server.services import NotFoundError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
@@ -120,59 +119,13 @@ class TaggingService:
         if user_tags_that_should_not_be_present:
             self.__remove_tags_from_customers(user_tags_that_should_not_be_present)
 
-    def tag_products_on_event_updated(self, audit_log_message: AuditLogMessage):
-        event_is_active = audit_log_message.payload.get("is_active")
-
-        if event_is_active:  # event is still active so we don't need to do anything
-            logger.info("Event is still active - no need to update products")
-            return
-
-        logger.info("Event is not active - looking for look products to update ...")
-
-        event_id = audit_log_message.payload.get("id")
-        event: EventModel = self.__event_service.get_event_by_id(uuid.UUID(event_id), True)
-
-        if not event.looks:  # event has no looks
-            return
-
-        unique_looks = dict()
-
-        for look in event.looks:
-            unique_looks[look.id] = look
-
-        for look_id, look in unique_looks.items():
-            shopify_product_id = look.product_specs.get("bundle", {}).get("product_id")
-
-            if not shopify_product_id:
-                continue
-
-            shopify_product_gid = ShopifyService.product_gid(int(shopify_product_id))
-
-            attendees = self.__attendee_service.find_attendees_by_look_id(look.id)
-
-            if attendees:
-                logger.info(
-                    f"Look {look_id}/{look.name} belongs to event. Updating product {shopify_product_id} tags ..."
-                )
-
-                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
-                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
-            else:
-                logger.info(
-                    f"Look {look_id}/{look.name} doesn't belongs to any event. Updating product {shopify_product_id} tags ..."
-                )
-
-                self.__shopify_service.remove_tags(shopify_product_gid, {TAG_PRODUCT_LINKED_TO_EVENT})
-                self.__shopify_service.add_tags(shopify_product_gid, {TAG_PRODUCT_NOT_LINKED_TO_EVENT})
-
     def tag_products_on_attendee_updated(self, audit_log_message: AuditLogMessage):
-        attendee_is_active = audit_log_message.payload.get("is_active")
         look_id = audit_log_message.payload.get("look_id")
         diff = audit_log_message.diff
 
         look_ids_in_question = set()
 
-        if not attendee_is_active:
+        if look_id:
             look_ids_in_question.add(look_id)
 
         if diff and diff.get("look_id"):

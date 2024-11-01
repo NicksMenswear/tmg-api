@@ -53,10 +53,14 @@ class UserActivityLogService:
         )
 
     def user_updated(self, audit_log_message: AuditLogMessage):
+        diff = audit_log_message.diff
+
+        if not diff:
+            return
+
         data = audit_log_message.payload
         user_id = UUID(data.get("id"))
         audit_log_id = UUID(audit_log_message.id)
-        diff = audit_log_message.diff
 
         if "first_name" in diff or "last_name" in diff:
             old_first_name = diff.get("first_name", {}).get("before", data.get("first_name"))
@@ -197,13 +201,13 @@ class UserActivityLogService:
         )
 
     def attendee_updated(self, audit_log_message: AuditLogMessage):
-        data = audit_log_message.payload
         diff = audit_log_message.diff
-        audit_log_id = UUID(audit_log_message.id)
 
         if not diff:
             return
 
+        data = audit_log_message.payload
+        audit_log_id = UUID(audit_log_message.id)
         event_id: UUID = UUID(data.get("event_id"))
         attendee_id: UUID = UUID(data.get("id"))
         event = self.__event_service.get_event_by_id(event_id)

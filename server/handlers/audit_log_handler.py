@@ -63,7 +63,7 @@ def lambda_handler(event: dict, context: LambdaContext):
 
         try:
             audit_log_service.process(AuditLogMessage.from_string(message))
-        except Exception:
+        except Exception as e:
             logger.exception(f"Error processing audit message: {message}")
 
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}

@@ -201,21 +201,52 @@ class FakeShopifyService(AbstractShopifyService):
                 del self.customers[customer.gid]
                 break
 
+    def __get_variant_by_product_id(self, product_id: str) -> ShopifyVariantModel | None:
+        for variant in self.shopify_variants.values():
+            if variant.product_id == product_id:
+                return variant
+
+        return None
+
     def add_tags(self, shopify_gid: str, tags: set[str]) -> None:
-        customer = self.customers.get(shopify_gid)
+        if not shopify_gid:
+            return
 
-        if not customer:
-            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+        if shopify_gid.startswith("gid://shopify/Customer/"):
+            customer = self.customers.get(shopify_gid)
 
-        customer.tags = list(set(customer.tags) | tags)
+            if not customer:
+                raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+            customer.tags = list(set(customer.tags) | tags)
+        elif shopify_gid.startswith("gid://shopify/Product/"):
+            product_id = shopify_gid.removeprefix("gid://shopify/Product/")
+            variant = self.__get_variant_by_product_id(product_id)
+
+            if not variant:
+                raise NotFoundError(f"Variant with id {shopify_gid} not found.")
+
+            variant.tags = list(set(variant.tags) | tags)
 
     def remove_tags(self, shopify_gid: str, tags: set[str]) -> None:
-        customer = self.customers.get(shopify_gid)
+        if not shopify_gid:
+            return
 
-        if not customer:
-            raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+        if shopify_gid.startswith("gid://shopify/Customer/"):
+            customer = self.customers.get(shopify_gid)
 
-        customer.tags = list(set(customer.tags) - set(tags))
+            if not customer:
+                raise NotFoundError(f"Customer with id {shopify_gid} not found.")
+
+            customer.tags = list(set(customer.tags) - set(tags))
+        elif shopify_gid.startswith("gid://shopify/Product/"):
+            product_id = shopify_gid.removeprefix("gid://shopify/Product/")
+            variant = self.__get_variant_by_product_id(product_id)
+
+            if not variant:
+                raise NotFoundError(f"Variant with id {shopify_gid} not found.")
+
+            variant.tags = list(set(variant.tags) - set(tags))
 
     def get_variant_by_sku(self, sku: str) -> ShopifyVariantModel:
         return self.shopify_variants[random.choice(list(self.shopify_variants.keys()))]
@@ -332,6 +363,7 @@ class FakeShopifyService(AbstractShopifyService):
                 "variant_title": f"Variant for bundle {bundle_variant_id}",
                 "variant_sku": f"00{random.randint(10000, 1000000)}",
                 "variant_price": bundle_price,
+                "tags": tags,
             }
         )
 
@@ -369,6 +401,7 @@ class FakeShopifyService(AbstractShopifyService):
                 "variant_title": f"Variant for bundle {bundle_variant_id}",
                 "variant_sku": f"00{random.randint(10000, 1000000)}",
                 "variant_price": bundle_price,
+                "tags": tags,
             }
         )
 

@@ -43,3 +43,4 @@ class ShopifyVariantModel(BaseModel):
     variant_price: Optional[float] = None
     variant_sku: str
     image_url: Optional[str] = None
+    tags: list[str] = []

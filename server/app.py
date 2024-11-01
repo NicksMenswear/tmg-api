@@ -8,6 +8,7 @@ import sentry_sdk
 from flask_cors import CORS
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
+from server.services.audit_service import AuditLogService
 
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
@@ -21,7 +22,6 @@ from server.logs import (
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
 from server.services.audit_logger import init_audit_logging
-from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
@@ -36,10 +36,10 @@ from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shipping_service import ShippingService
-from server.services.shoppify_tagging_service import ShopifyTaggingService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
+from server.services.tagging_service import TaggingService
 from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
 from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
@@ -162,7 +162,7 @@ def init_services(app, is_testing=False):
     )
     app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
     app.webhook_service = WebhookService()
-    app.user_activity_log_service = UserActivityLogService(
+    app.__user_activity_log_service = UserActivityLogService(
         app.user_service,
         app.event_service,
         app.attendee_service,
@@ -170,14 +170,14 @@ def init_services(app, is_testing=False):
         app.look_service,
         app.order_service,
     )
-    app.shopify_tagging_service = ShopifyTaggingService(
+    app.__tagging_service = TaggingService(
         app.user_service,
         app.event_service,
         app.attendee_service,
         app.look_service,
         app.shopify_service,
     )
-    app.audit_log_service = AuditLogService(app.shopify_tagging_service, app.user_activity_log_service)
+    app.audit_log_service = AuditLogService(app.__tagging_service, app.__user_activity_log_service)
     app.shiphero_service = FakeShipHeroService() if is_testing else ShipHeroService()
     app.shopify_webhook_order_handler = ShopifyWebhookOrderHandler(
         app.shopify_service,

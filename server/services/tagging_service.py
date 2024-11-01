@@ -18,7 +18,7 @@ TAG_PRODUCT_LINKED_TO_EVENT = "linked_to_event"
 TAG_PRODUCT_NOT_LINKED_TO_EVENT = "not_linked_to_event"
 
 
-class ShopifyTaggingService:
+class TaggingService:
     def __init__(
         self,
         user_service: UserService,
@@ -39,8 +39,6 @@ class ShopifyTaggingService:
 
         user_tags_that_should_be_present = {}
         user_tags_that_should_not_be_present = {}
-
-        logger.info(f"Processing 'EVENT_UPDATED' message for user {user_id} and event {event_id}")
 
         events = self.__event_service.get_user_owned_events_with_n_attendees(user_id, 4)
 
@@ -87,8 +85,6 @@ class ShopifyTaggingService:
         event = self.__event_service.get_event_by_id(uuid.UUID(event_id))
         event_owner_user_id = event.user_id
 
-        logger.info(f"Processing 'ATTENDEE_UPDATED' message for user {user_id}")
-
         user_tags_that_should_be_present: dict[uuid.UUID, set[str]] = {}
         user_tags_that_should_not_be_present: dict[uuid.UUID, set[str]] = {}
 
@@ -128,7 +124,10 @@ class ShopifyTaggingService:
         event_is_active = audit_log_message.payload.get("is_active")
 
         if event_is_active:  # event is still active so we don't need to do anything
+            logger.info("Event is still active - no need to update products")
             return
+
+        logger.info("Event is not active - looking for look products to update ...")
 
         event_id = audit_log_message.payload.get("id")
         event: EventModel = self.__event_service.get_event_by_id(uuid.UUID(event_id), True)

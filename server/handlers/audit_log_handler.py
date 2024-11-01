@@ -14,7 +14,7 @@ from server.services.integrations.shopify_service import ShopifyService
 from server.services.look_service import LookService
 from server.services.order_service import OrderService
 from server.services.role_service import RoleService
-from server.services.shoppify_tagging_service import ShopifyTaggingService
+from server.services.tagging_service import TaggingService
 from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
 
@@ -49,21 +49,21 @@ def lambda_handler(event: dict, context: LambdaContext):
     user_activity_log_service = UserActivityLogService(
         user_service, event_service, attendee_service, role_service, look_service, order_service
     )
-    shopify_tagging_service = ShopifyTaggingService(
+    tagging_service = TaggingService(
         user_service,
         event_service,
         attendee_service,
         look_service,
         shopify_service,
     )
-    audit_log_service = AuditLogService(shopify_tagging_service, user_activity_log_service)
+    audit_log_service = AuditLogService(tagging_service, user_activity_log_service)
 
     for record in event.get("Records", []):
         message = record.get("body", "{}")
 
         try:
             audit_log_service.process(AuditLogMessage.from_string(message))
-        except Exception as e:
+        except Exception:
             logger.exception(f"Error processing audit message: {message}")
 
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}

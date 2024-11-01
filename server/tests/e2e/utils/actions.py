@@ -215,6 +215,10 @@ def delete_attendee(page: Page, event_id: str, attendee_id: str):
     expect(attendee_item.first).not_to_be_visible()
 
 
+def logout(page: Page):
+    page.goto(f"{STORE_URL}/account/logout")
+
+
 def sign_up(page: Page, first_name: str, last_name: str, email: str):
     page.goto(f"{STORE_URL}/account")
 
@@ -224,10 +228,6 @@ def sign_up(page: Page, first_name: str, last_name: str, email: str):
     page.get_by_placeholder("Last name").first.fill(last_name)
     page.get_by_placeholder("Email address*", exact=True).first.fill(email)
     page.get_by_role("button", name="Sign Up").click()
-
-
-def logout(page: Page):
-    page.goto(f"{STORE_URL}/account/logout")
 
 
 def fill_activation_form(page: Page, password: str, first_name: str = None, last_name: str = None):

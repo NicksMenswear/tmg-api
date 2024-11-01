@@ -115,7 +115,7 @@ jobs:
 
   e2e-clean-up:
     needs: e2e-test
-    if: ${{ always() }}
+    if: ${{ always() && inputs.stage != 'dev' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

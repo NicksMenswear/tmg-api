@@ -30,7 +30,6 @@ jobs:
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
-    environment: ${{ inputs.stage }}
     with:
       ref: ${{ github.ref_name }}
       stage: ${{ inputs.stage }}

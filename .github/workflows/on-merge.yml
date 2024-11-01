@@ -35,7 +35,6 @@ jobs:
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
-    environment: dev
     with:
       ref: ${{ github.ref_name }}
       stage: dev

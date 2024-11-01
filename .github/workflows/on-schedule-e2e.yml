@@ -7,7 +7,6 @@ on:
 jobs:
   e2e:
     uses: ./.github/workflows/_e2e_tests.yml
-    environment: ${{ matrix.stage }}
     with:
       ref: main
       notify: true

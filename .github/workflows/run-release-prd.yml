@@ -72,7 +72,6 @@ jobs:
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
-    environment: prd
     with:
       ref: ${{ inputs.semver }}
       stage: prd

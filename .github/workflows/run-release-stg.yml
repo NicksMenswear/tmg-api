@@ -54,7 +54,6 @@ jobs:
   e2e-tests:
     uses: ./.github/workflows/_e2e_tests.yml
     needs: cd
-    environment: stg
     with:
       ref: ${{ inputs.semver }}
       stage: stg

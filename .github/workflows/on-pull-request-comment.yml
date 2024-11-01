@@ -95,7 +95,6 @@ jobs:
     needs: cd
     name: e2e-groups
     uses: ./.github/workflows/_e2e_tests.yml
-    environment: dev
     with:
       ref: refs/pull/${{ github.event.issue.number }}/head
       stage: dev

@@ -184,6 +184,7 @@ class Look(Base, SerializableMixin):
     name = Column(String, index=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     product_specs = Column(JSON)
+    product_specs_legacy = Column(JSON)
     image_path = Column(String, default=None)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)

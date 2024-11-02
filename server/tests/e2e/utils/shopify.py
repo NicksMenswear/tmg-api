@@ -5,7 +5,7 @@ import requests
 
 SHOPIFY_STORE_HOST = os.getenv("SHOPIFY_STORE_HOST", "quickstart-a91e1214.myshopify.com")
 SHOPIFY_GRAPHQL_API_ENDPOINT = f"https://{SHOPIFY_STORE_HOST}/admin/api/2024-07/graphql.json"
-SHOPIFY_ADMIN_API_ACCESS_TOKEN = os.getenv("SHOPIFY_ADMIN_API_ACCESS_TOKEN", "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")
+SHOPIFY_ADMIN_API_ACCESS_TOKEN = os.getenv("SHOPIFY_ADMIN_API_ACCESS_TOKEN")
 
 
 def _admin_api_graphql_request(query: str, variables: dict[str, Any] = None) -> dict[str, Any]:

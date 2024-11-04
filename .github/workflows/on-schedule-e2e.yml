@@ -5,13 +5,13 @@ on:
     - cron: '30 15 * * *'
 
 jobs:
-  e2e:
+  e2e-mobile:
     uses: ./.github/workflows/_e2e_tests.yml
     with:
       ref: main
       notify: true
       stage: ${{ matrix.stage }}
-      viewport: all
+      viewport: mobile
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
@@ -21,6 +21,22 @@ jobs:
       fail-fast: false
       matrix:
         stage:
-          - dev
-          - stg
+          - prd
+  e2e-desktop:
+    uses: ./.github/workflows/_e2e_tests.yml
+    needs: e2e-mobile
+    with:
+      ref: main
+      notify: true
+      stage: ${{ matrix.stage }}
+      viewport: desktop
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
+      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        stage:
           - prd

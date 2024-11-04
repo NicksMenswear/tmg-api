@@ -49,7 +49,6 @@ provider:
     DB_USER: ${ssm:/${sls:stage}/db/DB_USER}
     DB_PASSWORD: ${ssm:/${sls:stage}/db/DB_PASSWORD}
     # Shopify Env Variables
-    API_KEY: ${ssm:/${sls:stage}/shopify/API_KEY}
     api_version: "2024-01"
     shopify_store: ${ssm:/${sls:stage}/shopify/shopify_store}
     client_id: ${ssm:/${sls:stage}/shopify/client_id}

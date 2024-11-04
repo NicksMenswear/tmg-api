@@ -86,8 +86,9 @@ jobs:
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
           parameterPairs: |
-            /${{ inputs.stage }}/shopify/API_KEY = SHOPIFY_ADMIN_API_ACCESS_TOKEN,
-            /${{ inputs.stage }}/shopify/shopify_store = SHOPIFY_STORE_HOST
+            /${{ inputs.stage }}/shopify/admin_api_access_token = SHOPIFY_ADMIN_API_ACCESS_TOKEN,
+            /${{ inputs.stage }}/shopify/shopify_store = SHOPIFY_STORE
+          withDecryption: true
 
       - name: Build and run end-to-end tests
         run: ./test-e2e.sh
@@ -97,7 +98,7 @@ jobs:
           VIEWPORT: ${{ inputs.viewport }}
           LOAD: ${{ inputs.load }}
           TEST_GROUP: group-${{ matrix.group }}
-          SHOPIFY_STORE_HOST: ${{ env.SHOPIFY_STORE_HOST }}
+          SHOPIFY_STORE: ${{ env.SHOPIFY_STORE }}
           SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
 
       - name: Clean up

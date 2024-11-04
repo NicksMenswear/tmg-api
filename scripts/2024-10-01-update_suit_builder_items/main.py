@@ -13,8 +13,8 @@ DB_USER = "postgres"
 DB_PASSWORD = os.environ["DB_PASSWORD"]
 DB_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 SHOPIFY_ADMIN_API_ACCESS_TOKEN = os.getenv("SHOPIFY_ADMIN_API_ACCESS_TOKEN")
-SHOPIFY_STORE_HOST = os.getenv("SHOPIFY_STORE_HOST", "tmg-staging")
-SHOPIFY_STORE_ADMIN_GRAPHQL_ENDPOINT = f"https://{SHOPIFY_STORE_HOST}.myshopify.com/admin/api/2024-01/graphql.json"
+SHOPIFY_STORE = os.getenv("SHOPIFY_STORE", "tmg-staging")
+SHOPIFY_STORE_ADMIN_GRAPHQL_ENDPOINT = f"https://{SHOPIFY_STORE}.myshopify.com/admin/api/2024-01/graphql.json"
 
 db_engine = create_engine(DB_URI)
 Session = sessionmaker(bind=db_engine)

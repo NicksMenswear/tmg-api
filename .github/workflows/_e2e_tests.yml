@@ -76,7 +76,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.REGION }}
-          role-to-assume: arn:aws:iam::${{ env.ACCOUNT }}:role/SlsDeploy
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT }}:role/SsmRead
 
       - name: Get SSM secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v2

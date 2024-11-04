@@ -43,6 +43,9 @@ on:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    env:
+      ACCOUNT: ${{ inputs.stage == 'prd' && '729911029963' || '828867313984' }}
+      REGION: ${{ inputs.stage == 'prd' && 'us-east-1' || 'us-west-2' }}
     strategy:
       fail-fast: false
       matrix:
@@ -68,6 +71,12 @@ jobs:
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.REGION }}
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT }}:role/SlsDeploy
 
       - name: Get SSM secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v2

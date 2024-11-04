@@ -99,7 +99,7 @@ jobs:
           LOAD: ${{ inputs.load }}
           TEST_GROUP: group-${{ matrix.group }}
           SHOPIFY_STORE: ${{ env.SHOPIFY_STORE }}
-          SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
+          SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ env.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
 
       - name: Clean up
         if: always()

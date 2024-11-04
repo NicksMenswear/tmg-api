@@ -86,7 +86,7 @@ jobs:
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
           parameterPairs: |
-            SHOPIFY_ADMIN_API_ACCESS_TOKEN = /${{ inputs.stage }}/shopify/API_KEY
+            SHOPIFY_ADMIN_API_ACCESS_TOKEN = /${{ inputs.stage }}/shopify/API_KEY,
             SHOPIFY_STORE_HOST = /${{ inputs.stage }}/shopify/shopify_store
 
       - name: Build and run end-to-end tests

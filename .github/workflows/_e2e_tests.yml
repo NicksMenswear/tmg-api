@@ -43,11 +43,7 @@ on:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
-<<<<<<< Updated upstream
-    environment: ${{ inputs.stage }}
-=======
     needs: setup
->>>>>>> Stashed changes
     strategy:
       fail-fast: false
       matrix:

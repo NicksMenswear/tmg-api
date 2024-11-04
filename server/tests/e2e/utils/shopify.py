@@ -3,8 +3,8 @@ from typing import Any
 
 import requests
 
-SHOPIFY_STORE_HOST = os.getenv("SHOPIFY_STORE_HOST", "quickstart-a91e1214.myshopify.com")
-SHOPIFY_GRAPHQL_API_ENDPOINT = f"https://{SHOPIFY_STORE_HOST}/admin/api/2024-07/graphql.json"
+SHOPIFY_STORE_HOST = os.getenv("SHOPIFY_STORE_HOST", "quickstart-a91e1214")
+SHOPIFY_GRAPHQL_API_ENDPOINT = f"https://{SHOPIFY_STORE_HOST}.myshopify.com/admin/api/2024-07/graphql.json"
 SHOPIFY_ADMIN_API_ACCESS_TOKEN = os.getenv("SHOPIFY_ADMIN_API_ACCESS_TOKEN")
 
 

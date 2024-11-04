@@ -40,6 +40,9 @@ on:
       SHOPIFY_ADMIN_API_ACCESS_TOKEN:
         required: true
 
+permissions:
+  id-token: write
+
 jobs:
   e2e-test:
     runs-on: ubuntu-latest

@@ -27,8 +27,6 @@ session = Session()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SHOPIFY_STORE_HOST = os.getenv("SHOPIFY_STORE_HOST", "quickstart-a91e1214.myshopify.com")
-
 
 def _admin_api_graphql_request(query: str, variables: dict[str, Any] = None) -> dict[str, Any]:
     response = requests.post(

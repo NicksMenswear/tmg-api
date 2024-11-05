@@ -14,6 +14,7 @@ from server.tests.e2e.utils import api, actions, verify, shopify
 def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
     look_name = utils.generate_look_name()
 
+    api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
@@ -52,6 +53,7 @@ def test_suit_bundle_tagging_correctness_for_default_suit(page: Page):
 def test_suit_bundle_tagging_correctness_for_socks_and_belt_only(page: Page):
     look_name = utils.generate_look_name()
 
+    api.delete_all_events(TEST_USER_EMAIL)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")

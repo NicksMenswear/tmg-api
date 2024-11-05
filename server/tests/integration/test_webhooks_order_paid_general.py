@@ -781,3 +781,122 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
                     f"{GIFT_DISCOUNT_CODE_PREFIX}-{int(discount_intent.amount)}-OFF"
                 )
             )
+
+    @parameterized.expand([["803A4BLK070D", "803A4BLK070D"], ["703A4COG460R", "703A4COG460R"]])
+    def test_orders_measured_shoes_and_belts_should_be_processed_as_is_event_without_measurements(
+        self, shopify_sku, shiphero_sku
+    ):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=shopify_sku)],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
+        response_shiphero_skus = set([product.sku for product in order.products])
+
+        self.assertEqual(response_shopify_skus.pop(), shopify_sku)
+        self.assertEqual(response_shiphero_skus.pop(), shiphero_sku)
+
+    @parameterized.expand(
+        [
+            [
+                [
+                    "101A2BLK",
+                    "201A2BLK",
+                    "301A2BLK",
+                    "803A4BLK",  # shoes that are part of a suit
+                    "903A4BLK",
+                    "803A4BLK070D",  # shoes that are separate
+                ],
+                [
+                    "001A2BLK42R",
+                    "101A2BLK42RAF",
+                    "201A2BLK40R",
+                    "301A2BLK00LRAF",
+                    "903A4BLKOSR",
+                    "803A4BLK070D",
+                    "803A4BLK070D",
+                ],
+            ],
+            [
+                [
+                    "101A2BLK",
+                    "201A2BLK",
+                    "301A2BLK",
+                    "703A4COG",
+                    "903A4BLK",
+                    "703A4COG460R",
+                ],
+                [
+                    "001A2BLK42R",
+                    "101A2BLK42RAF",
+                    "201A2BLK40R",
+                    "301A2BLK00LRAF",
+                    "903A4BLKOSR",
+                    "703A4COG460R",
+                    "703A4COG460R",
+                ],
+            ],
+        ]
+    )
+    def test_mix_shoes_that_are_part_of_the_look_with_separate_shoes(self, shopify_skus, shiphero_skus):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        measurement = self.measurement_service.create_measurement(
+            fixtures.store_measurement_request(
+                user_id=attendee_user.id,
+                data=fixtures.test_measurements(),
+            )
+        )
+        self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                measurement_id=measurement.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(user_id=attendee_user.id, event_id=event_id, email=attendee_user.email)
+        )
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=attendee_user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=shopify_sku) for shopify_sku in shopify_skus],
+            event_id=str(event_id),
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+
+        response_shopify_skus = [order_item.shopify_sku for order_item in order.order_items]
+        response_shiphero_skus = [product.sku for product in order.products]
+
+        self.assertEqual(len(response_shopify_skus), len(shopify_skus) + 1)
+        self.assertEqual(set(response_shiphero_skus), set(shiphero_skus))

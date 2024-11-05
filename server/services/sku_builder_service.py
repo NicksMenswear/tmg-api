@@ -262,9 +262,9 @@ class SkuBuilder:
         elif product_type == ProductType.BOW_TIE:
             return self.__build_bow_tie_sku(shopify_sku)
         elif product_type == ProductType.BELT:
-            return self.__build_belt_sku(shopify_sku, size_model) if size_model else None
+            return self.__build_belt_sku(shopify_sku, size_model)
         elif product_type == ProductType.SHOES:
-            return self.__build_shoes_sku(shopify_sku, measurement_model) if measurement_model else None
+            return self.__build_shoes_sku(shopify_sku, measurement_model)
         elif product_type == ProductType.SOCKS:
             return self.__build_socks_sku(shopify_sku)
         elif product_type == ProductType.SOCKS:
@@ -393,7 +393,13 @@ class SkuBuilder:
     def __build_bow_tie_sku(shopify_sku: str) -> str:
         return f"{shopify_sku}OSR"
 
-    def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel) -> Optional[str]:
+    def __build_belt_sku(self, shopify_sku: str, size_model: SizeModel | None) -> Optional[str]:
+        if len(shopify_sku) > 8:  # already sized
+            return shopify_sku
+
+        if not size_model:
+            return None
+
         self.__validate_pant_sizes(size_model)
 
         pant_size_num = int(size_model.pant_size)
@@ -406,7 +412,13 @@ class SkuBuilder:
         return f"{shopify_sku}{pant_size}R"
 
     @staticmethod
-    def __build_shoes_sku(shopify_sku: str, measurement_model: MeasurementModel) -> Optional[str]:
+    def __build_shoes_sku(shopify_sku: str, measurement_model: MeasurementModel | None) -> Optional[str]:
+        if len(shopify_sku) > 8:  # already sized
+            return shopify_sku
+
+        if not measurement_model:
+            return None
+
         shoe_size = SHOES_SIZE_CODES.get(measurement_model.shoe_size)
 
         if not shoe_size:

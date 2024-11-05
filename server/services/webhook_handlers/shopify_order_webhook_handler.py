@@ -235,7 +235,10 @@ class ShopifyWebhookOrderHandler:
                 num_processable_items -= 1
                 continue
 
-            if shopify_sku and shopify_sku.startswith(DISCOUNT_GIFT_FOR_ATTENDEE):
+            if shopify_sku and (
+                shopify_sku.startswith(DISCOUNT_GIFT_FOR_ATTENDEE)
+                or shopify_sku.startswith("DISCOUNT-")  # DISCOUNT- sku is for legacy discount codes
+            ):
                 self.__process_gift_discount(line_item, shopify_customer_email)
                 num_processable_items -= 1
 

@@ -7,7 +7,7 @@ from server.version import get_version
 
 
 def init_sentry():
-    if os.getenv("TMG_APP_TESTING", "false").lower() == "true":
+    if os.getenv("TMG_APP_TESTING", "false").lower() == "true" or not os.getenv("STAGE"):
         return
 
     sentry_sdk.init(

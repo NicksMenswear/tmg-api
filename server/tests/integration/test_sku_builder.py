@@ -337,3 +337,40 @@ class TestSkuBuilder(unittest.TestCase):
         )
 
         self.assertEqual(expected_sku, shiphero_sku)
+
+    def test_buying_just_a_belt(self):
+        shopify_belts = TestSkuBuilder.read_csv_into_set("assets/shopify_belts.csv")
+        belt_sizes = {"460R", "600R"}
+
+        for shopify_belt in shopify_belts:
+            for belt_size in belt_sizes:
+                sized_belt = f"{shopify_belt}{belt_size}"
+
+                shiphero_sku = self.sku_builder.build(
+                    shopify_belt,
+                    fixtures.size_model(),
+                    fixtures.measurement_model(),
+                )
+
+                if shiphero_sku in self.shiphero_skus:
+                    continue
+                else:
+                    raise Exception(f"SKU not found: {shiphero_sku}")
+
+    def test_buying_just_a_shoes(self):
+        shopify_shoes = TestSkuBuilder.read_csv_into_set("assets/shopify_shoes.csv")
+
+        for shopify_shoe in shopify_shoes:
+            for shoes_size in SHOES_SIZE_CODES.values():
+                sized_shoe = f"{shopify_shoe}{shoes_size}"
+
+                shiphero_sku = self.sku_builder.build(
+                    sized_shoe,
+                    fixtures.size_model(),
+                    fixtures.measurement_model(),
+                )
+
+                if shiphero_sku in self.shiphero_skus:
+                    continue
+                else:
+                    raise Exception(f"SKU not found: {shiphero_sku}")

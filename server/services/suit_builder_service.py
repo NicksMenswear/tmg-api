@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
+from sqlalchemy import select, desc, asc
 
 from server.database.database_manager import db
 from server.database.models import SuitBuilderItem, SuitBuilderItemType
@@ -59,7 +60,9 @@ class SuitBuilderService:
         )
 
     def add_item(self, item: CreateSuitBuilderModel) -> SuitBuilderItemModel:
-        suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == item.sku).first()
+        suit_builder_item = db.session.execute(
+            select(SuitBuilderItem).where(SuitBuilderItem.sku == item.sku)
+        ).scalar_one_or_none()
 
         if suit_builder_item:
             raise DuplicateError(f"Item with sku {item.sku} already exists")
@@ -100,12 +103,14 @@ class SuitBuilderService:
 
     @staticmethod
     def get_items(enriched: bool = False) -> SuitBuilderItemsCollection:
-        query = SuitBuilderItem.query
+        query = select(SuitBuilderItem)
 
         if not enriched:
-            query = query.filter(SuitBuilderItem.is_active)
+            query = query.where(SuitBuilderItem.is_active)
 
-        suit_builder_items = query.order_by(SuitBuilderItem.index.desc()).all()
+        query = query.order_by(desc(SuitBuilderItem.index), asc(SuitBuilderItem.sku))
+
+        suit_builder_items = db.session.execute(query).scalars().all()
 
         grouped_collections = SuitBuilderItemsCollection()
 
@@ -115,7 +120,9 @@ class SuitBuilderService:
         return grouped_collections
 
     def patch_item(self, sku: str, field: str, value: Any) -> SuitBuilderItemModel:
-        suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == sku).first()
+        suit_builder_item = db.session.execute(
+            select(SuitBuilderItem).where(SuitBuilderItem.sku == sku)
+        ).scalar_one_or_none()
 
         if not suit_builder_item:
             raise NotFoundError(f"Item with sku {sku} not found")
@@ -155,7 +162,9 @@ class SuitBuilderService:
         return SuitBuilderItemModel.model_validate(suit_builder_item)
 
     def delete_item(self, sku: str) -> None:
-        suit_builder_item = SuitBuilderItem.query.filter(SuitBuilderItem.sku == sku).first()
+        suit_builder_item = db.session.execute(
+            select(SuitBuilderItem).where(SuitBuilderItem.sku == sku)
+        ).scalar_one_or_none()
 
         if not suit_builder_item:
             raise NotFoundError(f"Item with sku {sku} not found")

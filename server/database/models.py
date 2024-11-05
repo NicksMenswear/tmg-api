@@ -166,8 +166,8 @@ class Event(Base, SerializableMixin):
     is_active = Column(Boolean, index=True, default=True, nullable=False)
     type = Column(Enum(EventType), default=EventType.WEDDING, nullable=False)
     meta = Column(JSON, default=dict)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Look(Base, SerializableMixin):
@@ -187,8 +187,8 @@ class Look(Base, SerializableMixin):
     product_specs_legacy = Column(JSON)
     image_path = Column(String, default=None)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Role(Base, SerializableMixin):
@@ -205,8 +205,8 @@ class Role(Base, SerializableMixin):
     name = Column(String, index=True, nullable=False)
     event_id = Column(UUID(as_uuid=True), ForeignKey("events.id"), nullable=False)
     is_active = Column(Boolean, index=True, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Attendee(Base, SerializableMixin):
@@ -233,8 +233,8 @@ class Attendee(Base, SerializableMixin):
     size = Column(Boolean, default=False, nullable=False)
     ship = Column(Boolean, default=False, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Address(Base, SerializableMixin):
@@ -255,8 +255,8 @@ class Address(Base, SerializableMixin):
     zip_code = Column(String)
     country = Column(String, default="US")
     user = relationship("User", back_populates="addresses")
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class User(Base, SerializableMixin):
@@ -278,8 +278,8 @@ class User(Base, SerializableMixin):
     account_status = Column(Boolean, default=False, nullable=False)
     addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
     meta = Column(JSON, default=dict)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Order(Base, SerializableMixin):
@@ -315,8 +315,8 @@ class Order(Base, SerializableMixin):
     shipping_zip_code = Column(String)
     shipping_country = Column(String, default="US")
     meta = Column(JSON, default=dict, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class OrderItem(Base, SerializableMixin):
@@ -337,8 +337,8 @@ class OrderItem(Base, SerializableMixin):
     order = relationship("Order", backref="order_items")
     product = relationship("Product", backref="order_items")
     shopify_sku = Column(String)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
     def to_dict(self):
         return {
@@ -365,8 +365,8 @@ class Product(Base, SerializableMixin):
     on_hand = Column(Integer, nullable=False, default=0)
     reserve_inventory = Column(Integer, nullable=False, default=0)
     meta = Column(JSON, default=dict, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Webhook(Base):
@@ -380,7 +380,7 @@ class Webhook(Base):
     )
     type = Column(String, nullable=False)
     payload = Column(JSON, default=dict, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class RMA(Base):
@@ -464,8 +464,8 @@ class Discount(Base, SerializableMixin):
     shopify_discount_code_id = Column(BigInteger)
     shopify_virtual_product_id = Column(BigInteger)
     shopify_virtual_product_variant_id = Column(BigInteger)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Size(Base, SerializableMixin):
@@ -480,8 +480,8 @@ class Size(Base, SerializableMixin):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     measurement_id = Column(UUID(as_uuid=True), ForeignKey("measurements.id"), nullable=True)
     data = Column(JSON, default=dict, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Measurement(Base, SerializableMixin):
@@ -495,8 +495,8 @@ class Measurement(Base, SerializableMixin):
     )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     data = Column(JSON, default=dict, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class Activity(Base):
@@ -513,8 +513,8 @@ class Activity(Base):
     type = Column(String, nullable=False)
     data = Column(JSON, default=dict, nullable=False)
     data_md5 = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
     __table_args__ = (Index("ix_user_type", "user_id", "type", "data_md5"),)
 
@@ -549,8 +549,8 @@ class SuitBuilderItem(Base):
     product_id = Column(BigInteger, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     price = Column(Numeric, nullable=False, default=0)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class AuditLog(Base):
@@ -566,7 +566,7 @@ class AuditLog(Base):
     request = Column(JSONB, default=dict)
     payload = Column(JSONB, default=dict, nullable=False)
     diff = Column(JSONB, default=None, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
 
 
 class UserActivityLog(Base):
@@ -583,4 +583,4 @@ class UserActivityLog(Base):
     audit_log_id = Column(UUID(as_uuid=True), ForeignKey("audit_logs.id"), nullable=False)
     handle = Column(String, nullable=False)
     message = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)

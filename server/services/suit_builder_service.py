@@ -77,8 +77,6 @@ class SuitBuilderService:
                 type=SuitBuilderItemType(item.type),
                 sku=item.sku,
                 name=shopify_variant.product_title,
-                variant_id=shopify_variant.variant_id,
-                product_id=shopify_variant.product_id,
                 price=shopify_variant.variant_price,
                 index=item.index,
             )

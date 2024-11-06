@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Any, Optional
+from typing import Any
 from uuid import UUID
 
 from pydantic import RootModel
@@ -14,8 +14,8 @@ DATA_URL = f"https://{DATA_ENDPOINT_HOST}/suit-builder/v1"
 class CreateSuitBuilderModel(CoreModel):
     type: str
     sku: str
-    image_url: Optional[str] = None
-    icon_url: Optional[str] = None
+    image_url: str | None = None
+    icon_url: str | None = None
     index: int = 0
 
 
@@ -25,34 +25,32 @@ class SuitBuilderItemModel(CoreModel):
     sku: str
     name: str
     index: int
-    variant_id: int
-    product_id: int
     is_active: bool
     price: float
+    price_compare_at: float | None = None
 
     class Config:
         from_attributes = True
 
-    def to_response(self) -> Dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "variant_id", "price"})
+    def to_response(self) -> dict[str, Any]:
+        response = self.model_dump(include={"type", "sku", "name", "price", "price_compare_at"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"
 
         return response
 
-    def to_response_enriched(self) -> Dict[str, Any]:
+    def to_response_enriched(self) -> dict[str, Any]:
         response = self.to_response()
 
         response["id"] = self.id
         response["index"] = self.index
         response["is_active"] = self.is_active
-        response["product_id"] = self.product_id
 
         return response
 
 
-class SuitBuilderItemsCollection(RootModel[Dict[str, List[SuitBuilderItemModel]]]):
+class SuitBuilderItemsCollection(RootModel[dict[str, list[SuitBuilderItemModel]]]):
     def __init__(self, **data):
         super().__init__(root=data.get("root", {}))
 
@@ -62,7 +60,7 @@ class SuitBuilderItemsCollection(RootModel[Dict[str, List[SuitBuilderItemModel]]
 
         self.root[item.type].append(item)
 
-    def to_response(self, enriched: bool = False) -> Dict[str, List[Dict[str, Any]]]:
+    def to_response(self, enriched: bool = False) -> dict[str, list[dict[str, Any]]]:
         return {
             key: [item.to_response_enriched() if enriched else item.to_response() for item in items]
             for key, items in self.root.items()

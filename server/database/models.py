@@ -547,7 +547,7 @@ class SuitBuilderItem(Base):
     index = Column(Integer, nullable=False, default=0)
     is_active = Column(Boolean, nullable=False, default=True)
     price = Column(Numeric, nullable=False, default=0)
-    price_compare_at = Column(Numeric, nullable=False, default=0)
+    price_compare_at = Column(Numeric, nullable=True)
     created_at = Column(DateTime, default=text("now()"), nullable=False)
     updated_at = Column(DateTime, default=text("now()"), nullable=False)
 

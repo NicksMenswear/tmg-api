@@ -286,7 +286,7 @@ class LookService:
         bundle_variants.append(str(bundle_identifier_variant.get_id()))
 
         bundle = self.shopify_service.create_bundle2(
-            create_look.name,
+            f'Bundle "{create_look.name}"',
             bundle_id,
             bundle_variants,
             image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),

@@ -142,6 +142,10 @@ class AbstractShopifyService(ABC):
     def create_bundle_identifier_product(self, bundle_id: str) -> ShopifyProduct:
         pass
 
+    @abstractmethod
+    def deactivate_discount(self, discount_gid: str) -> None:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -418,6 +422,9 @@ class FakeShopifyService(AbstractShopifyService):
             tags=[],
         )
 
+    def deactivate_discount(self, discount_gid: str) -> None:
+        return
+
 
 class ShopifyService(AbstractShopifyService):
     def __init__(self, online_store_sales_channel_id: str):
@@ -439,6 +446,10 @@ class ShopifyService(AbstractShopifyService):
     @classmethod
     def product_gid(cls, shopify_id: int) -> str:
         return f"gid://shopify/Product/{shopify_id}"
+
+    @classmethod
+    def discount_gid(cls, shopify_id: int) -> str:
+        return f"gid://shopify/DiscountCodeNode/{shopify_id}"
 
     @classmethod
     def product_variant_gid(cls, shopify_id: int) -> str:
@@ -1131,6 +1142,35 @@ class ShopifyService(AbstractShopifyService):
             self.__add_image_to_product(bundle_parent_product.gid, image_src)
 
         return self.get_variant_by_sku(bundle_sku)
+
+    def deactivate_discount(self, discount_gid: str) -> None:
+        query = """
+        mutation discountCodeDeactivate($id: ID!) {
+          discountCodeDeactivate(id: $id) {
+            codeDiscountNode {
+              codeDiscount {
+                ... on DiscountCodeBasic {
+                  title
+                  status
+                  startsAt
+                  endsAt
+                }
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {"id": discount_gid}
+
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to deactivate discount code in shopify store.")
 
     def __admin_api_graphql_request(self, query: str, variables: dict = None) -> dict:
         response = http(

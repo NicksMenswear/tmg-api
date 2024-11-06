@@ -232,7 +232,7 @@ class LookService:
         )
 
         bundle_product_variant_id = self.shopify_service.create_bundle(
-            create_look.name,
+            f'Bundle "{create_look.name}"',
             bundle_id,
             enriched_product_specs_variants,
             image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),

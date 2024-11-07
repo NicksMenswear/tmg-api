@@ -383,6 +383,9 @@ class SkuBuilder:
         shirt_size_key = f"{size_model.shirt_neck_size}::{size_model.shirt_sleeve_length}"
         shirt_size_code = SHIRT_SIZES_MAP.get(shirt_size_key)
 
+        if shirt_size_code == "2003" and shopify_sku.endswith("IVO"):
+            shirt_size_code = "2005"
+
         return f"{shopify_sku}{shirt_size_code}"
 
     @staticmethod

@@ -18,11 +18,14 @@ def shopify_webhook(payload):
 
     logger.info(f"Received Shopify webhook with topic: {topic}")
 
-    webhook_service = FlaskApp.current().webhook_service
-    order_handler = FlaskApp.current().shopify_webhook_order_handler
-    user_handler = FlaskApp.current().shopify_webhook_user_handler
-    cart_handler = FlaskApp.current().shopify_webhook_cart_handler
-    checkout_handler = FlaskApp.current().shopify_webhook_checkout_handler
+    app = FlaskApp.current()
+
+    webhook_service = app.webhook_service
+    order_handler = app.shopify_webhook_order_handler
+    user_handler = app.shopify_webhook_user_handler
+    cart_handler = app.shopify_webhook_cart_handler
+    checkout_handler = app.shopify_webhook_checkout_handler
+    product_handler = app.shopify_webhook_product_handler
 
     response_payload = {}
 
@@ -36,6 +39,9 @@ def shopify_webhook(payload):
             "checkouts/create": checkout_handler.checkout_create,
             "checkouts/update": checkout_handler.checkout_update,
             "checkouts/delete": checkout_handler.checkout_delete,
+            "products/create": product_handler.product_create,
+            "products/update": product_handler.product_update,
+            "products/delete": product_handler.product_delete,
         }
 
         if topic not in topic_handlers:

@@ -8,7 +8,6 @@ import sentry_sdk
 from flask_cors import CORS
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import ignore_logger
-from server.services.audit_service import AuditLogService
 
 from server import encoder
 from server.database.database_manager import db, DATABASE_URL
@@ -22,6 +21,7 @@ from server.logs import (
 from server.services.activity_service import FakeActivityService, ActivityService
 from server.services.attendee_service import AttendeeService
 from server.services.audit_logger import init_audit_logging
+from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
 from server.services.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
@@ -36,6 +36,7 @@ from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shipping_service import ShippingService
+from server.services.shopify_products_service import ShopifyProductService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
@@ -45,6 +46,7 @@ from server.services.user_service import UserService
 from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
 from server.services.webhook_handlers.shopify_checkout_webhook_handler import ShopifyWebhookCheckoutHandler
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
+from server.services.webhook_handlers.shopify_product_webhook_handler import ShopifyWebhookProductHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
 from server.services.webhook_service import WebhookService
 from server.services.workers.e2e_ac_clean_up_worker import E2EActiveCampaignCleanUpWorker
@@ -198,6 +200,8 @@ def init_services(app, is_testing=False):
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service, app.activecampaign_service)
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
     app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
+    app.shopify_product_service = ShopifyProductService()
+    app.shopify_webhook_product_handler = ShopifyWebhookProductHandler(app.shopify_product_service)
     app.shipping_service = ShippingService(
         look_service=app.look_service,
         attendee_service=app.attendee_service,

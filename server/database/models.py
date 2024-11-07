@@ -583,3 +583,20 @@ class UserActivityLog(Base):
     handle = Column(String, nullable=False)
     message = Column(String, nullable=False)
     created_at = Column(DateTime, default=text("now()"), nullable=False)
+
+
+class ShopifyProduct(Base):
+    __tablename__ = "shopify_products"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("uuid_generate_v4()"),
+        nullable=False,
+    )
+    product_id = Column(BigInteger, nullable=False, unique=True)
+    data = Column(JSONB, default=dict, nullable=False)
+    is_deleted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, default=text("now()"), nullable=False)
+    updated_at = Column(DateTime, default=text("now()"), nullable=False)

@@ -3,7 +3,6 @@ import random
 import uuid
 from datetime import datetime, timezone
 from operator import or_
-from typing import List, Optional, Set, Dict
 from uuid import UUID
 
 from server.database.database_manager import db
@@ -38,7 +37,6 @@ TMG_MIN_SUIT_PRICE: int = 260
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyMethodMayBeStatic
 class DiscountService:
     def __init__(
         self,
@@ -54,7 +52,8 @@ class DiscountService:
         self.attendee_service = attendee_service
         self.look_service = look_service
 
-    def get_discount_by_id(self, discount_id: uuid.UUID) -> Discount:
+    @staticmethod
+    def get_discount_by_id(discount_id: uuid.UUID) -> Discount:
         discount = Discount.query.filter(Discount.id == discount_id).first()
 
         if not discount:
@@ -62,13 +61,15 @@ class DiscountService:
 
         return discount
 
-    def get_discounts_by_attendee_id(self, attendee_id: uuid.UUID) -> List[DiscountModel]:
+    @staticmethod
+    def get_discounts_by_attendee_id(attendee_id: uuid.UUID) -> list[DiscountModel]:
         return [
             DiscountModel.model_validate(discount)
             for discount in Discount.query.filter(Discount.attendee_id == attendee_id).all()
         ]
 
-    def get_discount_by_shopify_code(self, shopify_code: str) -> Optional[DiscountModel]:
+    @staticmethod
+    def get_discount_by_shopify_code(shopify_code: str) -> DiscountModel | None:
         discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
         if not discount:
@@ -76,8 +77,8 @@ class DiscountService:
 
         return DiscountModel.model_validate(discount)
 
+    @staticmethod
     def create_discount(
-        self,
         event_id,
         attendee_id,
         amount,
@@ -105,7 +106,7 @@ class DiscountService:
 
         return discount
 
-    def get_discounts_for_event(self, event_id: UUID) -> List[Discount]:
+    def get_discounts_for_event(self, event_id: UUID) -> list[Discount]:
         event = self.event_service.get_event_by_id(event_id)
 
         if not event:
@@ -113,7 +114,7 @@ class DiscountService:
 
         return Discount.query.filter(Discount.event_id == event_id).all()
 
-    def get_owner_discounts_for_event(self, event_id: UUID) -> List[EventDiscountModel]:
+    def get_owner_discounts_for_event(self, event_id: UUID) -> list[EventDiscountModel]:
         event = self.event_service.get_event_by_id(event_id)
 
         if not event:
@@ -174,7 +175,8 @@ class DiscountService:
 
         return self.__sort_owner_discounts(owner_discounts)
 
-    def __sort_owner_discounts(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]) -> List[EventDiscountModel]:
+    @staticmethod
+    def __sort_owner_discounts(owner_discounts: dict[uuid.UUID, EventDiscountModel]) -> list[EventDiscountModel]:
         # Event owner
         # Attendees without gift codes with style/invite, sorted by Last Name, First Name
         # Attendees without gift codes without style/invite, sorted by Last Name, First Name
@@ -190,7 +192,8 @@ class DiscountService:
             ),
         )
 
-    def __calculate_remaining_amount(self, owner_discounts: Dict[uuid.UUID, EventDiscountModel]):
+    @staticmethod
+    def __calculate_remaining_amount(owner_discounts: dict[uuid.UUID, EventDiscountModel]):
         for attendee_id in owner_discounts.keys():
             owner_discount = owner_discounts[attendee_id]
 
@@ -210,8 +213,8 @@ class DiscountService:
             for gift_code in owner_discount.gift_codes:
                 owner_discount.remaining_amount -= gift_code.amount
 
-    def __fetch_look_prices(self, users_attendees_looks: List[tuple]) -> Dict[str, float]:
-        look_bundle_prices: Dict[str, float] = dict()
+    def __fetch_look_prices(self, users_attendees_looks: list[tuple]) -> dict[str, float]:
+        look_bundle_prices: dict[str, float] = dict()
 
         for _, _, look, _ in users_attendees_looks:
             if not look or not look.product_specs:
@@ -222,7 +225,8 @@ class DiscountService:
 
         return look_bundle_prices
 
-    def __enrich_owner_discounts_with_discount_intents_information(self, owner_discounts, attendee_ids, event_id):
+    @staticmethod
+    def __enrich_owner_discounts_with_discount_intents_information(owner_discounts, attendee_ids, event_id):
         discount_intents = Discount.query.filter(
             Discount.event_id == event_id,
             Discount.type == DiscountType.GIFT,
@@ -236,7 +240,8 @@ class DiscountService:
             owner_discount.type = discount_intent.type
             owner_discount.amount = discount_intent.amount
 
-    def __enrich_owner_discounts_with_paid_discounts_information(self, owner_discounts, attendee_ids, event_id):
+    @staticmethod
+    def __enrich_owner_discounts_with_paid_discounts_information(owner_discounts, attendee_ids, event_id):
         paid_discounts = Discount.query.filter(
             Discount.event_id == event_id,
             or_(Discount.type == DiscountType.GIFT, Discount.type == DiscountType.PARTY_OF_FOUR),
@@ -254,7 +259,8 @@ class DiscountService:
                 )
             )
 
-    def __enrich_owner_discounts_with_tmg_group_virtual_discount_code(self, owner_discounts, attendee_ids):
+    @staticmethod
+    def __enrich_owner_discounts_with_tmg_group_virtual_discount_code(owner_discounts, attendee_ids):
         for attendee_id in attendee_ids:
             owner_discount = owner_discounts[attendee_id]
 
@@ -296,7 +302,8 @@ class DiscountService:
                     )
                 )
 
-    def get_gift_discount_intents_for_product_variant(self, variant_id: str) -> List[DiscountModel]:
+    @staticmethod
+    def get_gift_discount_intents_for_product_variant(variant_id: str) -> list[DiscountModel]:
         discounts = Discount.query.filter(
             Discount.shopify_virtual_product_variant_id == variant_id,
             Discount.shopify_discount_code == None,
@@ -305,7 +312,7 @@ class DiscountService:
 
         return [DiscountModel.model_validate(discount) for discount in discounts]
 
-    def mark_discount_by_shopify_code_as_paid(self, shopify_code: str) -> Optional[DiscountModel]:
+    def mark_discount_by_shopify_code_as_paid(self, shopify_code: str) -> DiscountModel | None:
         discount = Discount.query.filter(Discount.shopify_discount_code == shopify_code).first()
 
         if not discount:
@@ -316,10 +323,12 @@ class DiscountService:
         db.session.add(discount)
         db.session.commit()
 
+        self.shopify_service.deactivate_discount(ShopifyService.discount_gid(discount.shopify_discount_code_id))
+
         return DiscountModel.model_validate(discount)
 
     def create_discount_intents(
-        self, event_id: uuid.UUID, discount_intents: List[CreateDiscountIntent]
+        self, event_id: uuid.UUID, discount_intents: list[CreateDiscountIntent]
     ) -> DiscountPayResponseModel:
         if not discount_intents:
             raise BadRequestError("No discount intents provided.")
@@ -455,7 +464,8 @@ class DiscountService:
 
         return DiscountPayResponseModel(variant_id=shopify_product.variants[0].get_id())
 
-    def __filter_discounts_without_codes(self, discounts: List[Discount]) -> List[Discount]:
+    @staticmethod
+    def __filter_discounts_without_codes(discounts: list[Discount]) -> list[Discount]:
         return [
             discount
             for discount in discounts
@@ -473,7 +483,8 @@ class DiscountService:
 
         return DiscountModel.model_validate(discount)
 
-    def get_group_discount_for_attendee(self, attendee_id: uuid.UUID) -> Optional[DiscountModel]:
+    @staticmethod
+    def get_group_discount_for_attendee(attendee_id: uuid.UUID) -> DiscountModel | None:
         discount = Discount.query.filter(
             Discount.attendee_id == attendee_id,
             Discount.type == DiscountType.PARTY_OF_FOUR,
@@ -538,7 +549,7 @@ class DiscountService:
 
         return DiscountModel.model_validate(discount)
 
-    def apply_discounts(self, attendee_id: uuid.UUID, shopify_cart_id: str) -> List[str]:
+    def apply_discounts(self, attendee_id: uuid.UUID, shopify_cart_id: str) -> list[str]:
         attendee = self.attendee_service.get_attendee_by_id(attendee_id)
 
         if not attendee:
@@ -565,9 +576,10 @@ class DiscountService:
 
         return [discount.shopify_discount_code for discount in discounts]
 
+    @staticmethod
     def get_discount_codes_for_attendees(
-        self, attendee_ids: Set[uuid.UUID], type: DiscountType = None
-    ) -> Dict[uuid.UUID, List[DiscountGiftCodeModel]]:
+        attendee_ids: set[uuid.UUID], type: DiscountType = None
+    ) -> dict[uuid.UUID, list[DiscountGiftCodeModel]]:
         discounts_query = Discount.query.filter(
             Discount.attendee_id.in_(attendee_ids), Discount.shopify_discount_code != None
         )

@@ -227,7 +227,7 @@ def get_active_looks() -> list:
                 SELECT id, product_specs
                 FROM looks
                 WHERE is_active
-                  AND not fixed
+                  AND (not fixed OR fixed IS NULL)
                   AND (product_specs::TEXT LIKE '%703A4BLK%' OR product_specs::TEXT LIKE '%703A4COG%' OR product_specs::TEXT LIKE '%803A4BLK%' OR product_specs::TEXT LIKE '%803A4COG%')
                 ORDER BY created_at DESC;
                 """

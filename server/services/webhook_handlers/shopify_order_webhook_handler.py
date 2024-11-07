@@ -247,6 +247,8 @@ class ShopifyWebhookOrderHandler:
 
                 if payload.get("shipping_lines") and len(payload.get("shipping_lines")) > 0:
                     shipping_method = payload.get("shipping_lines")[0].get("title")
+                else:
+                    shipping_method = "Shipping not required"
 
                 create_order = CreateOrderModel(
                     user_id=user.id,

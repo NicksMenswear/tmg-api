@@ -247,7 +247,7 @@ class AttendeeService:
 
         try:
             user_size = (
-                db.session.execute(select(Size).where(Size.user_id == attendee_user.id)).scalar_one_or_none()
+                db.session.execute(select(Size).where(Size.user_id == attendee_user.id)).all()
                 if attendee_user
                 else None
             )

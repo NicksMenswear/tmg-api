@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
-from sqlalchemy import select, desc, asc
+from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import SuitBuilderItem, SuitBuilderItemType
@@ -31,11 +31,11 @@ class SuitBuilderService:
         self,
         shopify_service: AbstractShopifyService,
         aws_service: AbstractAWSService,
-        shopify_products_service: ShopifyProductService,
+        shopify_product_service: ShopifyProductService,
     ):
         self.shopify_service: AbstractShopifyService = shopify_service
         self.aws_service: AbstractAWSService = aws_service
-        self.shopify_products_service = shopify_products_service
+        self.shopify_product_service = shopify_product_service
 
     @staticmethod
     def __build_s3_image_path(item_type: str, filename: str) -> str:
@@ -75,7 +75,7 @@ class SuitBuilderService:
             raise DuplicateError(f"Item with sku {item.sku} already exists")
 
         try:
-            shopify_variant: ShopifyVariantModel = self.shopify_service.get_variant_by_sku(item.sku)
+            shopify_variant: ShopifyVariantModel = self.shopify_product_service.get_product_by_variant_sku(item.sku)
         except ServiceError as e:
             raise ServiceError(f"Failed to fetch item from Shopify: {e}")
 
@@ -154,7 +154,7 @@ class SuitBuilderService:
             grouped_collections.add_item(
                 SuitBuilderItemModel(
                     id=row.id,
-                    type=row.type,
+                    type=row.type.lower(),
                     sku=row.sku,
                     name=row.name,
                     index=row.index,

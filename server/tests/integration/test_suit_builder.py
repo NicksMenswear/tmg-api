@@ -7,16 +7,18 @@ class TestSuitBuilder(BaseTestCase):
 
         self.populate_shopify_variants()
 
-    # def test_get_items(self):
-    #     # given
-    #     suit_item_1 = fixtures.add_suit_builder_item_request(type="suit", index=10)
-    #     suit_item_2 = fixtures.add_suit_builder_item_request(type="suit", index=100)
-    #     shirt_item = fixtures.add_suit_builder_item_request(type="shirt")
-    #     self.suit_builder_service.add_item(suit_item_1)
-    #     self.suit_builder_service.add_item(suit_item_2)
-    #     self.suit_builder_service.add_item(shirt_item)
-    #
-    #     # when
+    def test_get_items(self):
+        # given
+        suit_item_1 = fixtures.add_suit_builder_item_request(type="suit", index=10)
+        suit_item_2 = fixtures.add_suit_builder_item_request(type="suit", index=100)
+        shirt_item = fixtures.add_suit_builder_item_request(type="shirt")
+
+        # self.suit_builder_service.add_item(suit_item_1)
+        # self.suit_builder_service.add_item(suit_item_2)
+        # self.suit_builder_service.add_item(shirt_item)
+
+        # when
+
     #     response = self.client.open(
     #         "/suit-builder/items",
     #         method="GET",

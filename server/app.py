@@ -212,7 +212,7 @@ def init_services(app, is_testing=False):
     app.suit_builder_service = SuitBuilderService(
         shopify_service=app.shopify_service,
         aws_service=app.aws_service,
-        shopify_products_service=app.shopify_product_service,
+        shopify_product_service=app.shopify_product_service,
     )
 
 

@@ -7,12 +7,17 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from server.database.database_manager import db
 from server.database.models import ShopifyProduct
+from server.models.shopify_model import ShopifyVariantModel
 from server.services import NotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 class ShopifyProductService:
+    @staticmethod
+    def get_num_products() -> int:
+        return ShopifyProduct.query.count()
+
     @staticmethod
     def get_product_by_id(product_id: int) -> ShopifyProduct:
         product = db.session.execute(
@@ -25,7 +30,7 @@ class ShopifyProductService:
         return product
 
     @staticmethod
-    def get_variant_by_id(variant_id: int) -> ShopifyProduct:
+    def get_product_by_variant_id(variant_id: int) -> ShopifyProduct:
         product = db.session.execute(
             select(ShopifyProduct).where(ShopifyProduct.data["variants"].contains([{"id": variant_id}]))
         ).scalar_one_or_none()
@@ -36,15 +41,30 @@ class ShopifyProductService:
         return product
 
     @staticmethod
-    def get_variant_by_sku(variant_sku: str) -> ShopifyProduct:
+    def get_product_by_variant_sku(variant_sku: str) -> ShopifyProduct:
         product = db.session.execute(
-            select(ShopifyProduct).where(ShopifyProduct.data["variants"].contains([{"sku": variant_sku}]))
-        ).scalar_one_or_none()
+            text(
+                """
+                SELECT sp.id, sp.product_id, sp.data, sp.is_deleted, sp.created_at, sp.updated_at
+                FROM shopify_products sp
+                JOIN LATERAL jsonb_array_elements(sp.data->'data'->'variants') variant ON true
+                WHERE variant->>'sku' = :variant_sku;
+                """
+            ),
+            {"variant_sku": variant_sku},
+        ).fetchone()
 
         if not product:
             raise NotFoundError(f"Product with variant_sku: {variant_sku} not found")
 
-        return product
+        return ShopifyVariantModel(
+            product_id=str(product.product_id),
+            product_title=product.data.get("data")["title"],
+            variant_id=str(product.data.get("data")["variants"][0].get("id")),
+            variant_title=product.data.get("data")["variants"][0].get("title"),
+            variant_price=product.data.get("data")["variants"][0].get("price"),
+            variant_sku=product.data.get("data")["variants"][0].get("sku"),
+        )
 
     @staticmethod
     def upsert_product(product_id: int, data: dict[str, Any]) -> ShopifyProduct | None:

@@ -36,7 +36,7 @@ from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shipping_service import ShippingService
-from server.services.shopify_products_service import ShopifyProductService
+from server.services.shopify_product_service import ShopifyProductService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService
@@ -209,7 +209,11 @@ def init_services(app, is_testing=False):
     )
     app.e2e_cleanup_worker = E2ECleanUpWorker(shopify_service=app.shopify_service)
     app.e2e_ac_cleanup_worker = E2EActiveCampaignCleanUpWorker(active_campaign_service=app.activecampaign_service)
-    app.suit_builder_service = SuitBuilderService(shopify_service=app.shopify_service, aws_service=app.aws_service)
+    app.suit_builder_service = SuitBuilderService(
+        shopify_service=app.shopify_service,
+        aws_service=app.aws_service,
+        shopify_product_service=app.shopify_product_service,
+    )
 
 
 def init_db():

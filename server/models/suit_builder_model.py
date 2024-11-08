@@ -27,13 +27,13 @@ class SuitBuilderItemModel(CoreModel):
     index: int
     is_active: bool
     price: float
-    price_compare_at: float | None = None
+    compare_at_price: float | None = None
 
     class Config:
         from_attributes = True
 
     def to_response(self) -> dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "price", "price_compare_at"})
+        response = self.model_dump(include={"type", "sku", "name", "price", "compare_at_price"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"

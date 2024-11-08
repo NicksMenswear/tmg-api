@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
-from sqlalchemy import select, desc, asc
+from sqlalchemy import select
 
 from server.database.database_manager import db
 from server.database.models import SuitBuilderItem, SuitBuilderItemType
@@ -19,6 +19,7 @@ from server.models.suit_builder_model import (
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.integrations.aws_service import AbstractAWSService
 from server.services.integrations.shopify_service import AbstractShopifyService
+from server.services.shopify_product_service import ShopifyProductService
 
 DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
 
@@ -26,9 +27,15 @@ logger = logging.getLogger(__name__)
 
 
 class SuitBuilderService:
-    def __init__(self, shopify_service: AbstractShopifyService, aws_service: AbstractAWSService):
+    def __init__(
+        self,
+        shopify_service: AbstractShopifyService,
+        aws_service: AbstractAWSService,
+        shopify_product_service: ShopifyProductService,
+    ):
         self.shopify_service: AbstractShopifyService = shopify_service
         self.aws_service: AbstractAWSService = aws_service
+        self.shopify_product_service = shopify_product_service
 
     @staticmethod
     def __build_s3_image_path(item_type: str, filename: str) -> str:
@@ -68,7 +75,7 @@ class SuitBuilderService:
             raise DuplicateError(f"Item with sku {item.sku} already exists")
 
         try:
-            shopify_variant: ShopifyVariantModel = self.shopify_service.get_variant_by_sku(item.sku)
+            shopify_variant: ShopifyVariantModel = self.shopify_product_service.get_product_by_variant_sku(item.sku)
         except ServiceError as e:
             raise ServiceError(f"Failed to fetch item from Shopify: {e}")
 
@@ -77,7 +84,6 @@ class SuitBuilderService:
                 type=SuitBuilderItemType(item.type),
                 sku=item.sku,
                 name=shopify_variant.product_title,
-                price=shopify_variant.variant_price,
                 index=item.index,
             )
 
@@ -97,23 +103,64 @@ class SuitBuilderService:
             db.session.rollback()
             raise ServiceError("Failed to add suit builder item", e)
 
-        return SuitBuilderItemModel.model_validate(suit_builder_item)
+        shopify_product = self.shopify_product_service.get_product_by_variant_sku(suit_builder_item.sku)
+
+        return SuitBuilderItemModel(
+            id=suit_builder_item.id,
+            type=suit_builder_item.type.value,
+            sku=suit_builder_item.sku,
+            name=suit_builder_item.name,
+            index=suit_builder_item.index,
+            is_active=suit_builder_item.is_active,
+            price=float(shopify_product.variant_price),
+        )
 
     @staticmethod
     def get_items(enriched: bool = False) -> SuitBuilderItemsCollection:
-        query = select(SuitBuilderItem)
+        query = db.text(
+            """
+            SELECT
+                sbi.id,
+                sbi.type,
+                sbi.sku,
+                sbi.name,
+                sbi.index,
+                sbi.is_active,
+                sbi.created_at,
+                sbi.updated_at,
+                variant->>'price' AS price,
+                variant->>'compare_at_price' AS compare_at_price
+            FROM
+                suit_builder_items sbi
+            JOIN LATERAL
+                (
+                    SELECT variant
+                    FROM shopify_products sp,
+                         jsonb_array_elements(sp.data->'variants') variant
+                    WHERE variant->>'sku' = sbi.sku
+                ) variant_data ON true
+            WHERE sbi.is_active = true
+            ORDER BY sbi.index DESC, sbi.sku ASC;
+        """
+        )
 
-        if not enriched:
-            query = query.where(SuitBuilderItem.is_active)
-
-        query = query.order_by(desc(SuitBuilderItem.index), asc(SuitBuilderItem.sku))
-
-        suit_builder_items = db.session.execute(query).scalars().all()
+        rows = db.session.execute(query).fetchall()
 
         grouped_collections = SuitBuilderItemsCollection()
 
-        for item in suit_builder_items:
-            grouped_collections.add_item(SuitBuilderItemModel.model_validate(item))
+        for row in rows:
+            grouped_collections.add_item(
+                SuitBuilderItemModel(
+                    id=row.id,
+                    type=row.type.lower(),
+                    sku=row.sku,
+                    name=row.name,
+                    index=row.index,
+                    is_active=row.is_active,
+                    price=float(row.price),
+                    compare_at_price=float(row.compare_at_price) if row.compare_at_price else None,
+                )
+            )
 
         return grouped_collections
 

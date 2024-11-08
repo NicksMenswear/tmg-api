@@ -28,7 +28,7 @@ provider:
           - arn:aws:sqs:${self:provider.region}:${aws:accountId}:tmg-api-${sls:stage}-audit-log
   stackTags:
     env: ${sls:stage}
-  logRetentionInDays: 30
+  logRetentionInDays: 3
   logs:
     restApi:
       accessLogging: true
@@ -108,7 +108,7 @@ custom:
       region: us-west-2
       data_bucket: "tmg-api-data-dev-fe58ee1e1337"
       data_cdn: "https://data.dev.tmgcorp.net/"
-      provisionedConcurrency: 5
+      provisionedConcurrency: 1
       vpc:
         securityGroupIds:
           - sg-0649f5114f8fdde15
@@ -121,7 +121,7 @@ custom:
       region: us-east-1
       data_bucket: "tmg-api-data-prd-e08bbe743c81"
       data_cdn: "https://data.prd.tmgcorp.net/"
-      provisionedConcurrency: 40
+      provisionedConcurrency: 15
       vpc:
         securityGroupIds:
           - sg-02f3c6c3b0ac6cdb3

@@ -29,7 +29,6 @@ jobs:
       url: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
       notify: true
     secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   e2e-tests:
@@ -40,7 +39,5 @@ jobs:
       stage: dev
       notify: true
     secrets:
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       X_API_ACCESS_TOKEN: ${{ secrets.X_API_ACCESS_TOKEN }}
-      SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}

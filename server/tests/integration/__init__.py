@@ -25,6 +25,7 @@ from server.database.models import (
     SuitBuilderItem,
     AuditLog,
     UserActivityLog,
+    ShopifyProduct,
 )
 from server.flask_app import FlaskApp
 from server.models.shopify_model import ShopifyVariantModel
@@ -93,6 +94,7 @@ class BaseTestCase(TestCase):
         self.measurement_service = self.app.measurement_service
         self.activecampaign_service = self.app.activecampaign_service
         self.suit_builder_service = self.app.suit_builder_service
+        self.shopify_product_service = self.app.shopify_product_service
         self.shopify_skus_cache = {}
 
         num_products_in_db = self.product_service.get_num_products()
@@ -100,7 +102,13 @@ class BaseTestCase(TestCase):
         # We should have few hundreds products and if few are left in db that means they are leftovers from previous test cases
         if num_products_in_db < 100:
             db.session.execute(delete(Product))
-            self.__load_products()
+            self.__load_shiphero_products()
+
+        num_shopify_products_in_db = self.shopify_product_service.get_num_products()
+
+        if num_shopify_products_in_db < 100:
+            db.session.execute(delete(ShopifyProduct))
+            self.__load_shopify_products()
 
     def populate_shopify_variants(self, num_variants=100):
         if not isinstance(self.shopify_service, FakeShopifyService):
@@ -228,7 +236,7 @@ class BaseTestCase(TestCase):
 
         return random.choice(list(skus))
 
-    def __load_products(self):
+    def __load_shiphero_products(self):
         ship_hero_skus = self.__read_csv_into_set(f"assets/ship_hero_skus.csv")
 
         for ship_hero_sku in ship_hero_skus:
@@ -239,6 +247,19 @@ class BaseTestCase(TestCase):
                 on_hand=0,
                 reserve_inventory=random.randint(0, 10),
                 meta={"test": True},
+            )
+
+            db.session.add(product)
+
+    def __load_shopify_products(self):
+        with open(f"assets/shopify_products.json", "r") as file:
+            items = json.load(file)
+
+        for item in items:
+            product = ShopifyProduct(
+                product_id=item["product_id"],
+                data=item,
+                is_deleted=False,
             )
 
             db.session.add(product)

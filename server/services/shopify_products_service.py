@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 class ShopifyProductService:
     @staticmethod
+    def get_num_products() -> int:
+        return ShopifyProduct.query.count()
+
+    @staticmethod
     def get_product_by_id(product_id: int) -> ShopifyProduct:
         product = db.session.execute(
             select(ShopifyProduct).where(ShopifyProduct.product_id == product_id)
@@ -25,7 +29,7 @@ class ShopifyProductService:
         return product
 
     @staticmethod
-    def get_variant_by_id(variant_id: int) -> ShopifyProduct:
+    def get_product_by_variant_id(variant_id: int) -> ShopifyProduct:
         product = db.session.execute(
             select(ShopifyProduct).where(ShopifyProduct.data["variants"].contains([{"id": variant_id}]))
         ).scalar_one_or_none()
@@ -36,10 +40,21 @@ class ShopifyProductService:
         return product
 
     @staticmethod
-    def get_variant_by_sku(variant_sku: str) -> ShopifyProduct:
+    def get_product_by_variant_sku(variant_sku: str) -> ShopifyProduct:
         product = db.session.execute(
-            select(ShopifyProduct).where(ShopifyProduct.data["variants"].contains([{"sku": variant_sku}]))
-        ).scalar_one_or_none()
+            text(
+                """
+                SELECT * 
+                FROM shopify_products
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements(data->'variants') AS variant
+                    WHERE variant->>'sku' = :variant_sku
+                );
+                """
+            ),
+            {"variant_sku": variant_sku},
+        ).fetchone()
 
         if not product:
             raise NotFoundError(f"Product with variant_sku: {variant_sku} not found")

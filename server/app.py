@@ -209,7 +209,11 @@ def init_services(app, is_testing=False):
     )
     app.e2e_cleanup_worker = E2ECleanUpWorker(shopify_service=app.shopify_service)
     app.e2e_ac_cleanup_worker = E2EActiveCampaignCleanUpWorker(active_campaign_service=app.activecampaign_service)
-    app.suit_builder_service = SuitBuilderService(shopify_service=app.shopify_service, aws_service=app.aws_service)
+    app.suit_builder_service = SuitBuilderService(
+        shopify_service=app.shopify_service,
+        aws_service=app.aws_service,
+        shopify_products_service=app.shopify_product_service,
+    )
 
 
 def init_db():

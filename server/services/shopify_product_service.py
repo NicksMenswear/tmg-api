@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from server.database.database_manager import db
 from server.database.models import ShopifyProduct
+from server.models.shopify_model import ShopifyVariantModel
 from server.services import NotFoundError
 
 logger = logging.getLogger(__name__)
@@ -44,13 +45,10 @@ class ShopifyProductService:
         product = db.session.execute(
             text(
                 """
-                SELECT * 
-                FROM shopify_products
-                WHERE EXISTS (
-                    SELECT 1
-                    FROM jsonb_array_elements(data->'variants') AS variant
-                    WHERE variant->>'sku' = :variant_sku
-                );
+                SELECT sp.id, sp.product_id, sp.data, sp.is_deleted, sp.created_at, sp.updated_at
+                FROM shopify_products sp
+                JOIN LATERAL jsonb_array_elements(sp.data->'data'->'variants') variant ON true
+                WHERE variant->>'sku' = :variant_sku;
                 """
             ),
             {"variant_sku": variant_sku},
@@ -59,7 +57,14 @@ class ShopifyProductService:
         if not product:
             raise NotFoundError(f"Product with variant_sku: {variant_sku} not found")
 
-        return product
+        return ShopifyVariantModel(
+            product_id=str(product.product_id),
+            product_title=product.data.get("data")["title"],
+            variant_id=str(product.data.get("data")["variants"][0].get("id")),
+            variant_title=product.data.get("data")["variants"][0].get("title"),
+            variant_price=product.data.get("data")["variants"][0].get("price"),
+            variant_sku=product.data.get("data")["variants"][0].get("sku"),
+        )
 
     @staticmethod
     def upsert_product(product_id: int, data: dict[str, Any]) -> ShopifyProduct | None:

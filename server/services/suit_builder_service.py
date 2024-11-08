@@ -19,7 +19,7 @@ from server.models.suit_builder_model import (
 from server.services import DuplicateError, ServiceError, NotFoundError
 from server.services.integrations.aws_service import AbstractAWSService
 from server.services.integrations.shopify_service import AbstractShopifyService
-from server.services.shopify_products_service import ShopifyProductService
+from server.services.shopify_product_service import ShopifyProductService
 
 DATA_BUCKET = os.environ.get("DATA_BUCKET", "data-bucket")
 
@@ -103,7 +103,7 @@ class SuitBuilderService:
             db.session.rollback()
             raise ServiceError("Failed to add suit builder item", e)
 
-        shopify_product = self.shopify_products_service.get_product_by_variant_sku(suit_builder_item.sku)
+        shopify_product = self.shopify_product_service.get_product_by_variant_sku(suit_builder_item.sku)
 
         return SuitBuilderItemModel(
             id=suit_builder_item.id,
@@ -112,8 +112,7 @@ class SuitBuilderService:
             name=suit_builder_item.name,
             index=suit_builder_item.index,
             is_active=suit_builder_item.is_active,
-            price=float(shopify_product.price),
-            compare_at_price=float(shopify_product.compare_at_price) if shopify_product.compare_at_price else None,
+            price=float(shopify_product.variant_price),
         )
 
     @staticmethod
@@ -133,14 +132,13 @@ class SuitBuilderService:
                 variant->>'compare_at_price' AS compare_at_price
             FROM
                 suit_builder_items sbi
-            JOIN
-                shopify_products sp ON EXISTS (
-                    SELECT 1
-                    FROM jsonb_array_elements(sp.data->'variants') variant
-                    WHERE variant->>'sku' = sbi.sku
-                )
             JOIN LATERAL
-                jsonb_array_elements(sp.data->'variants') variant ON variant->>'sku' = sbi.sku
+                (
+                    SELECT variant
+                    FROM shopify_products sp,
+                         jsonb_array_elements(sp.data->'variants') variant
+                    WHERE variant->>'sku' = sbi.sku
+                ) variant_data ON true
             WHERE sbi.is_active = true
             ORDER BY sbi.index DESC, sbi.sku ASC;
         """

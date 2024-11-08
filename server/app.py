@@ -36,7 +36,7 @@ from server.services.order_service import OrderService
 from server.services.product_service import ProductService
 from server.services.role_service import RoleService
 from server.services.shipping_service import ShippingService
-from server.services.shopify_products_service import ShopifyProductService
+from server.services.shopify_product_service import ShopifyProductService
 from server.services.size_service import SizeService
 from server.services.sku_builder_service import SkuBuilder
 from server.services.suit_builder_service import SuitBuilderService

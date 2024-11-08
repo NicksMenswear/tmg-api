@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Any
 
-from server.services.shopify_products_service import ShopifyProductService
+from server.services.shopify_product_service import ShopifyProductService
 
 logger = logging.getLogger(__name__)
 

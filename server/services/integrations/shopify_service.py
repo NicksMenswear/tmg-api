@@ -1199,10 +1199,8 @@ class ShopifyService(AbstractShopifyService):
         """
 
         variables = {
-            "input": {
-                "id": ShopifyService.collection_gid(collection_id),
-                "productIds": [ShopifyService.product_gid(product_id) for product_id in product_ids],
-            }
+            "id": ShopifyService.collection_gid(collection_id),
+            "productIds": [ShopifyService.product_gid(product_id) for product_id in product_ids],
         }
 
         try:

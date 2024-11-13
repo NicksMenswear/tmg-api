@@ -26,6 +26,7 @@ def shopify_webhook(payload):
     cart_handler = app.shopify_webhook_cart_handler
     checkout_handler = app.shopify_webhook_checkout_handler
     product_handler = app.shopify_webhook_product_handler
+    fulfillment_handler = FlaskApp.current().shopify_webhoook_fullfillment_handler
 
     response_payload = {}
 
@@ -42,6 +43,7 @@ def shopify_webhook(payload):
             "products/create": product_handler.product_create,
             "products/update": product_handler.product_update,
             "products/delete": product_handler.product_delete,
+            "fulfillments/create": fulfillment_handler.fulfillment_create,
         }
 
         if topic not in topic_handlers:

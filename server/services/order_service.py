@@ -67,6 +67,14 @@ class OrderService:
 
         return order_model
 
+    def get_order_by_shopify_id(self, shopify_order_id: uuid.UUID) -> OrderModel:
+        order = Order.query.filter(Order.shopify_order_id == shopify_order_id).first()
+
+        if not order:
+            raise NotFoundError("Order not found")
+
+        return OrderModel.model_validate(order)
+
     def create_order(self, create_order: CreateOrderModel) -> OrderModel:
         try:
             order = Order(
@@ -111,6 +119,50 @@ class OrderService:
         except Exception as e:
             db.session.rollback()
             raise ServiceError("Failed to create order.", e)
+
+        return OrderModel.model_validate(order)
+
+    def update_order(self, update_order: OrderModel) -> OrderModel:
+        order = Order.query.filter(Order.id == update_order.id).first()
+
+        if not order:
+            raise NotFoundError("Order not found")
+
+        try:
+            order.legacy_id = (update_order.legacy_id,)
+            order.user_id = (update_order.user_id,)
+            order.event_id = (update_order.event_id,)
+            order.order_number = (update_order.order_number,)
+            order.shopify_order_id = (update_order.shopify_order_id,)
+            order.shopify_order_number = (update_order.shopify_order_number,)
+            order.order_origin = (SourceType(update_order.order_origin) if update_order.order_origin else None,)
+            order.order_date = (update_order.order_date,)
+            order.status = (update_order.status,)
+            order.shipped_date = (update_order.shipped_date,)
+            order.received_date = (update_order.received_date,)
+            order.ship_by_date = (update_order.ship_by_date,)
+            order.shipping_method = (update_order.shipping_method,)
+            order.outbound_tracking = (update_order.outbound_tracking,)
+            order.order_type = ([OrderType(order_type) for order_type in update_order.order_type],)
+            order.shipping_address_line1 = (
+                update_order.shipping_address.line1 if update_order.shipping_address else None,
+            )
+            order.shipping_address_line2 = (
+                update_order.shipping_address.line2 if update_order.shipping_address else None,
+            )
+            order.shipping_city = (update_order.shipping_address.city if update_order.shipping_address else None,)
+            order.shipping_state = (update_order.shipping_address.state if update_order.shipping_address else None,)
+            order.shipping_zip_code = (
+                update_order.shipping_address.zip_code if update_order.shipping_address else None,
+            )
+            order.shipping_country = (update_order.shipping_address.country if update_order.shipping_address else None,)
+            order.meta = (update_order.meta,)
+
+            db.session.commit()
+            db.session.refresh(order)
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceError("Failed to update order.", e)
 
         return OrderModel.model_validate(order)
 

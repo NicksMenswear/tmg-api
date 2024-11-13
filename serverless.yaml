@@ -61,6 +61,10 @@ provider:
     # Postmark Env Variables
     POSTMARK_API_URL: "https://api.postmarkapp.com"
     POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}
+    # Twilio Env Variables
+    TWILIO_ACCOUNT_SID: "AC6759074411132bf3065a0d7c0bb7119d"
+    TWILIO_AUTH_TOKEN: ${ssm:/${sls:stage}/twilio/auth_token}
+    TWILIO_PHONE_NUMBER: "+16234002260"
     # ActiveCampaign Env Variables
     ACTIVECAMPAIGN_API_URL: "https://themoderngroom.api-us1.com"
     ACTIVECAMPAIGN_API_KEY: ${ssm:/${sls:stage}/activecampaign/api_key}

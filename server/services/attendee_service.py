@@ -21,7 +21,7 @@ from server.models.look_model import LookModel
 from server.models.role_model import RoleModel
 from server.models.user_model import UserModel, CreateUserModel
 from server.services import DuplicateError, ServiceError, NotFoundError, BadRequestError
-from server.services.email_service import AbstractEmailService
+from server.services.integrations.email_service import AbstractEmailService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shopify_service import AbstractShopifyService, logger
 from server.services.look_service import LookService

@@ -68,21 +68,28 @@ class OrderItemModel(CoreModel):
 
 class OrderModel(CoreModel):
     id: UUID
+    legacy_id: Optional[str] = None
     user_id: Optional[UUID] = None
     event_id: Optional[UUID] = None
     order_number: str
     shopify_order_id: str
     shopify_order_number: str
+    order_origin: Optional[str] = None
     order_date: datetime
     status: Optional[str] = None
-    shipping_method: Optional[str] = None
+    shipped_date: Optional[datetime] = None
+    received_date: Optional[datetime] = None
     ship_by_date: Optional[datetime] = None
+    shipping_method: Optional[str] = None
     shipping_address_line1: Optional[str] = None
     shipping_address_line2: Optional[str] = None
     shipping_city: Optional[str] = None
     shipping_state: Optional[str] = None
     shipping_zip_code: Optional[str] = None
     shipping_country: Optional[str] = None
+    outbound_tracking: Optional[str] = None
+    store_location: Optional[str] = None
+    order_type: Optional[List[str]] = None
     products: List[ProductModel] = []
     discount_codes: List[str] = []
     order_items: List[OrderItemModel] = []

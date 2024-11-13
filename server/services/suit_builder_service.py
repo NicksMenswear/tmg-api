@@ -140,7 +140,7 @@ class SuitBuilderService:
                     WHERE variant->>'sku' = sbi.sku
                 ) variant_data ON true
             WHERE sbi.is_active = true
-            ORDER BY sbi.index DESC, sbi.sku ASC;
+            ORDER BY sbi.type ASC, sbi.index DESC, sbi.sku ASC;
         """
         )
 

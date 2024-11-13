@@ -1,6 +1,8 @@
 import logging
 import uuid
 
+from flask import request
+
 from server.controllers.util import hmac_verification, error_handler
 from server.flask_app import FlaskApp
 from server.models.look_model import CreateLookModel, UpdateLookModel
@@ -21,9 +23,11 @@ def get_look_by_id(look_id):
 @hmac_verification
 @error_handler
 def create_look(create_look):
+    referer_url = request.headers.get("Referer", "")
+    is_buy_now = "/pages/suit-builder" in referer_url
     look_service = FlaskApp.current().look_service
 
-    look = look_service.create_look(CreateLookModel(**create_look))
+    look = look_service.create_look(CreateLookModel(**create_look), is_buy_now)
 
     return look.to_response(), 201
 

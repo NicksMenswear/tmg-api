@@ -58,6 +58,7 @@ provider:
     storefront_api_access_token: ${ssm:/${sls:stage}/shopify/storefront_api_access_token}
     online_store_sales_channel_id: ${ssm:/${sls:stage}/shopify/online_store_sales_channel_id}
     online_store_shop_id: ${ssm:/${sls:stage}/shopify/online_store_shop_id}
+    buy_now_suit_collection_id: ${ssm:/${sls:stage}/shopify/buy_now_suit_collection_id}
     # Postmark Env Variables
     POSTMARK_API_URL: "https://api.postmarkapp.com"
     POSTMARK_API_KEY: ${ssm:/${sls:stage}/postmark/api_key}

@@ -1189,13 +1189,6 @@ class ShopifyService(AbstractShopifyService):
           collectionAddProducts(id: $id, productIds: $productIds) {
             collection {
               id
-              title
-              products(first: 10) {
-                nodes {
-                  id
-                  title
-                }
-              }
             }
             userErrors {
               field

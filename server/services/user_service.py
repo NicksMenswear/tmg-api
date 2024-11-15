@@ -208,7 +208,7 @@ class UserService:
 
         return UserModel.model_validate(user)
 
-    def set_size(user_id: uuid.UUID) -> None:
+    def set_size(self, user_id: uuid.UUID, latest_sizing: str) -> None:
         attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
 
         for attendee in attendees:
@@ -216,11 +216,12 @@ class UserService:
 
         try:
             db.session.commit()
-
-            self.shopify_service.update_customer_tags()
         except Exception as e:
             logger.exception(e)
-            raise ServiceError("Failed to update attendee size.", e)
+            raise ServiceError("Failed to save user size.", e)
+
+        user = self.get_user_by_id(user_id)
+        self.shopify_service.update_customer(ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing)
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()

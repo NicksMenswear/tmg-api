@@ -47,7 +47,13 @@ class AbstractShopifyService(ABC):
 
     @abstractmethod
     def update_customer(
-        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+        self,
+        customer_gid: str,
+        first_name: str,
+        last_name: str,
+        email: str,
+        phone_number: str = None,
+        latest_sizing: str = None,
     ) -> ShopifyCustomer:
         pass
 
@@ -199,7 +205,13 @@ class FakeShopifyService(AbstractShopifyService):
         )
 
     def update_customer(
-        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+        self,
+        customer_gid: str,
+        first_name: str,
+        last_name: str,
+        email: str,
+        phone_number: str = None,
+        latest_sizing: str = None,
     ) -> ShopifyCustomer:
         pass
 
@@ -598,7 +610,13 @@ class ShopifyService(AbstractShopifyService):
         )
 
     def update_customer(
-        self, customer_gid: str, first_name: str, last_name: str, email: str, phone_number: str = None
+        self,
+        customer_gid: str,
+        first_name: str,
+        last_name: str,
+        email: str,
+        phone_number: str = None,
+        latest_sizing: str = None,
     ) -> ShopifyCustomer:
         query = """
         mutation customerUpdate($input: CustomerInput!) {
@@ -629,6 +647,15 @@ class ShopifyService(AbstractShopifyService):
             customer_input["email"] = email
         if phone_number:
             customer_input["phone"] = phone_number
+        if latest_sizing:
+            customer_input["metafields"] = [
+                {
+                    "namespace": "custom",
+                    "key": "latest_sizing",
+                    "type": "single_line_text_field",
+                    "value": latest_sizing,
+                }
+            ]
 
         variables = {"input": customer_input}
 

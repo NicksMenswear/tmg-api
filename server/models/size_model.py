@@ -9,8 +9,8 @@ from server.models import CoreModel
 
 
 class CreateSizeRequestModel(CoreModel):
-    user_id: Optional[UUID]
-    measurement_id: UUID
+    user_id: Optional[UUID] = None
+    measurement_id: Optional[UUID] = None
     email: Optional[EmailStr] = None
     data: List[Any]
 

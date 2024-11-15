@@ -2331,9 +2331,11 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+          nullable: true
         email:
           title: email
           $ref: '#/components/schemas/email'
+          nullable: true
         measurement_id:
           title: measurement_id
           $ref: '#/components/schemas/uuid'
@@ -2351,9 +2353,11 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+          nullable: true
         email:
           title: email
           $ref: '#/components/schemas/email'
+          nullable: true
         data:
           title: data
           type: object

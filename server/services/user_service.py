@@ -208,7 +208,6 @@ class UserService:
 
         return UserModel.model_validate(user)
 
-    @staticmethod
     def set_size(user_id: uuid.UUID) -> None:
         attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
 
@@ -217,6 +216,8 @@ class UserService:
 
         try:
             db.session.commit()
+
+            self.shopify_service.update_customer_tags()
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to update attendee size.", e)

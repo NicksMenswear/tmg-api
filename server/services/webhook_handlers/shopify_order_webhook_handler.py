@@ -15,11 +15,12 @@ from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
 )
-from server.services.email_service import AbstractEmailService
+from server.services.integrations.email_service import AbstractEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
 from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType, ShopifyService
+from server.services.integrations.sms_service import AbstractSmsService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import (
@@ -55,6 +56,7 @@ class ShopifyWebhookOrderHandler:
         shiphero_service: AbstractShipHeroService,
         activecampaign_service: AbstractActiveCampaignService,
         email_service: AbstractEmailService,
+        sms_service: AbstractSmsService,
     ):
         self.shopify_service = shopify_service
         self.discount_service = discount_service
@@ -70,6 +72,7 @@ class ShopifyWebhookOrderHandler:
         self.shiphero_service = shiphero_service
         self.activecampaign_service = activecampaign_service
         self.email_service = email_service
+        self.sms_service = sms_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
         logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
@@ -194,6 +197,7 @@ class ShopifyWebhookOrderHandler:
 
         self.__process_used_discount_code(payload)
         self.__track_swatch_purchase(user, payload)
+        self.__sms_order_received(user, shopify_order_number)
 
         shopify_order_id = payload.get("id")
         created_at = datetime.fromisoformat(payload.get("created_at"))
@@ -452,3 +456,10 @@ class ShopifyWebhookOrderHandler:
             fields={"PAID_FOR_A_SUIT": "Yes"},
             events=["Paid for a Suit"],
         )
+
+    def __sms_order_received(self, user, order_number):
+        if not user.phone_number:
+            return
+        if not user.sms_consent:
+            return
+        self.sms_service.send_order_confirmation(user.phone_number, order_number)

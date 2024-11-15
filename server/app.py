@@ -23,12 +23,13 @@ from server.services.attendee_service import AttendeeService
 from server.services.audit_logger import init_audit_logging
 from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
-from server.services.email_service import EmailService, FakeEmailService
+from server.services.integrations.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
 from server.services.integrations.aws_service import AWSService, FakeAWSService
 from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
+from server.services.integrations.sms_service import FakeSmsService, SmsService
 from server.services.integrations.superblocks_service import SuperblocksService, FakeSuperblocksService
 from server.services.look_service import LookService
 from server.services.measurement_service import MeasurementService
@@ -45,6 +46,7 @@ from server.services.user_activity_log_service import UserActivityLogService
 from server.services.user_service import UserService
 from server.services.webhook_handlers.shopify_cart_webhook_handler import ShopifyWebhookCartHandler
 from server.services.webhook_handlers.shopify_checkout_webhook_handler import ShopifyWebhookCheckoutHandler
+from server.services.webhook_handlers.shopify_fulfillment_webhook_handler import ShopifyWebhookFulfillmentHandler
 from server.services.webhook_handlers.shopify_order_webhook_handler import ShopifyWebhookOrderHandler
 from server.services.webhook_handlers.shopify_product_webhook_handler import ShopifyWebhookProductHandler
 from server.services.webhook_handlers.shopify_user_webhook_handler import ShopifyWebhookUserHandler
@@ -139,6 +141,7 @@ def init_services(app, is_testing=False):
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService(online_store_sales_channel_id)
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
+    app.sms_service = SmsService() if app.stage == "prd" else FakeSmsService()
     app.activecampaign_service = ActiveCampaignService() if app.stage == "prd" else FakeActiveCampaignService()
     app.activity_service = FakeActivityService() if is_testing else ActivityService()
     app.user_service = UserService(app.shopify_service, app.email_service, app.activecampaign_service)
@@ -196,6 +199,12 @@ def init_services(app, is_testing=False):
         app.shiphero_service,
         app.activecampaign_service,
         app.email_service,
+        app.sms_service,
+    )
+    app.shopify_webhoook_fullfillment_handler = ShopifyWebhookFulfillmentHandler(
+        app.user_service,
+        app.order_service,
+        app.sms_service,
     )
     app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service, app.activecampaign_service)
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()

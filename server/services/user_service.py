@@ -10,7 +10,7 @@ from server.database.models import User, Attendee, Discount, DiscountType
 from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
-from server.services.email_service import AbstractEmailService
+from server.services.integrations.email_service import AbstractEmailService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
 from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 

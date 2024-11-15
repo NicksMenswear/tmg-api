@@ -633,7 +633,7 @@ class ShopifyService(AbstractShopifyService):
               field
               message
             }
-            }
+          }
         }
         """
 

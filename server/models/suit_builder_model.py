@@ -23,6 +23,7 @@ class SuitBuilderItemModel(CoreModel):
     id: UUID
     type: str
     sku: str
+    variant_id: int
     name: str
     index: int
     is_active: bool
@@ -33,7 +34,7 @@ class SuitBuilderItemModel(CoreModel):
         from_attributes = True
 
     def to_response(self) -> dict[str, Any]:
-        response = self.model_dump(include={"type", "sku", "name", "price", "compare_at_price"})
+        response = self.model_dump(include={"type", "sku", "variant_id", "name", "price", "compare_at_price"})
 
         response["image_url"] = f"{DATA_URL}/{self.type}/{self.sku}.png"
         response["icon_url"] = f"{DATA_URL}/{self.type}/{self.sku}-icon.png"

@@ -25,7 +25,7 @@ class ProductSpecType(str, Enum):
 
 
 class CreateLookModel(LookRequest):
-    user_id: UUID
+    user_id: Optional[UUID] = None
     spec_type: ProductSpecType = ProductSpecType.VARIANT
     product_specs: dict
     is_active: bool = True
@@ -35,7 +35,7 @@ class CreateLookModel(LookRequest):
 class LookModel(CoreModel):
     id: UUID
     name: str
-    user_id: UUID
+    user_id: Optional[UUID] = None
     product_specs: dict
     image_path: Optional[str]
     is_active: bool

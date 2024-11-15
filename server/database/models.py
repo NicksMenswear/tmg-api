@@ -182,7 +182,7 @@ class Look(Base, SerializableMixin):
         nullable=False,
     )
     name = Column(String, index=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     product_specs = Column(JSON)
     product_specs_legacy = Column(JSON)
     image_path = Column(String, default=None)

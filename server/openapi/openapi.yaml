@@ -2053,6 +2053,7 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+          nullable: true
         product_specs:
           title: product_specs
           type: object
@@ -2062,7 +2063,6 @@ components:
           nullable: true
       required:
         - name
-        - user_id
       title: Create Look
       type: object
     Look:
@@ -2077,6 +2077,7 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+          nullable: true
         product_specs:
           title: product_specs
           type: object

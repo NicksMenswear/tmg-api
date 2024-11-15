@@ -46,6 +46,8 @@ class LookService:
         return LookModel.model_validate(db_look)
 
     def get_looks_by_user_id(self, user_id: uuid.UUID) -> list[LookModel]:
+        if user_id is None:
+            return []
         look_models = [
             LookModel.model_validate(look)
             for look in db.session.execute(
@@ -114,6 +116,8 @@ class LookService:
 
     @staticmethod
     def __verify_if_look_exist(create_look: CreateLookModel) -> None:
+        if create_look.user_id is None:
+            return
         db_look = db.session.execute(
             select(Look).where(Look.name == create_look.name, Look.user_id == create_look.user_id, Look.is_active)
         ).scalar_one_or_none()

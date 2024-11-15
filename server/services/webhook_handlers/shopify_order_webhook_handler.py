@@ -15,9 +15,9 @@ from server.services.discount_service import (
     GIFT_DISCOUNT_CODE_PREFIX,
     TMG_MIN_SUIT_PRICE,
 )
-from server.services.integrations.email_service import AbstractEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
+from server.services.integrations.email_service import AbstractEmailService
 from server.services.integrations.shiphero_service import AbstractShipHeroService
 from server.services.integrations.shopify_service import AbstractShopifyService, DiscountAmountType, ShopifyService
 from server.services.integrations.sms_service import AbstractSmsService
@@ -222,12 +222,14 @@ class ShopifyWebhookOrderHandler:
         order_number = self.order_service.generate_order_number()
         ship_by_date = None  # self.__calculate_ship_by_date(event_id) if event_id else None # decided to not use this - manual process only for now
 
-        num_processable_items = len(items)
+        enriched_items = self.__split_suits_in_order_to_3_items(items)
+
+        num_processable_items = len(enriched_items)
         order_id = None
 
         line_item_skus = set()
 
-        for line_item in items:
+        for line_item in enriched_items:
             shopify_sku = line_item.get("sku")
             line_item_skus.add(shopify_sku)
 
@@ -247,8 +249,6 @@ class ShopifyWebhookOrderHandler:
                 num_processable_items -= 1
 
             if not order_id:
-                shipping_method = None
-
                 if payload.get("shipping_lines") and len(payload.get("shipping_lines")) > 0:
                     shipping_method = payload.get("shipping_lines")[0].get("title")
                 else:
@@ -463,3 +463,44 @@ class ShopifyWebhookOrderHandler:
         if not user.sms_consent:
             return
         self.sms_service.send_order_confirmation(user.phone_number, order_number)
+
+    def __split_suits_in_order_to_3_items(self, line_items) -> list:
+        suit_line_items = []
+        new_line_items = []
+
+        for line_item in line_items:
+            suit_sku = line_item.get("sku")
+
+            if not suit_sku:
+                continue
+
+            if ProductType.SUIT == self.sku_builder.get_product_type_by_sku(suit_sku):
+                suit_line_items.append(line_item)
+            else:
+                new_line_items.append(line_item)
+
+        if not suit_line_items:
+            return line_items
+
+        for line_item in suit_line_items:
+            suit_sku = line_item.get("sku")
+
+            suit_parts = self.look_service.get_suit_parts_by_sku(suit_sku)
+            variants = self.shopify_service.get_variants_by_skus(suit_parts)
+            filtered_variants = LookService.filter_out_black_tuxedo_vs_black_suit_items(suit_sku, variants)
+
+            for variant in filtered_variants:
+                new_line_items.append(
+                    {
+                        "sku": variant.variant_sku,
+                        "title": variant.product_title,
+                        "name": variant.product_title,
+                        "price": str(variant.variant_price),
+                        "quantity": line_item.get("quantity"),
+                        "product_id": int(variant.product_id),
+                        "variant_id": int(variant.variant_id),
+                        "variant_title": variant.variant_title,
+                    }
+                )
+
+        return new_line_items

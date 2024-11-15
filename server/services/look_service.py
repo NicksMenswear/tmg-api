@@ -132,7 +132,7 @@ class LookService:
         return s3_file
 
     @staticmethod
-    def __get_suit_parts_by_sku(suit_sku: str) -> list[str]:
+    def get_suit_parts_by_sku(suit_sku: str) -> list[str]:
         if not suit_sku:
             raise ServiceError("Suit variant sku not found.")
 
@@ -273,7 +273,7 @@ class LookService:
 
         bundle_items = set(create_look.product_specs.get("items"))
         bundle_items.discard(suit_sku)
-        suit_parts_skus = self.__get_suit_parts_by_sku(suit_sku)
+        suit_parts_skus = self.get_suit_parts_by_sku(suit_sku)
         all_skus = list(bundle_items) + suit_parts_skus
 
         tags = self.__get_tags_from_look_variants2(all_skus)
@@ -281,7 +281,7 @@ class LookService:
         tags.append("not_linked_to_event")
 
         variants = self.shopify_service.get_variants_by_skus(all_skus)
-        variants = self.__filter_out_black_tuxedo_vs_black_suit_items(suit_sku, variants)
+        variants = LookService.filter_out_black_tuxedo_vs_black_suit_items(suit_sku, variants)
 
         bundle_variants = [look_variant.variant_id for look_variant in variants]
         bundle_variants.append(str(bundle_identifier_variant.get_id()))
@@ -321,8 +321,8 @@ class LookService:
 
         return db_look
 
-    def __filter_out_black_tuxedo_vs_black_suit_items(
-        self,
+    @staticmethod
+    def filter_out_black_tuxedo_vs_black_suit_items(
         suit_sku: str,
         variants: list[ShopifyVariantModel],
     ) -> list[ShopifyVariantModel]:
@@ -333,7 +333,7 @@ class LookService:
         ):
             return variants
 
-        suit_parts = self.__get_suit_parts_by_sku(suit_sku)
+        suit_parts = LookService.get_suit_parts_by_sku(suit_sku)
         suit_pants = suit_parts[1]
         suit_vest = suit_parts[2]
 

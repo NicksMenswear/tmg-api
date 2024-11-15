@@ -109,6 +109,7 @@ class SuitBuilderService:
             id=suit_builder_item.id,
             type=suit_builder_item.type.value,
             sku=suit_builder_item.sku,
+            variant_id=int(shopify_product.variant_id),
             name=suit_builder_item.name,
             index=suit_builder_item.index,
             is_active=suit_builder_item.is_active,
@@ -128,6 +129,7 @@ class SuitBuilderService:
                 sbi.is_active,
                 sbi.created_at,
                 sbi.updated_at,
+                variant->>'id' AS variant_id,
                 variant->>'price' AS price,
                 variant->>'compare_at_price' AS compare_at_price
             FROM
@@ -154,6 +156,7 @@ class SuitBuilderService:
                     id=row.id,
                     type=row.type.lower(),
                     sku=row.sku,
+                    variant_id=int(row.variant_id),
                     name=row.name,
                     index=row.index,
                     is_active=row.is_active,

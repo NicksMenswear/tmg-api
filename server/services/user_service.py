@@ -62,6 +62,8 @@ class UserService:
                 email=create_user.email.lower(),
                 shopify_id=str(shopify_customer_id),
                 phone_number=create_user.phone_number,
+                sms_consent=create_user.sms_consent,
+                email_consent=create_user.email_consent,
                 account_status=create_user.account_status,
                 meta=create_user.meta,
                 created_at=datetime.now(),
@@ -75,24 +77,24 @@ class UserService:
 
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
+
+            # Tracking # TODO: async
+            events = ["Signed Up"]
+
+            if user_model.account_status:
+                events.append("Activated Account")
+
+            self.activecampaign_service.sync_contact(
+                email=user_model.email,
+                first_name=user_model.first_name,
+                last_name=user_model.last_name,
+                phone=user_model.phone_number,
+                events=events,
+            )
+
+            return user_model
         except Exception as e:
             logger.exception(e)
-
-        # Tracking # TODO: async
-        events = ["Signed Up"]
-
-        if user_model.account_status:
-            events.append("Activated Account")
-
-        self.activecampaign_service.sync_contact(
-            email=user_model.email,
-            first_name=user_model.first_name,
-            last_name=user_model.last_name,
-            phone=user_model.phone_number,
-            events=events,
-        )
-
-        return user_model
 
     @staticmethod
     def get_user_by_id(user_id: uuid.UUID) -> UserModel:
@@ -160,6 +162,8 @@ class UserService:
         email = update_user.email or user.email
         account_status = update_user.account_status if update_user.account_status is not None else user.account_status
         activated_account = account_status and not user.account_status
+        sms_consent = update_user.sms_consent if update_user.sms_consent is not None else user.sms_consent
+        email_consent = update_user.email_consent if update_user.email_consent is not None else user.email_consent
 
         user.first_name = first_name[:MAX_NAME_LENGTH]
         user.last_name = last_name[:MAX_NAME_LENGTH]
@@ -170,6 +174,8 @@ class UserService:
         else:
             new_phone_number = None
         user.account_status = account_status
+        user.sms_consent = sms_consent
+        user.email_consent = email_consent
         user.updated_at = datetime.now()
 
         try:

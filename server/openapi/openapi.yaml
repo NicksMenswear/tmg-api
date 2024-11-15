@@ -1930,6 +1930,15 @@ components:
         phone_number:
           title: phone_number
           type: string
+          nullable: true
+        sms_consent:
+          title: sms_consent
+          type: boolean
+          nullable: true
+        email_consent:
+          title: email_consent
+          type: boolean
+          nullable: true
         shopify_id:
           title: shopify_id
           type: string
@@ -1955,6 +1964,14 @@ components:
         phone_number:
           title: phone_number
           type: string
+        sms_consent:
+          title: sms_consent
+          type: boolean
+          nullable: true
+        email_consent:
+          title: email_consent
+          type: boolean
+          nullable: true
         shopify_id:
           title: shopify_id
           type: string

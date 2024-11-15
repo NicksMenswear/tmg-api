@@ -29,8 +29,8 @@ class UserModel(CoreModel):
     account_status: bool = False
     legacy_id: Optional[str] = None
     phone_number: Optional[str] = None
-    sms_consent = Optional[bool] = False
-    email_consent = Optional[bool] = False
+    sms_consent: Optional[bool] = False
+    email_consent: Optional[bool] = False
     meta: Optional[dict] = {}
 
     class Config:

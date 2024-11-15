@@ -277,6 +277,8 @@ class User(Base, SerializableMixin):
     orders = relationship("Order", backref="user")
     account_status = Column(Boolean, default=False, nullable=False)
     addresses = relationship("Address", back_populates="user", cascade="all, delete, delete-orphan")
+    sms_consent = Column(Boolean, default=False, nullable=True)
+    email_consent = Column(Boolean, default=False, nullable=True)
     meta = Column(JSON, default=dict)
     created_at = Column(DateTime, default=text("now()"), nullable=False)
     updated_at = Column(DateTime, default=text("now()"), nullable=False)
@@ -477,7 +479,8 @@ class Size(Base, SerializableMixin):
         server_default=text("uuid_generate_v4()"),
         nullable=False,
     )
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    email = Column(String, nullable=True)
     measurement_id = Column(UUID(as_uuid=True), ForeignKey("measurements.id"), nullable=True)
     data = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=text("now()"), nullable=False)
@@ -493,7 +496,8 @@ class Measurement(Base, SerializableMixin):
         server_default=text("uuid_generate_v4()"),
         nullable=False,
     )
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    email = Column(String, nullable=True)
     data = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime, default=text("now()"), nullable=False)
     updated_at = Column(DateTime, default=text("now()"), nullable=False)

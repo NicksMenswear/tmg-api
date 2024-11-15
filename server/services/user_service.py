@@ -77,24 +77,24 @@ class UserService:
 
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
+
+            # Tracking # TODO: async
+            events = ["Signed Up"]
+
+            if user_model.account_status:
+                events.append("Activated Account")
+
+            self.activecampaign_service.sync_contact(
+                email=user_model.email,
+                first_name=user_model.first_name,
+                last_name=user_model.last_name,
+                phone=user_model.phone_number,
+                events=events,
+            )
+
+            return user_model
         except Exception as e:
             logger.exception(e)
-
-        # Tracking # TODO: async
-        events = ["Signed Up"]
-
-        if user_model.account_status:
-            events.append("Activated Account")
-
-        self.activecampaign_service.sync_contact(
-            email=user_model.email,
-            first_name=user_model.first_name,
-            last_name=user_model.last_name,
-            phone=user_model.phone_number,
-            events=events,
-        )
-
-        return user_model
 
     @staticmethod
     def get_user_by_id(user_id: uuid.UUID) -> UserModel:

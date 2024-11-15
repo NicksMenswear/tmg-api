@@ -2,6 +2,8 @@ from typing import Any, Dict, Optional
 from uuid import UUID
 from datetime import datetime
 
+from pydantic import EmailStr
+
 from server.database.models import Measurement
 from server.models import CoreModel
 
@@ -13,7 +15,8 @@ class CreateMeasurementsRequestModel(CoreModel):
 
 class MeasurementModel(CoreModel):
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID]
+    email: Optional[EmailStr]
     data: Dict[str, Any]
     gender_type: str
     gender: str

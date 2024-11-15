@@ -39,6 +39,8 @@ class ShopifyWebhookFulfillmentHandler:
     def __sms_tracking(self, user, payload):
         if not user.phone_number:
             return
+        if not user.sms_consent:
+            return
         if not payload.get("tracking_number"):
             return
         self.sms_service.send_tracking(user.phone_number, payload.get("tracking_number"))

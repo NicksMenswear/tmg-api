@@ -29,6 +29,8 @@ class UserModel(CoreModel):
     account_status: bool = False
     legacy_id: Optional[str] = None
     phone_number: Optional[str] = None
+    sms_consent = Optional[bool] = False
+    email_consent = Optional[bool] = False
     meta: Optional[dict] = {}
 
     class Config:
@@ -36,7 +38,18 @@ class UserModel(CoreModel):
 
     def to_response(self):
         return self.model_dump(
-            include={"id", "first_name", "last_name", "email", "phone_number", "account_status", "shopify_id", "meta"}
+            include={
+                "id",
+                "first_name",
+                "last_name",
+                "email",
+                "phone_number",
+                "sms_consent",
+                "email_consent",
+                "account_status",
+                "shopify_id",
+                "meta",
+            }
         )
 
 

@@ -460,4 +460,6 @@ class ShopifyWebhookOrderHandler:
     def __sms_order_received(self, user, order_number):
         if not user.phone_number:
             return
+        if not user.sms_consent:
+            return
         self.sms_service.send_order_confirmation(user.phone_number, order_number)

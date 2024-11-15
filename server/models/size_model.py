@@ -2,6 +2,8 @@ from typing import List, Any, Optional
 from uuid import UUID
 from datetime import datetime
 
+from pydantic import EmailStr
+
 from server.database.models import Size
 from server.models import CoreModel
 
@@ -14,7 +16,8 @@ class CreateSizeRequestModel(CoreModel):
 
 class SizeModel(CoreModel):
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID]
+    email: Optional[EmailStr]
     measurement_id: Optional[UUID]
     data: List[Any]
     jacket_size: str

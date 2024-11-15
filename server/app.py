@@ -141,7 +141,7 @@ def init_services(app, is_testing=False):
     app.shopify_service = FakeShopifyService() if is_testing else ShopifyService(online_store_sales_channel_id)
     app.superblocks_service = FakeSuperblocksService() if is_testing else SuperblocksService()
     app.email_service = FakeEmailService() if is_testing else EmailService(app.shopify_service)
-    app.sms_service = SmsService()  # if app.stage == "prd" else FakeSmsService()
+    app.sms_service = SmsService() if app.stage == "prd" else FakeSmsService()
     app.activecampaign_service = ActiveCampaignService() if app.stage == "prd" else FakeActiveCampaignService()
     app.activity_service = FakeActivityService() if is_testing else ActivityService()
     app.user_service = UserService(app.shopify_service, app.email_service, app.activecampaign_service)

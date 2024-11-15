@@ -619,21 +619,21 @@ class ShopifyService(AbstractShopifyService):
         latest_sizing: str = None,
     ) -> ShopifyCustomer:
         query = """
-        mutation customerUpdate($input: CustomerInput!) {
-          customerUpdate(input: $input) {
-            customer {
-              id
-              firstName
-              lastName
-              email
-              state
-              tags
+        mutation updateCustomer($input: CustomerInput!) {
+            customerUpdate(input: $input) {
+                customer {
+                    id
+                    firstName
+                    lastName
+                    email
+                    state
+                    tags
+                }
+                userErrors {
+                    field
+                    message
+                }
             }
-            userErrors {
-              field
-              message
-            }
-          }
         }
         """
 
@@ -649,12 +649,7 @@ class ShopifyService(AbstractShopifyService):
             customer_input["phone"] = phone_number
         if latest_sizing:
             customer_input["metafields"] = [
-                {
-                    "namespace": "custom",
-                    "key": "latest_sizing",
-                    "type": "single_line_text_field",
-                    "value": latest_sizing,
-                }
+                {"namespace": "custom", "key": "latest_sizing", "value": latest_sizing},
             ]
 
         variables = {"input": customer_input}

@@ -221,7 +221,9 @@ class UserService:
             raise ServiceError("Failed to save user size.", e)
 
         user = self.get_user_by_id(user_id)
-        self.shopify_service.update_customer(ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing)
+        self.shopify_service.update_customer(
+            ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
+        )
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()

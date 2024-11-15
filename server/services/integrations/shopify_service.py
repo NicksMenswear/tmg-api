@@ -146,6 +146,10 @@ class AbstractShopifyService(ABC):
     def deactivate_discount(self, discount_gid: str) -> None:
         pass
 
+    @abstractmethod
+    def add_products_to_collection(self, collection_id: int, product_ids: list[int]) -> None:
+        pass
+
 
 class FakeShopifyService(AbstractShopifyService):
     def __init__(self, shopify_virtual_products=None, shopify_virtual_product_variants=None, shopify_variants=None):
@@ -425,6 +429,9 @@ class FakeShopifyService(AbstractShopifyService):
     def deactivate_discount(self, discount_gid: str) -> None:
         return
 
+    def add_products_to_collection(self, collection_id: int, product_ids: list[int]) -> None:
+        pass
+
 
 class ShopifyService(AbstractShopifyService):
     def __init__(self, online_store_sales_channel_id: str):
@@ -446,6 +453,10 @@ class ShopifyService(AbstractShopifyService):
     @classmethod
     def product_gid(cls, shopify_id: int) -> str:
         return f"gid://shopify/Product/{shopify_id}"
+
+    @classmethod
+    def collection_gid(cls, shopify_id: int) -> str:
+        return f"gid://shopify/Collection/{shopify_id}"
 
     @classmethod
     def discount_gid(cls, shopify_id: int) -> str:
@@ -1171,6 +1182,31 @@ class ShopifyService(AbstractShopifyService):
             self.__admin_api_graphql_request(query, variables)
         except ShopifyQueryError:
             raise ServiceError(f"Failed to deactivate discount code in shopify store.")
+
+    def add_products_to_collection(self, collection_id: int, product_ids: list[int]) -> None:
+        query = """
+        mutation collectionAddProducts($id: ID!, $productIds: [ID!]!) {
+          collectionAddProducts(id: $id, productIds: $productIds) {
+            collection {
+              id
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        """
+
+        variables = {
+            "id": ShopifyService.collection_gid(collection_id),
+            "productIds": [ShopifyService.product_gid(product_id) for product_id in product_ids],
+        }
+
+        try:
+            self.__admin_api_graphql_request(query, variables)
+        except ShopifyQueryError:
+            raise ServiceError(f"Failed to add products to collection in shopify store.")
 
     def __admin_api_graphql_request(self, query: str, variables: dict = None) -> dict:
         response = http(

@@ -209,6 +209,8 @@ class UserService:
         return UserModel.model_validate(user)
 
     def set_size(self, user_id: uuid.UUID, latest_sizing: str) -> None:
+        if not user_id:
+            return
         attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
 
         for attendee in attendees:

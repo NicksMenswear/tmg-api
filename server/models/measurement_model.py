@@ -10,6 +10,7 @@ from server.models import CoreModel
 
 class CreateMeasurementsRequestModel(CoreModel):
     user_id: UUID
+    email: Optional[EmailStr]
     data: dict
 
 

@@ -34,6 +34,7 @@ class SizeService:
         try:
             size = Size(
                 user_id=create_size_request.user_id,
+                email=create_size_request.email,
                 measurement_id=create_size_request.measurement_id,
                 data=create_size_request.data,
             )

@@ -24,7 +24,11 @@ class MeasurementService:
 
     def create_measurement(self, create_measurement_request: CreateMeasurementsRequestModel) -> MeasurementModel:
         try:
-            measurement = Measurement(user_id=create_measurement_request.user_id, data=create_measurement_request.data)
+            measurement = Measurement(
+                user_id=create_measurement_request.user_id,
+                email=create_measurement_request.email,
+                data=create_measurement_request.data,
+            )
 
             db.session.add(measurement)
             db.session.commit()

@@ -2331,6 +2331,9 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
         measurement_id:
           title: measurement_id
           $ref: '#/components/schemas/uuid'
@@ -2338,7 +2341,6 @@ components:
           title: data
           type: array
       required:
-        - user_id
         - measurement_id
         - data
       title: Size
@@ -2349,11 +2351,13 @@ components:
         user_id:
           title: user_id
           $ref: '#/components/schemas/uuid'
+        email:
+          title: email
+          $ref: '#/components/schemas/email'
         data:
           title: data
           type: object
       required:
-        - user_id
         - data
       title: Measurement
       type: object

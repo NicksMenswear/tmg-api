@@ -34,6 +34,7 @@ class SizeService:
         try:
             size = Size(
                 user_id=create_size_request.user_id,
+                email=create_size_request.email,
                 measurement_id=create_size_request.measurement_id,
                 data=create_size_request.data,
             )
@@ -47,6 +48,6 @@ class SizeService:
             db.session.rollback()
             raise ServiceError("Failed to save size data", e)
 
-        self.user_service.set_size(size.user_id)
+        self.user_service.set_size(size.user_id, size.created_at.isoformat())
 
         return size_model

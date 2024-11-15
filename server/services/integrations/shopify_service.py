@@ -49,9 +49,9 @@ class AbstractShopifyService(ABC):
     def update_customer(
         self,
         customer_gid: str,
-        first_name: str,
-        last_name: str,
-        email: str,
+        first_name: str = None,
+        last_name: str = None,
+        email: str = None,
         phone_number: str = None,
         latest_sizing: str = None,
     ) -> ShopifyCustomer:
@@ -207,9 +207,9 @@ class FakeShopifyService(AbstractShopifyService):
     def update_customer(
         self,
         customer_gid: str,
-        first_name: str,
-        last_name: str,
-        email: str,
+        first_name: str = None,
+        last_name: str = None,
+        email: str = None,
         phone_number: str = None,
         latest_sizing: str = None,
     ) -> ShopifyCustomer:
@@ -612,9 +612,9 @@ class ShopifyService(AbstractShopifyService):
     def update_customer(
         self,
         customer_gid: str,
-        first_name: str,
-        last_name: str,
-        email: str,
+        first_name: str = None,
+        last_name: str = None,
+        email: str = None,
         phone_number: str = None,
         latest_sizing: str = None,
     ) -> ShopifyCustomer:

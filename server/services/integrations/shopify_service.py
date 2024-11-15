@@ -619,21 +619,21 @@ class ShopifyService(AbstractShopifyService):
         latest_sizing: str = None,
     ) -> ShopifyCustomer:
         query = """
-        mutation updateCustomer($input: CustomerInput!) {
-            customerUpdate(input: $input) {
-                customer {
-                    id
-                    firstName
-                    lastName
-                    email
-                    state
-                    tags
-                }
-                userErrors {
-                    field
-                    message
-                }
+        mutation customerUpdate($input: CustomerInput!) {
+          customerUpdate(input: $input) {
+            customer {
+              id
+              firstName
+              lastName
+              email
+              state
+              tags
             }
+            userErrors {
+              field
+              message
+            }
+        }
         }
         """
 

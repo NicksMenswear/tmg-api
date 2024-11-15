@@ -9,15 +9,15 @@ from server.models import CoreModel
 
 
 class CreateMeasurementsRequestModel(CoreModel):
-    user_id: UUID
-    email: Optional[EmailStr]
+    user_id: Optional[UUID] = None
+    email: Optional[EmailStr] = None
     data: dict
 
 
 class MeasurementModel(CoreModel):
     id: UUID
-    user_id: Optional[UUID]
-    email: Optional[EmailStr]
+    user_id: Optional[UUID] = None
+    email: Optional[EmailStr] = None
     data: Dict[str, Any]
     gender_type: str
     gender: str

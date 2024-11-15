@@ -9,17 +9,17 @@ from server.models import CoreModel
 
 
 class CreateSizeRequestModel(CoreModel):
-    user_id: UUID
+    user_id: Optional[UUID]
     measurement_id: UUID
-    email: Optional[EmailStr]
+    email: Optional[EmailStr] = None
     data: List[Any]
 
 
 class SizeModel(CoreModel):
     id: UUID
-    user_id: Optional[UUID]
-    measurement_id: Optional[UUID]
-    email: Optional[EmailStr]
+    user_id: Optional[UUID] = None
+    measurement_id: Optional[UUID] = None
+    email: Optional[EmailStr] = None
     data: List[Any]
     jacket_size: str
     jacket_length: str

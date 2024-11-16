@@ -59,7 +59,6 @@ class SmsService(AbstractSmsService):
 
     @staticmethod
     def __twilio_request(method, path, json) -> None:
-        headers = {"Authorization": f"Basic {TWILIO_ACCOUNT_SID}:{TWILIO_AUTH_TOKEN}"}
         credentials = f"{TWILIO_ACCOUNT_SID}:{TWILIO_AUTH_TOKEN}"
         encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
         headers = {

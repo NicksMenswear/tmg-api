@@ -208,24 +208,38 @@ class UserService:
 
         return UserModel.model_validate(user)
 
-    def set_size(self, user_id: uuid.UUID, latest_sizing: str) -> None:
-        if not user_id:
+    def set_size(self, user_id: uuid.UUID, email: str, latest_sizing: str) -> None:
+        if not user_id and not email:
+            logger.error("User ID or Email is required to associate size.")
             return
-        attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
 
-        for attendee in attendees:
-            attendee.size = True
+        if user_id:
+            db_attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
+            user = self.get_user_by_id(user_id)
+        else:
+            db_attendees = db.session.execute(select(Attendee).where(Attendee.email == email)).scalars().all()
+            try:
+                user = self.get_user_by_email(email)
+            except NotFoundError:
+                logger.info(f"User {email} does not exist yet found.")
+                user = None
+
+        for db_attendee in db_attendees:
+            db_attendee.size = True
 
         try:
             db.session.commit()
         except Exception as e:
             logger.exception(e)
-            raise ServiceError("Failed to save user size.", e)
+            raise ServiceError("Failed to update attendee size.", e)
 
-        user = self.get_user_by_id(user_id)
-        self.shopify_service.update_customer(
-            ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
-        )
+        if user:
+            try:
+                self.shopify_service.update_customer(
+                    ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
+                )
+            except ServiceError:
+                logger.error(f"Failed to update user {user.email} size in Shopify.")
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()

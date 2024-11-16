@@ -48,6 +48,6 @@ class SizeService:
             db.session.rollback()
             raise ServiceError("Failed to save size data", e)
 
-        self.user_service.set_size(size.user_id, size.created_at.isoformat())
+        self.user_service.set_size(size.user_id, size.email, size.created_at.isoformat())
 
         return size_model

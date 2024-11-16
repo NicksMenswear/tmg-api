@@ -214,11 +214,15 @@ class UserService:
             return
 
         if user_id:
-            user = self.get_user_by_id(user_id)
             db_attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
+            user = self.get_user_by_id(user_id)
         else:
-            user = self.get_user_by_email(email)
             db_attendees = db.session.execute(select(Attendee).where(Attendee.email == email)).scalars().all()
+            try:
+                user = self.get_user_by_email(email)
+            except NotFoundError:
+                logger.info(f"User {email} does not exist yet found.")
+                user = None
 
         for db_attendee in db_attendees:
             db_attendee.size = True
@@ -229,9 +233,13 @@ class UserService:
             logger.exception(e)
             raise ServiceError("Failed to update attendee size.", e)
 
-        self.shopify_service.update_customer(
-            ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
-        )
+        if user:
+            try:
+                self.shopify_service.update_customer(
+                    ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
+                )
+            except ServiceError:
+                logger.error(f"Failed to update user {user.email} size in Shopify.")
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()

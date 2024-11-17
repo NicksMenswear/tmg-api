@@ -259,7 +259,7 @@ class LookService:
 
         return db_look
 
-    def __create_sku_based_look(self, create_look: CreateLookModel, is_buy_now: bool = False) -> LookModel:
+    def __create_sku_based_look(self, create_look: CreateLookModel) -> LookModel:
         db_look = self.__persist_new_look_to_db(create_look)
         s3_file = self.__store_look_image_to_s3(create_look, db_look) if create_look.image else None
 
@@ -293,9 +293,6 @@ class LookService:
             image_src=(f"https://{FlaskApp.current().images_data_endpoint_host}/{s3_file}" if s3_file else None),
             tags=tags,
         )
-
-        if is_buy_now:
-            self.shopify_service.add_products_to_collection(int(BUY_NOW_COLLECTION_ID), [int(bundle.product_id)])
 
         if not bundle:
             raise ServiceError("Failed to create bundle.")
@@ -356,14 +353,14 @@ class LookService:
 
         return result
 
-    def create_look(self, create_look: CreateLookModel, is_buy_now: bool = False) -> LookModel:
+    def create_look(self, create_look: CreateLookModel) -> LookModel:
         self.__verify_if_look_exist(create_look)
 
         try:
             if "variants" in create_look.product_specs:
                 db_look = self.__create_id_based_look(create_look)
             else:
-                db_look = self.__create_sku_based_look(create_look, is_buy_now)
+                db_look = self.__create_sku_based_look(create_look)
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to create look.", e)

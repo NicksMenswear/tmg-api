@@ -23,11 +23,9 @@ def get_look_by_id(look_id):
 @hmac_verification
 @error_handler
 def create_look(create_look):
-    referer_url = request.headers.get("Referer", "")
-    is_buy_now = "/pages/suit-builder" in referer_url
     look_service = FlaskApp.current().look_service
 
-    look = look_service.create_look(CreateLookModel(**create_look), is_buy_now)
+    look = look_service.create_look(CreateLookModel(**create_look))
 
     return look.to_response(), 201
 

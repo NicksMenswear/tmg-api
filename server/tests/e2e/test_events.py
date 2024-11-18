@@ -1,3 +1,4 @@
+import logging
 import time
 import uuid
 from datetime import datetime
@@ -31,6 +32,8 @@ DEFAULT_WEDDING_ROLES = {
 }
 DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
 DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
+
+logger = logging.getLogger(__name__)
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -564,28 +567,35 @@ def test_add_myself_and_pay_for_suit(page: Page):
     attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     look_name = utils.generate_look_name()
-    role_name = "Attendee Parent or Chaperone"
+    role_name = "Groomsman"
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
-    api.create_look(look_name, user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    actions.create_default_look(page, look_name)
+
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.screenshot(path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.saved-look.png")
+
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
     time.sleep(1)
 
-    event_id = actions.create_new_event(page, event_name, event_type="prom")
-    actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
-    actions.open_event_accordion(page, event_id)
+    event_id = actions.create_new_event(page, event_name)
 
-    add_myself_button = actions.get_add_myself_button(page, event_id)
+    actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
+
+    add_myself_button = actions.get_add_myself_button(page, event_id).first
     add_myself_button.click()
 
     owner_user = api.get_user_by_email(TEST_USER_EMAIL)
+    logger.info(f"{page.url}: owner user {owner_user}")
     owner_attendee_id = actions.get_attendee_id_by_name(
         page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
     )
@@ -599,21 +609,33 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(5)
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
-    time.sleep(5)
-    actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
-    time.sleep(5)
+    time.sleep(3)
 
-    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
+    time.sleep(3)
+
+    logger.info(f"{page.url}: about to click on add suit to cart")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.final-event-page.png"
+    )
+
+    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
 
-    time.sleep(10)
+    time.sleep(5)
 
-    try:
-        verify.shopify_open_order_summary_if_needed(page)
-    except:
-        page.reload()
-        verify.shopify_open_order_summary_if_needed(page)
+    logger.info(f"{page.url}: clicked on add suit to cart")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.clicked-on-add-suit-to-cart.png"
+    )
+
+    verify.shopify_open_order_summary_if_needed(page)
+
+    logger.info(f"{page.url}: opened-order-summary")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.opened-order-summary.png"
+    )
 
     actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)
@@ -625,8 +647,6 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(20)  # wait for 20 sec so shopify webhook gets triggered and order is processed by our webhook backend
 
     page.goto(f"{STORE_URL}/account")
-
-    actions.open_event_accordion(page, event_id)
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
     expect(add_suit_to_cart_button).to_be_visible()

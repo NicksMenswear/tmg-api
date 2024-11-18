@@ -6,14 +6,24 @@ from typing import Any, Dict
 from server.models.user_model import CreateUserModel, UpdateUserModel
 from server.services import NotFoundError
 from server.services.integrations.activecampaign_service import ActiveCampaignService
+from server.services.order_service import OrderService
+from server.services.size_service import SizeService
 from server.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
 
 class ShopifyWebhookUserHandler:
-    def __init__(self, user_service: UserService, activecampaign_service: ActiveCampaignService):
+    def __init__(
+        self,
+        user_service: UserService,
+        size_service: SizeService,
+        order_service: OrderService,
+        activecampaign_service: ActiveCampaignService,
+    ):
         self.user_service = user_service
+        self.size_service = size_service
+        self.order_service = order_service
         self.activecampaign_service = activecampaign_service
 
     def customer_update(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -47,6 +57,12 @@ class ShopifyWebhookUserHandler:
                     phone_number=str(phone) if phone else None,
                 )
             )
+
+            latest_size = self.size_service.get_latest_size_for_user_by_email(email)
+
+            if latest_size:
+                self.user_service.set_size(updated_user.id, email, latest_size.created_at.isoformat())
+                self.order_service.update_user_pending_orders_with_latest_measurements(latest_size)
 
             return updated_user.to_response()
         elif (

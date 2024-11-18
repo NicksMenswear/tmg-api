@@ -579,7 +579,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     actions.create_default_look(page, look_name)
 
     actions.get_look_by_name_on_looks_page(page, look_name)
-    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.saved-look.png")
+    page.screenshot(path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.saved-look.png")
 
     page.goto(f"{STORE_URL}/account")
 
@@ -615,7 +615,9 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(3)
 
     logger.info(f"{page.url}: about to click on add suit to cart")
-    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.final-event-page.png")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.final-event-page.png"
+    )
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
@@ -624,12 +626,16 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(5)
 
     logger.info(f"{page.url}: clicked on add suit to cart")
-    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.clicked-on-add-suit-to-cart.png")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.clicked-on-add-suit-to-cart.png"
+    )
 
     verify.shopify_open_order_summary_if_needed(page)
 
     logger.info(f"{page.url}: opened-order-summary")
-    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.opened-order-summary.png")
+    page.screenshot(
+        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.opened-order-summary.png"
+    )
 
     actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)

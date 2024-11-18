@@ -5,6 +5,8 @@ from typing import Callable, Set
 
 from playwright.sync_api import Page
 
+from server.tests.e2e.utils import take_error_screenshot
+
 ACTIVE_ENV = os.environ.get("ACTIVE_ENV", "dev")
 
 TEST_USER_EMAIL = os.environ.get("TEST_USER_EMAIL", "e2e+06@mail.dev.tmgcorp.net")
@@ -84,6 +86,7 @@ def e2e_error_handling(func):
         try:
             return func(page, *args, **kwargs)
         except Exception as e:
+            take_error_screenshot(page)
             print("An error occurred: ============================================\n", e)
             print("Traceback: ============================================\n", traceback.format_exc())
             print("Current URL: ============================================\n", page.url)

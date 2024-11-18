@@ -124,7 +124,7 @@ class SuitBuilderService:
                 sbi.id,
                 sbi.type,
                 sbi.sku,
-                sbi.name,
+                variant_data.title as name,
                 sbi.index,
                 sbi.is_active,
                 sbi.created_at,
@@ -136,13 +136,20 @@ class SuitBuilderService:
                 suit_builder_items sbi
             JOIN LATERAL
                 (
-                    SELECT variant
-                    FROM shopify_products sp,
-                         jsonb_array_elements(sp.data->'variants') variant
-                    WHERE variant->>'sku' = sbi.sku
+                    SELECT
+                        variant,
+                        sp.data->>'title' AS title
+                    FROM
+                        shopify_products sp,
+                        jsonb_array_elements(sp.data->'variants') variant
+                    WHERE
+                        variant->>'sku' = sbi.sku
                 ) variant_data ON true
-            WHERE sbi.is_active = true
-            ORDER BY sbi.index DESC, sbi.sku ASC;
+            WHERE
+                sbi.is_active = true
+            ORDER BY
+                sbi.index DESC,
+                sbi.sku ASC;
         """
         )
 

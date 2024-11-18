@@ -845,40 +845,18 @@ def save_look_with_name(page: Page, look_name: str):
     save_look_button.click()
 
 
-def get_suit_builder_controls_locator(page: Page):
-    suit_builder_controls = page.locator("div.tmg-suit-builder-controls-wrapper")
-    suit_builder_controls.scroll_into_view_if_needed()
-    suit_builder_controls.wait_for(state="visible")
-
-    return suit_builder_controls
-
-
 def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
-    suit_builder_controls = get_suit_builder_controls_locator(page)
-
-    for item in AVAILABLE_ITEMS:
-        control_locator = suit_builder_controls.locator(f'input[type="checkbox"][name="{item}"]').locator("..")
-        control_locator.scroll_into_view_if_needed()
-        control_locator.wait_for(state="visible")
-
-        classes = control_locator.get_attribute("class").split()
-
-        if "active" in classes:
-            if item not in items_to_enable:
-                control_locator.click()
-            else:
-                continue
-        else:
-            if item in items_to_enable:
-                control_locator.click()
-            else:
-                continue
+    if verify.is_mobile_view(page):
+        open_suit_builder_mobile_tab(page)
 
     form_element = page.locator("form#suitBuilderForm")
     form_element.scroll_into_view_if_needed()
     form_element.wait_for(state="visible")
 
     for item in AVAILABLE_ITEMS:
+        if item in items_to_enable:
+            select_suit_builder_item_by_index(page, item, 0)
+
         options_element = form_element.locator(f'div.tmg-suit-builder-options-item[data-items="{item}"]')
         options_element.scroll_into_view_if_needed()
         options_element.wait_for(state="visible")
@@ -886,9 +864,21 @@ def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
         classes = options_element.get_attribute("class").split()
 
         if item in items_to_enable:
-            assert "disabled" not in classes
+            assert "active" in classes
         else:
-            assert "disabled" in classes
+            assert "active" not in classes
+
+        if item in items_to_enable:
+            remove_button = options_element.locator("button.clearValue")
+            remove_button.scroll_into_view_if_needed()
+            remove_button.wait_for(state="visible")
+
+            price_element = options_element.locator("strong.tmg-suit-builder-option-price").first
+            price_element.scroll_into_view_if_needed()
+            price_element.wait_for(state="visible")
+            price = float(price_element.inner_text().replace("$", ""))
+
+            assert price > 0
 
 
 def open_suit_builder_mobile_tab(page: Page):
@@ -901,6 +891,77 @@ def open_suit_builder_mobile_tab(page: Page):
     mobile_settings_tab.scroll_into_view_if_needed()
     mobile_settings_tab.wait_for(state="visible")
     mobile_settings_tab.click()
+
+
+def _get_suit_builder_price_list(page: Page):
+    price_list_element = page.locator("div.tmg-suit-builder-price-list")
+    price_list_element.scroll_into_view_if_needed()
+    price_list_element.wait_for(state="visible")
+
+    return price_list_element
+
+
+def _open_suit_builder_price_list_element(price_list_element: Locator):
+    price_list_title_element = price_list_element.locator("div.tmg-suit-builder-price-list-title")
+    price_list_title_element.scroll_into_view_if_needed()
+    price_list_title_element.wait_for(state="visible")
+
+    classes = price_list_title_element.get_attribute("class").split()
+
+    if "showed" not in classes:
+        price_list_title_element.click()
+
+
+def verify_that_suit_builder_price_list_items_selected(page: Page, items: Set[str]):
+    price_list_element = _get_suit_builder_price_list(page)
+
+    _open_suit_builder_price_list_element(price_list_element)
+
+    for item in items:
+        price_list_item = (
+            price_list_element.locator(f'div.tmg-suit-builder-price-list-item[data-type="{item}"]')
+            if item == "suit"
+            else price_list_element.locator(f'label.tmg-suit-builder-price-list-item[data-type="{item}"]')
+        )
+        price_list_item.scroll_into_view_if_needed()
+        price_list_item.wait_for(state="visible")
+
+        classes = price_list_item.get_attribute("class").split()
+
+        if item in items:
+            assert "active" in classes
+        else:
+            assert "active" not in classes
+
+
+def suit_builder_remove_item_by_type(page: Page, item_type: str):
+    if verify.is_mobile_view(page):
+        open_suit_builder_mobile_tab(page)
+
+    form_element = page.locator("form#suitBuilderForm")
+    form_element.scroll_into_view_if_needed()
+    form_element.wait_for(state="visible")
+
+    options_element = form_element.locator(f'div.tmg-suit-builder-options-item[data-items="{item_type}"]')
+    options_element.scroll_into_view_if_needed()
+    options_element.wait_for(state="visible")
+
+    classes = options_element.get_attribute("class").split()
+
+    assert "active" in classes
+
+    remove_button = options_element.locator("button.clearValue")
+    remove_button.scroll_into_view_if_needed()
+    remove_button.wait_for(state="visible")
+    remove_button.click()
+
+    options_element = form_element.locator(f'div.tmg-suit-builder-options-item[data-items="{item_type}"]')
+    options_element.scroll_into_view_if_needed()
+    options_element.wait_for(state="visible")
+
+    classes = options_element.get_attribute("class").split()
+
+    assert "active" not in classes
 
 
 def select_bow_ties_tab(page: Page):

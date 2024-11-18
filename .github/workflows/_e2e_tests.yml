@@ -91,9 +91,11 @@ jobs:
 
       - name: Upload screenshots as artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: screenshots
+          if-no-files-found: ignore
+          retention-days: 1
+          name: screenshots-${{ matrix.group }}
           path: screenshots/
 
       - name: Clean up

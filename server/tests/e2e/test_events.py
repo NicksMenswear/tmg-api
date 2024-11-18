@@ -17,7 +17,7 @@ from server.tests.e2e import (
     EMAIL_FROM,
     EMAIL_SUBJECT_CUSTOMER_ACCOUNT_CONFIRMATION,
 )
-from server.tests.e2e.utils import api, actions, verify, email
+from server.tests.e2e.utils import api, actions, verify, email, take_screenshot
 
 DEFAULT_WEDDING_ROLES = {
     "Best Man",
@@ -579,7 +579,6 @@ def test_add_myself_and_pay_for_suit(page: Page):
     actions.create_default_look(page, look_name)
 
     actions.get_look_by_name_on_looks_page(page, look_name)
-    page.screenshot(path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.saved-look.png")
 
     page.goto(f"{STORE_URL}/account")
 
@@ -595,7 +594,6 @@ def test_add_myself_and_pay_for_suit(page: Page):
     add_myself_button.click()
 
     owner_user = api.get_user_by_email(TEST_USER_EMAIL)
-    logger.info(f"{page.url}: owner user {owner_user}")
     owner_attendee_id = actions.get_attendee_id_by_name(
         page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
     )
@@ -614,28 +612,16 @@ def test_add_myself_and_pay_for_suit(page: Page):
     actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
     time.sleep(3)
 
-    logger.info(f"{page.url}: about to click on add suit to cart")
-    page.screenshot(
-        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.final-event-page.png"
-    )
-
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
+    actions.hide_help_scout(page)
     add_suit_to_cart_button.click()
 
     time.sleep(5)
 
-    logger.info(f"{page.url}: clicked on add suit to cart")
-    page.screenshot(
-        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.clicked-on-add-suit-to-cart.png"
-    )
-
     verify.shopify_open_order_summary_if_needed(page)
 
-    logger.info(f"{page.url}: opened-order-summary")
-    page.screenshot(
-        path=f"screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.opened-order-summary.png"
-    )
+    take_screenshot(page, "about-to-click-on-add-suit-to-cart")
 
     actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)

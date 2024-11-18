@@ -87,7 +87,7 @@ def e2e_error_handling(func):
             print("An error occurred: ============================================\n", e)
             print("Traceback: ============================================\n", traceback.format_exc())
             print("Current URL: ============================================\n", page.url)
-            print("HTML Content: ============================================\n", page.content())
+            # print("HTML Content: ============================================\n", page.content())
             raise
 
     return wrapper

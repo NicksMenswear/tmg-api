@@ -334,7 +334,7 @@ class SkuBuilder:
             size_model.jacket_size = "38"
             size_model.jacket_length = "L"
             size_model.vest_size = size_model.jacket_size
-        elif int(size_model.jacket_size) >= 50 and (
+        elif (int(size_model.jacket_size) < 40 or int(size_model.jacket_size) >= 50) and (
             size_model.jacket_length == "X" or size_model.jacket_length == "XL"
         ):
             size_model.jacket_length = "L"

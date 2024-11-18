@@ -581,7 +581,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     actions.get_look_by_name_on_looks_page(page, look_name)
     page.screenshot(
-        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.saved-look.png",
+        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat().replace(':', '-')}.saved-look.png",
         full_page=True,
     )
 
@@ -620,7 +620,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     logger.info(f"{page.url}: about to click on add suit to cart")
     page.screenshot(
-        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.final-event-page.png",
+        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat().replace(':', '-')}.final-event-page.png",
         full_page=True,
     )
 
@@ -632,7 +632,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     logger.info(f"{page.url}: clicked on add suit to cart")
     page.screenshot(
-        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.clicked-on-add-suit-to-cart.png",
+        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat().replace(':', '-')}.clicked-on-add-suit-to-cart.png",
         full_page=True,
     )
 
@@ -640,7 +640,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     logger.info(f"{page.url}: opened-order-summary")
     page.screenshot(
-        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat()}.opened-order-summary.png",
+        path=f"../../../screenshots/test_add_myself_and_pay_for_suit.{datetime.now().isoformat().replace(':', '-')}.opened-order-summary.png",
         full_page=True,
     )
 

@@ -1,3 +1,4 @@
+import logging
 import time
 import uuid
 from datetime import datetime
@@ -31,6 +32,8 @@ DEFAULT_WEDDING_ROLES = {
 }
 DEFAULT_PROM_ROLES = {"Attendee", "Attendee Parent or Chaperone", "Other"}
 DEFAULT_OTHER_ROLES = {"Attendee", "Other"}
+
+logger = logging.getLogger(__name__)
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -564,34 +567,54 @@ def test_add_myself_and_pay_for_suit(page: Page):
     attendee_last_name = f"E2E {utils.generate_unique_name()}"
     attendee_email = utils.generate_email()
     look_name = utils.generate_look_name()
-    role_name = "Attendee Parent or Chaperone"
+    role_name = "Groomsman"
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+
+    logger.info(f"{page.url}: User {user_id}")
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
+    logger.info(f"{page.url}: logged in")
+
     actions.create_default_look(page, look_name)
+
+    logger.info(f"{page.url}: created look with name {look_name}")
+
     actions.get_look_by_name_on_looks_page(page, look_name)
+
+    logger.info(f"{page.url}: found look on looks page by name {look_name}")
+
     page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
     time.sleep(1)
 
-    event_id = actions.create_new_event(page, event_name, event_type="prom")
+    logger.info(f"{page.url}: creating event with name {event_name}")
+
+    event_id = actions.create_new_event(page, event_name)
+
+    logger.info(f"{page.url}: event id: {event_id}")
+
     actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
-    actions.open_event_accordion(page, event_id)
+
+    logger.info(f"{page.url}: added first attendee")
 
     add_myself_button = actions.get_add_myself_button(page, event_id).first
     add_myself_button.click()
 
+    logger.info(f"{page.url}: added myself")
+
     owner_user = api.get_user_by_email(TEST_USER_EMAIL)
+    logger.info(f"{page.url}: owner user {owner_user}")
     owner_attendee_id = actions.get_attendee_id_by_name(
         page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
     )
+    logger.info(f"{page.url}: owner attendee id {owner_attendee_id}")
 
     fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
     expect(fit_survey_button).to_be_visible()
@@ -599,16 +622,25 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     actions.populate_fit_survey(page, 50)
 
+    logger.info(f"{page.url}: populated fit survey")
+
     time.sleep(5)
+
+    logger.info(f"{page.url}: selecting role and look for owner")
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
     time.sleep(3)
+    logger.info(f"{page.url}: selected role for owner")
+
     actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
     time.sleep(3)
+    logger.info(f"{page.url}: selected look for owner")
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
+
+    logger.info(f"{page.url}: added suit to cart")
 
     time.sleep(5)
 

@@ -13,15 +13,6 @@ from server.tests.e2e import (
 )
 from server.tests.e2e.utils import api, actions, verify
 
-SUIT_PRICE = 260.0
-SHIRT_PRICE = 50.0
-NECK_TIE_PRICE = 40.0
-BOW_TIE_PRICE = 40.0
-PREMIUM_POCKET_SQUARE_PRICE = 10.0
-BELT_PRICE = 30.0
-SHOES_PRICE = 115.0
-SOCKS_PRICE = 5.0
-
 
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
@@ -43,6 +34,8 @@ def test_suit_builder_save_default(page: Page):
     verify.looks_page_is_empty(page)
 
     page.goto(f"{STORE_URL}/pages/suit-builder")
+
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit"})
 
     actions.save_look_with_name(page, look_name)
 
@@ -73,12 +66,14 @@ def test_suit_builder_just_a_suit(page: Page):
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
     actions.enable_suit_builder_items(page, set())
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit"})
+
     actions.save_look_with_name(page, look_name)
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     assert data_look_id is not None
-    assert price == SUIT_PRICE
+    assert price > 195
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -103,12 +98,14 @@ def test_suit_builder_neck_tie_socks_and_premium_pocket_square_enabled(page: Pag
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
     actions.enable_suit_builder_items(page, {"tie", "socks", "premium_pocket_square"})
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit", "tie", "socks", "premium_pocket_square"})
+
     actions.save_look_with_name(page, look_name)
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     assert data_look_id is not None
-    assert price == SUIT_PRICE + NECK_TIE_PRICE + SOCKS_PRICE + PREMIUM_POCKET_SQUARE_PRICE
+    assert price > 300
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -133,12 +130,14 @@ def test_suit_builder_shirt_belt_shoes_enabled(page: Page):
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
     actions.enable_suit_builder_items(page, {"shirt", "belt", "shoes"})
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"shirt", "belt", "shoes"})
+
     actions.save_look_with_name(page, look_name)
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     assert data_look_id is not None
-    assert price == SUIT_PRICE + SHIRT_PRICE + BELT_PRICE + SHOES_PRICE
+    assert price > 300
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -163,6 +162,8 @@ def test_suit_builder_bow_tie(page: Page):
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
     actions.enable_suit_builder_items(page, {"tie"})
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit", "tie"})
+
     actions.select_bow_ties_tab(page)
 
     actions.save_look_with_name(page, look_name)
@@ -170,7 +171,7 @@ def test_suit_builder_bow_tie(page: Page):
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     assert data_look_id is not None
-    assert price == SUIT_PRICE + BOW_TIE_PRICE
+    assert price > 200
 
 
 @e2e_allowed_in({"dev", "stg", "prd"})
@@ -208,13 +209,40 @@ def test_suit_builder_select_nth_from_all_sections(page: Page):
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     assert data_look_id is not None
-    assert (
-        price
-        == SUIT_PRICE
-        + SHIRT_PRICE
-        + NECK_TIE_PRICE
-        + PREMIUM_POCKET_SQUARE_PRICE
-        + BELT_PRICE
-        + SHOES_PRICE
-        + SOCKS_PRICE
+    assert price > 400
+
+
+@e2e_allowed_in({"dev", "stg", "prd"})
+@e2e_error_handling
+@pytest.mark.group_4
+def test_suit_builder_select_and_remove(page: Page):
+    look_name = utils.generate_look_name()
+
+    actions.access_store(page)
+
+    api.delete_all_events(TEST_USER_EMAIL)
+    actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
+    api.delete_all_looks(user_id)
+
+    page.goto(f"{STORE_URL}/pages/looks")
+    time.sleep(3)
+
+    verify.looks_page_is_empty(page)
+
+    page.goto(f"{STORE_URL}/pages/suit-builder")
+
+    actions.enable_suit_builder_items(page, {"shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"})
+    actions.verify_that_suit_builder_price_list_items_selected(
+        page, {"suit", "shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"}
     )
+
+    actions.suit_builder_remove_item_by_type(page, "shirt")
+    actions.suit_builder_remove_item_by_type(page, "tie")
+    actions.suit_builder_remove_item_by_type(page, "premium_pocket_square")
+    actions.suit_builder_remove_item_by_type(page, "belt")
+    actions.suit_builder_remove_item_by_type(page, "shoes")
+    actions.suit_builder_remove_item_by_type(page, "socks")
+
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit"})

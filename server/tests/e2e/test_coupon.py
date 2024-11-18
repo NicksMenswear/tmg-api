@@ -43,7 +43,9 @@ def test_create_coupon(page: Page):
     look_name = utils.generate_look_name()
 
     api.delete_all_looks(user_id)
-    api.create_look(look_name, user_id)
+    actions.create_default_look(page, look_name)
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 

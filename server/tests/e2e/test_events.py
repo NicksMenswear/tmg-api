@@ -526,9 +526,12 @@ def test_style_and_invite_checkboxes(page: Page):
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
-    api.create_look(look_name, user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    actions.create_default_look(page, look_name)
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 
@@ -586,7 +589,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
     actions.open_event_accordion(page, event_id)
 
-    add_myself_button = actions.get_add_myself_button(page, event_id)
+    add_myself_button = actions.get_add_myself_button(page, event_id).first
     add_myself_button.click()
 
     owner_user = api.get_user_by_email(TEST_USER_EMAIL)
@@ -613,11 +616,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     time.sleep(5)
 
-    try:
-        verify.shopify_open_order_summary_if_needed(page)
-    except:
-        page.reload()
-        verify.shopify_open_order_summary_if_needed(page)
+    verify.shopify_open_order_summary_if_needed(page)
 
     actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)
@@ -704,9 +703,12 @@ def test_update_attendee_uber_test(page: Page):
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
-    api.create_look(look_name, user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
+
+    actions.create_default_look(page, look_name)
+    actions.get_look_by_name_on_looks_page(page, look_name)
+    page.goto(f"{STORE_URL}/account")
 
     verify.no_upcoming_events_visible(page)
 

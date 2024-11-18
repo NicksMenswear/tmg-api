@@ -124,7 +124,7 @@ class SuitBuilderService:
                 sbi.id,
                 sbi.type,
                 sbi.sku,
-                sbi.name,
+                variant->>'title' AS name,
                 sbi.index,
                 sbi.is_active,
                 sbi.created_at,

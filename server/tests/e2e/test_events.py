@@ -614,6 +614,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
+    actions.hide_help_scout(page)
     add_suit_to_cart_button.click()
 
     time.sleep(5)

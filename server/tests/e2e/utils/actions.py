@@ -1017,3 +1017,14 @@ def press_plus_button_to_increase_quantity_in_cart(page: Page):
     time.sleep(1)
     plus_button.click()
     time.sleep(1)
+
+
+def hide_help_scout(page: Page):
+    page.evaluate(
+        """
+            const element = document.getElementById('beacon-container');
+            if (element) {
+                element.style.display = 'none';
+            }
+        """
+    )

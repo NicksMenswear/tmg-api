@@ -570,13 +570,17 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
-    api.create_look(look_name, user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
     verify.no_upcoming_events_visible(page)
 
     time.sleep(1)
+
+    actions.create_default_look(page, look_name)
+    actions.get_look_by_name_on_looks_page(page, look_name)
+
+    page.goto(f"{STORE_URL}/account")
 
     event_id = actions.create_new_event(page, event_name, event_type="prom")
     actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
@@ -599,15 +603,15 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(5)
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
-    time.sleep(5)
+    time.sleep(3)
     actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
-    time.sleep(5)
+    time.sleep(3)
 
-    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
+    add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
 
-    time.sleep(10)
+    time.sleep(5)
 
     try:
         verify.shopify_open_order_summary_if_needed(page)

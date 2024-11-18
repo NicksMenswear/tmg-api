@@ -90,6 +90,7 @@ jobs:
           SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ env.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
 
       - name: Upload screenshots as artifacts
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: screenshots

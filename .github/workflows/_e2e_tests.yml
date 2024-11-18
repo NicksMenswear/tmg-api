@@ -79,7 +79,7 @@ jobs:
           withDecryption: true
 
       - name: Build and run end-to-end tests
-        run: ./test-e2e.sh
+        run: mkdir -p screenshots && ./test-e2e.sh
         env:
           ACTIVE_ENV: ${{ inputs.stage }}
           BROWSER: ${{ inputs.browser }}
@@ -88,6 +88,12 @@ jobs:
           TEST_GROUP: group-${{ matrix.group }}
           SHOPIFY_STORE: ${{ env.SHOPIFY_STORE }}
           SHOPIFY_ADMIN_API_ACCESS_TOKEN: ${{ env.SHOPIFY_ADMIN_API_ACCESS_TOKEN }}
+
+      - name: Upload screenshots as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: screenshots/
 
       - name: Clean up
         if: always()

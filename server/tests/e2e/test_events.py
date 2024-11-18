@@ -571,22 +571,15 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     user_id = api.get_user_by_email(TEST_USER_EMAIL).get("id")
 
-    logger.info(f"{page.url}: User {user_id}")
-
     api.delete_all_events(TEST_USER_EMAIL)
     api.delete_all_looks(user_id)
     actions.access_store(page)
     actions.login(page, TEST_USER_EMAIL, TEST_USER_PASSWORD)
 
-    logger.info(f"{page.url}: logged in")
-
     actions.create_default_look(page, look_name)
 
-    logger.info(f"{page.url}: created look with name {look_name}")
-
     actions.get_look_by_name_on_looks_page(page, look_name)
-
-    logger.info(f"{page.url}: found look on looks page by name {look_name}")
+    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.saved-look.png")
 
     page.goto(f"{STORE_URL}/account")
 
@@ -594,27 +587,18 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     time.sleep(1)
 
-    logger.info(f"{page.url}: creating event with name {event_name}")
-
     event_id = actions.create_new_event(page, event_name)
-
-    logger.info(f"{page.url}: event id: {event_id}")
 
     actions.add_first_attendee(page, event_id, attendee_first_name, attendee_last_name, attendee_email)
 
-    logger.info(f"{page.url}: added first attendee")
-
     add_myself_button = actions.get_add_myself_button(page, event_id).first
     add_myself_button.click()
-
-    logger.info(f"{page.url}: added myself")
 
     owner_user = api.get_user_by_email(TEST_USER_EMAIL)
     logger.info(f"{page.url}: owner user {owner_user}")
     owner_attendee_id = actions.get_attendee_id_by_name(
         page, event_id, owner_user.get("first_name"), owner_user.get("last_name")
     )
-    logger.info(f"{page.url}: owner attendee id {owner_attendee_id}")
 
     fit_survey_button = actions.get_owner_fit_survey_button(page, event_id, owner_attendee_id)
     expect(fit_survey_button).to_be_visible()
@@ -622,29 +606,30 @@ def test_add_myself_and_pay_for_suit(page: Page):
 
     actions.populate_fit_survey(page, 50)
 
-    logger.info(f"{page.url}: populated fit survey")
-
     time.sleep(5)
-
-    logger.info(f"{page.url}: selecting role and look for owner")
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
     time.sleep(3)
-    logger.info(f"{page.url}: selected role for owner")
 
     actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
     time.sleep(3)
-    logger.info(f"{page.url}: selected look for owner")
+
+    logger.info(f"{page.url}: about to click on add suit to cart")
+    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.final-event-page.png")
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id).first
     expect(add_suit_to_cart_button).to_be_visible()
     add_suit_to_cart_button.click()
 
-    logger.info(f"{page.url}: added suit to cart")
-
     time.sleep(5)
 
+    logger.info(f"{page.url}: clicked on add suit to cart")
+    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.clicked-on-add-suit-to-cart.png")
+
     verify.shopify_open_order_summary_if_needed(page)
+
+    logger.info(f"{page.url}: opened-order-summary")
+    page.screenshot(path="screenshots/test_add_myself_and_pay_for_suit.opened-order-summary.png")
 
     actions.shopify_checkout_continue_to_shipping(page, owner_user.get("first_name"), owner_user.get("last_name"))
     actions.shopify_checkout_continue_to_payment(page)
@@ -656,8 +641,6 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(20)  # wait for 20 sec so shopify webhook gets triggered and order is processed by our webhook backend
 
     page.goto(f"{STORE_URL}/account")
-
-    actions.open_event_accordion(page, event_id)
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
     expect(add_suit_to_cart_button).to_be_visible()

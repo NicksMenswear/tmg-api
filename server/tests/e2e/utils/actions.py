@@ -325,6 +325,8 @@ def pay_to_attendee_by_id(page: Page, event_id, attendee_id, amount):
 def create_default_look(page: Page, name: str):
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
+    time.sleep(3)
+
     save_look_with_name(page, name)
 
 

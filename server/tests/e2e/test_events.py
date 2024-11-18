@@ -599,9 +599,9 @@ def test_add_myself_and_pay_for_suit(page: Page):
     time.sleep(5)
 
     actions.select_role_for_attendee(page, event_id, owner_attendee_id, role_name)
-    time.sleep(2)
+    time.sleep(5)
     actions.select_look_for_attendee(page, event_id, owner_attendee_id, look_name)
-    time.sleep(2)
+    time.sleep(5)
 
     add_suit_to_cart_button = actions.get_owner_add_suit_to_cart_button(page, event_id, owner_attendee_id)
     expect(add_suit_to_cart_button).to_be_visible()

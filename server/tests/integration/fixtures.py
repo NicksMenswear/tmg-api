@@ -90,7 +90,7 @@ def update_role_request(**role_data):
 
 def create_attendee_request(**attendee_data):
     return CreateAttendeeModel(
-        email=attendee_data.get("email", utils.generate_email()),
+        email=attendee_data.get("email", utils.generate_email()),  # type: ignore
         first_name=attendee_data.get("first_name", utils.generate_unique_name()),
         last_name=attendee_data.get("last_name", utils.generate_unique_name()),
         event_id=attendee_data.get("event_id", uuid.uuid4()),
@@ -286,6 +286,7 @@ def store_measurement_request(**create_measurement_request) -> CreateMeasurement
     return CreateMeasurementsRequestModel(
         **{
             "user_id": create_measurement_request.get("user_id"),
+            "email": create_measurement_request.get("email"),
             "data": create_measurement_request.get(
                 "data",
                 test_measurements(),
@@ -305,10 +306,22 @@ def test_sizes():
     ]
 
 
+def test_sizes2():
+    return [
+        {"brandName": "THE MODERN GROOM", "apparelId": "SLEEVE LENGTH (SHIRT)", "size": "34/35"},
+        {"brandName": "THE MODERN GROOM", "apparelId": "JACKET LENGTH", "size": "R"},
+        {"brandName": "THE MODERN GROOM", "apparelId": "SHIRT", "size": "18"},
+        {"brandName": "THE MODERN GROOM", "apparelId": "JACKET", "size": "42"},
+        {"brandName": "THE MODERN GROOM", "apparelId": "PANT", "size": "40"},
+        {"brandName": "THE MODERN GROOM", "apparelId": "VEST", "size": "42"},
+    ]
+
+
 def store_size_request(**create_store_size_request) -> CreateSizeRequestModel:
     return CreateSizeRequestModel(
         **{
             "user_id": create_store_size_request.get("user_id"),
+            "email": create_store_size_request.get("email"),
             "measurement_id": create_store_size_request.get("measurement_id"),
             "data": create_store_size_request.get(
                 "data",

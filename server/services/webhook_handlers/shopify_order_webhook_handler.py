@@ -213,8 +213,12 @@ class ShopifyWebhookOrderHandler:
             )
 
         event_id = self.__get_event_id_from_note_attributes(payload)
-        size_model = self.size_service.get_latest_size_for_user(user.id)
-        measurement_model = self.measurement_service.get_latest_measurement_for_user(user.id) if size_model else None
+        size_model = self.size_service.get_latest_size_for_user_by_id_or_email(user.id, shopify_customer_email)
+        measurement_model = (
+            self.measurement_service.get_latest_measurement_for_user_by_id_or_email(user.id, shopify_customer_email)
+            if size_model
+            else None
+        )
 
         num_valid_products = 0
         has_products_that_requires_measurements = False

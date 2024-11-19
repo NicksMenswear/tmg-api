@@ -282,7 +282,7 @@ class UserService:
         size_service = FlaskApp.current().size_service
         order_service = FlaskApp.current().order_service
 
-        latest_size = size_service.get_latest_size_for_user_by_email(user.email)
+        latest_size = size_service.get_latest_size_for_user_by_id_or_email(user.id, user.email)
 
         if not latest_size:
             return

@@ -53,6 +53,7 @@ class SizeModel(CoreModel):
         return cls(
             id=size.id,
             user_id=size.user_id,
+            email=size.email,
             measurement_id=size.measurement_id,
             data=size.data,
             created_at=size.created_at,

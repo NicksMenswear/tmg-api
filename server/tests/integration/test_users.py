@@ -775,3 +775,31 @@ class TestUsers(BaseTestCase):
 
         # then
         self.assertStatus(response, 400)
+
+    def test_create_user_and_check_that_sizing_were_associated(self):
+        # given
+        test_email = utils.generate_email()
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email))
+        size = self.size_service.create_size(
+            fixtures.store_size_request(email=test_email, measurement_id=measurement.id)
+        )
+        self.assertIsNone(size.user_id)
+        self.assertIsNotNone(size.email)
+
+        # when
+        response = self.client.open(
+            "/users",
+            query_string=self.hmac_query_params,
+            method="POST",
+            data=json.dumps(fixtures.create_user_request(email=test_email).model_dump(), cls=encoder.CustomJSONEncoder),
+            headers=self.request_headers,
+            content_type=self.content_type,
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        size_from_db = self.size_service.get_size_by_id(size.id)
+        user_from_db = self.user_service.get_user_by_id(uuid.UUID(response.json["id"]))
+        self.assertEqual(size_from_db.user_id, user_from_db.id)
+        self.assertIsNotNone(size_from_db.user_id)
+        self.assertIsNotNone(size_from_db.email)

@@ -230,7 +230,9 @@ class OrderService:
         return OrderModel.model_validate(order)
 
     def update_user_pending_orders_with_latest_measurements(self, size_model: SizeModel):
-        measurement_model = self.measurement_service.get_latest_measurement_for_user(size_model.user_id)
+        measurement_model = self.measurement_service.get_latest_measurement_for_user_by_id_or_email(
+            user_id=size_model.user_id
+        )
 
         orders = self.get_orders_by_status_and_not_older_then_days(
             ORDER_STATUS_PENDING_MEASUREMENTS, MAX_DAYS_TO_LOOK_UP_FOR_PENDING_MEASUREMENTS_FOR_USER, size_model.user_id

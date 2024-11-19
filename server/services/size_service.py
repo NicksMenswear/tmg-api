@@ -5,6 +5,8 @@ from server.database.database_manager import db
 from server.database.models import Size
 from server.models.size_model import SizeModel, CreateSizeRequestModel
 from server.services import ServiceError
+from server.services.attendee_service import AttendeeService
+from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.measurement_service import MeasurementService
 from server.services.order_service import OrderService
 from server.services.user_service import UserService
@@ -13,10 +15,19 @@ logger = logging.getLogger(__name__)
 
 
 class SizeService:
-    def __init__(self, user_service: UserService, measurement_service: MeasurementService, order_service: OrderService):
+    def __init__(
+        self,
+        user_service: UserService,
+        attendee_service: AttendeeService,
+        measurement_service: MeasurementService,
+        order_service: OrderService,
+        shopify_service: AbstractShopifyService,
+    ):
         self.user_service = user_service
+        self.attendee_service = attendee_service
         self.measurement_service = measurement_service
         self.order_service = order_service
+        self.shopify_service = shopify_service
 
     @staticmethod
     def get_latest_size_for_user(user_id: uuid.UUID) -> SizeModel | None:
@@ -54,6 +65,23 @@ class SizeService:
             db.session.rollback()
             raise ServiceError("Failed to save size data", e)
 
-        self.user_service.set_size(size.user_id, size.email, size.created_at.isoformat())
+        self.attendee_service.mark_attendees_as_sized_by_user_id_or_email(size.user_id, size.email)
+        self.user_service.update_customer_with_latest_sizing(size.user_id, size.email, size.created_at.isoformat())
 
         return size_model
+
+    @staticmethod
+    def associate_sizing_that_has_email_with_user(email: str, user_id: uuid.UUID):
+        sizes = Size.query.filter(Size.email == email, Size.user_id == None).all()
+
+        if not sizes:
+            return
+
+        for size in sizes:
+            size.user_id = user_id
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise ServiceError("Failed to associate sizes with user", e)

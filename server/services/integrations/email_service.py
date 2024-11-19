@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -13,6 +14,9 @@ from server.services.integrations.shopify_service import AbstractShopifyService
 POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
 POSTMARK_API_KEY = os.getenv("POSTMARK_API_KEY")
 FROM_EMAIL = "info@themoderngroom.com"
+
+
+logger = logging.getLogger(__name__)
 
 
 class PostmarkTemplates:
@@ -107,17 +111,20 @@ class EmailService(AbstractEmailService):
         self.__postmark_request("POST", "email/withTemplate", body)
 
     def send_activation_email(self, user: UserModel) -> None:
-        activation_url = self.__get_account_activation_url(user)
+        try:
+            activation_url = self.__get_account_activation_url(user)
 
-        template_model = {"first_name": user.first_name, "shopify_url": activation_url}
-        body = {
-            "From": FROM_EMAIL,
-            "To": user.email,
-            "TemplateId": PostmarkTemplates.ACTIVATION,
-            "TemplateModel": template_model,
-        }
+            template_model = {"first_name": user.first_name, "shopify_url": activation_url}
+            body = {
+                "From": FROM_EMAIL,
+                "To": user.email,
+                "TemplateId": PostmarkTemplates.ACTIVATION,
+                "TemplateModel": template_model,
+            }
 
-        self.__postmark_request("POST", "email/withTemplate", body)
+            self.__postmark_request("POST", "email/withTemplate", body)
+        except Exception as e:
+            logger.exception(e)
 
     def send_invites_batch(self, event: EventModel, users: list[UserModel]) -> None:
         batch = []

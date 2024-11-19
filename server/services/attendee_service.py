@@ -519,3 +519,23 @@ class AttendeeService:
             return []
 
         return [AttendeeModel.model_validate(attendee) for attendee in attendees]
+
+    @staticmethod
+    def mark_attendees_as_sized_by_user_id_or_email(user_id: uuid.UUID = None, email: str = None) -> None:
+        if not user_id and not email:
+            logger.error("User ID or Email is required to associate size.")
+            return
+
+        if user_id:
+            db_attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()  # type: ignore
+        else:
+            db_attendees = db.session.execute(select(Attendee).where(Attendee.email == email)).scalars().all()  # type: ignore
+
+        for db_attendee in db_attendees:
+            db_attendee.size = True
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceError("Failed to mark attendees as sized.", e)

@@ -23,10 +23,10 @@ from server.services.attendee_service import AttendeeService
 from server.services.audit_logger import init_audit_logging
 from server.services.audit_service import AuditLogService
 from server.services.discount_service import DiscountService
-from server.services.integrations.email_service import EmailService, FakeEmailService
 from server.services.event_service import EventService
 from server.services.integrations.activecampaign_service import ActiveCampaignService, FakeActiveCampaignService
 from server.services.integrations.aws_service import AWSService, FakeAWSService
+from server.services.integrations.email_service import EmailService, FakeEmailService
 from server.services.integrations.shiphero_service import ShipHeroService, FakeShipHeroService
 from server.services.integrations.shopify_service import ShopifyService, FakeShopifyService
 from server.services.integrations.sms_service import FakeSmsService, SmsService
@@ -165,7 +165,13 @@ def init_services(app, is_testing=False):
         measurement_service=app.measurement_service,
         sku_builder=app.sku_builder,
     )
-    app.size_service = SizeService(app.user_service, app.measurement_service, order_service=app.order_service)
+    app.size_service = SizeService(
+        user_service=app.user_service,
+        attendee_service=app.attendee_service,
+        measurement_service=app.measurement_service,
+        order_service=app.order_service,
+        shopify_service=app.shopify_service,
+    )
     app.webhook_service = WebhookService()
     app.__user_activity_log_service = UserActivityLogService(
         app.user_service,
@@ -206,9 +212,7 @@ def init_services(app, is_testing=False):
         app.order_service,
         app.sms_service,
     )
-    app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(
-        app.user_service, app.size_service, app.order_service, app.activecampaign_service
-    )
+    app.shopify_webhook_user_handler = ShopifyWebhookUserHandler(app.user_service, app.activecampaign_service)
     app.shopify_webhook_cart_handler = ShopifyWebhookCartHandler()
     app.shopify_webhook_checkout_handler = ShopifyWebhookCheckoutHandler()
     app.shopify_product_service = ShopifyProductService()

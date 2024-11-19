@@ -7,11 +7,12 @@ from sqlalchemy import func, select, and_
 
 from server.database.database_manager import db
 from server.database.models import User, Attendee, Discount, DiscountType
+from server.flask_app import FlaskApp
 from server.models.discount_model import DiscountModel
 from server.models.user_model import CreateUserModel, UserModel, UpdateUserModel
 from server.services import BadRequestError, ServiceError, DuplicateError, NotFoundError
-from server.services.integrations.email_service import AbstractEmailService
 from server.services.integrations.activecampaign_service import AbstractActiveCampaignService
+from server.services.integrations.email_service import AbstractEmailService
 from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,8 @@ class UserService:
             db.session.refresh(db_user)
 
             user_model = UserModel.model_validate(db_user)
+
+            self.__link_new_user_to_his_latest_sizing(db_user)
 
             if send_activation_email:
                 self.email_service.send_activation_email(user_model)
@@ -208,38 +211,29 @@ class UserService:
 
         return UserModel.model_validate(user)
 
-    def set_size(self, user_id: uuid.UUID, email: str, latest_sizing: str) -> None:
+    def update_customer_with_latest_sizing(self, user_id: uuid.UUID, email: str, latest_sizing: str) -> None:
         if not user_id and not email:
             logger.error("User ID or Email is required to associate size.")
             return
 
         if user_id:
-            db_attendees = db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()
             user = self.get_user_by_id(user_id)
         else:
-            db_attendees = db.session.execute(select(Attendee).where(Attendee.email == email)).scalars().all()
             try:
                 user = self.get_user_by_email(email)
             except NotFoundError:
                 logger.info(f"User {email} does not exist yet found.")
                 user = None
 
-        for db_attendee in db_attendees:
-            db_attendee.size = True
+        if not user:
+            return
 
         try:
-            db.session.commit()
-        except Exception as e:
-            logger.exception(e)
-            raise ServiceError("Failed to update attendee size.", e)
-
-        if user:
-            try:
-                self.shopify_service.update_customer(
-                    ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
-                )
-            except ServiceError:
-                logger.error(f"Failed to update user {user.email} size in Shopify.")
+            self.shopify_service.update_customer(
+                ShopifyService.customer_gid(int(user.shopify_id)), latest_sizing=latest_sizing
+            )
+        except ServiceError:
+            logger.error(f"Failed to update user {user.email} size in Shopify.")
 
     def generate_activation_url(self, user_id: uuid.UUID) -> str:
         user = db.session.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
@@ -282,3 +276,16 @@ class UserService:
         except Exception as e:
             logger.exception(e)
             raise ServiceError("Failed to remove tag from user.", e)
+
+    @staticmethod
+    def __link_new_user_to_his_latest_sizing(user: User):
+        size_service = FlaskApp.current().size_service
+        order_service = FlaskApp.current().order_service
+
+        latest_size = size_service.get_latest_size_for_user_by_email(user.email)
+
+        if not latest_size:
+            return
+
+        size_service.associate_sizing_that_has_email_with_user(user.email, user.id)
+        order_service.update_user_pending_orders_with_latest_measurements(latest_size)

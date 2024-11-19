@@ -39,6 +39,7 @@ class MeasurementModel(CoreModel):
         return cls(
             id=measurement.id,
             user_id=measurement.user_id,
+            email=measurement.email,
             data=measurement.data,
             gender_type=measurement.data.get("genderType"),
             gender=measurement.data.get("gender"),

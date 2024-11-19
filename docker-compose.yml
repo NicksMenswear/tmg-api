@@ -87,7 +87,7 @@ services:
       VIEWPORT: mobile
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -108,7 +108,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_1 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -129,7 +129,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_2 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -150,7 +150,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_3 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -171,7 +171,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_4 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -192,7 +192,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_5 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -213,7 +213,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_6 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_6 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -234,7 +234,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_7 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_7 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -255,7 +255,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_8 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_8 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -276,7 +276,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_9 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_9 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false
@@ -297,7 +297,7 @@ services:
       VIEWPORT: ${VIEWPORT}
     command: >
       bash -c "pip install -r ../../../requirements-dev.txt &&
-      pytest --verbose --browser $BROWSER --reruns 2 -m group_10 --viewport $VIEWPORT"
+      pytest --verbose --browser $BROWSER --reruns 2 -m group_10 --viewport $VIEWPORT --log-cli-level INFO"
     deploy:
       replicas: ${LOAD:-1}
     tty: false

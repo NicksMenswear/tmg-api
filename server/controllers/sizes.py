@@ -25,6 +25,6 @@ def create(data):
 def get_latest_size(user_id):
     sizing_service = FlaskApp.current().size_service
 
-    size = sizing_service.get_latest_size_for_user(uuid.UUID(user_id))
+    size = sizing_service.get_latest_size_for
 
     return size.to_response() if size else {}, 200

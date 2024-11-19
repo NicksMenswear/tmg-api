@@ -1,9 +1,14 @@
 import json
 import uuid
 
+from sqlalchemy import select
+
 from server import encoder
+from server.database.database_manager import db
+from server.database.models import Size
 from server.services.order_service import ORDER_STATUS_PENDING_MEASUREMENTS, ORDER_STATUS_READY
 from server.services.sku_builder_service import ProductType
+from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures
 
 
@@ -119,3 +124,156 @@ class TestSizes(BaseTestCase):
         self.assertEqual(order.status, ORDER_STATUS_READY)
         self.assertEqual(order.meta.get("measurements_id"), str(measurement.id))
         self.assertIsNotNone(order.meta.get("sizes_id"))
+
+    def test_create_size_by_email(self):
+        # given
+        test_email = utils.generate_email()
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email))
+
+        # when
+        response = self.client.open(
+            "/sizes",
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.store_size_request(email=test_email, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        self.assertIsNotNone(response.json["id"])
+        size = self.size_service.get_size_by_id(uuid.UUID(response.json["id"]))
+        self.assertIsNotNone(size)
+        self.assertEqual(size.email, test_email)
+        self.assertIsNone(size.user_id)
+
+    def test_create_multiple_sizes_by_email_and_get_latest(self):
+        # given
+        test_email = utils.generate_email()
+        measurements = [
+            self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email)),
+            self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email)),
+            self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email)),
+        ]
+
+        # when
+        for measurement in measurements:
+            response = self.client.open(
+                "/sizes",
+                method="POST",
+                headers=self.request_headers,
+                content_type=self.content_type,
+                data=json.dumps(
+                    fixtures.store_size_request(email=test_email, measurement_id=measurement.id).model_dump(),
+                    cls=encoder.CustomJSONEncoder,
+                ),
+            )
+            self.assertStatus(response, 201)
+
+        # then
+        sizes = db.session.execute(select(Size).where(Size.email == test_email)).scalars().all()
+        self.assertEqual(len(sizes), 3)
+        latest_size = self.size_service.get_latest_size_for_user_by_id_or_email(email=test_email)
+        self.assertEqual(str(latest_size.id), response.json["id"])
+
+    def test_verify_that_attendee_updated_when_sizes_are_created(self):
+        test_email = utils.generate_email()
+
+        owner = self.user_service.create_user(fixtures.create_user_request())
+        event = self.event_service.create_event(fixtures.create_event_request(user_id=str(owner.id)))
+        attendee = self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(email=test_email, event_id=str(event.id))
+        )
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email))
+        self.assertFalse(attendee.size)
+
+        # when
+        response = self.client.open(
+            "/sizes",
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.store_size_request(email=test_email, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        attendee_from_db = self.attendee_service.get_attendee_by_id(attendee.id)
+        self.assertTrue(attendee_from_db.size)
+
+    def test_get_latest_sizes1(self):
+        test_email = utils.generate_email()
+        user = self.user_service.create_user(fixtures.create_user_request(email=test_email))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        size1 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id)
+        )
+        size2 = self.size_service.create_size(
+            fixtures.store_size_request(email=test_email, measurement_id=measurement.id)
+        )
+
+        # when
+        latest_size = self.size_service.get_latest_size_for_user_by_id_or_email(user_id=user.id, email=test_email)
+
+        # then
+        self.assertEqual(latest_size.id, size2.id)
+
+    def test_get_latest_sizes2(self):
+        test_email = utils.generate_email()
+        user = self.user_service.create_user(fixtures.create_user_request(email=test_email))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        size1 = self.size_service.create_size(
+            fixtures.store_size_request(email=test_email, measurement_id=measurement.id)
+        )
+        size2 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id)
+        )
+
+        # when
+        latest_size = self.size_service.get_latest_size_for_user_by_id_or_email(user_id=user.id, email=test_email)
+
+        # then
+        self.assertEqual(latest_size.id, size2.id)
+
+    def test_get_latest_sizes3(self):
+        test_email = utils.generate_email()
+        user = self.user_service.create_user(fixtures.create_user_request(email=test_email))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        size1 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id)
+        )
+        size2 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, email=test_email, measurement_id=measurement.id)
+        )
+        size3 = self.size_service.create_size(
+            fixtures.store_size_request(email=test_email, measurement_id=measurement.id)
+        )
+
+        # when
+        latest_size = self.size_service.get_latest_size_for_user_by_id_or_email(user_id=user.id, email=test_email)
+
+        # then
+        self.assertEqual(latest_size.id, size3.id)
+
+    def test_get_latest_sizes4(self):
+        test_email = utils.generate_email()
+        user = self.user_service.create_user(fixtures.create_user_request(email=test_email))
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        size1 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement.id)
+        )
+        size2 = self.size_service.create_size(
+            fixtures.store_size_request(email=test_email, measurement_id=measurement.id)
+        )
+
+        # when
+        latest_size = self.size_service.get_latest_size_for_user_by_id_or_email(user_id=user.id)
+
+        # then
+        self.assertEqual(latest_size.id, size2.id)

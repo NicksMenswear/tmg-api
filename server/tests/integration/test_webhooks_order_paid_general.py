@@ -1,4 +1,5 @@
 import random
+import time
 from datetime import timedelta, datetime
 
 from parameterized import parameterized
@@ -13,6 +14,7 @@ from server.services.order_service import (
 from server.services.sku_builder_service import ProductType, PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
+from server.tests.integration.fixtures import measurement_model
 
 PAID_ORDER_REQUEST_HEADERS = {
     "X-Shopify-Topic": "orders/paid",
@@ -900,3 +902,36 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
 
         self.assertEqual(len(response_shopify_skus), len(shopify_skus) + 1)
         self.assertEqual(set(response_shiphero_skus), set(shiphero_skus))
+
+    def test_make_sure_latest_sizes_are_taken_from_sizes(self):
+        test_email = utils.generate_email()
+        user = self.user_service.create_user(fixtures.create_user_request(email=test_email))
+        measurement1 = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+        measurement2 = self.measurement_service.create_measurement(fixtures.store_measurement_request(email=test_email))
+        size1 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement1.id, data=fixtures.test_sizes())
+        )
+        size2 = self.size_service.create_size(
+            fixtures.store_size_request(user_id=user.id, measurement_id=measurement2.id, data=fixtures.test_sizes2())
+        )
+
+        product_sku = self.get_random_shopify_sku_by_product_type(ProductType.SHIRT)
+
+        # when
+        webhook_request = fixtures.webhook_shopify_paid_order(
+            customer_email=user.email,
+            line_items=[fixtures.webhook_shopify_line_item(sku=product_sku)],
+        )
+
+        response = self._post(WEBHOOK_SHOPIFY_ENDPOINT, webhook_request, PAID_ORDER_REQUEST_HEADERS)
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+        meta = response.json["meta"]
+        self.assertEqual(meta["sizes_id"], str(size2.id))
+        self.assertEqual(meta["measurements_id"], str(measurement2.id))
+        product = response.json["products"][0]
+        self.assertTrue(product["sku"], "1805")  # SLEEVE LENGTH (SHIRT): 34/35, SHIRT: 18

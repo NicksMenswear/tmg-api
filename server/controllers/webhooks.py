@@ -33,6 +33,7 @@ def shopify_webhook(payload):
     try:
         topic_handlers = {
             "orders/paid": order_handler.order_paid,
+            "orders/updated": order_handler.order_updated,
             "customers/create": user_handler.customer_update,
             "customers/update": user_handler.customer_update,
             "carts/create": cart_handler.cart_create,

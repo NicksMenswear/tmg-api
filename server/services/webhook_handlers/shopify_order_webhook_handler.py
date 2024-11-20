@@ -75,7 +75,7 @@ class ShopifyWebhookOrderHandler:
         self.sms_service = sms_service
 
     def order_paid(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
-        logger.debug(f"Handling Shopify webhook for customer update: {webhook_id}")
+        logger.debug(f"Handling Shopify webhook for order paid: {webhook_id}")
 
         items = payload.get("line_items")
 
@@ -83,6 +83,11 @@ class ShopifyWebhookOrderHandler:
             return self.__error(f"Received paid order without items")
 
         return self.__process_paid_order(webhook_id, payload)
+
+    def order_updated(self, webhook_id: uuid.UUID, payload: Dict[str, Any]) -> Dict[str, Any]:
+        logger.debug(f"Handling Shopify webhook for order updated: {webhook_id}")
+
+        return self.__process_updated_order(payload)
 
     @staticmethod
     def __error(message):
@@ -508,3 +513,15 @@ class ShopifyWebhookOrderHandler:
                 )
 
         return new_line_items
+
+    def __process_updated_order(self, payload: Dict[str, Any]):
+        financial_status = payload.get("financial_status")
+
+        if financial_status != "refunded":
+            return
+
+        shopify_order_number = payload.get("order_number")
+
+        order = self.order_service.mark_order_as_cancelled(str(shopify_order_number))
+
+        return order.to_response()

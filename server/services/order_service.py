@@ -210,7 +210,7 @@ class OrderService:
         measurement_model: Optional[MeasurementModel] = None,
     ) -> OrderModel:
         try:
-            order = db.session.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()
+            order = db.session.execute(select(Order).where(Order.id == order_id)).scalar_one_or_none()  # type: ignore
             order.status = status
 
             if order.meta is None:
@@ -311,3 +311,11 @@ class OrderService:
             return self.update_order_status(order.id, ORDER_STATUS_READY, size_model, measurement_model)
         else:
             return self.update_order_status(order.id, ORDER_STATUS_PENDING_MISSING_SKU, size_model, measurement_model)
+
+    def mark_order_as_cancelled(self, shopify_order_number: str) -> OrderModel:
+        order = Order.query.filter(Order.shopify_order_number == shopify_order_number).first()
+
+        if not order:
+            raise NotFoundError("Order not found")
+
+        return self.update_order_status(order.id, "CANCELLED")

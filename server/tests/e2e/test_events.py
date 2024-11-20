@@ -499,7 +499,7 @@ def test_add_myself_and_fill_fit_survey(page: Page):
     expect(fit_survey_button).to_be_visible()
     fit_survey_button.click()
 
-    actions.populate_fit_survey(page, 50)
+    actions.populate_fit_survey(page, age=50)
 
     time.sleep(3)  # wait for the survey to be saved
 
@@ -602,7 +602,7 @@ def test_add_myself_and_pay_for_suit(page: Page):
     expect(fit_survey_button).to_be_visible()
     fit_survey_button.click()
 
-    actions.populate_fit_survey(page, 50)
+    actions.populate_fit_survey(page, age=50)
 
     time.sleep(5)
 

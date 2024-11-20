@@ -464,6 +464,7 @@ def get_fit_survey_dialog(page: Page) -> Locator:
 
 def populate_fit_survey(
     page: Page,
+    email: str = None,
     age: int = 40,
     gender: str = "Male",  # Male | Female
     weight: int = 180,
@@ -476,8 +477,17 @@ def populate_fit_survey(
 ):
     fit_survey_dialog = get_fit_survey_dialog(page)
 
+    # email
+    if email:
+        email_input = fit_survey_dialog.locator("input[name='fitQizEmail']")
+        email_input.scroll_into_view_if_needed()
+        email_input.wait_for(state="visible")
+        email_input.fill(email)
+
     # age
     age_input = fit_survey_dialog.locator("#measurement_age")
+    age_input.scroll_into_view_if_needed()
+    age_input.wait_for(state="visible")
     age_input.fill(str(age))
 
     # gender
@@ -1019,6 +1029,13 @@ def press_plus_button_to_increase_quantity_in_cart(page: Page):
     time.sleep(1)
 
 
+def click_fit_quiz_button(page: Page):
+    fit_quiz_button = page.locator("button.tmg-btn.fitQuizBtn")
+    fit_quiz_button.scroll_into_view_if_needed()
+    fit_quiz_button.wait_for(state="visible")
+    fit_quiz_button.click()
+
+
 def hide_help_scout(page: Page):
     page.evaluate(
         """
@@ -1028,3 +1045,15 @@ def hide_help_scout(page: Page):
             }
         """
     )
+
+
+def click_buy_now_button(page: Page):
+    buy_now_button = page.locator("button#buyNowBtn")
+    buy_now_button.scroll_into_view_if_needed()
+    buy_now_button.wait_for(state="visible")
+    buy_now_button.click()
+
+
+def shopify_checkout_enter_email_for_anonymous_checkout(page: Page, email: str):
+    input_email = page.locator("input#email").first
+    input_email.fill(email)

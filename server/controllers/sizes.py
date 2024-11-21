@@ -15,7 +15,10 @@ def create(data):
     order_service = FlaskApp.current().order_service
 
     size = sizing_service.create_size(CreateSizeRequestModel(**data))
-    order_service.update_user_pending_orders_with_latest_measurements(size)
+    try:
+        order_service.update_user_pending_orders_with_latest_measurements(size)
+    except Exception as e:
+        logger.exception(e)
 
     return size.to_response(), 201
 

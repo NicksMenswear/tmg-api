@@ -231,7 +231,7 @@ class OrderService:
 
     def update_user_pending_orders_with_latest_measurements(self, size_model: SizeModel):
         measurement_model = self.measurement_service.get_latest_measurement_for_user_by_id_or_email(
-            user_id=size_model.user_id
+            user_id=size_model.user_id, email=size_model.email
         )
 
         orders = self.get_orders_by_status_and_not_older_then_days(

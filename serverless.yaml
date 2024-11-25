@@ -104,7 +104,7 @@ functions:
     events:
       - schedule:
           rate: rate(1 hour)
-          enabled: ${self:provider.stage} == 'prd'
+          enabled: ${self:custom.enable_e2e_ac_clean_up}
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 
@@ -130,6 +130,7 @@ custom:
           - subnet-0558d5c84f76f6246
           - subnet-081fa5d80ecd9a253
       forwarderArn: arn:aws:lambda:us-west-2:828867313984:function:DatadogIntegration-ForwarderStack-AS2SOT-Forwarder-GHUaejGvjpIq
+      enable_e2e_ac_clean_up: 'false'
     stg: ${self:custom.stageVars.dev}
     prd:
       region: us-east-1
@@ -143,6 +144,7 @@ custom:
           - subnet-093a8f537a70dfd4d
           - subnet-01ad0640e7bff4e0a
       forwarderArn: arn:aws:lambda:us-east-1:729911029963:function:DatadogIntegration-ForwarderStack-XVMH0A-Forwarder-SGfRbOdHeb42
+      enable_e2e_ac_clean_up: 'true'
 
   lambdaInsights:
     # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html 

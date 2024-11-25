@@ -99,6 +99,15 @@ functions:
     environment:
       USE_FLASK: false
 
+  e2e-ac-cleanup-processor:
+    handler: server.handlers.e2e_ac_clean_up_handler.lambda_handler
+    events:
+      - schedule:
+          rate: rate(1 hour)
+          enabled: ${self:provider.stage} == 'prd'
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+
 plugins:
   - serverless-python-requirements
   - serverless-domain-manager

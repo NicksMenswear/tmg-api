@@ -212,10 +212,6 @@ class UserService:
         return UserModel.model_validate(user)
 
     def update_customer_with_latest_sizing(self, user_id: uuid.UUID, email: str, latest_sizing: str) -> None:
-        if not user_id and not email:
-            logger.error("User ID or Email is required to associate size.")
-            return
-
         if user_id:
             user = self.get_user_by_id(user_id)
         else:

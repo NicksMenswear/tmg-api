@@ -34,6 +34,51 @@ class TestSizes(BaseTestCase):
         self.assertStatus(response, 201)
         self.assertIsNotNone(response.json["id"])
 
+    def test_create_size_without_user_id_or_size(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            "/sizes",
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.store_size_request(user_id=None, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 400)
+
+    def test_create_size_with_email_for_existing_user(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        measurement = self.measurement_service.create_measurement(fixtures.store_measurement_request(user_id=user.id))
+
+        # when
+        response = self.client.open(
+            "/sizes",
+            method="POST",
+            headers=self.request_headers,
+            content_type=self.content_type,
+            data=json.dumps(
+                fixtures.store_size_request(email=user.email, measurement_id=measurement.id).model_dump(),
+                cls=encoder.CustomJSONEncoder,
+            ),
+        )
+
+        # then
+        self.assertStatus(response, 201)
+        size_id = response.json["id"]
+        self.assertIsNotNone(size_id)
+        size = self.size_service.get_size_by_id(uuid.UUID(size_id))
+        self.assertEqual(size.email, user.email)
+        self.assertEqual(size.user_id, user.id)
+
     def test_create_size_with_existing_attendees(self):
         # given
         owner = self.user_service.create_user(fixtures.create_user_request())

@@ -46,6 +46,8 @@ def lambda_handler(event: dict, context: LambdaContext):
             logger.info(f"Skipping system customer: {customer.get('email')}")
             continue
 
+        logger.info(f"Processing customer: {customer.get('email')}")
+
         e2e_clean_up_worker.cleanup(customer.get("id"), customer.get("email"))
 
     return {"statusCode": 200, "body": json.dumps("Messages processed successfully")}

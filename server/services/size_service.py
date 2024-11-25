@@ -6,7 +6,7 @@ from server.database.database_manager import db
 from server.database.models import Size
 from server.flask_app import FlaskApp
 from server.models.size_model import SizeModel, CreateSizeRequestModel
-from server.services import ServiceError, NotFoundError
+from server.services import ServiceError, NotFoundError, BadRequestError
 from server.services.attendee_service import AttendeeService
 from server.services.integrations.shopify_service import AbstractShopifyService
 from server.services.measurement_service import MeasurementService
@@ -87,9 +87,21 @@ class SizeService:
         return SizeModel.model_validate(size)
 
     def create_size(self, create_size_request: CreateSizeRequestModel) -> SizeModel:
+        if not create_size_request.user_id and not create_size_request.email:
+            raise BadRequestError("User is not associated with sizing")
+
+        if create_size_request.user_id:
+            user_id = create_size_request.user_id
+        elif create_size_request.email:
+            try:
+                user = self.user_service.get_user_by_email(create_size_request.email)  # type: ignore
+                user_id = user.id
+            except NotFoundError:
+                user_id = None
+
         try:
             size = Size(
-                user_id=create_size_request.user_id,
+                user_id=user_id,
                 email=create_size_request.email,
                 measurement_id=create_size_request.measurement_id,
                 data=create_size_request.data,

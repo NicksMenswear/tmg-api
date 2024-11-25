@@ -114,34 +114,34 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-  e2e-clean-up:
-    needs: e2e-test
-    if: ${{ always() && inputs.stage != 'dev' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
+#  e2e-clean-up:
+#    needs: e2e-test
+#    if: ${{ always() && inputs.stage != 'dev' }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#        with:
+#          ref: ${{ inputs.ref }}
+#
+#      - name: Clean up e2e test data from Shopify and DB
+#        run: |
+#          export STAGE=${{ inputs.stage }}
+#          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+#          ops/run-e2e-clean-up.sh
 
-      - name: Clean up e2e test data from Shopify and DB
-        run: |
-          export STAGE=${{ inputs.stage }}
-          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
-          ops/run-e2e-clean-up.sh
-
-  e2e-clean-up-ac:
-    needs: e2e-test
-    if: ${{ always() && inputs.stage == 'prd' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Clean up e2e test data from Active Campaign
-        run: |
-          export STAGE=${{ inputs.stage }}
-          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
-          ops/run-e2e-ac-clean-up.sh
+#  e2e-clean-up-ac:
+#    needs: e2e-test
+#    if: ${{ always() && inputs.stage == 'prd' }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#        with:
+#          ref: ${{ inputs.ref }}
+#
+#      - name: Clean up e2e test data from Active Campaign
+#        run: |
+#          export STAGE=${{ inputs.stage }}
+#          export X_API_ACCESS_TOKEN=${{ secrets.X_API_ACCESS_TOKEN }}
+#          ops/run-e2e-ac-clean-up.sh

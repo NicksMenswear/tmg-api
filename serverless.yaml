@@ -100,11 +100,22 @@ functions:
       USE_FLASK: false
 
   e2e-ac-cleanup-processor:
-    handler: server.handlers.e2e_ac_clean_up_handler.lambda_handler
+    handler: server.handlers.e2e_ac_cleanup_handler.lambda_handler
     events:
       - schedule:
           rate: rate(1 hour)
           enabled: ${self:custom.stageVars.${sls:stage}.enable_e2e_ac_clean_up}
+    lambdaInsights: true
+    vpc: ${self:custom.stageVars.${sls:stage}.vpc}
+
+  e2e-cleanup-processor:
+    handler: server.handlers.e2e_cleanup_handler.lambda_handler
+    events:
+      - schedule:
+          rate: rate(5 minutes)
+          enabled: true
+    environment:
+      USE_FLASK: false
     lambdaInsights: true
     vpc: ${self:custom.stageVars.${sls:stage}.vpc}
 

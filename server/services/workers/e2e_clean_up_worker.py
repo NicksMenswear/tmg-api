@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import List
 
-from sqlalchemy import func
+from sqlalchemy import func, select, delete
 
 from server.database.database_manager import db
 from server.database.models import (
@@ -17,6 +17,7 @@ from server.database.models import (
     Size,
     Measurement,
     Address,
+    UserActivityLog,
 )
 from server.services import ServiceError
 from server.services.integrations.shopify_service import AbstractShopifyService, ShopifyService
@@ -146,6 +147,7 @@ class E2ECleanUpWorker:
             logger.info(f"Deleting customer: {email}")
 
             self.__delete_shopify_customer(customer_gid)
+            self.__delete_user_activity_logs(user.id)
             self.__delete_user(user.id)
 
             db.session.commit()
@@ -179,80 +181,92 @@ class E2ECleanUpWorker:
 
     @staticmethod
     def __num_attendees_in_event(event_id: uuid.UUID) -> int:
-        return Attendee.query.filter(Attendee.event_id == event_id).count()
+        return db.session.execute(select(func.count(Attendee.id)).where(Attendee.event_id == event_id)).scalar()  # type: ignore
 
     @staticmethod
     def __get_user_by_email(email: str) -> User:
-        return User.query.filter(func.lower(User.email) == email.lower()).first()
+        return db.session.execute(select(User).where(func.lower(User.email) == email.lower())).scalars().first()  # type: ignore
 
     @staticmethod
     def __get_events(user_id: uuid.UUID) -> List[Attendee]:
-        return Event.query.filter(Event.user_id == user_id).all()
+        return db.session.execute(select(Event).where(Event.user_id == user_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __get_attendees(user_id: uuid.UUID) -> List[Attendee]:
-        return Attendee.query.filter(Attendee.user_id == user_id).all()
+        return db.session.execute(select(Attendee).where(Attendee.user_id == user_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __get_attendees_with_look(look_id: uuid.UUID) -> List[Attendee]:
-        return Attendee.query.filter(Attendee.look_id == look_id).all()
+        return db.session.execute(select(Attendee).where(Attendee.look_id == look_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __delete_discount(discount_id: uuid.UUID) -> None:
-        Discount.query.filter(Discount.id == discount_id).delete()
+        db.session.execute(delete(Discount).where(Discount.id == discount_id))  # type: ignore
 
     @staticmethod
     def __delete_look(look_id: uuid.UUID) -> None:
-        Look.query.filter(Look.id == look_id).delete()
+        db.session.execute(delete(Look).where(Look.id == look_id))  # type: ignore
 
     @staticmethod
     def __delete_attendee(attendee_id: uuid.UUID) -> None:
-        Attendee.query.filter(Attendee.id == attendee_id).delete()
+        db.session.execute(delete(Attendee).where(Attendee.id == attendee_id))  # type: ignore
 
     @staticmethod
     def __get_discounts(attendee_id: uuid.UUID) -> List[Discount]:
-        return Discount.query.filter(Discount.attendee_id == attendee_id).all()
+        return db.session.execute(select(Discount).where(Discount.attendee_id == attendee_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __get_user_looks(user_id: uuid.UUID) -> List[Look]:
-        return Look.query.filter(Look.user_id == user_id).all()
+        return db.session.execute(select(Look).where(Look.user_id == user_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __get_orders_for_event(event_id: uuid.UUID) -> List[Order]:
-        return Order.query.filter(Order.event_id == event_id).all()
+        return db.session.execute(select(Order).where(Order.event_id == event_id)).scalars().all()  # type: ignore
 
     @staticmethod
     def __delete_order_items_for_order(order_id: uuid.UUID) -> None:
-        OrderItem.query.filter(OrderItem.order_id == order_id).delete()
+        db.session.execute(delete(OrderItem).where(OrderItem.order_id == order_id))  # type: ignore
 
     @staticmethod
     def __delete_order(order_id: uuid.UUID) -> None:
-        Order.query.filter(Order.id == order_id).delete()
+        db.session.execute(delete(Order).where(Order.id == order_id))  # type: ignore
 
     @staticmethod
     def __delete_roles(event_id: uuid.UUID) -> None:
-        Role.query.filter(Role.event_id == event_id).delete()
+        db.session.execute(delete(Role).where(Role.event_id == event_id))  # type: ignore
 
     @staticmethod
     def __delete_event(event_id: uuid.UUID) -> None:
-        Event.query.filter(Event.id == event_id).delete()
+        db.session.execute(delete(Event).where(Event.id == event_id))  # type: ignore
 
     @staticmethod
     def __delete_sizes(user_id: uuid.UUID) -> None:
-        return Size.query.filter(Size.user_id == user_id).delete()
+        db.session.execute(delete(Size).where(Size.user_id == user_id))  # type: ignore
 
     @staticmethod
     def __delete_measurements(user_id: uuid.UUID) -> None:
-        return Measurement.query.filter(Measurement.user_id == user_id).delete()
+        db.session.execute(delete(Measurement).where(Measurement.user_id == user_id))  # type: ignore
 
     @staticmethod
     def __delete_addresses(user_id: uuid.UUID) -> None:
-        return Address.query.filter(Address.user_id == user_id).delete()
+        db.session.execute(delete(Address).where(Address.user_id == user_id))  # type: ignore
 
     @staticmethod
     def __num_attendees_with_look(look_id: uuid.UUID) -> int:
-        return Attendee.query.filter(Attendee.look_id == look_id).count()
+        return db.session.execute(select(func.count(Attendee.id)).where(Attendee.look_id == look_id)).scalar()  # type: ignore
 
     @staticmethod
     def __delete_user(user_id: uuid.UUID) -> None:
-        User.query.filter(User.id == user_id).delete()
+        db.session.execute(delete(User).where(User.id == user_id))  # type: ignore
+
+    @staticmethod
+    def __delete_user_activity_logs(user_id: uuid.UUID) -> None:
+        activity_logs = db.session.execute(select(UserActivityLog).where(UserActivityLog.user_id == user_id)).scalars().all()  # type: ignore
+
+        if not activity_logs:
+            return
+
+        for activity_log in activity_logs:
+            db.session.execute(delete(UserActivityLog).where(UserActivityLog.id == activity_log.id))  # type: ignore
+
+        db.session.execute(delete(UserActivityLog).where(User.id == user_id))  # type: ignore

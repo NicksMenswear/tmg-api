@@ -74,7 +74,7 @@ services:
       - app
 
   test-e2e:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -94,7 +94,7 @@ services:
     restart: "no"
 
   test-e2e-group-1:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -115,7 +115,7 @@ services:
     restart: "no"
 
   test-e2e-group-2:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -136,7 +136,7 @@ services:
     restart: "no"
 
   test-e2e-group-3:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -157,7 +157,7 @@ services:
     restart: "no"
 
   test-e2e-group-4:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -178,7 +178,7 @@ services:
     restart: "no"
 
   test-e2e-group-5:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -199,7 +199,7 @@ services:
     restart: "no"
 
   test-e2e-group-6:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -220,7 +220,7 @@ services:
     restart: "no"
 
   test-e2e-group-7:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -241,7 +241,7 @@ services:
     restart: "no"
 
   test-e2e-group-8:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -262,7 +262,7 @@ services:
     restart: "no"
 
   test-e2e-group-9:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/
@@ -283,7 +283,7 @@ services:
     restart: "no"
 
   test-e2e-group-10:
-    image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    image: mcr.microsoft.com/playwright/python:v1.49.0-jammy
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app/server/tests/e2e/

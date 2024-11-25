@@ -929,6 +929,8 @@ def verify_that_suit_builder_price_list_items_selected(page: Page, items: Set[st
 
     _open_suit_builder_price_list_element(price_list_element)
 
+    time.sleep(2)
+
     for item in items:
         price_list_item = (
             price_list_element.locator(f'div.tmg-suit-builder-price-list-item[data-type="{item}"]')

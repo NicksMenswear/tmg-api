@@ -67,7 +67,7 @@ class OrderService:
 
         return order_model
 
-    def get_order_by_shopify_id(self, shopify_order_id: uuid.UUID) -> OrderModel:
+    def get_order_by_shopify_id(self, shopify_order_id: str) -> OrderModel:
         order = Order.query.filter(Order.shopify_order_id == shopify_order_id).first()
 
         if not order:

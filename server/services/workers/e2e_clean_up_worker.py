@@ -304,12 +304,5 @@ class E2ECleanUpWorker:
 
     @staticmethod
     def __delete_user_activity_logs(user_id: uuid.UUID) -> None:
-        activity_logs = db.session.execute(select(UserActivityLog).where(UserActivityLog.user_id == user_id)).scalars().all()  # type: ignore
-
-        if not activity_logs:
-            return
-
-        for activity_log in activity_logs:
-            db.session.execute(delete(UserActivityLog).where(UserActivityLog.id == activity_log.id))  # type: ignore
-
-        db.session.execute(delete(UserActivityLog).where(User.id == user_id))  # type: ignore
+        db.session.execute(delete(UserActivityLog).where(UserActivityLog.user_id == user_id))  # type: ignore
+        db.session.commit()

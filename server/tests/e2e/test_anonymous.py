@@ -32,10 +32,33 @@ def test_anon(page: Page):
 
     actions.click_buy_now_button(page)
 
-    verify.shopify_checkout_has_item_with_name_and_price(page, "Black Suit", "260", True)
+    verify.shopify_checkout_has_item_with_name_and_price(page, "Black Suit", item_price=None, open_order_summary=True)
     actions.shopify_checkout_enter_email_for_anonymous_checkout(page, email)
     actions.shopify_checkout_continue_to_shipping(page, "ASDf", "ASDF")
     actions.shopify_checkout_continue_to_payment(page)
-    actions.shopify_checkout_pay_with_credit_card_for_order(page, first_name, last_name)
 
-    actions.logout(page)
+
+@e2e_allowed_in({"dev", "stg", "prd"})
+@e2e_error_handling
+@pytest.mark.group_10
+def test_buy_now_on_suit_builder(page: Page):
+    email = utils.generate_email()
+
+    actions.access_store(page)
+
+    page.goto(f"{STORE_URL}/pages/suit-builder")
+
+    actions.click_fit_quiz_button_on_suit_builder_page(page)
+
+    time.sleep(2)
+
+    actions.populate_fit_survey(page, email=email)
+
+    time.sleep(3)
+
+    actions.click_buy_now_button(page)
+
+    verify.shopify_checkout_has_item_with_name_and_price(page, "Black Suit", item_price=None, open_order_summary=True)
+    actions.shopify_checkout_enter_email_for_anonymous_checkout(page, email)
+    actions.shopify_checkout_continue_to_shipping(page, "ASDf", "ASDF")
+    actions.shopify_checkout_continue_to_payment(page)

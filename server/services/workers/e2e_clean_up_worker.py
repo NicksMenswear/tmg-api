@@ -1,3 +1,4 @@
+import logging
 import uuid
 from logging import Logger
 from typing import List
@@ -41,9 +42,9 @@ CUSTOMER_EMAIL_MATCHING_PATTERN = "e2e+*@mail.dev.tmgcorp.net"
 
 
 class E2ECleanUpWorker:
-    def __init__(self, shopify_service: AbstractShopifyService, logger: Logger):
+    def __init__(self, shopify_service: AbstractShopifyService, logger: Logger = None):
         self.shopify_service = shopify_service
-        self.logger = logger
+        self.logger = logger if logger else logging.getLogger(__name__)
 
     def get_customers(self, num_customers=250):
         num_customers = min(num_customers, 250)

@@ -160,7 +160,7 @@ def shopify_open_order_summary_if_needed(page: Page, open_order_summary: bool = 
 
 
 def shopify_checkout_has_item_with_name_and_price(
-    page: Page, item_name: str, item_price: str, open_order_summary: bool = True
+    page: Page, item_name: str, item_price: str = None, open_order_summary: bool = True
 ):
     if is_mobile_view(page):
         shopify_open_order_summary_if_needed(page, open_order_summary)
@@ -171,8 +171,9 @@ def shopify_checkout_has_item_with_name_and_price(
         order_item = order_details_locator.locator(f'div[role="cell"]:has-text("{item_name}")')
         order_item.wait_for(state="visible")
 
-        price_item = order_details_locator.locator(f'div[role="cell"] span:has-text("{item_price}")').first
-        price_item.wait_for(state="visible")
+        if item_price:
+            price_item = order_details_locator.locator(f'div[role="cell"] span:has-text("{item_price}")').first
+            price_item.wait_for(state="visible")
     else:
         price_element = page.locator(f'div[role="row"]:has-text("{item_name}")')
         price_element.wait_for(state="visible")

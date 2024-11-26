@@ -1038,6 +1038,13 @@ def click_fit_quiz_button(page: Page):
     fit_quiz_button.click()
 
 
+def click_fit_quiz_button_on_suit_builder_page(page: Page):
+    fit_quiz_button = page.locator("div.fitQuizBtn.active")
+    fit_quiz_button.scroll_into_view_if_needed()
+    fit_quiz_button.wait_for(state="visible")
+    fit_quiz_button.click()
+
+
 def hide_help_scout(page: Page):
     page.evaluate(
         """

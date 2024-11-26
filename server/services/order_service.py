@@ -144,18 +144,12 @@ class OrderService:
             order.shipping_method = (update_order.shipping_method,)
             order.outbound_tracking = (update_order.outbound_tracking,)
             order.order_type = ([OrderType(order_type) for order_type in update_order.order_type],)
-            order.shipping_address_line1 = (
-                update_order.shipping_address.line1 if update_order.shipping_address else None,
-            )
-            order.shipping_address_line2 = (
-                update_order.shipping_address.line2 if update_order.shipping_address else None,
-            )
-            order.shipping_city = (update_order.shipping_address.city if update_order.shipping_address else None,)
-            order.shipping_state = (update_order.shipping_address.state if update_order.shipping_address else None,)
-            order.shipping_zip_code = (
-                update_order.shipping_address.zip_code if update_order.shipping_address else None,
-            )
-            order.shipping_country = (update_order.shipping_address.country if update_order.shipping_address else None,)
+            order.shipping_address_line1 = update_order.shipping_address_line1
+            order.shipping_address_line2 = update_order.shipping_address_line2
+            order.shipping_city = update_order.shipping_city
+            order.shipping_state = update_order.shipping_state
+            order.shipping_zip_code = update_order.shipping_zip_code
+            order.shipping_country = update_order.shipping_country
             order.meta = (update_order.meta,)
 
             db.session.commit()

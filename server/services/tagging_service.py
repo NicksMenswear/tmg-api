@@ -177,6 +177,10 @@ class TaggingService:
         for user_id, tags in user_tags_that_should_be_present.items():
             user = self.__user_service.get_user_by_id(user_id)
 
+            if user.shopify_id is None:
+                logger.info(f"User {user.id} does not have a Shopify ID. Skipping ...")
+                continue
+
             current_user_tags = set(user.meta.get("tags", []))
 
             if tags.issubset(current_user_tags):
@@ -191,6 +195,10 @@ class TaggingService:
     def __remove_tags_from_customers(self, user_tags_that_should_not_be_present: dict[uuid.UUID, set[str]]):
         for user_id, tags in user_tags_that_should_not_be_present.items():
             user = self.__user_service.get_user_by_id(user_id)
+
+            if user.shopify_id is None:
+                logger.info(f"User {user.id} does not have a Shopify ID. Skipping ...")
+                continue
 
             current_user_tags = set(user.meta.get("tags", []))
 

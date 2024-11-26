@@ -67,5 +67,5 @@ def __in_test_context(context) -> bool:
     return isinstance(context, FakeLambdaContext)
 
 
-if __name__ == "__main__":
-    lambda_handler({}, FakeLambdaContext())
+# if __name__ == "__main__":
+#     lambda_handler({}, FakeLambdaContext())

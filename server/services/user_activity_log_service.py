@@ -4,6 +4,7 @@ from uuid import UUID
 from server.database.database_manager import db
 from server.database.models import UserActivityLog
 from server.models.audit_log_model import AuditLogMessage
+from server.services import NotFoundError
 from server.services.attendee_service import AttendeeService
 from server.services.event_service import EventService
 from server.services.look_service import LookService
@@ -347,7 +348,19 @@ class UserActivityLogService:
     def measurements_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
 
-        user_id = UUID(data.get("user_id"))
+        user_id = data.get("user_id")
+
+        if user_id:
+            user_id = UUID(data.get("user_id"))
+        elif data.get("email"):
+            try:
+                user = self.__user_service.get_user_by_email(data.get("email"))
+                user_id = user.id
+            except NotFoundError:
+                return
+        else:
+            return
+
         audit_log_id = UUID(audit_log_message.id)
 
         self.__persist(
@@ -360,7 +373,19 @@ class UserActivityLogService:
     def sizes_created(self, audit_log_message: AuditLogMessage):
         data = audit_log_message.payload
 
-        user_id = UUID(data.get("user_id"))
+        user_id = data.get("user_id")
+
+        if user_id:
+            user_id = UUID(data.get("user_id"))
+        elif data.get("email"):
+            try:
+                user = self.__user_service.get_user_by_email(data.get("email"))
+                user_id = user.id
+            except NotFoundError:
+                return
+        else:
+            return
+
         audit_log_id = UUID(audit_log_message.id)
 
         self.__persist(

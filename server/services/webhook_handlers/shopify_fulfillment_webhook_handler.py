@@ -26,7 +26,7 @@ class ShopifyWebhookFulfillmentHandler:
         logger.debug(f"Handling Shopify webhook for fulfillment create: {webhook_id}")
 
         shopify_order_id = str(payload.get("order_id"))
-        order = self.order_service.get_order_by_shopify_id(shopify_order_id)
+        order = self.order_service.get_order_by_shopify_id(uuid.UUID(shopify_order_id))
         user = self.user_service.get_user_by_id(order.user_id)
 
         self.__save_tracking(order, payload)

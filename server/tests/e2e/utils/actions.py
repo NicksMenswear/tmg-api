@@ -14,7 +14,7 @@ from server.tests.e2e import (
 )
 from server.tests.e2e.utils import api, verify
 
-AVAILABLE_ITEMS = {"shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"}
+AVAILABLE_ITEMS = {"shirt", "tie", "belt", "shoes", "socks"}
 
 
 def access_store(page: Page):
@@ -888,7 +888,12 @@ def enable_suit_builder_items(page: Page, items_to_enable: Set[str]):
             price_element = options_element.locator("strong.tmg-suit-builder-option-price").first
             price_element.scroll_into_view_if_needed()
             price_element.wait_for(state="visible")
-            price = float(price_element.inner_text().replace("$", ""))
+
+            price_value_element = price_element.locator("span.tmg-old-price")
+            price_value_element.scroll_into_view_if_needed()
+            price_value_element.wait_for(state="visible")
+
+            price = float(price_value_element.inner_text().replace("$", ""))
 
             assert price > 0
 
@@ -913,30 +918,13 @@ def _get_suit_builder_price_list(page: Page):
     return price_list_element
 
 
-def _open_suit_builder_price_list_element(price_list_element: Locator):
-    price_list_title_element = price_list_element.locator("div.tmg-suit-builder-price-list-title")
-    price_list_title_element.scroll_into_view_if_needed()
-    price_list_title_element.wait_for(state="visible")
-
-    classes = price_list_title_element.get_attribute("class").split()
-
-    if "showed" not in classes:
-        price_list_title_element.click()
-
-
 def verify_that_suit_builder_price_list_items_selected(page: Page, items: Set[str]):
     price_list_element = _get_suit_builder_price_list(page)
 
-    _open_suit_builder_price_list_element(price_list_element)
-
-    time.sleep(2)
+    time.sleep(3)
 
     for item in items:
-        price_list_item = (
-            price_list_element.locator(f'div.tmg-suit-builder-price-list-item[data-type="{item}"]')
-            if item == "suit"
-            else price_list_element.locator(f'label.tmg-suit-builder-price-list-item[data-type="{item}"]')
-        )
+        price_list_item = price_list_element.locator(f'tr.tmg-suit-builder-price-list-item[data-type="{item}"]')
         price_list_item.scroll_into_view_if_needed()
         price_list_item.wait_for(state="visible")
 

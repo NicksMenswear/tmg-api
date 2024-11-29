@@ -79,7 +79,7 @@ def test_suit_builder_just_a_suit(page: Page):
 @e2e_allowed_in({"dev", "stg", "prd"})
 @e2e_error_handling
 @pytest.mark.group_10
-def test_suit_builder_neck_tie_socks_and_premium_pocket_square_enabled(page: Page):
+def test_suit_builder_neck_tie_and_socks_enabled(page: Page):
     look_name = utils.generate_look_name()
 
     actions.access_store(page)
@@ -97,8 +97,8 @@ def test_suit_builder_neck_tie_socks_and_premium_pocket_square_enabled(page: Pag
 
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
-    actions.enable_suit_builder_items(page, {"tie", "socks", "premium_pocket_square"})
-    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit", "tie", "socks", "premium_pocket_square"})
+    actions.enable_suit_builder_items(page, {"tie", "socks"})
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit", "tie", "socks"})
 
     actions.save_look_with_name(page, look_name)
 
@@ -195,11 +195,10 @@ def test_suit_builder_select_nth_from_all_sections(page: Page):
 
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
-    actions.enable_suit_builder_items(page, {"shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"})
+    actions.enable_suit_builder_items(page, {"shirt", "tie", "belt", "shoes", "socks"})
 
     actions.select_suit_builder_item_by_index(page, "shirt", 2)
     actions.select_suit_builder_item_by_index(page, "tie", 20)
-    actions.select_suit_builder_item_by_index(page, "premium_pocket_square", 2)
     actions.select_suit_builder_item_by_index(page, "belt", 1)
     actions.select_suit_builder_item_by_index(page, "shoes", 1)
     actions.select_suit_builder_item_by_index(page, "socks", 4)
@@ -216,8 +215,6 @@ def test_suit_builder_select_nth_from_all_sections(page: Page):
 @e2e_error_handling
 @pytest.mark.group_4
 def test_suit_builder_select_and_remove(page: Page):
-    look_name = utils.generate_look_name()
-
     actions.access_store(page)
 
     api.delete_all_events(TEST_USER_EMAIL)
@@ -233,14 +230,11 @@ def test_suit_builder_select_and_remove(page: Page):
 
     page.goto(f"{STORE_URL}/pages/suit-builder")
 
-    actions.enable_suit_builder_items(page, {"shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"})
-    actions.verify_that_suit_builder_price_list_items_selected(
-        page, {"suit", "shirt", "tie", "premium_pocket_square", "belt", "shoes", "socks"}
-    )
+    actions.enable_suit_builder_items(page, {"shirt", "tie", "belt", "shoes", "socks"})
+    actions.verify_that_suit_builder_price_list_items_selected(page, {"suit", "shirt", "tie", "belt", "shoes", "socks"})
 
     actions.suit_builder_remove_item_by_type(page, "shirt")
     actions.suit_builder_remove_item_by_type(page, "tie")
-    actions.suit_builder_remove_item_by_type(page, "premium_pocket_square")
     actions.suit_builder_remove_item_by_type(page, "belt")
     actions.suit_builder_remove_item_by_type(page, "shoes")
     actions.suit_builder_remove_item_by_type(page, "socks")

@@ -89,7 +89,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   e2e-groups:
-    if: ${{ always() && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/e2e') && (needs.cd.result == 'skipped' || needs.cd.result == 'success')  }}
+    if: ${{
+      always() &&
+      github.event.issue.pull_request != '' &&
+      contains(github.event.comment.body, '/e2e') &&
+      (needs.cd.result == 'skipped' || needs.cd.result == 'success') &&
+      (github.event.comment.body != '' && length(fromJSON('["' + github.event.comment.body + '"]')[0]) >= 20)
+      }}
     needs: cd
     name: e2e-groups
     uses: ./.github/workflows/_e2e_tests.yml

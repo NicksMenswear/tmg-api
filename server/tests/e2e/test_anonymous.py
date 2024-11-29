@@ -11,10 +11,9 @@ from server.tests.e2e.utils import actions, verify
 @e2e_allowed_in({"dev"})
 @e2e_error_handling
 @pytest.mark.group_9
+@pytest.mark.skip("No anon checkout for suits for now")
 def test_anon(page: Page):
     email = utils.generate_email()
-    first_name = utils.generate_unique_name()
-    last_name = utils.generate_unique_name()
 
     actions.access_store(page)
 

@@ -66,6 +66,8 @@ def test_new_customer_for_attendee_has_no_tags(page: Page):
 
     attendee_user = api.get_user_by_email(attendee_email)
 
+    time.sleep(10)  # sometimes it takes a while for the tags to be updatedÏ
+
     shopify_customer = shopify.get_customer_by_id(f"gid://shopify/Customer/{attendee_user.get('shopify_id')}")
 
     tags = shopify_customer.get("tags", [])
@@ -170,6 +172,8 @@ def test_owner_and_attendee_tagged_for_event_4_plus(page: Page):
     actions.fill_activation_form(page, attendee_password_1, attendee_first_name_1, attendee_last_name_1)
 
     attendee_user = api.get_user_by_email(attendee_email_1)
+
+    time.sleep(10)  # sometimes it takes a while for the tags to be updated
 
     shopify_attendee_customer = shopify.get_customer_by_id(f"gid://shopify/Customer/{attendee_user.get('shopify_id')}")
     tags = shopify_attendee_customer.get("tags", [])

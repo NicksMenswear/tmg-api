@@ -94,7 +94,7 @@ jobs:
       github.event.issue.pull_request != '' &&
       contains(github.event.comment.body, '/e2e') &&
       (needs.cd.result == 'skipped' || needs.cd.result == 'success') &&
-      (github.event.comment.body != '' && length(fromJSON('["' + github.event.comment.body + '"]')[0]) >= 20)
+      (github.event.comment.body != '' && length(fromJSON('["' + github.event.comment.body + '"]')[0]) < 20)
       }}
     needs: cd
     name: e2e-groups

@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 class AbstractSmsService(ABC):
     @abstractmethod
+    def send_order_confirmation(self, phone_number: str, order_id: str) -> None:
+        pass
+
+    @abstractmethod
     def send_tracking(self, phone_number: str, code: str) -> None:
         pass
 

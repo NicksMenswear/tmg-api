@@ -1,6 +1,5 @@
+import json
 import random
-import time
-from datetime import timedelta, datetime
 
 from parameterized import parameterized
 
@@ -14,7 +13,6 @@ from server.services.order_service import (
 from server.services.sku_builder_service import ProductType, PRODUCT_TYPES_THAT_REQUIRES_MEASUREMENTS
 from server.tests import utils
 from server.tests.integration import BaseTestCase, fixtures, WEBHOOK_SHOPIFY_ENDPOINT
-from server.tests.integration.fixtures import measurement_model
 
 PAID_ORDER_REQUEST_HEADERS = {
     "X-Shopify-Topic": "orders/paid",
@@ -935,3 +933,64 @@ class TestWebhooksOrderPaidGeneral(BaseTestCase):
         self.assertEqual(meta["measurements_id"], str(measurement2.id))
         product = response.json["products"][0]
         self.assertTrue(product["sku"], "1805")  # SLEEVE LENGTH (SHIRT): 34/35, SHIRT: 18
+
+    def test_order_process_from_file_both_suit_and_discount_gift(self):
+        # given
+        user = self.user_service.create_user(fixtures.create_user_request())
+        # add look
+        attendee_user = self.user_service.create_user(fixtures.create_user_request())
+        event_id = self.event_service.create_event(fixtures.create_event_request(user_id=user.id)).id
+        measurement_model = self.measurement_service.create_measurement(
+            fixtures.store_measurement_request(
+                user_id=attendee_user.id,
+                data=fixtures.test_measurements(),
+            )
+        )
+        size_model = self.size_service.create_size(
+            fixtures.store_size_request(
+                user_id=attendee_user.id,
+                measurement_id=measurement_model.id,
+                data=fixtures.test_sizes(),
+            )
+        )
+
+        look = self.look_service.create_look(
+            fixtures.create_look_request(
+                user_id=attendee_user.id,
+                product_specs=json.loads(
+                    '{"items": ["001A2CHA", "603A40RR", "703A4COG", "803A4COG", "903A4LTG"], "suit": "001A2CHA"}'
+                ),
+            )
+        )
+        self.attendee_service.create_attendee(
+            fixtures.create_attendee_request(
+                user_id=attendee_user.id,
+                event_id=event_id,
+                email=attendee_user.email,
+                look_id=look.id,
+            )
+        )
+        webhook_order_payload = self._read_json_into_dict("assets/webhook_request_02_also_bought_gift_discount.json")
+        webhook_order_payload["customer"]["email"] = attendee_user.email
+        webhook_order_payload["note_attributes"][1]["value"] = str(event_id)
+
+        # when
+        response = self._post(
+            WEBHOOK_SHOPIFY_ENDPOINT,
+            webhook_order_payload,
+            PAID_ORDER_REQUEST_HEADERS,
+        )
+
+        # then
+        self.assert200(response)
+        order = self.order_service.get_order_by_id(response.json["id"])
+        self.assertIsNotNone(order)
+        self.assertEqual(order.status, ORDER_STATUS_READY)
+
+        response_shopify_skus = set([order_item.shopify_sku for order_item in order.order_items])
+        response_shiphero_skus = set([product.sku for product in order.products])
+
+        self.assertTrue(len(response_shopify_skus) == 9)
+        self.assertTrue(len(response_shiphero_skus) == 8)
+        self.assertEqual(order.meta.get("sizes_id"), str(size_model.id))
+        self.assertEqual(order.meta.get("measurements_id"), str(measurement_model.id))

@@ -55,6 +55,7 @@ def test_buy_now_on_suit_builder(page: Page):
 
     time.sleep(3)
 
+    actions.close_additional_information_dialog(page)
     actions.click_buy_now_button(page)
 
     verify.shopify_checkout_has_item_with_name_and_price(page, "Black Suit", item_price=None, open_order_summary=True)

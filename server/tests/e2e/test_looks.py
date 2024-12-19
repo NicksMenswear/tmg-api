@@ -68,6 +68,8 @@ def test_add_look_to_cart_from_looks_page(page: Page):
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
+    actions.hide_help_scout(page)
+
     actions.add_look_to_cart(page, data_look_id)
     verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
 
@@ -102,5 +104,8 @@ def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
     page.goto(f"{STORE_URL}/pages/looks")
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
+
+    actions.hide_help_scout(page)
+
     actions.add_look_to_cart(page, data_look_id)
     verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")

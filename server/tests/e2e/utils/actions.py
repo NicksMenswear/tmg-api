@@ -12,7 +12,7 @@ from server.tests.e2e import (
     STORE_PASSWORD,
     HAS_ADDITIONAL_INITIAL_SCREEN_ON_STORE_ACCESS,
 )
-from server.tests.e2e.utils import api, verify
+from server.tests.e2e.utils import api, verify, is_mobile_view
 
 AVAILABLE_ITEMS = {"shirt", "tie", "belt", "shoes", "socks"}
 
@@ -82,7 +82,7 @@ def select_date_in_calendar(locator: Locator, control_id: str):
             "December",
         ]
     )
-    next_year = str(datetime.now().year + 1)
+    next_year = str(datetime.now().year + 2)
 
     locator.locator(f"#{control_id} div .dp-day").select_option(random_day)
     locator.locator(f"#{control_id} div .dp-month").select_option(random_month)
@@ -710,7 +710,7 @@ def shopify_checkout_apply_discount_code(page: Page, discount_code: str):
 
     discount_code_input.fill(discount_code)
 
-    apply_discount_code_button = page.locator('button:has-text("Apply")').first
+    apply_discount_code_button = page.locator('button[aria-label="Apply Discount Code"]').first
     apply_discount_code_button.scroll_into_view_if_needed()
     apply_discount_code_button.wait_for(state="visible")
     apply_discount_code_button.click()
@@ -718,8 +718,18 @@ def shopify_checkout_apply_discount_code(page: Page, discount_code: str):
     time.sleep(2)
 
 
+def shopify_open_order_summary(page: Page):
+    if is_mobile_view(page):
+        show_order_summary_button = page.locator("button:has-text('Order summary')")
+        show_order_summary_button.scroll_into_view_if_needed()
+        show_order_summary_button.wait_for(state="visible")
+        show_order_summary_button.click()
+
+
 def shopify_checkout_verify_discount_code_is_not_applicable(page: Page, discount_code: str):
-    span = page.locator("span", has_text=f"{discount_code} discount code isn’t available to you right now").first
+    shopify_open_order_summary(page)
+
+    span = page.locator("span", has_text=f"discount code isn’t available to you right now").first
     span.scroll_into_view_if_needed()
     span.wait_for(state="visible")
 
@@ -1054,3 +1064,10 @@ def click_buy_now_button(page: Page):
 def shopify_checkout_enter_email_for_anonymous_checkout(page: Page, email: str):
     input_email = page.locator("input#email").first
     input_email.fill(email)
+
+
+def close_additional_information_dialog(page: Page):
+    close_additional_information_dialog_button = page.locator('//span[@class="tmg-gs-modal-close"]').first
+    close_additional_information_dialog_button.scroll_into_view_if_needed()
+    close_additional_information_dialog_button.wait_for(state="visible")
+    close_additional_information_dialog_button.click()

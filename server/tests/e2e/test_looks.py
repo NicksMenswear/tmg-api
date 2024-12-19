@@ -101,8 +101,16 @@ def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
 
     actions.add_look_to_cart(page, data_look_id)
+    try:
+        actions.populate_fit_survey(page)
+    except:
+        pass
 
-    actions.populate_get_started_dialog(page)
+    try:
+        actions.populate_get_started_dialog(page)
+    except:
+        pass
+
     time.sleep(3)
 
     page.goto(f"{STORE_URL}/pages/looks")

@@ -273,6 +273,7 @@ class ShopifyWebhookOrderHandler:
                     order_type=[OrderType.NEW_ORDER.value],
                     shipping_address=shipping_address,
                     shipping_method=shipping_method,
+                    status=ORDER_STATUS_READY,
                     event_id=event_id,
                     ship_by_date=ship_by_date,
                     meta={

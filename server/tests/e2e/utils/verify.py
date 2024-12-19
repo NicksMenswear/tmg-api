@@ -183,6 +183,8 @@ def shopify_checkout_has_item_with_name_and_price(
 
 
 def shopify_checkout_has_discount_with_name(page: Page, discount_code_prefix: str):
+    shopify_open_order_summary_if_needed(page, True)
+
     discount_tag_locator = page.locator(f'span:has-text("{discount_code_prefix}")').first
     discount_tag_locator.scroll_into_view_if_needed()
     discount_tag_locator.wait_for(state="visible")

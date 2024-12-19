@@ -86,6 +86,9 @@ def test_create_coupon(page: Page):
     time.sleep(3)
 
     data_look_id, data_look_variant_id, price = actions.get_look_by_name_on_looks_page(page, look_name)
+
+    actions.hide_help_scout(page)
+
     actions.add_look_to_cart(page, data_look_id)
     verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
 

@@ -71,6 +71,10 @@ def test_add_look_to_cart_from_looks_page(page: Page):
     actions.hide_help_scout(page)
 
     actions.add_look_to_cart(page, data_look_id)
+    try:
+        actions.populate_fit_survey(page)
+    except Exception:
+        pass
     verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")
 
 
@@ -108,4 +112,8 @@ def test_add_look_to_cart_from_looks_page_when_no_events_exist(page: Page):
     actions.hide_help_scout(page)
 
     actions.add_look_to_cart(page, data_look_id)
+    try:
+        actions.populate_fit_survey(page)
+    except Exception:
+        pass
     verify.shopify_checkout_has_item_with_name_and_price(page, look_name, f"${str(price)}")

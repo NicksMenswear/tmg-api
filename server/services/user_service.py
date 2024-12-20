@@ -41,7 +41,12 @@ class UserService:
         last_name = None if not create_user.last_name else create_user.last_name[:MAX_NAME_LENGTH]
 
         if user:
-            raise DuplicateError("User already exists with that email address.")
+            if user.account_status:
+                raise DuplicateError("User already exists with that email address.")
+
+            if not user.account_status and send_activation_email:
+                self.email_service.send_activation_email(user_model)
+                return UserModel.model_validate(user)
 
         if create_user.shopify_id:
             shopify_customer_id = create_user.shopify_id

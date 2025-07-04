@@ -27,11 +27,8 @@ on:
       notify:
         required: false
         type: boolean
-        default: true
+        default: false
         description: Notify Slack
-    secrets:
-      SLACK_BOT_TOKEN:
-        required: false  # required when notify is true
 
 concurrency:
   group: sls-deploy-${{ inputs.stage }}
@@ -70,18 +67,6 @@ jobs:
           else
             echo "HEAD_COMMIT_MESSAGE=$(git log -1 --pretty=format:'%h "%s" by %an')" >> $GITHUB_OUTPUT
           fi
-
-      - name: Notify slack
-        if: ${{ inputs.notify }}
-        uses: slackapi/slack-github-action@v1
-        with:
-          channel-id: 'C06KT69EN30' # Notifications
-          slack-message: |
-            *API "${{ inputs.stage }}" now deploying:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
-            *Release:* ${{ env.VERSION }}
-            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Setup node.js
         uses: actions/setup-node@v4
@@ -152,16 +137,3 @@ jobs:
                 release_id: release.data.id,
                 body: release.data.body + "\n\n" + appendBody
               });
-
-      - name: Notify slack
-        if: ${{ always() && inputs.notify }}
-        uses: slackapi/slack-github-action@v1
-        with:
-          channel-id: 'C06KT69EN30' # Notifications
-          slack-message: |
-            *API "${{ inputs.stage }}" deployment ${{ job.status }} ${{ job.status == 'success' && ':large_green_circle:' || job.status == 'cancelled' && ':large_yellow_circle:' || ':red_circle:' }}*
-            *Commit:* ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MESSAGE }}
-            *Release:* ${{ env.VERSION }}
-            *Logs:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

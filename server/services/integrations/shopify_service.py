@@ -1323,7 +1323,7 @@ class ShopifyService(AbstractShopifyService):
                     gid=default_variant.get("id"),
                     title=default_variant.get("title"),
                     price=default_variant.get("price"),
-                    sku=default_variant.get("sku"),
+                    sku=default_variant.get("sku") or "",
                 )
             ],
         )
@@ -1387,7 +1387,7 @@ class ShopifyService(AbstractShopifyService):
                     gid=default_variant.get("id"),
                     title=default_variant.get("title"),
                     price=default_variant.get("price"),
-                    sku=default_variant.get("sku"),
+                    sku=default_variant.get("sku") or "",
                 )
             ],
         )
